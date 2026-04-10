@@ -1,12 +1,29 @@
+
 import streamlit as st
 import pandas as pd
 from collections import Counter
 from wordcloud import WordCloud
 import matplotlib.pyplot as plt
+import os
+
+
+# CSV file path
+CSV_PATH = "Class-intro/students.csv"
+
+# Helper to load data from CSV
+def load_students():
+    if os.path.exists(CSV_PATH):
+        return pd.read_csv(CSV_PATH).to_dict(orient='records')
+    return []
+
+# Helper to save data to CSV
+def save_students(students):
+    df = pd.DataFrame(students)
+    df.to_csv(CSV_PATH, index=False)
 
 # Initialize session state for data storage
 if 'students' not in st.session_state:
-    st.session_state['students'] = []
+    st.session_state['students'] = load_students()
 
 st.title("Gen AI Class Introduction")
 
@@ -34,11 +51,13 @@ with tab1:
                 "Programming Experience": prog_exp,
                 "Programming Languages Known": prog_lang
             })
+            save_students(st.session_state['students'])
             st.success(f"Added {name}")
 
 with tab2:
     st.header("Class Visualizations")
-    students = st.session_state['students']
+    # Always reload from CSV for live update
+    students = load_students()
     if not students:
         st.info("No data yet. Please add student details in the Data Entry tab.")
     else:
