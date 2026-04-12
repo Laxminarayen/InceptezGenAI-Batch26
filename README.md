@@ -13,7 +13,7 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 ---
 
 
-## Day 0: Orientation & Introduction - 24-April-2026
+## Day 0: Orientation & Introduction - 11-April-2026
 
 ### Overview
 
