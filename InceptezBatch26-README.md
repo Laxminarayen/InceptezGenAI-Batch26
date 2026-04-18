@@ -19,7 +19,6 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 
 **Instructor:** Laxmi Narayen Nagarajan Venkatesan  
 **Program:** Gen-AI driven Full Stack Data Science Batch 26
-**Powered by:** Cloud, Big Data, Business Intelligence
 
 #### Highlights
 - Instructor background and vision
@@ -32,12 +31,6 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 
 #### Project: Gen AI Class Introduction App
 
----
-
-## License
-
-This repository is for educational and reference use as part of the Inceptez GenAI Batch 26 program.
----
 
 ## Day 1: Introduction to Data Science & Python - 12-April-2026
 
@@ -45,7 +38,6 @@ This repository is for educational and reference use as part of the Inceptez Gen
 
 **Instructor:** Laxmi Narayen Nagarajan Venkatesan  
 **Program:** Gen-AI driven Full Stack Data Science Batch 26
-**Powered by:** Cloud, Big Data, Business Intelligence
 
 #### Highlights
 - Data Science landscape and evolution
@@ -59,3 +51,10 @@ This repository is for educational and reference use as part of the Inceptez Gen
 
 #### Project: First Python Notebook
 - [`01. Introduction-to-DataScience-Why-python/FirstPythonNotebook.ipynb`](01.%20Introduction-to-DataScience-Why-python/FirstPythonNotebook.ipynb)
+
+---
+
+## License
+
+This repository is for educational and reference use as part of the Inceptez GenAI Batch 26 program.
+---
