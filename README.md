@@ -59,3 +59,26 @@ This repository is for educational and reference use as part of the Inceptez Gen
 
 #### Project: First Python Notebook
 - [`01. Introduction-to-DataScience-Why-python/FirstPythonNotebook.ipynb`](01.%20Introduction-to-DataScience-Why-python/FirstPythonNotebook.ipynb)
+
+---
+
+## Day 2: Python Day - 1: Syntax, Data Types and Datastructures - 18-April-2026
+
+### Overview
+
+**Instructor:** Laxmi Narayen Nagarajan Venkatesan  
+**Program:** Gen-AI driven Full Stack Data Science Batch 26
+**Powered by:** Cloud, Big Data, Business Intelligence
+
+#### Highlights
+- Recap of last class
+- Different ways of running python 2026
+- Syntax - Keywords & Identifiers
+- Data Types in Python
+- Data Structures in Python 
+
+#### Reference Slides
+- [`02. Python_DataType_DataStructures/Python-Day-1.pdf`](02.%Python_DataType_DataStructures/Python-Day-1.pdf)
+
+#### Project: Working Notebook
+- [`02. Python_DataType_DataStructures/Python_Day1.ipynb`](02.%Python_DataType_DataStructures/Python_Day1.ipynb)
