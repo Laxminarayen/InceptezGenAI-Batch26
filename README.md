@@ -4,21 +4,20 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 
 ---
 
-
 ## 📑 Contents
 
-- [Day 0: Orientation & Introduction](#day-0-orientation--introduction)
-- [Day 1: Introduction to Data Science & Python](#day-1-introduction-to-data-science--python)
+- [Day 0: Orientation & Introduction](#day-0-orientation--introduction-11-april-2026)
+- [Day 1: Introduction to Data Science & Python](#day-1-introduction-to-data-science--python-12-april-2026)
+- [Day 2: Python Day - 1: Syntax, Data Types and Datastructures](#day-2-python-day---1-syntax-data-types-and-datastructures---18-april-2026)
 
 ---
-
 
 ## Day 0: Orientation & Introduction - 11-April-2026
 
 ### Overview
 
 **Instructor:** Laxmi Narayen Nagarajan Venkatesan  
-**Program:** Gen-AI driven Full Stack Data Science Batch 26
+**Program:** Gen-AI driven Full Stack Data Science Batch 26  
 **Powered by:** Cloud, Big Data, Business Intelligence
 
 #### Highlights
@@ -37,6 +36,7 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 ## License
 
 This repository is for educational and reference use as part of the Inceptez GenAI Batch 26 program.
+
 ---
 
 ## Day 1: Introduction to Data Science & Python - 12-April-2026
@@ -44,7 +44,7 @@ This repository is for educational and reference use as part of the Inceptez Gen
 ### Overview
 
 **Instructor:** Laxmi Narayen Nagarajan Venkatesan  
-**Program:** Gen-AI driven Full Stack Data Science Batch 26
+**Program:** Gen-AI driven Full Stack Data Science Batch 26  
 **Powered by:** Cloud, Big Data, Business Intelligence
 
 #### Highlights
@@ -67,7 +67,7 @@ This repository is for educational and reference use as part of the Inceptez Gen
 ### Overview
 
 **Instructor:** Laxmi Narayen Nagarajan Venkatesan  
-**Program:** Gen-AI driven Full Stack Data Science Batch 26
+**Program:** Gen-AI driven Full Stack Data Science Batch 26  
 **Powered by:** Cloud, Big Data, Business Intelligence
 
 #### Highlights
@@ -78,7 +78,7 @@ This repository is for educational and reference use as part of the Inceptez Gen
 - Data Structures in Python 
 
 #### Reference Slides
-- [`02. Python_DataType_DataStructures/Python-Day-1.pdf`](02.%Python_DataType_DataStructures/Python-Day-1.pdf)
+- [`02. Python_DataType_DataStructures/Python-Day-1.pdf`](02.%20Python_DataType_DataStructures/Python-Day-1.pdf)
 
 #### Project: Working Notebook
-- [`02. Python_DataType_DataStructures/Python_Day1.ipynb`](02.%Python_DataType_DataStructures/Python_Day1.ipynb)
+- [`02. Python_DataType_DataStructures/Python_Day1.ipynb`](02.%20Python_DataType_DataStructures/Python_Day1.ipynb)
