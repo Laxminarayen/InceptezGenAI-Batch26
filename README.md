@@ -82,3 +82,25 @@ This repository is for educational and reference use as part of the Inceptez Gen
 
 #### Project: Working Notebook
 - [`02. Python_DataType_DataStructures/Python_Day1.ipynb`](02.%20Python_DataType_DataStructures/Python_Day1.ipynb)
+
+## Day 3: Python Day - 2: Type Casting and Conversion, Datastructures and list operations - 19-April-2026
+
+### Overview
+
+**Instructor:** Laxmi Narayen Nagarajan Venkatesan  
+**Program:** Gen-AI driven Full Stack Data Science Batch 26  
+**Powered by:** Cloud, Big Data, Business Intelligence
+
+#### Highlights
+- Recap of last class
+- Different ways of running python 2026 - My first library
+- List Operations
+- List Slicing 
+- List negative indexing
+- Tuple operations 
+
+#### Reference Slides
+- [`03. Python_DigDeep_DataStructure_operations_loops/Python-Day-2.pdf`](03. Python_DigDeep_DataStructure_operations_loops/Python-Day-2.pdf)
+
+#### Project: Working Notebook
+- [`03. Python_DigDeep_DataStructure_operations_loops/DataStructureOperations_Loops.ipynb`](03. Python_DigDeep_DataStructure_operations_loops/DataStructureOperations_Loops.ipynb)
