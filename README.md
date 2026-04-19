@@ -6,9 +6,10 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 
 ## 📑 Contents
 
-- [Day 0: Orientation & Introduction](#day-0-orientation--introduction-11-april-2026)
-- [Day 1: Introduction to Data Science & Python](#day-1-introduction-to-data-science--python-12-april-2026)
+- [Day 0: Orientation & Introduction](#day-0-orientation--introduction---11-april-2026)
+- [Day 1: Introduction to Data Science & Python](#day-1-introduction-to-data-science--python---12-april-2026)
 - [Day 2: Python Day - 1: Syntax, Data Types and Datastructures](#day-2-python-day---1-syntax-data-types-and-datastructures---18-april-2026)
+- [Day 3: Python Day - 2: Type Casting and Conversion, Datastructures and list operations](#day-3-python-day---2-type-casting-and-conversion-datastructures-and-list-operations---19-april-2026)
 
 ---
 
@@ -83,6 +84,8 @@ This repository is for educational and reference use as part of the Inceptez Gen
 #### Project: Working Notebook
 - [`02. Python_DataType_DataStructures/Python_Day1.ipynb`](02.%20Python_DataType_DataStructures/Python_Day1.ipynb)
 
+---
+
 ## Day 3: Python Day - 2: Type Casting and Conversion, Datastructures and list operations - 19-April-2026
 
 ### Overview
@@ -100,7 +103,7 @@ This repository is for educational and reference use as part of the Inceptez Gen
 - Tuple operations 
 
 #### Reference Slides
-- [`03. Python_DigDeep_DataStructure_operations_loops/Python-Day-2.pdf`](03. Python_DigDeep_DataStructure_operations_loops/Python-Day-2.pdf)
+- [`03. Python_DigDeep_DataStructure_operations_loops/Python-Day-2.pdf`](03.%20Python_DigDeep_DataStructure_operations_loops/Python-Day-2.pdf)
 
 #### Project: Working Notebook
-- [`03. Python_DigDeep_DataStructure_operations_loops/DataStructureOperations_Loops.ipynb`](03. Python_DigDeep_DataStructure_operations_loops/DataStructureOperations_Loops.ipynb)
+- [`03. Python_DigDeep_DataStructure_operations_loops/DataStructureOperations_Loops.ipynb`](03.%20Python_DigDeep_DataStructure_operations_loops/DataStructureOperations_Loops.ipynb)
