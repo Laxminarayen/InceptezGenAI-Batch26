@@ -104,7 +104,7 @@ Assignments are designed to test your understanding of the concepts covered each
 - [Download Assignment 1 Notebook](Assignments/Inceptez_Batch26_Assignment1.ipynb)
 
 
-- **Assignment 2:** Covering Day 1 to Day 3 (Data Types, Casting, Lists).
+- **Assignment 2:** Covering Day 1 to Day 3 (Data Structures, conditional loops, for loops).
 - [Download Assignment 2 Notebook](Assignments/Inceptez_Batch26_Assignment2.ipynb)
 ---
 
