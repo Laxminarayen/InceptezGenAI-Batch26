@@ -101,11 +101,11 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 Assignments are designed to test your understanding of the concepts covered each week. 
 
 - **Assignment 1:** Covering Day 1 to Day 2 (Data Types, Casting, Lists).
-- [Download Assignment 1 Notebook](./Inceptez_Batch26_Assignment1.ipynb)
+- [Download Assignment 1 Notebook](Assignments/Inceptez_Batch26_Assignment1.ipynb)
 
 
 - **Assignment 2:** Covering Day 1 to Day 3 (Data Types, Casting, Lists).
-- [Download Assignment 1 Notebook](./Inceptez_Batch26_Assignment2.ipynb)
+- [Download Assignment 2 Notebook](Assignments/Inceptez_Batch26_Assignment2.ipynb)
 ---
 
 ## ⚖️ License
