@@ -1,109 +1,112 @@
 # Inceptez GenAI Batch 26 Reference Material
 
-Welcome to the official reference repository for **Inceptez GenAI Batch 26**. This repository will be organized by days, with each day containing its own materials, code, and instructions.
+Welcome to the official reference repository for **Inceptez GenAI Batch 26**. This repository is your primary hub for all session materials, hands-on notebooks, and project code.
 
 ---
 
-## 📑 Contents
+## 📑 Table of Contents
 
-- [Day 0: Orientation & Introduction](#day-0-orientation--introduction---11-april-2026)
-- [Day 1: Introduction to Data Science & Python](#day-1-introduction-to-data-science--python---12-april-2026)
-- [Day 2: Python Day - 1: Syntax, Data Types and Datastructures](#day-2-python-day---1-syntax-data-types-and-datastructures---18-april-2026)
-- [Day 3: Python Day - 2: Type Casting and Conversion, Datastructures and list operations](#day-3-python-day---2-type-casting-and-conversion-datastructures-and-list-operations---19-april-2026)
+- [Day 0: Orientation & Introduction](#day-0)
+- [Day 1: Introduction to Data Science & Python](#day-1)
+- [Day 2: Python Day 1 - Syntax & Data Types](#day-2)
+- [Day 3: Python Day 2 - Operations & Slicing](#day-3)
+- [Day 4: Python Day 3 - Complexity, Sets, Dicts & Loops](#day-4)
+- [Assignments](#assignments)
 
 ---
 
-## Day 0: Orientation & Introduction - 11-April-2026
+<a name="day-0"></a>
+## 🗓️ Day 0: Orientation & Introduction (11-April-2026)
 
 ### Overview
-
 **Instructor:** Laxmi Narayen Nagarajan Venkatesan  
 **Program:** Gen-AI driven Full Stack Data Science Batch 26  
 **Powered by:** Cloud, Big Data, Business Intelligence
 
-#### Highlights
-- Instructor background and vision
-- Industry trends and future outlook
-- Hands-on project code and deployment instructions
-- Guidance for building a resilient AI/data science career
+### Highlights
+- Instructor background and vision for Batch 26.
+- Industry trends and the future of GenAI.
+- Guidance for building a resilient AI/Data Science career.
 
-#### Reference Slides
-- [`00. Class-intro/InceptezBatch26-Introduction.pdf`](00.%20Class-intro/InceptezBatch26-Introduction.pdf)
-
-#### Project: Gen AI Class Introduction App
+### Resources
+- **Reference Slides:** [`00. Class-intro/InceptezBatch26-Introduction.pdf`](00.%20Class-intro/InceptezBatch26-Introduction.pdf)
+- **Project:** Gen AI Class Introduction App
 
 ---
 
-## License
+<a name="day-1"></a>
+## 🗓️ Day 1: Introduction to Data Science & Python (12-April-2026)
 
-This repository is for educational and reference use as part of the Inceptez GenAI Batch 26 program.
+### Highlights
+- Data Science landscape and evolution.
+- Distinguishing AI, ML, Deep Learning, and Gen AI.
+- The Data Project Lifecycle and key roles.
+- Why Python is the industry standard for Data Science.
 
----
-
-## Day 1: Introduction to Data Science & Python - 12-April-2026
-
-### Overview
-
-**Instructor:** Laxmi Narayen Nagarajan Venkatesan  
-**Program:** Gen-AI driven Full Stack Data Science Batch 26  
-**Powered by:** Cloud, Big Data, Business Intelligence
-
-#### Highlights
-- Data Science landscape and evolution
-- AI, ML, Deep Learning, Gen AI overview
-- Data project lifecycle and roles
-- Why Python for Data Science
-- Hands-on: First Python notebook
-
-#### Reference Slides
-- [`01. Introduction-to-DataScience-Why-python/Introduction_to_datascience _Python.pdf`](01.%20Introduction-to-DataScience-Why-python/Introduction_to_datascience%20_Python.pdf)
-
-#### Project: First Python Notebook
-- [`01. Introduction-to-DataScience-Why-python/FirstPythonNotebook.ipynb`](01.%20Introduction-to-DataScience-Why-python/FirstPythonNotebook.ipynb)
+### Resources
+- **Reference Slides:** [`01. Introduction-to-DataScience-Why-python/Introduction_to_datascience _Python.pdf`](01.%20Introduction-to-DataScience-Why-python/Introduction_to_datascience%20_Python.pdf)
+- **Hands-on Notebook:** [`01. Introduction-to-DataScience-Why-python/FirstPythonNotebook.ipynb`](01.%20Introduction-to-DataScience-Why-python/FirstPythonNotebook.ipynb)
 
 ---
 
-## Day 2: Python Day - 1: Syntax, Data Types and Datastructures - 18-April-2026
+<a name="day-2"></a>
+## 🗓️ Day 2: Python Day 1 - Syntax & Data Structures (18-April-2026)
 
-### Overview
+### Highlights
+- Python 2026 environment setup.
+- Syntax basics: Keywords & Identifiers.
+- Core Data Types (Int, Float, String, Boolean).
+- Introduction to Data Structures.
 
-**Instructor:** Laxmi Narayen Nagarajan Venkatesan  
-**Program:** Gen-AI driven Full Stack Data Science Batch 26  
-**Powered by:** Cloud, Big Data, Business Intelligence
-
-#### Highlights
-- Recap of last class
-- Different ways of running python 2026
-- Syntax - Keywords & Identifiers
-- Data Types in Python
-- Data Structures in Python 
-
-#### Reference Slides
-- [`02. Python_DataType_DataStructures/Python-Day-1.pdf`](02.%20Python_DataType_DataStructures/Python-Day-1.pdf)
-
-#### Project: Working Notebook
-- [`02. Python_DataType_DataStructures/Python_Day1.ipynb`](02.%20Python_DataType_DataStructures/Python_Day1.ipynb)
+### Resources
+- **Reference Slides:** [`02. Python_DataType_DataStructures/Python-Day-1.pdf`](02.%20Python_DataType_DataStructures/Python-Day-1.pdf)
+- **Hands-on Notebook:** [`02. Python_DataType_DataStructures/Python_Day1.ipynb`](02.%20Python_DataType_DataStructures/Python_Day1.ipynb)
 
 ---
 
-## Day 3: Python Day - 2: Type Casting and Conversion, Datastructures and list operations - 19-April-2026
+<a name="day-3"></a>
+## 🗓️ Day 3: Python Day 2 - Operations & Slicing (19-April-2026)
 
-### Overview
+### Highlights
+- **Type Casting:** Explicit and Implicit conversion.
+- **List Operations:** Append, Insert, Pop, and Remove.
+- **Slicing:** Positive indexing, negative indexing, and step-based slicing.
+- **Tuples:** Understanding immutability and basic operations.
 
-**Instructor:** Laxmi Narayen Nagarajan Venkatesan  
-**Program:** Gen-AI driven Full Stack Data Science Batch 26  
-**Powered by:** Cloud, Big Data, Business Intelligence
+### Resources
+- **Reference Slides:** [`03. Python_DigDeep_DataStructure_operations_loops/Python-Day-2.pdf`](03.%20Python_DigDeep_DataStructure_operations_loops/Python-Day-2.pdf)
+- **Hands-on Notebook:** [`03. Python_DigDeep_DataStructure_operations_loops/DataStructureOperations_Loops.ipynb`](03.%20Python_DigDeep_DataStructure_operations_loops/DataStructureOperations_Loops.ipynb)
 
-#### Highlights
-- Recap of last class
-- Different ways of running python 2026 - My first library
-- List Operations
-- List Slicing 
-- List negative indexing
-- Tuple operations 
+---
 
-#### Reference Slides
-- [`03. Python_DigDeep_DataStructure_operations_loops/Python-Day-2.pdf`](03.%20Python_DigDeep_DataStructure_operations_loops/Python-Day-2.pdf)
+<a name="day-4"></a>
+## 🗓️ Day 4: Python Day 3 - Complexity & Control Flow (25-April-2026)
 
-#### Project: Working Notebook
-- [`03. Python_DigDeep_DataStructure_operations_loops/DataStructureOperations_Loops.ipynb`](03.%20Python_DigDeep_DataStructure_operations_loops/DataStructureOperations_Loops.ipynb)
+### Highlights
+- **Advanced Tuples:** Use cases for immutable data.
+- **Time Complexity:** Intro to Big O notation (efficiency of lists vs sets).
+- **Sets & Dictionaries:** Unordered collections and Key-Value pairs.
+- **Conditional Logic:** `if`, `elif`, and `else` structures.
+- **Iterative Loops:** Mastering the `for` loop.
+
+### Resources
+- **Reference Slides:** [`04. Python_TimeComplexity_set_dict_operations_ifelse_forloops/Python-Day-3.pdf`](04.%20Python_TimeComplexity_set_dict_operations_ifelse_forloops/Python-Day-3.pdf)
+- **Hands-on Notebook:** [`04. Python_TimeComplexity_set_dict_operations_ifelse_forloops/PythonDay_3.ipynb`](04.%20Python_TimeComplexity_set_dict_operations_ifelse_forloops/PythonDay_3.ipynb)
+
+---
+
+<a name="assignments"></a>
+## 📝 Assignments
+
+Assignments are designed to test your understanding of the concepts covered each week. 
+
+- **Assignment 1:** Covering Day 1 to Day 2 (Data Types, Casting, Lists).
+- [Download Assignment 1 Notebook](./Inceptez_Batch26_Assignment1.ipynb)
+
+
+- **Assignment 2:** Covering Day 1 to Day 3 (Data Types, Casting, Lists).
+- [Download Assignment 1 Notebook](./Inceptez_Batch26_Assignment2.ipynb)
+---
+
+## ⚖️ License
+This repository is for educational and reference use exclusively for participants of the **Inceptez GenAI Batch 26** program.
