@@ -120,6 +120,10 @@ Assignments are designed to test your understanding of the concepts covered each
 
 - **Assignment 2:** Covering Day 1 to Day 3 (Data Structures, conditional loops, for loops).
 - [Download Assignment 2 Notebook](Assignments/Inceptez_Batch26_Assignment2.ipynb)
+
+
+- **Assignment 3:** Covering Day 1 to Day 4 (Iterative Loops, conditional loops, Functions).
+- [Download Assignment 3 Notebook](Assignments/Inceptez_Batch26_Assignment3.ipynb)
 ---
 
 ## ⚖️ License
