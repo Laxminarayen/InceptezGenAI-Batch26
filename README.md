@@ -11,6 +11,7 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 - [Day 2: Python Day 1 - Syntax & Data Types](#day-2)
 - [Day 3: Python Day 2 - Operations & Slicing](#day-3)
 - [Day 4: Python Day 3 - Complexity, Sets, Dicts & Loops](#day-4)
+- [Day 5: Python Day 4 - for & while loops, Continue, break, user and buil-in functions](#day-5)
 - [Assignments](#assignments)
 
 ---
@@ -95,6 +96,19 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 
 ---
 
+<a name="day-5"></a>
+## 🗓️ Day 5: Python Day 4 - Entry Control Loops, For - While, Continue, break, User-defined Functions, Build-in functions, docstrings (26-April-2026)
+
+### Highlights
+- **Entry Control Loops:** For and While loops - Nested loops - Loop ladder
+- **Break and Continue:** Emergency Exit and Skip
+- **Functions User defined functions:** Return Statements
+
+### Resources
+- **Reference Slides:** [`05. Python_EntryControl_While_continueBreak_Functions/Python-Day-4.pdf`](05.%20Python_EntryControl_While_continueBreak_Functions/Python-Day-4.pdf)
+- **Hands-on Notebook:** [`05. Python_EntryControl_While_continueBreak_Functions/Python_Day4.ipynb`](05.%20Python_EntryControl_While_continueBreak_Functions/Python_Day4.ipynb)
+
+---
 <a name="assignments"></a>
 ## 📝 Assignments
 
