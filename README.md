@@ -109,6 +109,22 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 - **Hands-on Notebook:** [`05. Python_EntryControl_While_continueBreak_Functions/Python_Day4.ipynb`](05.%20Python_EntryControl_While_continueBreak_Functions/Python_Day4.ipynb)
 
 ---
+
+<a name="day-6"></a>
+## 🗓️ Day 6: Python Day 5 - Advanced Functions, Classes & LEGB Scoping (02-May-2026)
+
+### Highlights
+- **Advanced Function Arguments**: Mastering parameter ordering where non-default parameters must precede default parameters to avoid SyntaxErrors[cite: 1].
+- **Variable Argument Packing**: Using `*args` to handle variable positional arguments as tuples and `**kwargs` for keyword arguments as dictionaries[cite: 1].
+- **OOP Blueprints**: Defining classes as blueprints and creating objects as specific instances[cite: 1].
+- **Constructors & Self**: Utilizing the `__init__` method for object initialization and the `self` keyword to bind attributes and methods to instances[cite: 1].
+- **Variable Scoping (LEGB)**: Navigating Local, Enclosing, Global, and Built-in scopes, and modifying global variables using the `global` keyword[cite: 1].
+
+### Resources
+- **Reference Slides:** [`06. Python-Day5-FunctionsAdv-Classes-LEGBScoping/Python-Day-5.pdf`](06.%20Python-Day5-FunctionsAdv-Classes-LEGBScoping/Python-Day-5.pdf)
+- **Hands-on Notebook:** [`06. Python-Day5-FunctionsAdv-Classes-LEGBScoping/Python_Day5.ipynb`](06.%20Python-Day5-FunctionsAdv-Classes-LEGBScoping/Python_Day5.ipynb)[cite: 1]
+
+---
 <a name="assignments"></a>
 ## 📝 Assignments
 
@@ -124,7 +140,10 @@ Assignments are designed to test your understanding of the concepts covered each
 
 - **Assignment 3:** Covering Day 1 to Day 4 (Iterative Loops, conditional loops, Functions).
 - [Download Assignment 3 Notebook](Assignments/Inceptez_Batch26_Assignment3.ipynb)
----
 
+- **Assignment 4:** Covering Day 5 to Day 6 (Advanced Arguments, OOP, Scoping).
+  - [Download Assignment 4 Notebook](Assignments/Inceptez_Batch26_Assignment4.ipynb)
+
+---
 ## ⚖️ License
 This repository is for educational and reference use exclusively for participants of the **Inceptez GenAI Batch 26** program.
