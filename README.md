@@ -122,8 +122,7 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 - **Variable Scoping (LEGB)**: Navigating Local, Enclosing, Global, and Built-in scopes, and modifying global variables using the `global` keyword[cite: 1].
 
 ### Resources
-- **Reference Slides:** [`06. Python-Day5-FunctionsAdv-Classes-LEGBScoping/Python-Day-5.pdf`](06.%20Python-Day5-FunctionsAdv-Classes-LEGBScoping/Python-Day-5.pdf)
-- **Hands-on Notebook:** [`06. Python-Day5-FunctionsAdv-Classes-LEGBScoping/Python_Day5.ipynb`](06.%20Python-Day5-FunctionsAdv-Classes-LEGBScoping/Python_Day5.ipynb)[cite: 1]
+- **Hands-on Notebook:** [`06. Python-Day5-FunctionsAdv-Classes-LEGBScoping/Python_Day5.ipynb`](06.%20Python-Day5-FunctionsAdv-Classes-LEGBScoping/Python_Day5.ipynb)
 
 ---
 <a name="assignments"></a>
