@@ -142,7 +142,7 @@ Assignments are designed to test your understanding of the concepts covered each
 - [Download Assignment 3 Notebook](Assignments/Inceptez_Batch26_Assignment3.ipynb)
 
 - **Assignment 4:** Covering Day 5 to Day 6 (Advanced Arguments, OOP, Scoping).
-  - [Download Assignment 4 Notebook](Assignments/Inceptez_Batch26_Assignment4.ipynb)
+- [Download Assignment 4 Notebook](Assignments/Inceptez_Batch26_Assignment4.ipynb)
 
 ---
 ## ⚖️ License
