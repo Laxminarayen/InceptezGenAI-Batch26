@@ -12,6 +12,7 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 - [Day 3: Python Day 2 - Operations & Slicing](#day-3)
 - [Day 4: Python Day 3 - Complexity, Sets, Dicts & Loops](#day-4)
 - [Day 5: Python Day 4 - for & while loops, Continue, break, user and buil-in functions](#day-5)
+- [Day 6: Python Day 5 - Advanced Functions, Classes & LEGB Scoping](#day-6)
 - [Assignments](#assignments)
 
 ---
