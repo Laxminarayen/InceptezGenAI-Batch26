@@ -11,8 +11,13 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 - [Day 2: Python Day 1 - Syntax & Data Types](#day-2)
 - [Day 3: Python Day 2 - Operations & Slicing](#day-3)
 - [Day 4: Python Day 3 - Complexity, Sets, Dicts & Loops](#day-4)
-- [Day 5: Python Day 4 - for & while loops, Continue, break, user and buil-in functions](#day-5)
+- [Day 5: Python Day 4 - for & while loops, Continue, break, user and built-in functions](#day-5)
 - [Day 6: Python Day 5 - Advanced Functions, Classes & LEGB Scoping](#day-6)
+- [Day 7: Python Day 6 - Introduction to NumPy](#day-7)
+- [Day 8: Python Day 7 - Introduction to Pandas](#day-8)
+- [Day 9: Python Day 8 - Pandas Advanced & Data Cleaning](#day-9)
+- [Day 13: Descriptive Statistics 1](#day-13)
+- [Day 14: Data Preprocessing](#day-14)
 - [Assignments](#assignments)
 
 ---
@@ -125,6 +130,86 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 - **Hands-on Notebook:** [`06. Python-Day5-FunctionsAdv-Classes-LEGBScoping/Python_Day5.ipynb`](06.%20Python-Day5-FunctionsAdv-Classes-LEGBScoping/Python_Day5.ipynb)
 
 ---
+<a name="day-7"></a>
+## 🗓️ Day 7: Python Day 6 - Introduction to NumPy (03-May-2026)
+
+### Highlights
+- **NumPy Arrays vs Python Lists:** Why NumPy is faster and more memory-efficient.
+- **Array Shapes & Dimensions:** 1-D vectors, 2-D matrices, and 3-D arrays (e.g., RGB image representation).
+- **Broadcasting:** Performing element-wise operations across arrays of different shapes.
+- **Matrix Operations:** Transpose, dot product, and the identity matrix.
+- **Greyscale Images:** Representing image data as NumPy arrays.
+
+### Resources
+- **Reference Slides:** [`07. Python_Day6_Introduction_to_numpy/Python-Day-5.pptx`](07.%20Python_Day6_Introduction_to_numpy/Python-Day-5.pptx)
+- **Hands-on Notebook:** [`07. Python_Day6_Introduction_to_numpy/Python_Day6.ipynb`](07.%20Python_Day6_Introduction_to_numpy/Python_Day6.ipynb)
+
+---
+
+<a name="day-8"></a>
+## 🗓️ Day 8: Python Day 7 - Introduction to Pandas (09-May-2026)
+
+### Highlights
+- **Pandas Data Structures:** Series (1-D) and DataFrames (2-D tabular data).
+- **Index vs Columns:** Understanding how row labels (index) differ from column headers.
+- **Loading & Exploring Data:** Reading CSV, JSON datasets; using `head()`, `shape`, `info()`.
+- **Basic DataFrame Operations:** Filtering, selecting, and summarizing data.
+- **Pandas vs PySpark:** When to use each tool for data processing at scale.
+
+### Resources
+- **Hands-on Notebook:** [`08. Python_Day7_Pandas/PythonDay7_Pandas.ipynb`](08.%20Python_Day7_Pandas/PythonDay7_Pandas.ipynb)
+- **Dataset:** [`08. Python_Day7_Pandas/IMDB-Movie-Data.csv`](08.%20Python_Day7_Pandas/IMDB-Movie-Data.csv)
+
+---
+
+<a name="day-9"></a>
+## 🗓️ Day 9: Python Day 8 - Pandas Advanced & Data Cleaning (10-May-2026)
+
+### Highlights
+- **Handling Null Values:** Identifying and dealing with missing data — the first data impurity.
+- **Removing vs Imputing:** Dropping rows with `dropna()` vs filling gaps with meaningful values.
+- **Deduplication:** Detecting and removing duplicate rows.
+- **iloc vs loc:** Coordinate-based (`iloc`) vs label-based (`loc`) indexing.
+- **Merging DataFrames:** Combining datasets using `merge()`.
+
+### Resources
+- **Hands-on Notebook:** [`09. Python_Day8_Pandas/PythonDay8_Pandas_Stats.ipynb`](09.%20Python_Day8_Pandas/PythonDay8_Pandas_Stats.ipynb)
+
+---
+
+<a name="day-13"></a>
+## 🗓️ Day 13: Descriptive Statistics 1 (27-Jun-2026)
+
+### Highlights
+- **Data Distributions:** Visualizing distributions using Seaborn `displot` and `histplot` with KDE overlays.
+- **Measures of Central Tendency:** Mean (balance point / center of mass), Median (exact center value), and Mode.
+- **Impact of Outliers:** How extreme values skew the mean while the median remains robust.
+- **Normal Distribution:** Properties of the ideal bell curve; unimodal vs multimodal distributions.
+- **Spread Metrics:** Variance and Standard Deviation — measuring average distance from the mean.
+
+### Resources
+- **Reference Material:** [`13. DescriptiveStatistics1/Statistics - 1.pdf`](13.%20DescriptiveStatistics1/Statistics%20-%201.pdf)
+- **Hands-on Notebook:** [`13. DescriptiveStatistics1/Statistics1.ipynb`](13.%20DescriptiveStatistics1/Statistics1.ipynb)
+- **Reading Material:** [`13. DescriptiveStatistics1/StatisticsReadingMaterial.docx`](13.%20DescriptiveStatistics1/StatisticsReadingMaterial.docx)
+
+---
+
+<a name="day-14"></a>
+## 🗓️ Day 14: Data Preprocessing (28-Jun-2026)
+
+### Highlights
+- **Exploratory Data Analysis (EDA):** Profiling a dataset with `head()`, `shape`, `isna()`, and `value_counts()`.
+- **Custom NA Parsing:** Loading CSVs with a comprehensive list of missing-value tokens using `na_values`.
+- **Missing Value Strategy:** Drop rows when missing data is < 5% of total; impute with mean/median/mode when > 5%.
+- **Column-level Imputation:** Filling numeric columns with `median()` and categorical columns with mode.
+- **Data Cleaning:** Fixing negative values with `abs()` and stripping unwanted characters with `lambda` functions.
+
+### Resources
+- **Hands-on Notebook:** [`14. Data Preprocessing/preprocessing.ipynb`](14.%20Data%20Preprocessing/preprocessing.ipynb)
+- **Dataset:** [`14. Data Preprocessing/Demand_txn_updated.csv`](14.%20Data%20Preprocessing/Demand_txn_updated.csv)
+
+---
+
 <a name="assignments"></a>
 ## 📝 Assignments
 
