@@ -2,6 +2,8 @@
 
 Welcome to the official reference repository for **Inceptez GenAI Batch 26**. This repository is your primary hub for all session materials, hands-on notebooks, and project code.
 
+🌐 **Browse everything on the live class portal:** [laxminarayen.github.io/InceptezGenAI-Batch26](https://laxminarayen.github.io/InceptezGenAI-Batch26/)
+
 ---
 
 ## 📑 Table of Contents
@@ -18,6 +20,9 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 - [Day 9: Python Day 8 - Pandas Advanced & Data Cleaning](#day-9)
 - [Day 13: Descriptive Statistics 1](#day-13)
 - [Day 14: Data Preprocessing](#day-14)
+- [Day 15: Multivariate Statistics - Random Variables & Distributions](#day-15)
+- [Day 16: Inferential Statistics - Sampling, CLT & Voting Forecasts](#day-16)
+- [Day 17: Machine Learning Foundations](#day-17)
 - [Assignments](#assignments)
 
 ---
@@ -36,7 +41,7 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 - Guidance for building a resilient AI/Data Science career.
 
 ### Resources
-- **Reference Slides:** [`00. Class-intro/InceptezBatch26-Introduction.pdf`](00.%20Class-intro/InceptezBatch26-Introduction.pdf)
+- **Reference Slides:** [`00. Class-intro - 11-Apr-2026/InceptezBatch26-Introduction.pdf`](00.%20Class-intro%20-%2011-Apr-2026/InceptezBatch26-Introduction.pdf)
 - **Project:** Gen AI Class Introduction App
 
 ---
@@ -207,6 +212,50 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 ### Resources
 - **Hands-on Notebook:** [`14. Data Preprocessing/preprocessing.ipynb`](14.%20Data%20Preprocessing/preprocessing.ipynb)
 - **Dataset:** [`14. Data Preprocessing/Demand_txn_updated.csv`](14.%20Data%20Preprocessing/Demand_txn_updated.csv)
+
+---
+
+<a name="day-15"></a>
+## 🗓️ Day 15: Multivariate Statistics - Random Variables & Distributions (11-Jul-2026)
+
+### Highlights
+- **Random Variables:** Mapping real-world outcomes to numbers; discrete vs. continuous variables.
+- **Probability Distributions:** Reading bar-style PMFs vs. continuous PDF curves.
+- **Binomial Distribution:** Repeated trials, and why the same "bump" shape keeps showing up.
+- **The Normal Distribution:** The bell curve, symmetry, and why it's the universal translator for data.
+- **Z-scores & the Empirical Rule:** Standardizing values and the 68-95-99.7 rule for spread.
+
+### Resources
+- **Slide Deck:** [`15. Multivariate Statistics - Distribution/random-variables-slides.html`](15.%20Multivariate%20Statistics%20-%20Distribution/random-variables-slides.html)
+
+---
+
+<a name="day-16"></a>
+## 🗓️ Day 16: Inferential Statistics - Sampling, CLT & Voting Forecasts (12-Jul-2026)
+
+### Highlights
+- **Population vs. Sample:** Census vs. survey, and why we scoop samples instead of counting everyone.
+- **Central Limit Theorem (CLT):** Why the sampling distribution of the mean approaches a bell curve, demonstrated with a hands-on "CLT Laboratory."
+- **Margin of Error & Confidence Intervals:** Turning a single sample into a defensible range estimate.
+- **Case Study:** Forecasting vote share for a fictional election ("Aamwadi & the Lok Sabha") using sample-based estimation.
+
+### Resources
+- **Slide Deck:** [`16. Inferrential Statistics - Voting/Inferrential-Forecasting.html`](16.%20Inferrential%20Statistics%20-%20Voting/Inferrential-Forecasting.html)
+
+---
+
+<a name="day-17"></a>
+## 🗓️ Day 17: Machine Learning Foundations (18-Jul-2026)
+
+### Highlights
+- **What Is ML, Really?** Going from hard-coded rules to algorithms that learn patterns from data.
+- **The Big Three Paradigms:** Supervised, Unsupervised, and Reinforcement Learning, side by side.
+- **Supervised Learning:** Classification vs. regression — "you be the model" style walkthroughs.
+- **Unsupervised Learning:** Clustering and finding structure without labels — "you be the algorithm."
+- **Reinforcement Learning:** Reward-driven learning, illustrated with a mouse-in-a-maze / game-playing bot analogy.
+
+### Resources
+- **Slide Deck:** [`17. Machine Learning/ml-foundations-slides.html`](17.%20Machine%20Learning/ml-foundations-slides.html)
 
 ---
 
