@@ -5,7 +5,9 @@
     "title": "Test note",
     "body": "Hello <script>alert(1)</script> world",
     "createdAt": "2026-07-18T05:11:10.247Z",
-    "likes": [],
+    "likes": [
+      "anon-test-1"
+    ],
     "comments": []
   }
 ]
