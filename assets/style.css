@@ -156,6 +156,14 @@ a { color: inherit; }
   margin-bottom: 36px;
 }
 
+.page-header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
 .page-header h1 {
   font-size: 1.9rem;
   margin: 0 0 8px;
@@ -165,6 +173,41 @@ a { color: inherit; }
   color: var(--text-dim);
   margin: 0;
   max-width: 640px;
+}
+
+.github-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.gh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  border-radius: 8px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  color: var(--text);
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: border-color 0.12s ease, color 0.12s ease;
+}
+
+.gh-btn svg {
+  flex-shrink: 0;
+}
+
+.gh-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.gh-btn-star:hover {
+  border-color: #e3b341;
+  color: #e3b341;
 }
 
 .stats-row {
