@@ -8,6 +8,13 @@
     "likes": [
       "anon-3d737v2lmrpx05gz"
     ],
-    "comments": []
+    "comments": [
+      {
+        "id": "mrpx06jy8t8zo7",
+        "author": "e2eReplier",
+        "body": "This is a reply <script>alert(1)</script>",
+        "createdAt": "2026-07-18T05:17:03.406Z"
+      }
+    ]
   }
 ]
