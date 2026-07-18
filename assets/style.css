@@ -607,6 +607,86 @@ a { color: inherit; }
 
 .feed-status a:hover { text-decoration: underline; }
 
+/* Note cards */
+.note-card {
+  display: flex;
+  gap: 14px;
+  padding: 18px 20px;
+  border-radius: var(--radius);
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  text-decoration: none;
+  color: var(--text);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+}
+
+.note-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
+  border-color: var(--accent);
+}
+
+.note-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--bg-elev-2);
+}
+
+.note-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.note-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.note-author {
+  font-weight: 700;
+  font-size: 0.88rem;
+  color: var(--text);
+}
+
+.note-date {
+  font-size: 0.76rem;
+  color: var(--text-dim);
+}
+
+.note-title {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.note-preview {
+  font-size: 0.84rem;
+  color: var(--text-dim);
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.note-stats {
+  display: flex;
+  gap: 14px;
+  margin-top: 4px;
+  font-size: 0.78rem;
+  color: var(--text-dim);
+}
+
+.note-stats .is-liked-count {
+  color: #e3b341;
+  font-weight: 600;
+}
+
 @media (max-width: 860px) {
   .layout { grid-template-columns: 1fr; }
   .sidebar {
