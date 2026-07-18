@@ -2,6 +2,15 @@
   const REPO = "Laxminarayen/InceptezGenAI-Batch26";
   const API_ROOT = `https://api.github.com/repos/${REPO}`;
   const LIKE_KEY = `gh-liked-${REPO}`;
+  const INSTRUCTOR_LOGIN = "laxminarayen";
+
+  function isInstructor(login) {
+    return typeof login === "string" && login.toLowerCase() === INSTRUCTOR_LOGIN;
+  }
+
+  function instructorBadge(login) {
+    return isInstructor(login) ? '<span class="instructor-badge">🎓 Instructor</span>' : "";
+  }
 
   function formatCount(n) {
     if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, "") + "k";
@@ -81,12 +90,13 @@
       month: "short",
       year: "numeric",
     });
+    const author = issue.user && issue.user.login;
     return `
       <a class="issue-card" href="${issue.html_url}" target="_blank" rel="noopener">
         <span class="issue-state ${isOpen ? "is-open" : "is-closed"}">${isOpen ? "Open" : "Answered"}</span>
         <span class="issue-body">
           <span class="issue-title">${escapeHtml(issue.title)}</span>
-          <span class="issue-meta">#${issue.number} opened ${date} by ${escapeHtml(issue.user && issue.user.login)}</span>
+          <span class="issue-meta">#${issue.number} opened ${date} by ${escapeHtml(author)} ${instructorBadge(author)}</span>
         </span>
         <span class="issue-comments">💬 ${issue.comments}</span>
       </a>`;
@@ -119,6 +129,7 @@
         <span class="note-body">
           <span class="note-header">
             <span class="note-author">@${escapeHtml(author)}</span>
+            ${instructorBadge(author)}
             <span class="note-date">${date}</span>
           </span>
           <span class="note-title">${escapeHtml(issue.title)}</span>
@@ -129,6 +140,80 @@
           </span>
         </span>
       </a>`;
+  }
+
+  // ---- Articles feed ----
+  function renderArticleCard(issue) {
+    const date = new Date(issue.created_at).toLocaleDateString(undefined, {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+    const author = (issue.user && issue.user.login) || "unknown";
+    const avatar = (issue.user && issue.user.avatar_url) || "";
+    const claps = issue.reactions ? issue.reactions["+1"] : 0;
+    const preview = previewText(issue.body, 240);
+    const clapped = localStorage.getItem(`gh-clapped-${issue.number}`) === "1";
+    return `
+      <article class="article-card">
+        <header class="article-header">
+          <img class="note-avatar" src="${avatar}" alt="" loading="lazy" width="38" height="38" />
+          <span class="note-header">
+            <span class="note-author">@${escapeHtml(author)}</span>
+            ${instructorBadge(author)}
+            <span class="note-date">${date}</span>
+          </span>
+        </header>
+        <a class="article-title" href="${issue.html_url}" target="_blank" rel="noopener">${escapeHtml(issue.title)}</a>
+        ${preview ? `<p class="note-preview">${escapeHtml(preview)}</p>` : ""}
+        <footer class="article-actions">
+          <button type="button" class="clap-btn ${clapped ? "is-clapped" : ""}" data-issue="${issue.number}" data-url="${issue.html_url}" aria-pressed="${clapped}">
+            👏 <span class="clap-count">${claps}</span>
+          </button>
+          <button type="button" class="share-btn" data-url="${issue.html_url}" data-title="${escapeHtml(issue.title)}">
+            🔗 Share
+          </button>
+          <a class="comment-link" href="${issue.html_url}" target="_blank" rel="noopener">💬 ${issue.comments} Comments</a>
+        </footer>
+      </article>`;
+  }
+
+  function wireArticleActions(container) {
+    container.querySelectorAll(".clap-btn").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const key = `gh-clapped-${btn.dataset.issue}`;
+        const nowClapped = !btn.classList.contains("is-clapped");
+        btn.classList.toggle("is-clapped", nowClapped);
+        btn.setAttribute("aria-pressed", String(nowClapped));
+        localStorage.setItem(key, nowClapped ? "1" : "0");
+        window.open(btn.dataset.url, "_blank", "noopener");
+      });
+    });
+
+    container.querySelectorAll(".share-btn").forEach((btn) => {
+      btn.addEventListener("click", async () => {
+        const url = btn.dataset.url;
+        const title = btn.dataset.title;
+        if (navigator.share) {
+          try {
+            await navigator.share({ title, url });
+            return;
+          } catch (e) {
+            return; // user cancelled the native share sheet
+          }
+        }
+        try {
+          await navigator.clipboard.writeText(url);
+          const original = btn.textContent;
+          btn.textContent = "✅ Copied!";
+          setTimeout(() => {
+            btn.textContent = original;
+          }, 1500);
+        } catch (e) {
+          window.open(url, "_blank", "noopener");
+        }
+      });
+    });
   }
 
   async function loadFeed(container) {
@@ -166,8 +251,10 @@
         return;
       }
 
-      const renderer = feedType === "notes" ? renderNoteCard : renderIssueCard;
+      const renderer =
+        feedType === "notes" ? renderNoteCard : feedType === "articles" ? renderArticleCard : renderIssueCard;
       container.innerHTML = items.map(renderer).join("");
+      if (feedType === "articles") wireArticleActions(container);
     } catch (e) {
       container.innerHTML = `<div class="feed-status">Couldn't load live threads right now (GitHub's public API is rate-limited). <a href="https://github.com/${REPO}/issues" target="_blank" rel="noopener">View directly on GitHub →</a></div>`;
     }

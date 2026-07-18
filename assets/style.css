@@ -687,6 +687,103 @@ a { color: inherit; }
   font-weight: 600;
 }
 
+.instructor-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: var(--ml-soft);
+  color: var(--ml);
+  white-space: nowrap;
+}
+
+/* Article cards */
+.article-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 22px;
+  border-radius: var(--radius);
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  transition: box-shadow 0.12s ease, border-color 0.12s ease;
+}
+
+.article-card:hover {
+  box-shadow: var(--shadow);
+  border-color: var(--accent);
+}
+
+.article-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.article-title {
+  display: block;
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.article-title:hover { color: var(--accent); }
+
+.article-card .note-preview {
+  -webkit-line-clamp: 3;
+}
+
+.article-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 6px;
+}
+
+.clap-btn,
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--bg-elev-2);
+  border: 1px solid var(--border);
+  color: var(--text-dim);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  transition: border-color 0.12s ease, color 0.12s ease, transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.clap-btn:hover,
+.share-btn:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.clap-btn.is-clapped {
+  border-color: #e3b341;
+  color: #e3b341;
+  background: rgba(227, 179, 65, 0.12);
+}
+
+.clap-btn:active { transform: scale(1.15); }
+
+.comment-link {
+  margin-left: auto;
+  font-size: 0.8rem;
+  color: var(--text-dim);
+  text-decoration: none;
+}
+
+.comment-link:hover { color: var(--accent); }
+
 @media (max-width: 860px) {
   .layout { grid-template-columns: 1fr; }
   .sidebar {
