@@ -20,6 +20,12 @@
         "author": "e2eReplier",
         "body": "This is a reply <script>alert(1)</script>",
         "createdAt": "2026-07-18T05:18:10.000Z"
+      },
+      {
+        "id": "mrpx8fm91u41a7",
+        "author": "xssTester",
+        "body": "<img src=x onerror=alert(1)>",
+        "createdAt": "2026-07-18T05:23:28.401Z"
       }
     ]
   }
