@@ -73,29 +73,40 @@
       <h1>Articles</h1>
       <p>
         Long-form explanations, walkthroughs, and deep dives written by students, for students. Pick any
-        class, explain it your way, and publish under your GitHub name. Readers can 👏 clap, share, and
-        comment.
+        class, explain it your way, and publish it right here. Readers can 👏 clap, share, and comment.
       </p>
     </header>
 
-    <div class="forum-cta">
-      <div>
-        <h2>Write up an explanation</h2>
-        <p>Opens a pre-filled GitHub issue tagged <code>article</code> — sign in with your GitHub account to publish. Your GitHub username becomes the byline.</p>
+    <div class="forum-app" id="forum-app" data-collection="articles" data-reaction-emoji="👏" data-answer-noun="Comments" data-empty-text="No articles published yet — be the first!">
+      <div class="post-form-wrap">
+        <h2>Write an article</h2>
+        <form id="post-form" class="post-form">
+          <div class="form-row">
+            <input type="text" name="author" placeholder="Your name (e.g. your GitHub username)" maxlength="60" required />
+          </div>
+          <div class="form-row">
+            <input type="text" name="title" placeholder="Title (e.g. which class/topic this is about)" maxlength="200" required />
+          </div>
+          <div class="form-row">
+            <textarea name="body" placeholder="Write as much as you like — explain it your way." maxlength="8000" rows="6" required></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">✍️ Publish Article</button>
+            <span class="form-status"></span>
+          </div>
+        </form>
       </div>
-      <a class="btn btn-primary" href="https://github.com/Laxminarayen/InceptezGenAI-Batch26/issues/new?title=%5BArticle%5D+&body=%2A%2AWhich+class%2Ftopic+is+this+about%3F%2A%2A%0A%28e.g.+17.+Machine+Learning%29%0A%0A%2A%2AYour+explanation%3A%2A%2A%0A%28Write+as+much+as+you+like+%E2%80%94+code+blocks%2C+images%2C+and+links+are+all+supported.%29%0A%0A&labels=article" target="_blank" rel="noopener">
-        ✍️ Write an Article
-      </a>
+
+      <div class="forum-feed">
+        <div class="feed-status">Loading articles…</div>
+      </div>
     </div>
 
-    <div class="forum-feed" id="articles-feed" data-issue-feed data-feed-type="articles" data-label="article" data-empty-text="No articles published yet — be the first!">
-      <div class="feed-status">Loading articles…</div>
-    </div>
-
-    <p class="footer-note">👏 to clap, 🔗 to share the link, or open an article to leave a comment on GitHub.</p>
+    <p class="footer-note">👏 to clap, 🔗 to share the link, or open comments to reply.</p>
   </main>
 </div>
 
 <script src="assets/forum.js"></script>
+<script src="assets/collections.js"></script>
 </body>
 </html>

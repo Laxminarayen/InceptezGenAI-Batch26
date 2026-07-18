@@ -784,6 +784,137 @@ a { color: inherit; }
 
 .comment-link:hover { color: var(--accent); }
 
+/* In-page post form */
+.post-form-wrap {
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  margin-bottom: 28px;
+}
+
+.post-form-wrap h2 {
+  margin: 0 0 14px;
+  font-size: 1.1rem;
+}
+
+.post-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.form-row input,
+.form-row textarea,
+.comment-input {
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev-2);
+  color: var(--text);
+  font-family: inherit;
+  font-size: 0.88rem;
+  resize: vertical;
+}
+
+.form-row input:focus,
+.form-row textarea:focus,
+.comment-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.form-status {
+  font-size: 0.82rem;
+  color: var(--text-dim);
+}
+
+.form-status.is-success { color: var(--open); }
+.form-status.is-error { color: #ff6b6b; }
+
+/* Post cards (notes / articles / questions) */
+.post-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 22px;
+  border-radius: var(--radius);
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  margin-bottom: 14px;
+}
+
+.post-title {
+  margin: 0;
+  font-size: 1.02rem;
+  font-weight: 700;
+}
+
+.post-body {
+  margin: 0;
+  -webkit-line-clamp: 4;
+}
+
+.comment-section {
+  margin-top: 12px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.comment-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.comment-item {
+  font-size: 0.85rem;
+}
+
+.comment-author {
+  font-weight: 700;
+}
+
+.comment-date {
+  color: var(--text-dim);
+  font-size: 0.75rem;
+  margin-left: 6px;
+}
+
+.comment-body {
+  margin: 2px 0 0;
+  color: var(--text);
+}
+
+.comment-empty {
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  font-style: italic;
+}
+
+.comment-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.comment-form .btn-secondary {
+  align-self: flex-start;
+}
+
 @media (max-width: 860px) {
   .layout { grid-template-columns: 1fr; }
   .sidebar {
