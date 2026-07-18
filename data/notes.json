@@ -8,6 +8,13 @@
     "likes": [
       "anon-test-1"
     ],
-    "comments": []
+    "comments": [
+      {
+        "id": "mrpwsnvd1s9zgp",
+        "author": "replier",
+        "body": "Nice note!",
+        "createdAt": "2026-07-18T05:11:12.601Z"
+      }
+    ]
   }
 ]
