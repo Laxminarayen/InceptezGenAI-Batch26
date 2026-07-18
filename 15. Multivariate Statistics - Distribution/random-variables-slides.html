@@ -1,0 +1,1863 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Mapping Reality to Math — Random Variables</title>
+<style>
+  :root{
+    --paper: #f5f1e6;
+    --ink: #14161b;
+    --ink-soft: #55565f;
+    --ink-faint: #85868f;
+    --rule: rgba(20,22,27,0.14);
+    --grid-dot: rgba(20,22,27,0.10);
+    --amber: #b96c17;
+    --amber-ink: #7a4a10;
+    --amber-soft: rgba(185,108,23,0.13);
+    --teal: #1d7168;
+    --teal-soft: rgba(29,113,104,0.13);
+    --card: rgba(20,22,27,0.035);
+    --card-line: rgba(20,22,27,0.10);
+    --shadow: 0 1px 2px rgba(20,22,27,0.06);
+    --focus: #2f6fb3;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper: #15171c; --ink: #f1ede1; --ink-soft: #c7c4b8; --ink-faint: #8d8a80;
+      --rule: rgba(241,237,225,0.14); --grid-dot: rgba(241,237,225,0.09);
+      --amber: #e2a03f; --amber-ink: #f3c273; --amber-soft: rgba(226,160,63,0.15);
+      --teal: #52c9ba; --teal-soft: rgba(82,201,186,0.14);
+      --card: rgba(241,237,225,0.04); --card-line: rgba(241,237,225,0.12);
+      --shadow: 0 1px 2px rgba(0,0,0,0.3); --focus: #6fb3ff;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper: #15171c; --ink: #f1ede1; --ink-soft: #c7c4b8; --ink-faint: #8d8a80;
+    --rule: rgba(241,237,225,0.14); --grid-dot: rgba(241,237,225,0.09);
+    --amber: #e2a03f; --amber-ink: #f3c273; --amber-soft: rgba(226,160,63,0.15);
+    --teal: #52c9ba; --teal-soft: rgba(82,201,186,0.14);
+    --card: rgba(241,237,225,0.04); --card-line: rgba(241,237,225,0.12);
+    --shadow: 0 1px 2px rgba(0,0,0,0.3); --focus: #6fb3ff;
+  }
+  :root[data-theme="light"]{
+    --paper: #f5f1e6; --ink: #14161b; --ink-soft: #55565f; --ink-faint: #85868f;
+    --rule: rgba(20,22,27,0.14); --grid-dot: rgba(20,22,27,0.10);
+    --amber: #b96c17; --amber-ink: #7a4a10; --amber-soft: rgba(185,108,23,0.13);
+    --teal: #1d7168; --teal-soft: rgba(29,113,104,0.13);
+    --card: rgba(20,22,27,0.035); --card-line: rgba(20,22,27,0.10);
+    --shadow: 0 1px 2px rgba(20,22,27,0.06); --focus: #2f6fb3;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ height:100%; }
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    overflow:hidden;
+  }
+  .serif{ font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif; }
+  .mono{ font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-variant-numeric:tabular-nums; }
+
+  .deck{
+    position:relative; height:100vh; width:100vw;
+    background-image: radial-gradient(var(--grid-dot) 1px, transparent 1px);
+    background-size: 26px 26px;
+  }
+
+  .topbar{
+    position:absolute; top:0; left:0; right:0;
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 22px 40px 0;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:11px; letter-spacing:.12em; text-transform:uppercase;
+    color:var(--ink-faint); z-index:5;
+  }
+  .topbar .brand{ display:flex; align-items:center; gap:10px; }
+  .topbar .brand::before{
+    content:""; width:7px; height:7px; border-radius:50%;
+    background:var(--amber); box-shadow:0 0 0 3px var(--amber-soft);
+  }
+  .counter{ font-variant-numeric:tabular-nums; }
+  .counter b{ color:var(--ink-soft); font-weight:600; }
+
+  #slides{ position:relative; height:100%; width:100%; }
+
+  .slide{
+    position:absolute; inset:0;
+    display:flex; flex-direction:column;
+    padding: 76px 60px 88px;
+    opacity:0; transform: translateX(24px);
+    pointer-events:none;
+    transition: opacity .4s ease, transform .4s ease;
+  }
+  .slide.active{ opacity:1; transform:translateX(0); pointer-events:auto; }
+  @media (prefers-reduced-motion: reduce){ .slide{ transition:none; transform:none; } }
+
+  .eyebrow{
+    display:inline-flex; align-items:center; gap:10px;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--amber-ink); margin-bottom:10px;
+  }
+  .eyebrow::before{ content:""; width:22px; height:1px; background:var(--amber); }
+  .eyebrow.teal{ color:var(--teal); }
+  .eyebrow.teal::before{ background:var(--teal); }
+
+  .link-line{
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    font-style:italic; font-size:14.5px; color:var(--ink-faint);
+    margin-bottom:16px; max-width:52ch;
+  }
+
+  h1.headline{
+    font-size:clamp(28px, 3.3vw, 42px);
+    line-height:1.1; margin:0 0 18px; text-wrap:balance; max-width:16ch; font-weight:500;
+  }
+  .headline em{ font-style:italic; color:var(--amber-ink); }
+  .headline .t{ color:var(--teal); font-style:italic; }
+
+  .layout{
+    flex:1; display:grid;
+    grid-template-columns: minmax(280px, 400px) 1fr;
+    gap:44px; min-height:0;
+  }
+  @media (max-width: 900px){ .layout{ grid-template-columns:1fr; overflow-y:auto; } }
+
+  .prose{ min-width:0; }
+  .prose p{ font-size:15.5px; line-height:1.6; color:var(--ink-soft); max-width:44ch; margin:0 0 14px; }
+  .prose p b{ color:var(--ink); font-weight:600; }
+  .prose ul{ margin:0 0 14px; padding-left:20px; }
+  .prose li{ font-size:15.5px; line-height:1.55; color:var(--ink-soft); margin-bottom:10px; max-width:42ch; }
+  .prose li b{ color:var(--ink); }
+  .prose .formula{
+    display:inline-block; background:var(--card); border:1px solid var(--card-line);
+    border-radius:6px; padding:2px 8px; font-size:14px; color:var(--ink);
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+  }
+  .prose .note{
+    margin-top:18px; padding:13px 16px; border-left:2px solid var(--teal);
+    background:var(--teal-soft); font-size:13.5px; line-height:1.55; color:var(--ink-soft);
+    max-width:42ch; border-radius:0 6px 6px 0;
+  }
+
+  .stage{
+    min-width:0; min-height:0; display:flex; flex-direction:column;
+    background:var(--card); border:1px solid var(--card-line); border-radius:14px;
+    box-shadow:var(--shadow); padding:24px 28px; overflow:auto;
+  }
+  .stage-label{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:10.5px; letter-spacing:.1em; text-transform:uppercase;
+    color:var(--ink-faint); margin-bottom:14px;
+  }
+  .hr{ height:1px; background:var(--card-line); margin:20px 0; border:none; }
+
+  .btn{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12px; letter-spacing:.03em;
+    background:var(--ink); color:var(--paper);
+    border:none; border-radius:7px; padding:9px 15px; cursor:pointer;
+  }
+  .btn:hover{ opacity:.85; }
+  .btn.ghost{ background:transparent; color:var(--ink-soft); border:1px solid var(--card-line); }
+  .btn:disabled{ opacity:.4; cursor:default; }
+  .btn:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
+
+  input[type=range]{ accent-color:var(--amber); }
+
+  /* ---------- divider slides ---------- */
+  .slide.divider{ align-items:center; justify-content:center; text-align:center; }
+  .divider-numeral{
+    position:absolute; top:50%; left:50%; transform:translate(-50%,-58%);
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    font-size:min(46vw,520px); line-height:1; color:var(--ink);
+    opacity:.045; user-select:none; pointer-events:none; z-index:0;
+  }
+  .divider-content{
+    position:relative; z-index:1; max-width:640px;
+    margin:0 auto; display:flex; flex-direction:column; align-items:center;
+  }
+  .divider-content .eyebrow{ justify-content:center; }
+  .divider-content .eyebrow::before{ display:none; }
+  .divider-content h1{
+    font-size:clamp(34px,5vw,64px); margin:6px 0 22px; text-wrap:balance;
+    max-width:none; width:100%; text-align:center;
+  }
+  .divider-content .link{
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    font-style:italic; font-size:17px; line-height:1.6; color:var(--ink-soft);
+    max-width:52ch; margin:0 auto;
+  }
+
+  /* ---------- 1.1 translator ---------- */
+  .translator-row{ display:flex; align-items:center; justify-content:center; gap:22px; padding:18px 0 8px; }
+  .event-box{
+    display:flex; flex-direction:column; align-items:center; gap:8px;
+    width:110px;
+  }
+  .event-circle{
+    width:64px; height:64px; border-radius:50%;
+    border:1.5px solid var(--ink-faint);
+    display:flex; align-items:center; justify-content:center;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12px; color:var(--ink-soft);
+    background:var(--paper);
+    transition: border-color .2s ease, background .2s ease;
+  }
+  .event-circle.clicked{ border-color:var(--amber); background:var(--amber-soft); color:var(--amber-ink); }
+  .event-circle.nope{ border-color:var(--card-line); }
+  .event-caption{ font-size:11.5px; color:var(--ink-faint); text-align:center; }
+  .translator-fn{
+    font-family:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif;
+    font-style:italic; font-size:15px; color:var(--ink-soft); white-space:nowrap;
+  }
+  .number-box{
+    width:56px; height:56px; border-radius:10px;
+    border:1.5px solid var(--card-line);
+    display:flex; align-items:center; justify-content:center;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:22px; color:var(--ink-faint);
+  }
+  .number-box.one{ border-color:var(--amber); color:var(--amber-ink); background:var(--amber-soft); }
+  .number-box.zero{ color:var(--ink-soft); }
+
+  .tape-label{ font-size:11.5px; color:var(--ink-faint); margin:18px 0 8px; }
+  .tape{ display:flex; flex-wrap:wrap; gap:5px; min-height:26px; }
+  .tape-chip{
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+    font-size:12px; width:22px; height:22px; border-radius:4px;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .tape-chip.one{ background:var(--amber-soft); color:var(--amber-ink); }
+  .tape-chip.zero{ background:var(--card); color:var(--ink-faint); }
+
+  .rate-readout{ margin-top:16px; font-size:13.5px; color:var(--ink-soft); }
+  .rate-readout .mono{ color:var(--ink); font-weight:600; }
+
+  /* ---------- discrete vs continuous ---------- */
+  .dc-grid{ display:flex; flex-direction:column; gap:26px; }
+  .dc-panel-label{ font-size:12.5px; font-weight:600; color:var(--ink); margin-bottom:4px; }
+  .dc-panel-sub{ font-size:12.5px; color:var(--ink-faint); margin-bottom:12px; }
+
+  /* ---------- pmf / pdf ---------- */
+  .pp-grid{ display:flex; flex-direction:column; gap:24px; }
+  .pp-panel-label{ font-size:12.5px; font-weight:600; color:var(--ink); margin-bottom:12px; }
+  .pmf-bars{ display:flex; align-items:flex-end; gap:8px; height:110px; }
+  .pmf-col{ flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; height:100%; justify-content:flex-end; cursor:pointer; }
+  .pmf-bar{ width:100%; max-width:30px; background:var(--teal); border-radius:3px 3px 0 0; transition: height .2s ease, background .2s ease; }
+  .pmf-col.selected .pmf-bar{ background:var(--amber); }
+  .pmf-x{ font-size:11px; color:var(--ink-faint); }
+  .pmf-readout{ font-size:13px; color:var(--ink-soft); margin-top:10px; min-height:18px; }
+  .pmf-readout .mono{ color:var(--ink); font-weight:600; }
+
+  .pdf-chart{ width:100%; height:150px; }
+  .pdf-controls{ display:flex; align-items:center; gap:10px; margin-top:8px; }
+  .pdf-controls input{ flex:1; }
+  .pdf-readout{ font-size:13px; color:var(--ink-soft); margin-top:8px; }
+  .pdf-readout .mono{ color:var(--teal); font-weight:600; }
+
+  /* ---------- galton board ---------- */
+  .galton{ position:relative; height:190px; border-bottom:1px solid var(--card-line); margin-bottom:4px; }
+  .galton-line{ position:absolute; left:0; right:0; height:1px; background:var(--rule); }
+  .ball{
+    position:absolute; width:10px; height:10px; border-radius:50%;
+    background:var(--amber); top:0; left:50%; transform:translateX(-50%);
+    transition: left .16s ease, top .16s ease;
+  }
+  .bins{ display:flex; align-items:flex-end; gap:5px; height:110px; margin-top:6px; }
+  .bin-col{ flex:1; display:flex; flex-direction:column; align-items:center; gap:5px; height:100%; justify-content:flex-end; }
+  .bin-bar{ width:100%; max-width:26px; background:var(--teal); border-radius:2px 2px 0 0; min-height:1px; transition:height .2s ease; }
+  .bin-n{ font-size:10px; color:var(--ink-faint); }
+  .bins.small{ height:78px; margin-top:2px; }
+  .density-chart{ width:100%; height:78px; margin-top:2px; display:block; }
+  .axis-ends{ display:flex; justify-content:space-between; font-size:10.5px; color:var(--ink-faint); margin-top:6px; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+  .galton-controls{ display:flex; gap:10px; margin-top:16px; align-items:center; flex-wrap:wrap; }
+  .galton-count{ font-size:12.5px; color:var(--ink-faint); margin-left:auto; }
+
+  /* ---------- anatomy ---------- */
+  .gauss-chart{ width:100%; height:170px; }
+  .gauss-controls{ display:flex; flex-direction:column; gap:10px; margin-top:12px; }
+  .gauss-row{ display:flex; align-items:center; gap:12px; }
+  .gauss-row label{ width:90px; font-size:12.5px; color:var(--ink-soft); font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+  .gauss-row input{ flex:1; }
+  .gauss-row .val{ width:52px; text-align:right; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; font-size:13px; color:var(--ink); }
+  .gauss-note{ margin-top:14px; font-size:12.5px; color:var(--ink-faint); }
+
+  /* ---------- probabilistic vs non-probabilistic / normalization ---------- */
+  .stat-row{ display:flex; gap:8px; margin-top:10px; }
+  .stat-row > div{ flex:1; text-align:center; font-size:11px; color:var(--ink-faint); }
+  .mini-chart{ width:100%; height:90px; display:block; margin-top:12px; }
+  .mini-chart.short{ height:50px; }
+  .mini-chart.tall{ height:150px; }
+  .legend{ display:flex; gap:18px; margin-top:8px; font-size:12px; color:var(--ink-soft); }
+  .legend .dot{ display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:6px; vertical-align:middle; }
+  .legend .amber-dot{ background:var(--amber); }
+  .legend .teal-dot{ background:var(--teal); }
+  .raw-readout{ font-size:13px; color:var(--ink-soft); margin-top:4px; }
+  .raw-readout .mono{ color:var(--ink); font-weight:600; }
+
+  /* ---------- nav ---------- */
+  .nav{ position:absolute; bottom:24px; left:0; right:0; display:flex; align-items:center; justify-content:center; gap:16px; z-index:5; }
+  .nav button{
+    all:unset; cursor:pointer; width:32px; height:32px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center; color:var(--ink-soft);
+    border:1px solid var(--card-line);
+  }
+  .nav button:hover{ background:var(--card); }
+  .nav button:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
+  .nav button:disabled{ opacity:.3; cursor:default; }
+  .dots{ display:flex; gap:8px; }
+  .dot{ all:unset; cursor:pointer; width:7px; height:7px; border-radius:50%; background:var(--card-line); }
+  .dot.active{ background:var(--amber); width:20px; border-radius:4px; }
+  .dot:focus-visible{ outline:2px solid var(--focus); outline-offset:2px; }
+</style>
+</head>
+<body>
+<div class="deck">
+  <div class="topbar">
+    <span class="brand">mapping reality to math</span>
+    <span class="counter"><b id="curNum">1</b> / <span id="totalNum">18</span></span>
+  </div>
+
+  <main id="slides">
+
+    <!-- 0: divider PART 1 -->
+    <section class="slide divider active" data-index="0">
+      <div class="divider-numeral serif">I</div>
+      <div class="divider-content">
+        <div class="eyebrow">Part 1</div>
+        <h1 class="headline serif">Mapping Reality to Math</h1>
+        <p class="link">We already know how to describe data once we have it — mean, median. But new data hasn't happened yet. How do we deal with not knowing, ahead of time?</p>
+      </div>
+    </section>
+
+    <!-- 1: 1.1 translator -->
+    <section class="slide" data-index="1">
+      <div class="eyebrow">1.1 — The Random Variable</div>
+      <h1 class="headline serif">Not solve-for-<em>x</em>. A <em>translator</em>.</h1>
+      <div class="layout">
+        <div class="prose">
+          <p>A random variable isn't algebra's <span class="formula">x</span> — there's nothing to solve for. It's a rule that turns something that just <em>happens</em> into a number you can count.</p>
+          <p>Reach into a jar of candies without looking. Did you grab your favorite flavor? That's not a number — it's luck. The rule <span class="formula">X</span> turns it into one: <span class="formula">X(favorite) = 1</span>, <span class="formula">X(not favorite) = 0</span>.</p>
+          <p>The luck is in which candy your hand finds. The rule itself never changes — it always turns "favorite" into 1.</p>
+          <div class="note">Try it: reach into the jar a few times. Each reach is a surprise — but the row of 1s and 0s it leaves behind is exactly what we do math with.</div>
+        </div>
+        <div class="stage">
+          <div class="stage-label">turn a jar-reach into a number</div>
+          <div class="translator-row">
+            <div class="event-box">
+              <div class="event-circle" id="eventCircle">?</div>
+              <div class="event-caption">reach #<span id="custN" class="mono">0</span></div>
+            </div>
+            <div class="translator-fn">X</div>
+            <div class="number-box" id="numberBox">–</div>
+          </div>
+          <div style="display:flex; justify-content:center;">
+            <button class="btn" id="nextCustomerBtn">reach into the jar</button>
+          </div>
+          <hr class="hr"/>
+          <div class="tape-label">the translated tape · X<sub>1</sub>, X<sub>2</sub>, X<sub>3</sub> …</div>
+          <div class="tape" id="tape"></div>
+          <div class="rate-readout">how often you got your favorite so far: <span class="mono" id="rateVal">–</span> <span style="color:var(--ink-faint);">— the average of the 0s and 1s on the tape</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2: 1.2 rv becomes a distribution -->
+    <section class="slide" data-index="2">
+      <div class="eyebrow">1.2 — From One to Many</div>
+      <div class="link-line">↳ One reach gave us one number. What happens once we do it a thousand times?</div>
+      <h1 class="headline serif">One try is a number. Lots of tries make a <span class="t">shape</span>.</h1>
+      <div class="layout">
+        <div class="prose">
+          <p>Every kid who grabs a handful from the candy jar produces one number — say <span class="formula">X</span> = candies in the handful. One kid, one number: <span class="formula">2</span>, or <span class="formula">0</span>, or <span class="formula">5</span>.</p>
+          <p>Now do that with a thousand handfuls. The exact numbers stop being the point — what shows up is <b>how often each amount happens</b>. That shape is called a <b>distribution</b>.</p>
+          <p>That's the big idea: a random variable is the rule. A distribution is what the rule looks like after it happens a thousand times.</p>
+          <div class="note" id="rvNote">Grab a handful a few times, then jump to 500 — watch the bars stop jittering and settle into a shape.</div>
+        </div>
+        <div class="stage">
+          <div class="stage-label">candies in each handful</div>
+          <div class="bins" id="rvHist"></div>
+          <div class="galton-controls">
+            <button class="btn" id="collectOneBtn">grab a handful</button>
+            <button class="btn ghost" id="collectManyBtn">grab 500</button>
+            <button class="btn ghost" id="resetRvBtn">reset</button>
+            <span class="galton-count mono">handfuls: <span id="rvCount">0</span></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3: 1.3 discrete vs continuous, same kids -->
+    <section class="slide" data-index="3">
+      <div class="eyebrow">1.3 — Discrete vs. Continuous</div>
+      <div class="link-line">↳ Since a random variable makes numbers — what kind of numbers can they be?</div>
+      <h1 class="headline serif">Things you <em>count</em> vs. things you <span class="t">measure</span>.</h1>
+      <div class="layout">
+        <div class="prose">
+          <p><b>Discrete</b> means you count it, one at a time. Candies in your hand: 0, 1, 2, 3 … There's no such thing as two and a half candies.</p>
+          <p><b>Continuous</b> means you measure it, and it can be any amount in between. How tall you are. Between 100 cm and 100.1 cm tall, there are endless heights in between.</p>
+          <p>Same kids, measured two different ways — one we count, one we measure with a ruler.</p>
+          <div class="note">One button gets data for both — a candy count on the left, a height on the right, from the very same kid.</div>
+        </div>
+        <div class="stage">
+          <div class="dc-grid">
+            <div>
+              <div class="dc-panel-label">discrete — candies in hand</div>
+              <div class="dc-panel-sub">counted, one at a time</div>
+              <div class="bins small" id="discreteHist"></div>
+            </div>
+            <hr class="hr"/>
+            <div>
+              <div class="dc-panel-label">continuous — how tall (cm)</div>
+              <div class="dc-panel-sub">measured with a ruler — a smooth curve, not separate bars</div>
+              <svg class="density-chart" id="continuousChart" viewBox="0 0 300 78" preserveAspectRatio="none"></svg>
+              <div class="axis-ends"><span>90 cm</span><span>130 cm</span></div>
+            </div>
+          </div>
+          <div class="galton-controls">
+            <button class="btn" id="collectOneBtn2">measure a kid</button>
+            <button class="btn ghost" id="collectManyBtn2">measure 500</button>
+            <button class="btn ghost" id="resetDcBtn">reset</button>
+            <span class="galton-count mono">measured: <span id="dcCount">0</span></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4: 1.4 pmf vs pdf -->
+    <section class="slide" data-index="4">
+      <div class="eyebrow">1.4 — PMF vs. PDF</div>
+      <div class="link-line">↳ Now that we've measured both kinds — how do we read the chance of each value?</div>
+      <h1 class="headline serif">Bars you can read. Curves you must <span class="t">measure</span>.</h1>
+      <div class="layout">
+        <div class="prose">
+          <p><b>PMF</b> — for candies, something you count. It's the same bar chart from before. The bar's height <em>is</em> the chance: <span class="formula">P(candies = 2)</span> — just read the bar.</p>
+          <p><b>PDF</b> — for height, something you measure. <span class="formula">P(height = 110.000…cm)</span> is exactly <b>zero</b> — there are endless possible heights, so no single one gets any of the chance. We can only ask about a range: the area under the curve between two heights.</p>
+          <div class="note">Click a bar on the left. Drag the two handles on the right toward each other and watch the shaded area — and the chance — shrink to nothing.</div>
+        </div>
+        <div class="stage">
+          <div class="pp-grid">
+            <div>
+              <div class="pp-panel-label">PMF — P(candies = k)</div>
+              <div class="pmf-bars" id="pmfBars"></div>
+              <div class="pmf-readout" id="pmfReadout">click a bar to read its exact chance</div>
+            </div>
+            <hr class="hr"/>
+            <div>
+              <div class="pp-panel-label">PDF — P(a ≤ height ≤ b)</div>
+              <svg class="pdf-chart" id="pdfChart" viewBox="0 0 460 150" preserveAspectRatio="none"></svg>
+              <div class="pdf-controls">
+                <span class="mono" style="font-size:11px; color:var(--ink-faint);">a</span>
+                <input type="range" id="pdfA" min="90" max="130" step="0.1" value="100"/>
+                <span class="mono" style="font-size:11px; color:var(--ink-faint);">b</span>
+                <input type="range" id="pdfB" min="90" max="130" step="0.1" value="115"/>
+              </div>
+              <div class="pdf-readout">P(<span class="mono" id="pdfAVal">100.0</span> ≤ X ≤ <span class="mono" id="pdfBVal">115.0</span> cm) ≈ <span class="mono" id="pdfArea">–</span> <span style="color:var(--ink-faint);">— drag them together to see this hit zero</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5: divider PART 2 -->
+    <section class="slide divider" data-index="5">
+      <div class="divider-numeral serif">II</div>
+      <div class="divider-content">
+        <div class="eyebrow teal">Part 2</div>
+        <h1 class="headline serif">The Shape of the <span class="t">Universe</span></h1>
+        <p class="link">We've watched randomness turn into a shape. Now: is every shape really about chance? And once two things are shaped differently, how do we ever compare them fairly?</p>
+      </div>
+    </section>
+
+    <!-- 6: 2.1 probabilistic vs non-probabilistic -->
+    <section class="slide" data-index="6">
+      <div class="eyebrow teal">2.1 — Two Kinds of Shapes</div>
+      <h1 class="headline serif">Is it a <em>fact</em>, or a <span class="t">guess</span>?</h1>
+      <div class="layout">
+        <div class="prose">
+          <p>Look in a cookie jar with your eyes <b>open</b>. You can just count what's there: 12 chocolate chip, 8 oatmeal. That's a fact — nobody's guessing anything.</p>
+          <p>Now close your eyes and reach in. You don't know which one you'll pull out — but you can still say the <b>chance</b>: 12 out of 20 are chocolate chip, so there's a 60% chance.</p>
+          <p><b>Non-probabilistic</b> = eyes open, just counting what's real. <b>Probabilistic</b> = eyes closed, guessing the odds of what comes next.</p>
+          <div class="note">Flip the switch below. Same jar, same cookies — only whether your eyes are open changes what the numbers mean.</div>
+        </div>
+        <div class="stage">
+          <div class="stage-label" id="jarStageLabel">eyes open — count what's really there</div>
+          <svg class="mini-chart" id="jarChart" viewBox="0 0 460 150" preserveAspectRatio="none"></svg>
+          <div class="galton-controls">
+            <button class="btn" id="factsModeBtn">eyes open (facts)</button>
+            <button class="btn ghost" id="chanceModeBtn">eyes closed (chances)</button>
+          </div>
+          <div class="pmf-readout" id="factsReadout">12 chocolate chip, 8 oatmeal — we counted every single one</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7: 2.2 the real difference -->
+    <section class="slide" data-index="7">
+      <div class="eyebrow teal">2.2 — What Actually Changes</div>
+      <div class="link-line">↳ So what's the actual rule that turns a head-count into a chance?</div>
+      <h1 class="headline serif">Everything has to add up to <span class="t">100%</span>.</h1>
+      <div class="layout">
+        <div class="prose">
+          <p>The fact-count in the jar can be anything at all — 3 cookies, 20, a thousand. There's no rule about what the total has to be.</p>
+          <p>But the chance of grabbing chocolate chip plus the chance of grabbing oatmeal must <b>always</b> add up to exactly 100%. There's no wiggle room — you're guaranteed to pull out one or the other.</p>
+          <p>The trick for turning counts into chances: divide each flavor's count by the total. That's the entire recipe.</p>
+          <div class="note">Click "add a cookie" and watch: the jar keeps filling up, but the two chances underneath always settle back to 100% combined.</div>
+        </div>
+        <div class="stage">
+          <div class="stage-label">drop cookies in one at a time</div>
+          <svg class="mini-chart" id="liveJarChart" viewBox="0 0 460 150" preserveAspectRatio="none"></svg>
+          <div class="galton-controls">
+            <button class="btn" id="addKidBtn">add a cookie</button>
+            <button class="btn ghost" id="resetLiveBtn">reset</button>
+          </div>
+          <div class="pmf-readout" id="liveReadout">counted so far: 0 cookies</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8: 2.3 normal distribution -->
+    <section class="slide" data-index="8">
+      <div class="eyebrow teal">2.3 — The Normal (Gaussian) Distribution</div>
+      <h1 class="headline serif">Why the same bump keeps showing up.</h1>
+      <div class="layout">
+        <div class="prose">
+          <p>Heights, how long it takes to tie your shoes, how many candies fit in a handful — totally different things, yet they all end up making the exact same bump shape.</p>
+          <p>Here's why: imagine flipping a coin 8 times. Move one step right for heads, one step left for tails. Most of the time you end up somewhere near the middle — there just aren't many ways to get 8 heads in a row, but tons of ways to get about half and half.</p>
+          <p>Watch it happen below. Nobody drew this bell shape by hand — it just falls out of plain dumb luck, every single time.</p>
+        </div>
+        <div class="stage">
+          <div class="stage-label">drop marbles through 8 random bounces</div>
+          <div class="galton" id="galton"></div>
+          <div class="bins" id="bins"></div>
+          <div class="galton-controls">
+            <button class="btn" id="dropOneBtn">drop one</button>
+            <button class="btn ghost" id="dropManyBtn">drop 200</button>
+            <button class="btn ghost" id="resetGaltonBtn">reset</button>
+            <span class="galton-count mono">dropped: <span id="dropCount">0</span></span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 9: 2.4 normalization -->
+    <section class="slide" data-index="9">
+      <div class="eyebrow teal">2.4 — Big Compared to What?</div>
+      <div class="link-line">↳ A mouse and a dog can't be measured on the same ruler. So what do we do instead?</div>
+      <h1 class="headline serif">A giant mouse vs. a big dog — who's more <span class="t">unusual</span>?</h1>
+      <div class="layout">
+        <div class="prose">
+          <p>A mouse is usually about 10 cm long. A dog is usually about 60 cm long. You can't compare those sizes directly — they're not even the same kind of thing.</p>
+          <p>So don't ask "how big are they." Ask "how big are they <b>for their own kind</b>?" A mouse that's way bigger than other mice is unusual — even if a totally average dog is still bigger than it in real life.</p>
+          <p>That's what <b>normalizing</b> means: instead of comparing raw sizes, compare how far each one sits from what's typical for its own group.</p>
+          <div class="note">Drag both sliders below. Watch which dot drifts further from its own little crowd — that one is the "bigger deal," even if it isn't the bigger number.</div>
+        </div>
+        <div class="stage">
+          <div class="stage-label">how big is your mouse and your dog?</div>
+          <div class="gauss-row">
+            <label>mouse (cm)</label>
+            <input type="range" id="mouseSize" min="4" max="20" step="0.5" value="16"/>
+            <span class="val" id="mouseVal">16</span>
+          </div>
+          <div class="gauss-row">
+            <label>dog (cm)</label>
+            <input type="range" id="dogSize" min="20" max="100" step="1" value="70"/>
+            <span class="val" id="dogVal">70</span>
+          </div>
+          <div class="stage-label" style="margin-top:16px;">typical mice and typical dogs, side by side</div>
+          <svg class="mini-chart" id="zChart" viewBox="0 0 460 100" preserveAspectRatio="none"></svg>
+          <div class="legend"><span><span class="dot amber-dot"></span>your mouse</span><span><span class="dot teal-dot"></span>your dog</span></div>
+          <div class="pdf-readout" id="zReadout">–</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10: 2.5 real life normalization -->
+    <section class="slide" data-index="10">
+      <div class="eyebrow teal">2.5 — You Already Do This: Sharing Pizza</div>
+      <div class="link-line">↳ This is the exact same trick as normalizing — just with dinner.</div>
+      <h1 class="headline serif">2 slices of 4, or 4 slices of <span class="t">8</span>?</h1>
+      <div class="layout">
+        <div class="prose">
+          <p>You eat 2 slices of a pizza that's cut into 4. Your friend eats 4 slices of a pizza cut into 8. Who ate more pizza?</p>
+          <p>You both ate exactly <b>half</b>: 2/4 = 50%, and 4/8 = 50%. Different slice counts, same fraction of the whole pizza.</p>
+          <p>Turning something into a percentage <em>is</em> normalizing it — rescaling it to the same 0-to-100 scale, no matter how many pieces you started with.</p>
+        </div>
+        <div class="stage">
+          <div class="stage-label">drag to eat slices from each pizza</div>
+          <svg class="mini-chart" id="pizzaChart" viewBox="0 0 460 140" preserveAspectRatio="none"></svg>
+          <div class="gauss-row">
+            <label>pizza A</label>
+            <input type="range" id="pizzaASlices" min="0" max="4" step="1" value="2"/>
+            <span class="val" id="pizzaAVal">2/4</span>
+          </div>
+          <div class="gauss-row">
+            <label>pizza B</label>
+            <input type="range" id="pizzaBSlices" min="0" max="8" step="1" value="4"/>
+            <span class="val" id="pizzaBVal">4/8</span>
+          </div>
+          <div class="pdf-readout" id="pizzaReadout">–</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 11: 2.6 the normalization formula -->
+    <section class="slide" data-index="11">
+      <div class="eyebrow teal">2.6 — Same Curve, New Ruler</div>
+      <div class="link-line">↳ Here's the actual formula behind everything we've been doing by hand.</div>
+      <h1 class="headline serif"><span class="formula">z = (x − μ) ÷ σ</span></h1>
+      <div class="layout">
+        <div class="prose">
+          <p>Here's a curve of real values — height, in centimeters. It has its own average (<span class="formula">μ</span>) and its own spread (<span class="formula">σ</span>).</p>
+          <p>Normalizing means relabeling every point on the x-axis with one formula: <span class="formula">z = (x − μ) ÷ σ</span>. Subtract the average, then divide by the spread.</p>
+          <p>Watch what happens when you flip the switch: the bump doesn't move, doesn't stretch, doesn't change shape at all. Only the ruler underneath it changes — from raw centimeters to "how many spreads from average."</p>
+          <div class="note">Same curve. Same dot on it. Just a different ruler drawn underneath.</div>
+        </div>
+        <div class="stage">
+          <div class="stage-label" id="formulaStageLabel">ruler: raw height, in cm</div>
+          <svg class="mini-chart" id="formulaChart" viewBox="0 0 460 140" preserveAspectRatio="none"></svg>
+          <div class="galton-controls">
+            <button class="btn" id="formulaRawBtn">raw scale (cm)</button>
+            <button class="btn ghost" id="formulaZBtn">z scale (σ)</button>
+          </div>
+          <div class="pdf-readout" id="formulaReadout">–</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 12: 2.7 mouse and dog on one ruler -->
+    <section class="slide" data-index="12">
+      <div class="eyebrow teal">2.7 — Mouse and Dog, One Ruler Now</div>
+      <div class="link-line">↳ Let's do the real thing: apply the formula to both animals from before.</div>
+      <h1 class="headline serif">Two rulers vs. <span class="t">one shared</span> ruler.</h1>
+      <div class="layout">
+        <div class="prose">
+          <p>Here are the mouse-size curve and the dog-size curve, each drawn on its <em>own</em> real ruler. They don't even belong on the same picture — a dog's numbers are just bigger than a mouse's.</p>
+          <p>Now apply <span class="formula">z = (x − μ) ÷ σ</span> to both — using each animal's <em>own</em> average and spread. Watch them land on the exact same axis.</p>
+          <p>Once they're both standardized, they become the <em>same</em> curve. Your mouse and your dog sliders now sit on that one shared bump, and you can finally read off who's really further out.</p>
+          <div class="note">Toggle to "raw scale" first — notice the two curves don't even share an axis. Then flip to "z scale" and watch them become one.</div>
+        </div>
+        <div class="stage">
+          <div class="stage-label" id="mdStageLabel">ruler: each animal's own real size (cm)</div>
+          <svg class="mini-chart" id="mdChart" viewBox="0 0 460 150" preserveAspectRatio="none"></svg>
+          <div class="legend"><span><span class="dot amber-dot"></span>mouse</span><span><span class="dot teal-dot"></span>dog</span></div>
+          <div class="gauss-row">
+            <label>mouse (cm)</label>
+            <input type="range" id="mdMouseSize" min="4" max="20" step="0.5" value="16"/>
+            <span class="val" id="mdMouseVal">16</span>
+          </div>
+          <div class="gauss-row">
+            <label>dog (cm)</label>
+            <input type="range" id="mdDogSize" min="20" max="100" step="1" value="70"/>
+            <span class="val" id="mdDogVal">70</span>
+          </div>
+          <div class="galton-controls">
+            <button class="btn" id="mdRawBtn">raw scale (cm)</button>
+            <button class="btn ghost" id="mdZBtn">z scale (σ)</button>
+          </div>
+          <div class="pdf-readout" id="mdReadout">–</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 13: divider PART 3 -->
+    <section class="slide divider" data-index="13">
+      <div class="divider-numeral serif">III</div>
+      <div class="divider-content">
+        <div class="eyebrow" style="color:var(--amber-ink);">Part 3</div>
+        <h1 class="headline serif">The Universal Translator & the <span class="t">Ultimate Law</span></h1>
+        <p class="link">We can now put any two bell curves on one shared ruler. So: how do we compare two <em>completely</em> different ones — and why does averaging always, eventually, save us?</p>
+      </div>
+    </section>
+
+    <!-- 14: 3.1 apples to oranges: the z-score -->
+    <section class="slide" data-index="14">
+      <div class="eyebrow">3.1 — Apples to Oranges</div>
+      <h1 class="headline serif">A 90 on a math test, or a <span class="t">1200</span> on the SAT?</h1>
+      <div class="layout">
+        <div class="prose">
+          <p>A 90/100 on a math test (class average 85, spread 5) and a 1200/1600 on the SAT (average 1000, spread 200) aren't even on the same scale. You cannot compare 90 to 1200 directly — that's comparing apples to oranges.</p>
+          <p>The fix is the same trick from Part 2: measure both in standard deviations from average. <span class="formula">Z = (x − μ) ÷ σ</span>.</p>
+          <p>Do the math for both defaults below, and something clicks — they land at the exact same z. Same distance from typical, same level of "impressive," even though 90 and 1200 look nothing alike.</p>
+          <div class="note">Drag either score. Watch which test you're actually stronger in, on the one ruler that makes them comparable.</div>
+        </div>
+        <div class="stage">
+          <div class="stage-label">score, then compare on one shared ruler</div>
+          <div class="gauss-row">
+            <label>math test</label>
+            <input type="range" id="mathScore" min="65" max="100" step="1" value="90"/>
+            <span class="val" id="mathVal">90/100</span>
+          </div>
+          <div class="gauss-row">
+            <label>SAT</label>
+            <input type="range" id="satScore" min="400" max="1600" step="10" value="1200"/>
+            <span class="val" id="satVal">1200</span>
+          </div>
+          <div class="stage-label" style="margin-top:16px;">typical math scores and typical SAT scores, side by side</div>
+          <svg class="mini-chart" id="zScoreChart" viewBox="0 0 460 100" preserveAspectRatio="none"></svg>
+          <div class="legend"><span><span class="dot amber-dot"></span>math test</span><span><span class="dot teal-dot"></span>SAT</span></div>
+          <div class="pdf-readout" id="zScoreReadout">–</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 15: 3.2 standardization sneak peek -->
+    <section class="slide" data-index="15">
+      <div class="eyebrow">3.2 — Standardization</div>
+      <div class="link-line">↳ A sneak peek at Day 2 — this exact trick has a name and a scikit-learn class.</div>
+      <h1 class="headline serif">Any bell curve → the <em>same</em> bell curve.</h1>
+      <div class="layout">
+        <div class="prose">
+          <p>Run <span class="formula">Z = (x − μ) ÷ σ</span> on <em>any</em> normal distribution, and it always lands in the exact same place: average 0, spread 1. That specific shape has a name — the <b>Standard Normal Distribution</b>.</p>
+          <p>This is the exact mathematical engine behind <span class="formula">StandardScaler</span> in scikit-learn. Every time a column gets <span class="formula">.fit_transform()</span>'d, this is what's happening underneath.</p>
+          <p>Below are three totally different, real distributions — math scores, SAT scores, height. Same trick. Same destination.</p>
+          <div class="note">Toggle to "standardized." Three unrelated curves become one.</div>
+        </div>
+        <div class="stage">
+          <div class="stage-label" id="stdStageLabel">raw scales — three different rulers</div>
+          <svg class="mini-chart tall" id="stdChart" viewBox="0 0 460 150" preserveAspectRatio="none"></svg>
+          <div class="legend"><span><span class="dot amber-dot"></span>math (μ=85,σ=5)</span><span><span class="dot teal-dot"></span>SAT (μ=1000,σ=200)</span><span><span class="dot" style="background:var(--ink-faint);"></span>height (μ=110,σ=8)</span></div>
+          <div class="galton-controls">
+            <button class="btn" id="stdRawBtn">raw scales</button>
+            <button class="btn ghost" id="stdZBtn">standardized (z)</button>
+          </div>
+          <div class="pdf-readout" id="stdReadout">three different averages, three different spreads — nothing lines up yet</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 16: 3.3 the empirical rule -->
+    <section class="slide" data-index="16">
+      <div class="eyebrow">3.3 — The Empirical Rule</div>
+      <div class="link-line">↳ Now that we can measure distance from average in σ — how much of everything is actually nearby?</div>
+      <h1 class="headline serif">68, 95, <span class="t">99.7</span>.</h1>
+      <div class="layout">
+        <div class="prose">
+          <p>Once you know a bell curve's average (<span class="formula">μ</span>) and spread (<span class="formula">σ</span>), you always know the same three numbers, no matter what the curve is measuring.</p>
+          <p>About <b>68%</b> of everything sits within 1σ of average. About <b>95%</b> sits within 2σ. About <b>99.7%</b> — almost everything — sits within 3σ.</p>
+          <p>So if a kid's height is within 1σ of average, that's completely ordinary — 68 out of 100 kids are right there with them. Outside 3σ? That's maybe 3 kids in 1,000. Genuinely rare.</p>
+          <div class="note">Drag the slider and watch the shaded area — and the percentage — grow. Notice it always lands near 68, 95, or 99.7 at the whole numbers.</div>
+        </div>
+        <div class="stage">
+          <div class="stage-label">how much is within k spreads of average?</div>
+          <svg class="mini-chart tall" id="empChart" viewBox="0 0 460 150" preserveAspectRatio="none"></svg>
+          <div class="gauss-row">
+            <label>k (σ)</label>
+            <input type="range" id="empK" min="0" max="3.2" step="0.05" value="1"/>
+            <span class="val" id="empKVal">1.00</span>
+          </div>
+          <div class="galton-controls">
+            <button class="btn ghost" id="empJump1">jump to 1σ</button>
+            <button class="btn ghost" id="empJump2">jump to 2σ</button>
+            <button class="btn ghost" id="empJump3">jump to 3σ</button>
+          </div>
+          <div class="pdf-readout" id="empReadout">–</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 17: 3.4 confidence interval -->
+    <section class="slide" data-index="17">
+      <div class="eyebrow">3.4 — Confidence Interval</div>
+      <div class="link-line">↳ Here's what those three numbers are actually for.</div>
+      <h1 class="headline serif">Don't guess one number. Guess a <span class="t">range</span>.</h1>
+      <div class="layout">
+        <div class="prose">
+          <p>Someone asks: how tall will the next kid who walks in be? Guessing one exact number — "112cm" — is almost always wrong.</p>
+          <p>Instead, guess a <b>range</b>: "I'm pretty sure it's between 94cm and 126cm." That's a <b>confidence interval</b> — a window built around the average, sized using the spread.</p>
+          <p>How wide the window needs to be depends on how sure you want to be. That's exactly the 68/95/99.7 from the last slide, reused as confidence levels.</p>
+          <div class="note">Bigger confidence needs a wider net. There's always a trade-off between being sure and being precise.</div>
+        </div>
+        <div class="stage">
+          <div class="stage-label">how tall will the next kid be?</div>
+          <svg class="mini-chart tall" id="ciChart" viewBox="0 0 460 150" preserveAspectRatio="none"></svg>
+          <div class="galton-controls">
+            <button class="btn" id="ciBtn68">68% confident</button>
+            <button class="btn ghost" id="ciBtn95">95% confident</button>
+            <button class="btn ghost" id="ciBtn997">99.7% confident</button>
+          </div>
+          <div class="pdf-readout" id="ciReadout">–</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="nav">
+    <button id="prevBtn" aria-label="previous slide">‹</button>
+    <div class="dots" id="dots"></div>
+    <button id="nextBtn" aria-label="next slide">›</button>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  /* ================= deck navigation ================= */
+  var slides = Array.prototype.slice.call(document.querySelectorAll(".slide"));
+  var dotsWrap = document.getElementById("dots");
+  var current = 0;
+
+  slides.forEach(function(_, i){
+    var d = document.createElement("button");
+    d.className = "dot" + (i===0 ? " active" : "");
+    d.setAttribute("aria-label", "go to slide " + (i+1));
+    d.addEventListener("click", function(){ goTo(i); });
+    dotsWrap.appendChild(d);
+  });
+  var dots = Array.prototype.slice.call(dotsWrap.children);
+
+  function goTo(i){
+    if (i < 0 || i >= slides.length) return;
+    slides[current].classList.remove("active");
+    dots[current].classList.remove("active");
+    current = i;
+    slides[current].classList.add("active");
+    dots[current].classList.add("active");
+    document.getElementById("curNum").textContent = current + 1;
+    document.getElementById("prevBtn").disabled = current === 0;
+    document.getElementById("nextBtn").disabled = current === slides.length - 1;
+  }
+  document.getElementById("totalNum").textContent = slides.length;
+  document.getElementById("prevBtn").addEventListener("click", function(){ goTo(current - 1); });
+  document.getElementById("nextBtn").addEventListener("click", function(){ goTo(current + 1); });
+  document.getElementById("prevBtn").disabled = true;
+
+  window.addEventListener("keydown", function(e){
+    var tag = (e.target && e.target.tagName) || "";
+    if (tag === "INPUT") return;
+    if (e.key === "ArrowRight" || e.key === "PageDown") goTo(current + 1);
+    else if (e.key === "ArrowLeft" || e.key === "PageUp") goTo(current - 1);
+  });
+
+  /* ================= 1.1 translator: reach in the candy jar ================= */
+  var FAVORITE_RATE = 0.35;
+  var tape = [];
+  var custN = 0;
+  var eventCircle = document.getElementById("eventCircle");
+  var numberBox = document.getElementById("numberBox");
+  var custNEl = document.getElementById("custN");
+  var tapeEl = document.getElementById("tape");
+  var rateVal = document.getElementById("rateVal");
+
+  document.getElementById("nextCustomerBtn").addEventListener("click", function(){
+    custN += 1;
+    custNEl.textContent = custN;
+    var favorite = Math.random() < FAVORITE_RATE;
+    eventCircle.textContent = favorite ? "yes" : "no";
+    eventCircle.className = "event-circle " + (favorite ? "clicked" : "nope");
+    numberBox.textContent = favorite ? "1" : "0";
+    numberBox.className = "number-box " + (favorite ? "one" : "zero");
+    tape.push(favorite ? 1 : 0);
+    var chip = document.createElement("span");
+    chip.className = "tape-chip mono " + (favorite ? "one" : "zero");
+    chip.textContent = favorite ? "1" : "0";
+    tapeEl.appendChild(chip);
+    var mean = tape.reduce(function(a,b){ return a+b; }, 0) / tape.length;
+    rateVal.textContent = (mean*100).toFixed(1) + "%  (n=" + tape.length + ")";
+  });
+
+  /* ================= shared kid-data generators ================= */
+  var svgNS = "http://www.w3.org/2000/svg";
+  var ITEMS_PROBS = [0.14, 0.27, 0.26, 0.16, 0.09, 0.05, 0.03]; // candies in a handful: 0..6
+  var HEIGHT_MU = 110, HEIGHT_SIGMA = 8, HEIGHT_MIN = 90, HEIGHT_MAX = 130; // cm
+
+  function smoothPathD(points){
+    if (points.length < 2) return "";
+    var d = "M " + points[0][0] + "," + points[0][1];
+    for (var i=0;i<points.length-1;i++){
+      var p0 = points[i-1] || points[i];
+      var p1 = points[i];
+      var p2 = points[i+1];
+      var p3 = points[i+2] || p2;
+      var c1x = p1[0] + (p2[0]-p0[0])/6, c1y = p1[1] + (p2[1]-p0[1])/6;
+      var c2x = p2[0] - (p3[0]-p1[0])/6, c2y = p2[1] - (p3[1]-p1[1])/6;
+      d += " C " + c1x + "," + c1y + " " + c2x + "," + c2y + " " + p2[0] + "," + p2[1];
+    }
+    return d;
+  }
+
+  function sampleItems(){
+    var r = Math.random(), acc = 0;
+    for (var i=0;i<ITEMS_PROBS.length;i++){
+      acc += ITEMS_PROBS[i];
+      if (r <= acc) return i;
+    }
+    return ITEMS_PROBS.length - 1;
+  }
+  function sampleHeight(){
+    var u1 = Math.random(), u2 = Math.random();
+    var z = Math.sqrt(-2*Math.log(u1)) * Math.cos(2*Math.PI*u2);
+    return Math.max(HEIGHT_MIN, Math.min(HEIGHT_MAX, HEIGHT_MU + HEIGHT_SIGMA*z));
+  }
+  function buildBinCols(container, n, labelFn){
+    var bars = [];
+    for (var i=0;i<n;i++){
+      var col = document.createElement("div");
+      col.className = "bin-col";
+      var bar = document.createElement("div");
+      bar.className = "bin-bar";
+      bar.style.height = "1px";
+      col.appendChild(bar);
+      if (labelFn){
+        var lab = document.createElement("div");
+        lab.className = "bin-n mono";
+        lab.textContent = labelFn(i);
+        col.appendChild(lab);
+      }
+      container.appendChild(col);
+      bars.push(bar);
+    }
+    return bars;
+  }
+  function paintBins(bars, counts){
+    var maxC = Math.max.apply(null, counts.concat([1]));
+    counts.forEach(function(c, i){
+      var h = c === 0 ? 1 : Math.max(3, (c / maxC) * 100);
+      bars[i].style.height = h + "px";
+    });
+  }
+
+  /* ================= 1.2 a random variable becomes a distribution ================= */
+  var rvCounts = new Array(ITEMS_PROBS.length).fill(0);
+  var rvBars = buildBinCols(document.getElementById("rvHist"), ITEMS_PROBS.length, function(i){ return i; });
+  var rvCountEl = document.getElementById("rvCount");
+  var rvNote = document.getElementById("rvNote");
+  var RV_DEFAULT_NOTE = 'Grab a handful a few times, then jump to 500 — watch the bars stop jittering and settle into a shape.';
+
+  function collectRv(n){
+    for (var k=0;k<n;k++){ rvCounts[sampleItems()] += 1; }
+    var total = rvCounts.reduce(function(a,b){ return a+b; }, 0);
+    rvCountEl.textContent = total;
+    paintBins(rvBars, rvCounts);
+    if (total === 0){
+      rvNote.textContent = RV_DEFAULT_NOTE;
+    } else if (total < 15){
+      rvNote.textContent = 'Only ' + total + ' handful' + (total===1?'':'s') + ' so far — still too few to see a real shape. Every new one can still reshuffle the bars.';
+    } else if (total < 150){
+      rvNote.textContent = total + ' handfuls in — a shape is starting to show up, but it still wobbles with every new one.';
+    } else {
+      rvNote.textContent = total + ' handfuls collected — this is the distribution of "candies in a handful." More handfuls barely move it now: that\'s a random variable settling into its distribution.';
+    }
+  }
+  document.getElementById("collectOneBtn").addEventListener("click", function(){ collectRv(1); });
+  document.getElementById("collectManyBtn").addEventListener("click", function(){ collectRv(500); });
+  document.getElementById("resetRvBtn").addEventListener("click", function(){
+    rvCounts = new Array(ITEMS_PROBS.length).fill(0);
+    paintBins(rvBars, rvCounts);
+    rvCountEl.textContent = "0";
+    rvNote.textContent = RV_DEFAULT_NOTE;
+  });
+
+  /* ================= 1.3 discrete vs continuous, same kids ================= */
+  var dcItemCounts = new Array(ITEMS_PROBS.length).fill(0);
+  var dcHeightBins = 16;
+  var dcHeightCounts = new Array(dcHeightBins).fill(0);
+  var dcItemBars = buildBinCols(document.getElementById("discreteHist"), ITEMS_PROBS.length, function(i){ return i; });
+  var dcCountEl = document.getElementById("dcCount");
+
+  var continuousChart = document.getElementById("continuousChart");
+  var DCW = 300, DCH = 78, DCBASE = 70, DCTOP = 8;
+  var dcCurve = document.createElementNS(svgNS, "path");
+  dcCurve.setAttribute("fill", "none");
+  dcCurve.setAttribute("stroke", "var(--teal)");
+  dcCurve.setAttribute("stroke-width", "2");
+  dcCurve.setAttribute("stroke-linecap", "round");
+  var dcArea = document.createElementNS(svgNS, "path");
+  dcArea.setAttribute("fill", "var(--teal)");
+  dcArea.setAttribute("opacity", "0.18");
+  var dcBaseline = document.createElementNS(svgNS, "line");
+  dcBaseline.setAttribute("x1","0"); dcBaseline.setAttribute("x2",DCW);
+  dcBaseline.setAttribute("y1",DCBASE); dcBaseline.setAttribute("y2",DCBASE);
+  dcBaseline.setAttribute("stroke","var(--card-line)"); dcBaseline.setAttribute("stroke-width","1");
+  continuousChart.appendChild(dcBaseline);
+  continuousChart.appendChild(dcArea);
+  continuousChart.appendChild(dcCurve);
+
+  function paintDensity(counts){
+    var maxC = Math.max.apply(null, counts.concat([1]));
+    var pts = counts.map(function(c, i){
+      var x = ((i + 0.5) / counts.length) * DCW;
+      var y = DCBASE - (c / maxC) * (DCBASE - DCTOP);
+      return [x, y];
+    });
+    var topD = smoothPathD(pts);
+    dcCurve.setAttribute("d", topD);
+    dcArea.setAttribute("d", topD + " L " + pts[pts.length-1][0] + "," + DCBASE + " L " + pts[0][0] + "," + DCBASE + " Z");
+  }
+  paintDensity(dcHeightCounts);
+
+  function collectDc(n){
+    for (var k=0;k<n;k++){
+      dcItemCounts[sampleItems()] += 1;
+      var h = sampleHeight();
+      var bin = Math.min(dcHeightBins - 1, Math.floor((h - HEIGHT_MIN) / ((HEIGHT_MAX - HEIGHT_MIN) / dcHeightBins)));
+      dcHeightCounts[bin] += 1;
+    }
+    dcCountEl.textContent = parseInt(dcCountEl.textContent, 10) + n;
+    paintBins(dcItemBars, dcItemCounts);
+    paintDensity(dcHeightCounts);
+  }
+  document.getElementById("collectOneBtn2").addEventListener("click", function(){ collectDc(1); });
+  document.getElementById("collectManyBtn2").addEventListener("click", function(){ collectDc(500); });
+  document.getElementById("resetDcBtn").addEventListener("click", function(){
+    dcItemCounts = new Array(ITEMS_PROBS.length).fill(0);
+    dcHeightCounts = new Array(dcHeightBins).fill(0);
+    paintBins(dcItemBars, dcItemCounts);
+    paintDensity(dcHeightCounts);
+    dcCountEl.textContent = "0";
+  });
+
+  /* ================= 1.4 pmf: candies ================= */
+  var pmfBarsWrap = document.getElementById("pmfBars");
+  var pmfReadout = document.getElementById("pmfReadout");
+  var pmfCols = [];
+  var maxP = Math.max.apply(null, ITEMS_PROBS);
+  ITEMS_PROBS.forEach(function(p, i){
+    var col = document.createElement("div");
+    col.className = "pmf-col";
+    var bar = document.createElement("div");
+    bar.className = "pmf-bar";
+    bar.style.height = ((p / maxP) * 100).toFixed(1) + "%";
+    var x = document.createElement("div");
+    x.className = "pmf-x mono";
+    x.textContent = i;
+    col.appendChild(bar); col.appendChild(x);
+    col.addEventListener("click", function(){
+      pmfCols.forEach(function(c){ c.classList.remove("selected"); });
+      col.classList.add("selected");
+      pmfReadout.innerHTML = 'P(candies = <span class="mono">' + i + '</span>) = <span class="mono">' + p.toFixed(2) + '</span>';
+    });
+    pmfBarsWrap.appendChild(col);
+    pmfCols.push(col);
+  });
+
+  /* ================= 1.4 pdf: height ================= */
+  var pdfChart = document.getElementById("pdfChart");
+  var pdfA = document.getElementById("pdfA");
+  var pdfB = document.getElementById("pdfB");
+  var pdfAVal = document.getElementById("pdfAVal");
+  var pdfBVal = document.getElementById("pdfBVal");
+  var pdfArea = document.getElementById("pdfArea");
+  var PDF_MIN = HEIGHT_MIN, PDF_MAX = HEIGHT_MAX, PDF_MU = HEIGHT_MU, PDF_SIGMA = HEIGHT_SIGMA;
+  var CW = 460, CH = 150, BASE = 138;
+
+  function densityAt(x){
+    return Math.exp(-((x - PDF_MU) * (x - PDF_MU)) / (2 * PDF_SIGMA * PDF_SIGMA));
+  }
+  function svgX(x){ return ((x - PDF_MIN) / (PDF_MAX - PDF_MIN)) * CW; }
+  function svgY(d){ return BASE - d * (BASE - 14); }
+
+  var N_SAMPLES = 140;
+  var samples = [];
+  for (var i=0;i<=N_SAMPLES;i++){
+    var x = PDF_MIN + (PDF_MAX - PDF_MIN) * (i / N_SAMPLES);
+    samples.push({ x:x, d:densityAt(x) });
+  }
+
+  var curvePath = document.createElementNS(svgNS, "path");
+  curvePath.setAttribute("fill", "none");
+  curvePath.setAttribute("stroke", "var(--teal)");
+  curvePath.setAttribute("stroke-width", "2");
+  var basePath = document.createElementNS(svgNS, "line");
+  basePath.setAttribute("x1","0"); basePath.setAttribute("x2", CW);
+  basePath.setAttribute("y1", BASE); basePath.setAttribute("y2", BASE);
+  basePath.setAttribute("stroke","var(--card-line)"); basePath.setAttribute("stroke-width","1");
+  var shadePoly = document.createElementNS(svgNS, "polygon");
+  shadePoly.setAttribute("fill", "var(--amber)");
+  shadePoly.setAttribute("opacity", "0.28");
+
+  var dCurve = samples.map(function(s){ return svgX(s.x) + "," + svgY(s.d); }).join(" L ");
+  curvePath.setAttribute("d", "M " + dCurve);
+
+  pdfChart.appendChild(basePath);
+  pdfChart.appendChild(shadePoly);
+  pdfChart.appendChild(curvePath);
+
+  function renderPdf(){
+    var a = parseFloat(pdfA.value);
+    var b = parseFloat(pdfB.value);
+    if (a > b){ var tmp = a; a = b; b = tmp; }
+    pdfAVal.textContent = a.toFixed(1);
+    pdfBVal.textContent = b.toFixed(1);
+
+    var dx = (PDF_MAX - PDF_MIN) / N_SAMPLES;
+    var area = 0;
+    var poly = [svgX(a) + "," + BASE];
+    samples.forEach(function(s){
+      if (s.x >= a && s.x <= b){
+        poly.push(svgX(s.x) + "," + svgY(s.d));
+        area += s.d * dx;
+      }
+    });
+    poly.push(svgX(b) + "," + BASE);
+    shadePoly.setAttribute("points", poly.join(" "));
+
+    var fullArea = samples.reduce(function(acc,s){ return acc + s.d*dx; }, 0);
+    pdfArea.textContent = (area / fullArea).toFixed(3);
+  }
+  pdfA.addEventListener("input", renderPdf);
+  pdfB.addEventListener("input", renderPdf);
+  renderPdf();
+
+  /* ================= shared cookie-jar illustration ================= */
+  var JAR_MAX = 24, JAR_COLS = 6;
+  function buildJar(svg){
+    var lid = document.createElementNS(svgNS,"rect");
+    lid.setAttribute("x","150"); lid.setAttribute("y","14"); lid.setAttribute("width","160"); lid.setAttribute("height","14");
+    lid.setAttribute("rx","6"); lid.setAttribute("fill","none"); lid.setAttribute("stroke","var(--ink-faint)"); lid.setAttribute("stroke-width","2");
+    svg.appendChild(lid);
+    var body = document.createElementNS(svgNS,"rect");
+    body.setAttribute("x","130"); body.setAttribute("y","26"); body.setAttribute("width","200"); body.setAttribute("height","116");
+    body.setAttribute("rx","16"); body.setAttribute("fill","none"); body.setAttribute("stroke","var(--ink-faint)"); body.setAttribute("stroke-width","2");
+    svg.appendChild(body);
+
+    var cookies = [];
+    for (var i=0;i<JAR_MAX;i++){
+      var col = i % JAR_COLS, row = Math.floor(i / JAR_COLS);
+      var cx = 148 + col*29 + 14.5, cy = 42 + row*24 + 10;
+      var c = document.createElementNS(svgNS,"circle");
+      c.setAttribute("cx", cx); c.setAttribute("cy", cy); c.setAttribute("r","9");
+      c.setAttribute("fill","none"); c.setAttribute("stroke","none");
+      svg.appendChild(c);
+      cookies.push(c);
+    }
+
+    var overlay = document.createElementNS(svgNS,"rect");
+    overlay.setAttribute("x","130"); overlay.setAttribute("y","26"); overlay.setAttribute("width","200"); overlay.setAttribute("height","116");
+    overlay.setAttribute("rx","16"); overlay.setAttribute("fill","var(--ink)"); overlay.setAttribute("opacity","0");
+    svg.appendChild(overlay);
+
+    [-1,1].forEach(function(side){
+      var eye = document.createElementNS(svgNS,"path");
+      var ex = 230 + side*22;
+      eye.setAttribute("d","M " + (ex-10) + ",75 Q " + ex + ",85 " + (ex+10) + ",75");
+      eye.setAttribute("fill","none"); eye.setAttribute("stroke","var(--paper)"); eye.setAttribute("stroke-width","2.5");
+      eye.setAttribute("stroke-linecap","round"); eye.setAttribute("opacity","0");
+      svg.appendChild(eye);
+      cookies.push(eye); // reuse array slot temporarily below via closure vars instead
+    });
+    var eyeEls = cookies.splice(JAR_MAX); // the two eye paths just appended
+    return { cookies: cookies, overlay: overlay, eyes: eyeEls };
+  }
+  function paintJar(jar, chocCount, oatCount, blindfolded){
+    var total = chocCount + oatCount;
+    jar.cookies.forEach(function(c, i){
+      if (i < total){
+        var isChoc = i < chocCount;
+        c.setAttribute("fill", isChoc ? "var(--amber)" : "var(--ink-faint)");
+        c.setAttribute("opacity", isChoc ? "1" : "0.55");
+      } else {
+        c.setAttribute("fill", "none");
+      }
+    });
+    jar.overlay.setAttribute("opacity", blindfolded ? "0.5" : "0");
+    jar.eyes.forEach(function(e){ e.setAttribute("opacity", blindfolded ? "1" : "0"); });
+  }
+
+  /* ================= 2.1 facts vs chances (cookie jar toggle) ================= */
+  var FACT_CHOC = 12, FACT_OAT = 8, FACT_TOTAL = FACT_CHOC + FACT_OAT;
+  var jarChart = document.getElementById("jarChart");
+  var jar1 = buildJar(jarChart);
+  var factsMode = "facts";
+  function renderFacts(){
+    paintJar(jar1, FACT_CHOC, FACT_OAT, factsMode === "chance");
+    document.getElementById("jarStageLabel").textContent = factsMode === "facts"
+      ? "eyes open — count what's really there"
+      : "eyes closed — guessing the odds";
+    document.getElementById("factsReadout").textContent = factsMode === "facts"
+      ? FACT_CHOC + " chocolate chip, " + FACT_OAT + " oatmeal — we counted every single one"
+      : Math.round((FACT_CHOC/FACT_TOTAL)*100) + "% chance chocolate chip, " + Math.round((FACT_OAT/FACT_TOTAL)*100) + "% chance oatmeal — if you reach in without looking";
+  }
+  document.getElementById("factsModeBtn").addEventListener("click", function(){
+    factsMode = "facts";
+    document.getElementById("factsModeBtn").className = "btn";
+    document.getElementById("chanceModeBtn").className = "btn ghost";
+    renderFacts();
+  });
+  document.getElementById("chanceModeBtn").addEventListener("click", function(){
+    factsMode = "chance";
+    document.getElementById("chanceModeBtn").className = "btn";
+    document.getElementById("factsModeBtn").className = "btn ghost";
+    renderFacts();
+  });
+  renderFacts();
+
+  /* ================= 2.2 counts and chances updating together (fill the jar) ================= */
+  var liveJarChart = document.getElementById("liveJarChart");
+  var jar2 = buildJar(liveJarChart);
+  var CHOC_RATE = 0.6;
+  var liveChoc = 0, liveOat = 0;
+  function renderLive(){
+    var total = liveChoc + liveOat;
+    paintJar(jar2, liveChoc, liveOat, false);
+    if (total === 0){
+      document.getElementById("liveReadout").textContent = "counted so far: 0 cookies";
+    } else {
+      var pc = Math.round((liveChoc/total)*100), po = 100 - pc;
+      document.getElementById("liveReadout").innerHTML =
+        "counted so far: <b>" + total + "</b> cookies (" + liveChoc + " choc-chip, " + liveOat + " oatmeal) — chance if you grab blind: <b>" + pc + "% + " + po + "% = 100%</b>";
+    }
+    document.getElementById("addKidBtn").disabled = total >= JAR_MAX;
+    document.getElementById("addKidBtn").textContent = total >= JAR_MAX ? "jar is full!" : "add a cookie";
+  }
+  document.getElementById("addKidBtn").addEventListener("click", function(){
+    if (liveChoc + liveOat >= JAR_MAX) return;
+    if (Math.random() < CHOC_RATE) liveChoc += 1; else liveOat += 1;
+    renderLive();
+  });
+  document.getElementById("resetLiveBtn").addEventListener("click", function(){
+    liveChoc = 0; liveOat = 0;
+    renderLive();
+  });
+  renderLive();
+
+  /* ================= 2.3 galton board (marble drop) ================= */
+  var LEVELS = 8;
+  var BINS = LEVELS + 1;
+  var galton = document.getElementById("galton");
+  var binsWrap = document.getElementById("bins");
+  var dropCountEl = document.getElementById("dropCount");
+  var binCounts = new Array(BINS).fill(0);
+  var totalDrops = 0;
+  var galtonH = 190;
+
+  for (var lv=1; lv<LEVELS; lv++){
+    var line = document.createElement("div");
+    line.className = "galton-line";
+    line.style.top = ((lv/LEVELS) * galtonH) + "px";
+    galton.appendChild(line);
+  }
+
+  var binEls = [];
+  for (var bi=0; bi<BINS; bi++){
+    var col = document.createElement("div");
+    col.className = "bin-col";
+    var bar = document.createElement("div");
+    bar.className = "bin-bar";
+    bar.style.height = "1px";
+    var n = document.createElement("div");
+    n.className = "bin-n mono";
+    n.textContent = "0";
+    col.appendChild(bar); col.appendChild(n);
+    binsWrap.appendChild(col);
+    binEls.push({ bar:bar, n:n });
+  }
+
+  function updateBins(){
+    var maxC = Math.max.apply(null, binCounts.concat([1]));
+    binCounts.forEach(function(c, i){
+      var h = c === 0 ? 1 : Math.max(3, (c / maxC) * 104);
+      binEls[i].bar.style.height = h + "px";
+      binEls[i].n.textContent = c;
+    });
+    dropCountEl.textContent = totalDrops;
+  }
+
+  function sleep(ms){ return new Promise(function(res){ setTimeout(res, ms); }); }
+
+  var dropping = false;
+  async function dropOneAnimated(){
+    if (dropping) return;
+    dropping = true;
+    document.getElementById("dropOneBtn").disabled = true;
+
+    var ball = document.createElement("div");
+    ball.className = "ball";
+    galton.appendChild(ball);
+
+    var rightBounces = 0;
+    var xOffsetPx = 0;
+    var stepW = 15;
+    for (var lv=1; lv<=LEVELS; lv++){
+      var goRight = Math.random() < 0.5;
+      if (goRight) rightBounces++;
+      xOffsetPx += goRight ? stepW/2 : -stepW/2;
+      ball.style.top = ((lv/LEVELS) * galtonH - 5) + "px";
+      ball.style.left = "calc(50% + " + xOffsetPx + "px)";
+      await sleep(90);
+    }
+    binCounts[rightBounces] += 1;
+    totalDrops += 1;
+    updateBins();
+    await sleep(120);
+    galton.removeChild(ball);
+    document.getElementById("dropOneBtn").disabled = false;
+    dropping = false;
+  }
+
+  function dropManyInstant(n){
+    for (var k=0;k<n;k++){
+      var bits = 0;
+      for (var b=0;b<LEVELS;b++){ if (Math.random() < 0.5) bits++; }
+      binCounts[bits] += 1;
+      totalDrops += 1;
+    }
+    updateBins();
+  }
+
+  document.getElementById("dropOneBtn").addEventListener("click", dropOneAnimated);
+  document.getElementById("dropManyBtn").addEventListener("click", function(){ dropManyInstant(200); });
+  document.getElementById("resetGaltonBtn").addEventListener("click", function(){
+    binCounts = new Array(BINS).fill(0);
+    totalDrops = 0;
+    updateBins();
+  });
+  updateBins();
+
+  /* ================= 2.4 normalization: mouse vs dog, big for its own kind ================= */
+  var MOUSE_MEAN = 10, MOUSE_SIGMA = 2;
+  var DOG_MEAN = 60, DOG_SIGMA = 15;
+  var zChart = document.getElementById("zChart");
+  var ZW = 460, ZMIN = -3, ZMAX = 3;
+  var MOUSE_Y = 32, DOG_Y = 76;
+  function zX(z){ return 10 + ((Math.max(ZMIN, Math.min(ZMAX, z)) - ZMIN) / (ZMAX - ZMIN)) * (ZW - 20); }
+
+  [MOUSE_Y, DOG_Y].forEach(function(y){
+    var line = document.createElementNS(svgNS, "line");
+    line.setAttribute("x1","10"); line.setAttribute("x2", ZW-10);
+    line.setAttribute("y1", y); line.setAttribute("y2", y);
+    line.setAttribute("stroke","var(--card-line)"); line.setAttribute("stroke-width","1");
+    zChart.appendChild(line);
+  });
+  [-2,-1,0,1,2].forEach(function(z){
+    [MOUSE_Y, DOG_Y].forEach(function(y){
+      var dot = document.createElementNS(svgNS, "circle");
+      dot.setAttribute("cx", zX(z)); dot.setAttribute("cy", y); dot.setAttribute("r","3");
+      dot.setAttribute("fill","var(--ink-faint)"); dot.setAttribute("opacity","0.5");
+      zChart.appendChild(dot);
+    });
+  });
+  function zRowLabel(text, y){
+    var t = document.createElementNS(svgNS, "text");
+    t.setAttribute("x","10"); t.setAttribute("y", y-9);
+    t.setAttribute("class","mono"); t.setAttribute("font-size","10"); t.setAttribute("fill","var(--ink-faint)");
+    t.textContent = text;
+    zChart.appendChild(t);
+  }
+  zRowLabel("typical mice", MOUSE_Y);
+  zRowLabel("typical dogs", DOG_Y);
+
+  var mouseMarker = document.createElementNS(svgNS, "circle");
+  mouseMarker.setAttribute("r","7"); mouseMarker.setAttribute("fill","var(--amber)"); mouseMarker.setAttribute("cy", MOUSE_Y);
+  var dogMarker = document.createElementNS(svgNS, "circle");
+  dogMarker.setAttribute("r","7"); dogMarker.setAttribute("fill","var(--teal)"); dogMarker.setAttribute("cy", DOG_Y);
+  zChart.appendChild(mouseMarker); zChart.appendChild(dogMarker);
+
+  var mouseSizeInput = document.getElementById("mouseSize");
+  var dogSizeInput = document.getElementById("dogSize");
+  var mouseVal = document.getElementById("mouseVal");
+  var dogVal = document.getElementById("dogVal");
+
+  function renderZ(){
+    var m = parseFloat(mouseSizeInput.value), d = parseFloat(dogSizeInput.value);
+    mouseVal.textContent = m;
+    dogVal.textContent = d;
+    var zm = (m - MOUSE_MEAN) / MOUSE_SIGMA;
+    var zd = (d - DOG_MEAN) / DOG_SIGMA;
+    mouseMarker.setAttribute("cx", zX(zm));
+    dogMarker.setAttribute("cx", zX(zd));
+    var winner = Math.abs(zm) > Math.abs(zd) ? "mouse" : "dog";
+    var biggerInRealLife = d > m ? "the dog is bigger in real life" : "the mouse is bigger in real life";
+    document.getElementById("zReadout").innerHTML =
+      'your mouse: <span class="mono">' + m + ' cm</span> = <span class="mono">' + zm.toFixed(1) + 'σ</span> from typical · your dog: <span class="mono">' + d + ' cm</span> = <span class="mono">' + zd.toFixed(1) + 'σ</span> from typical — even though ' + biggerInRealLife + ', the <b>' + winner + '</b> is more unusual for its own kind';
+  }
+  mouseSizeInput.addEventListener("input", renderZ);
+  dogSizeInput.addEventListener("input", renderZ);
+  renderZ();
+
+  /* ================= 2.5 pizza slices as percentages ================= */
+  function pieSlicePath(cx, cy, r, i, n){
+    var a0 = (i/n)*2*Math.PI - Math.PI/2;
+    var a1 = ((i+1)/n)*2*Math.PI - Math.PI/2;
+    var x1 = cx + r*Math.cos(a0), y1 = cy + r*Math.sin(a0);
+    var x2 = cx + r*Math.cos(a1), y2 = cy + r*Math.sin(a1);
+    var large = (a1-a0) > Math.PI ? 1 : 0;
+    return "M " + cx + "," + cy + " L " + x1 + "," + y1 + " A " + r + "," + r + " 0 " + large + " 1 " + x2 + "," + y2 + " Z";
+  }
+  function svgLabel(svg, x, y, text){
+    var t = document.createElementNS(svgNS, "text");
+    t.setAttribute("x", x); t.setAttribute("y", y);
+    t.setAttribute("text-anchor","middle"); t.setAttribute("class","mono");
+    t.setAttribute("font-size","11"); t.setAttribute("fill","var(--ink-faint)");
+    t.textContent = text;
+    svg.appendChild(t);
+  }
+  function buildPizza(svg, cx, cy, r, n){
+    var slices = [];
+    for (var i=0;i<n;i++){
+      var p = document.createElementNS(svgNS, "path");
+      p.setAttribute("d", pieSlicePath(cx, cy, r, i, n));
+      p.setAttribute("fill", "none");
+      p.setAttribute("stroke", "var(--card-line)"); p.setAttribute("stroke-width","1.5");
+      svg.appendChild(p);
+      slices.push(p);
+    }
+    return slices;
+  }
+  function paintPizza(slices, eaten){
+    slices.forEach(function(s, i){ s.setAttribute("fill", i < eaten ? "var(--amber)" : "none"); });
+  }
+
+  var pizzaChart = document.getElementById("pizzaChart");
+  var sliceA = buildPizza(pizzaChart, 120, 65, 55, 4);
+  var sliceB = buildPizza(pizzaChart, 340, 65, 55, 8);
+  svgLabel(pizzaChart, 120, 132, "pizza A · 4 slices");
+  svgLabel(pizzaChart, 340, 132, "pizza B · 8 slices");
+
+  var pizzaASlicesInput = document.getElementById("pizzaASlices");
+  var pizzaBSlicesInput = document.getElementById("pizzaBSlices");
+  var pizzaAVal = document.getElementById("pizzaAVal");
+  var pizzaBVal = document.getElementById("pizzaBVal");
+
+  function renderPizza(){
+    var ea = parseInt(pizzaASlicesInput.value, 10), eb = parseInt(pizzaBSlicesInput.value, 10);
+    pizzaAVal.textContent = ea + "/4";
+    pizzaBVal.textContent = eb + "/8";
+    paintPizza(sliceA, ea);
+    paintPizza(sliceB, eb);
+    var pa = (ea/4)*100, pb = (eb/8)*100;
+    var verdict = pa === pb
+      ? "You both ate exactly the same fraction of your pizza!"
+      : (pa > pb ? "You actually ate a bigger share of your pizza." : "Your friend actually ate a bigger share.");
+    document.getElementById("pizzaReadout").innerHTML =
+      'Pizza A: <span class="mono">' + ea + '/4 = ' + pa.toFixed(0) + '%</span> · Pizza B: <span class="mono">' + eb + '/8 = ' + pb.toFixed(0) + '%</span> — ' + verdict;
+  }
+  pizzaASlicesInput.addEventListener("input", renderPizza);
+  pizzaBSlicesInput.addEventListener("input", renderPizza);
+  renderPizza();
+
+  /* ================= 2.6 the normalization formula: same curve, new ruler ================= */
+  var FORM_MU = 110, FORM_SIGMA = 8, FORM_MARK_K = 1.5;
+  var formulaChart = document.getElementById("formulaChart");
+  var FCW = 460, FBASE = 110, FTOP = 14;
+  function fX(k){ return 10 + ((k+3)/6) * (FCW-20); }
+  function fY(k){ var d = Math.exp(-(k*k)/2); return FBASE - d*(FBASE-FTOP); }
+
+  var fPts = [];
+  for (var fk=-3; fk<=3.001; fk+=0.05){ fPts.push(fX(fk) + "," + fY(fk)); }
+  var fCurve = document.createElementNS(svgNS, "path");
+  fCurve.setAttribute("d", "M " + fPts.join(" L "));
+  fCurve.setAttribute("fill","none"); fCurve.setAttribute("stroke","var(--teal)"); fCurve.setAttribute("stroke-width","2");
+  var fBaseLine = document.createElementNS(svgNS, "line");
+  fBaseLine.setAttribute("x1","10"); fBaseLine.setAttribute("x2", FCW-10);
+  fBaseLine.setAttribute("y1", FBASE); fBaseLine.setAttribute("y2", FBASE);
+  fBaseLine.setAttribute("stroke","var(--card-line)"); fBaseLine.setAttribute("stroke-width","1");
+  formulaChart.appendChild(fBaseLine);
+  formulaChart.appendChild(fCurve);
+
+  var formulaTickLabels = [];
+  for (var fi=-3; fi<=3; fi++){
+    var ftick = document.createElementNS(svgNS, "line");
+    ftick.setAttribute("x1", fX(fi)); ftick.setAttribute("x2", fX(fi));
+    ftick.setAttribute("y1", FBASE-4); ftick.setAttribute("y2", FBASE+4);
+    ftick.setAttribute("stroke","var(--card-line)"); ftick.setAttribute("stroke-width","1");
+    formulaChart.appendChild(ftick);
+    var flabel = document.createElementNS(svgNS, "text");
+    flabel.setAttribute("x", fX(fi)); flabel.setAttribute("y", FBASE+18);
+    flabel.setAttribute("text-anchor","middle"); flabel.setAttribute("class","mono");
+    flabel.setAttribute("font-size","10"); flabel.setAttribute("fill","var(--ink-faint)");
+    formulaChart.appendChild(flabel);
+    formulaTickLabels.push(flabel);
+  }
+  var fMarkLine = document.createElementNS(svgNS, "line");
+  fMarkLine.setAttribute("x1", fX(FORM_MARK_K)); fMarkLine.setAttribute("x2", fX(FORM_MARK_K));
+  fMarkLine.setAttribute("y1", fY(FORM_MARK_K)); fMarkLine.setAttribute("y2", FBASE);
+  fMarkLine.setAttribute("stroke","var(--amber)"); fMarkLine.setAttribute("stroke-width","1.5");
+  var fMarkDot = document.createElementNS(svgNS, "circle");
+  fMarkDot.setAttribute("cx", fX(FORM_MARK_K)); fMarkDot.setAttribute("cy", fY(FORM_MARK_K)); fMarkDot.setAttribute("r","6");
+  fMarkDot.setAttribute("fill","var(--amber)");
+  var fMarkLabel = document.createElementNS(svgNS, "text");
+  fMarkLabel.setAttribute("x", fX(FORM_MARK_K)); fMarkLabel.setAttribute("y", fY(FORM_MARK_K)-12);
+  fMarkLabel.setAttribute("text-anchor","middle"); fMarkLabel.setAttribute("class","mono");
+  fMarkLabel.setAttribute("font-size","11"); fMarkLabel.setAttribute("fill","var(--amber-ink)");
+  formulaChart.appendChild(fMarkLine); formulaChart.appendChild(fMarkDot); formulaChart.appendChild(fMarkLabel);
+
+  var formulaMode = "raw";
+  function renderFormula(){
+    var rawLabels = [-3,-2,-1,0,1,2,3].map(function(k){ return Math.round(FORM_MU + k*FORM_SIGMA); });
+    var zLabels = [-3,-2,-1,0,1,2,3];
+    var labels = formulaMode === "raw" ? rawLabels : zLabels;
+    formulaTickLabels.forEach(function(t, i){ t.textContent = labels[i]; });
+    var markRaw = FORM_MU + FORM_MARK_K*FORM_SIGMA;
+    fMarkLabel.textContent = formulaMode === "raw" ? markRaw + " cm" : "z=" + FORM_MARK_K.toFixed(2);
+    document.getElementById("formulaStageLabel").textContent = formulaMode === "raw" ? "ruler: raw height, in cm" : "ruler: z-scale, in σ from average";
+    document.getElementById("formulaReadout").innerHTML = formulaMode === "raw"
+      ? 'this curve shows height in cm — average <span class="mono">μ = 110cm</span>, spread <span class="mono">σ = 8cm</span>. The marked point sits at <span class="mono">' + markRaw + 'cm</span>.'
+      : 'same exact curve — the x-axis now reads in σ units. <span class="mono">z = (' + markRaw + ' − 110) ÷ 8 = ' + FORM_MARK_K.toFixed(2) + '</span>. The marked point is now at <span class="mono">z = ' + FORM_MARK_K.toFixed(2) + '</span>.';
+  }
+  document.getElementById("formulaRawBtn").addEventListener("click", function(){
+    formulaMode = "raw";
+    document.getElementById("formulaRawBtn").className = "btn";
+    document.getElementById("formulaZBtn").className = "btn ghost";
+    renderFormula();
+  });
+  document.getElementById("formulaZBtn").addEventListener("click", function(){
+    formulaMode = "z";
+    document.getElementById("formulaZBtn").className = "btn";
+    document.getElementById("formulaRawBtn").className = "btn ghost";
+    renderFormula();
+  });
+  renderFormula();
+
+  /* ================= 2.7 mouse and dog: two rulers vs one shared ruler ================= */
+  var mdChart = document.getElementById("mdChart");
+  var mdRawGroup = document.createElementNS(svgNS, "g");
+  var mdZGroup = document.createElementNS(svgNS, "g");
+  mdZGroup.style.display = "none";
+  mdChart.appendChild(mdRawGroup);
+  mdChart.appendChild(mdZGroup);
+
+  function buildCurveScale(parent, mu, sigma, domainMin, domainMax, baseY, topY, color){
+    var pts = [];
+    var n = 90;
+    for (var i=0;i<=n;i++){
+      var x = domainMin + (domainMax-domainMin)*(i/n);
+      var d = Math.exp(-((x-mu)*(x-mu))/(2*sigma*sigma));
+      var px = 10 + ((x-domainMin)/(domainMax-domainMin))*(460-20);
+      var py = baseY - d*(baseY-topY);
+      pts.push(px + "," + py);
+    }
+    var path = document.createElementNS(svgNS, "path");
+    path.setAttribute("d", "M " + pts.join(" L "));
+    path.setAttribute("fill","none"); path.setAttribute("stroke", color); path.setAttribute("stroke-width","2");
+    parent.appendChild(path);
+    var axis = document.createElementNS(svgNS, "line");
+    axis.setAttribute("x1","10"); axis.setAttribute("x2","450");
+    axis.setAttribute("y1", baseY); axis.setAttribute("y2", baseY);
+    axis.setAttribute("stroke","var(--card-line)"); axis.setAttribute("stroke-width","1");
+    parent.insertBefore(axis, path);
+    return {
+      toPx: function(x){ return 10 + ((x-domainMin)/(domainMax-domainMin))*(460-20); },
+      toPy: function(x){ var d = Math.exp(-((x-mu)*(x-mu))/(2*sigma*sigma)); return baseY - d*(baseY-topY); }
+    };
+  }
+  function mdAxisLabel(parent, x, y, text, anchor){
+    var t = document.createElementNS(svgNS, "text");
+    t.setAttribute("x", x); t.setAttribute("y", y);
+    t.setAttribute("text-anchor", anchor); t.setAttribute("class","mono");
+    t.setAttribute("font-size","10"); t.setAttribute("fill","var(--ink-faint)");
+    t.textContent = text;
+    parent.appendChild(t);
+  }
+
+  var mouseRawScale = buildCurveScale(mdRawGroup, MOUSE_MEAN, MOUSE_SIGMA, 4, 16, 62, 12, "var(--amber)");
+  mdAxisLabel(mdRawGroup, 10, 76, "4cm", "start");
+  mdAxisLabel(mdRawGroup, 230, 76, "10cm avg", "middle");
+  mdAxisLabel(mdRawGroup, 450, 76, "16cm", "end");
+
+  var dogRawScale = buildCurveScale(mdRawGroup, DOG_MEAN, DOG_SIGMA, 15, 105, 140, 90, "var(--teal)");
+  mdAxisLabel(mdRawGroup, 10, 138+16, "15cm", "start");
+  mdAxisLabel(mdRawGroup, 230, 138+16, "60cm avg", "middle");
+  mdAxisLabel(mdRawGroup, 450, 138+16, "105cm", "end");
+
+  var mouseMarkerRaw = document.createElementNS(svgNS, "circle");
+  mouseMarkerRaw.setAttribute("r","6"); mouseMarkerRaw.setAttribute("fill","var(--amber)");
+  var dogMarkerRaw = document.createElementNS(svgNS, "circle");
+  dogMarkerRaw.setAttribute("r","6"); dogMarkerRaw.setAttribute("fill","var(--teal)");
+  mdRawGroup.appendChild(mouseMarkerRaw); mdRawGroup.appendChild(dogMarkerRaw);
+
+  var standardScale = buildCurveScale(mdZGroup, 0, 1, -3, 3, 130, 20, "var(--ink-soft)");
+  [-3,-2,-1,0,1,2,3].forEach(function(z){
+    mdAxisLabel(mdZGroup, standardScale.toPx(z), 146, z, "middle");
+  });
+  var mouseMarkerZ = document.createElementNS(svgNS, "circle");
+  mouseMarkerZ.setAttribute("r","7"); mouseMarkerZ.setAttribute("fill","var(--amber)");
+  var dogMarkerZ = document.createElementNS(svgNS, "circle");
+  dogMarkerZ.setAttribute("r","7"); dogMarkerZ.setAttribute("fill","var(--teal)");
+  mdZGroup.appendChild(mouseMarkerZ); mdZGroup.appendChild(dogMarkerZ);
+
+  var mdMouseSize = document.getElementById("mdMouseSize");
+  var mdDogSize = document.getElementById("mdDogSize");
+  var mdMouseVal = document.getElementById("mdMouseVal");
+  var mdDogVal = document.getElementById("mdDogVal");
+  var mdMode = "raw";
+
+  function renderMd(){
+    var m = parseFloat(mdMouseSize.value), d = parseFloat(mdDogSize.value);
+    mdMouseVal.textContent = m;
+    mdDogVal.textContent = d;
+
+    mouseMarkerRaw.setAttribute("cx", mouseRawScale.toPx(m));
+    mouseMarkerRaw.setAttribute("cy", mouseRawScale.toPy(m));
+    dogMarkerRaw.setAttribute("cx", dogRawScale.toPx(d));
+    dogMarkerRaw.setAttribute("cy", dogRawScale.toPy(d));
+
+    var zm = (m - MOUSE_MEAN) / MOUSE_SIGMA, zd = (d - DOG_MEAN) / DOG_SIGMA;
+    var zmC = Math.max(-3, Math.min(3, zm)), zdC = Math.max(-3, Math.min(3, zd));
+    mouseMarkerZ.setAttribute("cx", standardScale.toPx(zmC));
+    mouseMarkerZ.setAttribute("cy", standardScale.toPy(zmC));
+    dogMarkerZ.setAttribute("cx", standardScale.toPx(zdC));
+    dogMarkerZ.setAttribute("cy", standardScale.toPy(zdC));
+
+    var winner = Math.abs(zm) > Math.abs(zd) ? "mouse" : "dog";
+    document.getElementById("mdReadout").innerHTML = mdMode === "raw"
+      ? 'mouse: <span class="mono">' + m + 'cm</span> on its own ruler · dog: <span class="mono">' + d + 'cm</span> on its own ruler — two different axes, not really comparable'
+      : 'mouse: <span class="mono">z = ' + zm.toFixed(2) + '</span> · dog: <span class="mono">z = ' + zd.toFixed(2) + '</span> — same ruler now: the <b>' + winner + '</b> sits further into the tail';
+  }
+  mdMouseSize.addEventListener("input", renderMd);
+  mdDogSize.addEventListener("input", renderMd);
+
+  document.getElementById("mdRawBtn").addEventListener("click", function(){
+    mdMode = "raw";
+    mdRawGroup.style.display = "";
+    mdZGroup.style.display = "none";
+    document.getElementById("mdRawBtn").className = "btn";
+    document.getElementById("mdZBtn").className = "btn ghost";
+    document.getElementById("mdStageLabel").textContent = "ruler: each animal's own real size (cm)";
+    renderMd();
+  });
+  document.getElementById("mdZBtn").addEventListener("click", function(){
+    mdMode = "z";
+    mdRawGroup.style.display = "none";
+    mdZGroup.style.display = "";
+    document.getElementById("mdZBtn").className = "btn";
+    document.getElementById("mdRawBtn").className = "btn ghost";
+    document.getElementById("mdStageLabel").textContent = "ruler: shared z-scale (σ from each animal's own average)";
+    renderMd();
+  });
+  renderMd();
+
+  /* ================= 3.1 z-score: math test vs SAT ================= */
+  var MATH_MEAN = 85, MATH_SIGMA = 5;
+  var SAT_MEAN = 1000, SAT_SIGMA = 200;
+  var zScoreChart = document.getElementById("zScoreChart");
+  var ZSW = 460, ZS_MIN = -3, ZS_MAX = 3;
+  var MATH_Y = 32, SAT_Y = 76;
+  function zsX(z){ return 10 + ((Math.max(ZS_MIN, Math.min(ZS_MAX, z)) - ZS_MIN) / (ZS_MAX - ZS_MIN)) * (ZSW - 20); }
+
+  [MATH_Y, SAT_Y].forEach(function(y){
+    var line = document.createElementNS(svgNS, "line");
+    line.setAttribute("x1","10"); line.setAttribute("x2", ZSW-10);
+    line.setAttribute("y1", y); line.setAttribute("y2", y);
+    line.setAttribute("stroke","var(--card-line)"); line.setAttribute("stroke-width","1");
+    zScoreChart.appendChild(line);
+  });
+  [-2,-1,0,1,2].forEach(function(z){
+    [MATH_Y, SAT_Y].forEach(function(y){
+      var dot = document.createElementNS(svgNS, "circle");
+      dot.setAttribute("cx", zsX(z)); dot.setAttribute("cy", y); dot.setAttribute("r","3");
+      dot.setAttribute("fill","var(--ink-faint)"); dot.setAttribute("opacity","0.5");
+      zScoreChart.appendChild(dot);
+    });
+  });
+  function zsRowLabel(text, y){
+    var t = document.createElementNS(svgNS, "text");
+    t.setAttribute("x","10"); t.setAttribute("y", y-9);
+    t.setAttribute("class","mono"); t.setAttribute("font-size","10"); t.setAttribute("fill","var(--ink-faint)");
+    t.textContent = text;
+    zScoreChart.appendChild(t);
+  }
+  zsRowLabel("typical math scores", MATH_Y);
+  zsRowLabel("typical SAT scores", SAT_Y);
+
+  var mathMarker = document.createElementNS(svgNS, "circle");
+  mathMarker.setAttribute("r","7"); mathMarker.setAttribute("fill","var(--amber)"); mathMarker.setAttribute("cy", MATH_Y);
+  var satMarker = document.createElementNS(svgNS, "circle");
+  satMarker.setAttribute("r","7"); satMarker.setAttribute("fill","var(--teal)"); satMarker.setAttribute("cy", SAT_Y);
+  zScoreChart.appendChild(mathMarker); zScoreChart.appendChild(satMarker);
+
+  var mathScoreInput = document.getElementById("mathScore");
+  var satScoreInput = document.getElementById("satScore");
+  var mathVal = document.getElementById("mathVal");
+  var satVal = document.getElementById("satVal");
+
+  function renderZScore(){
+    var ms = parseFloat(mathScoreInput.value), ss = parseFloat(satScoreInput.value);
+    mathVal.textContent = ms + "/100";
+    satVal.textContent = ss;
+    var zm = (ms - MATH_MEAN) / MATH_SIGMA;
+    var zs = (ss - SAT_MEAN) / SAT_SIGMA;
+    mathMarker.setAttribute("cx", zsX(zm));
+    satMarker.setAttribute("cx", zsX(zs));
+    var verdict = Math.abs(zm - zs) < 0.05
+      ? "exactly tied — the same distance from typical on both tests"
+      : (zm > zs ? "you're relatively stronger on the math test" : "you're relatively stronger on the SAT");
+    document.getElementById("zScoreReadout").innerHTML =
+      'math: <span class="mono">z = ' + zm.toFixed(2) + '</span> · SAT: <span class="mono">z = ' + zs.toFixed(2) + '</span> — ' + verdict;
+  }
+  mathScoreInput.addEventListener("input", renderZScore);
+  satScoreInput.addEventListener("input", renderZScore);
+  renderZScore();
+
+  /* ================= 3.2 standardization: three curves become one ================= */
+  var stdChart = document.getElementById("stdChart");
+  var stdRawGroup = document.createElementNS(svgNS, "g");
+  var stdZGroup = document.createElementNS(svgNS, "g");
+  stdZGroup.style.display = "none";
+  stdChart.appendChild(stdRawGroup);
+  stdChart.appendChild(stdZGroup);
+
+  buildCurveScale(stdRawGroup, MATH_MEAN, MATH_SIGMA, 70, 100, 42, 12, "var(--amber)");
+  mdAxisLabel(stdRawGroup, 10, 40, "math: 70–100", "start");
+  buildCurveScale(stdRawGroup, SAT_MEAN, SAT_SIGMA, 400, 1600, 92, 62, "var(--teal)");
+  mdAxisLabel(stdRawGroup, 10, 90, "SAT: 400–1600", "start");
+  buildCurveScale(stdRawGroup, HEIGHT_MU, HEIGHT_SIGMA, 86, 134, 144, 114, "var(--ink-faint)");
+  mdAxisLabel(stdRawGroup, 10, 142, "height: 86–134cm", "start");
+
+  buildCurveScale(stdZGroup, 0, 1, -3, 3, 132, 22, "var(--amber)");
+  buildCurveScale(stdZGroup, 0, 1, -3, 3, 132, 22, "var(--teal)");
+  var stdSharedScale = buildCurveScale(stdZGroup, 0, 1, -3, 3, 132, 22, "var(--ink-faint)");
+  [-3,-2,-1,0,1,2,3].forEach(function(z){
+    mdAxisLabel(stdZGroup, stdSharedScale.toPx(z), 148, z, "middle");
+  });
+
+  document.getElementById("stdRawBtn").addEventListener("click", function(){
+    stdRawGroup.style.display = "";
+    stdZGroup.style.display = "none";
+    document.getElementById("stdRawBtn").className = "btn";
+    document.getElementById("stdZBtn").className = "btn ghost";
+    document.getElementById("stdStageLabel").textContent = "raw scales — three different rulers";
+    document.getElementById("stdReadout").textContent = "three different averages, three different spreads — nothing lines up yet";
+  });
+  document.getElementById("stdZBtn").addEventListener("click", function(){
+    stdRawGroup.style.display = "none";
+    stdZGroup.style.display = "";
+    document.getElementById("stdZBtn").className = "btn";
+    document.getElementById("stdRawBtn").className = "btn ghost";
+    document.getElementById("stdStageLabel").textContent = "standardized — one shared ruler";
+    document.getElementById("stdReadout").textContent = "all three are now the Standard Normal Distribution — average 0, spread 1, exactly the same curve";
+  });
+
+  /* ================= 3.3 the empirical rule: 68 / 95 / 99.7 ================= */
+  var empChart = document.getElementById("empChart");
+  var ECW = 460, EBASE = 130, ETOP = 20, EDOM = 3.5;
+  function eX(z){ return 10 + ((z+EDOM)/(2*EDOM)) * (ECW-20); }
+  function ePdf(z){ return Math.exp(-(z*z)/2); }
+  function eY(z){ return EBASE - ePdf(z)*(EBASE-ETOP); }
+
+  var eSamples = [];
+  var eN = 200;
+  for (var ei=0; ei<=eN; ei++){
+    var ez = -EDOM + (2*EDOM)*(ei/eN);
+    eSamples.push({ z:ez, d:ePdf(ez) });
+  }
+  var eDz = (2*EDOM)/eN;
+  var eTotalArea = eSamples.reduce(function(acc,s){ return acc + s.d*eDz; }, 0);
+
+  var eBase = document.createElementNS(svgNS, "line");
+  eBase.setAttribute("x1","10"); eBase.setAttribute("x2", ECW-10);
+  eBase.setAttribute("y1", EBASE); eBase.setAttribute("y2", EBASE);
+  eBase.setAttribute("stroke","var(--card-line)"); eBase.setAttribute("stroke-width","1");
+  empChart.appendChild(eBase);
+  [-3,-2,-1,0,1,2,3].forEach(function(z){
+    var tick = document.createElementNS(svgNS, "line");
+    tick.setAttribute("x1", eX(z)); tick.setAttribute("x2", eX(z));
+    tick.setAttribute("y1", EBASE-4); tick.setAttribute("y2", EBASE+4);
+    tick.setAttribute("stroke","var(--card-line)"); tick.setAttribute("stroke-width","1");
+    empChart.appendChild(tick);
+    var lbl = document.createElementNS(svgNS, "text");
+    lbl.setAttribute("x", eX(z)); lbl.setAttribute("y", EBASE+18);
+    lbl.setAttribute("text-anchor","middle"); lbl.setAttribute("class","mono");
+    lbl.setAttribute("font-size","10"); lbl.setAttribute("fill","var(--ink-faint)");
+    lbl.textContent = z + "σ";
+    empChart.appendChild(lbl);
+  });
+  var eShade = document.createElementNS(svgNS, "polygon");
+  eShade.setAttribute("fill","var(--amber)"); eShade.setAttribute("opacity","0.28");
+  var eCurve = document.createElementNS(svgNS, "path");
+  eCurve.setAttribute("d", "M " + eSamples.map(function(s){ return eX(s.z) + "," + eY(s.z); }).join(" L "));
+  eCurve.setAttribute("fill","none"); eCurve.setAttribute("stroke","var(--teal)"); eCurve.setAttribute("stroke-width","2");
+  empChart.appendChild(eShade);
+  empChart.appendChild(eCurve);
+
+  var empKInput = document.getElementById("empK");
+  var empKVal = document.getElementById("empKVal");
+  function renderEmp(){
+    var k = parseFloat(empKInput.value);
+    empKVal.textContent = k.toFixed(2);
+    var poly = [eX(-k) + "," + EBASE];
+    var area = 0;
+    eSamples.forEach(function(s){
+      if (s.z >= -k && s.z <= k){
+        poly.push(eX(s.z) + "," + eY(s.z));
+        area += s.d*eDz;
+      }
+    });
+    poly.push(eX(k) + "," + EBASE);
+    eShade.setAttribute("points", poly.join(" "));
+    var pct = (area/eTotalArea)*100;
+    document.getElementById("empReadout").innerHTML =
+      'within <span class="mono">±' + k.toFixed(2) + 'σ</span> of average: <span class="mono">' + pct.toFixed(1) + '%</span> of everything — about <b>' + Math.round(pct) + ' out of every 100</b>';
+  }
+  empKInput.addEventListener("input", renderEmp);
+  function empJumpTo(k){ empKInput.value = k; renderEmp(); }
+  document.getElementById("empJump1").addEventListener("click", function(){ empJumpTo(1); });
+  document.getElementById("empJump2").addEventListener("click", function(){ empJumpTo(2); });
+  document.getElementById("empJump3").addEventListener("click", function(){ empJumpTo(3); });
+  renderEmp();
+
+  /* ================= 3.4 confidence interval: a range, not one number ================= */
+  var ciChart = document.getElementById("ciChart");
+  var CIW = 460, CIBASE = 130, CITOP = 20;
+  var CI_MIN = HEIGHT_MU - 3*HEIGHT_SIGMA, CI_MAX = HEIGHT_MU + 3*HEIGHT_SIGMA;
+  function ciX(x){ return 10 + ((x-CI_MIN)/(CI_MAX-CI_MIN)) * (CIW-20); }
+  function ciDensity(x){ return Math.exp(-((x-HEIGHT_MU)*(x-HEIGHT_MU))/(2*HEIGHT_SIGMA*HEIGHT_SIGMA)); }
+  function ciY(x){ return CIBASE - ciDensity(x)*(CIBASE-CITOP); }
+
+  var ciBaseLine = document.createElementNS(svgNS, "line");
+  ciBaseLine.setAttribute("x1","10"); ciBaseLine.setAttribute("x2", CIW-10);
+  ciBaseLine.setAttribute("y1", CIBASE); ciBaseLine.setAttribute("y2", CIBASE);
+  ciBaseLine.setAttribute("stroke","var(--card-line)"); ciBaseLine.setAttribute("stroke-width","1");
+  ciChart.appendChild(ciBaseLine);
+  [-3,-2,-1,0,1,2,3].forEach(function(k){
+    var x = HEIGHT_MU + k*HEIGHT_SIGMA;
+    var lbl = document.createElementNS(svgNS, "text");
+    lbl.setAttribute("x", ciX(x)); lbl.setAttribute("y", CIBASE+18);
+    lbl.setAttribute("text-anchor","middle"); lbl.setAttribute("class","mono");
+    lbl.setAttribute("font-size","10"); lbl.setAttribute("fill","var(--ink-faint)");
+    lbl.textContent = x.toFixed(0);
+    ciChart.appendChild(lbl);
+  });
+  var ciShade = document.createElementNS(svgNS, "polygon");
+  ciShade.setAttribute("fill","var(--amber)"); ciShade.setAttribute("opacity","0.28");
+  var ciCurvePts = [];
+  for (var cx=CI_MIN; cx<=CI_MAX+0.001; cx += (CI_MAX-CI_MIN)/150){
+    ciCurvePts.push(ciX(cx) + "," + ciY(cx));
+  }
+  var ciCurve = document.createElementNS(svgNS, "path");
+  ciCurve.setAttribute("d", "M " + ciCurvePts.join(" L "));
+  ciCurve.setAttribute("fill","none"); ciCurve.setAttribute("stroke","var(--teal)"); ciCurve.setAttribute("stroke-width","2");
+  ciChart.appendChild(ciShade);
+  ciChart.appendChild(ciCurve);
+
+  var CI_LEVELS = { 68: 1, 95: 2, 997: 3 };
+  function renderCi(pctKey, pctLabel){
+    var k = CI_LEVELS[pctKey];
+    var lo = HEIGHT_MU - k*HEIGHT_SIGMA, hi = HEIGHT_MU + k*HEIGHT_SIGMA;
+    var poly = [ciX(lo) + "," + CIBASE];
+    for (var cx2=lo; cx2<=hi+0.001; cx2 += (hi-lo)/60){
+      poly.push(ciX(cx2) + "," + ciY(cx2));
+    }
+    poly.push(ciX(hi) + "," + CIBASE);
+    ciShade.setAttribute("points", poly.join(" "));
+    document.getElementById("ciReadout").innerHTML =
+      '<span class="mono">' + pctLabel + '%</span> confident: the next kid\'s height is between <span class="mono">' + lo.toFixed(0) + 'cm</span> and <span class="mono">' + hi.toFixed(0) + 'cm</span> — a window <span class="mono">' + (hi-lo).toFixed(0) + 'cm</span> wide';
+  }
+  document.getElementById("ciBtn68").addEventListener("click", function(){
+    renderCi(68, "68");
+    this.className = "btn";
+    document.getElementById("ciBtn95").className = "btn ghost";
+    document.getElementById("ciBtn997").className = "btn ghost";
+  });
+  document.getElementById("ciBtn95").addEventListener("click", function(){
+    renderCi(95, "95");
+    this.className = "btn";
+    document.getElementById("ciBtn68").className = "btn ghost";
+    document.getElementById("ciBtn997").className = "btn ghost";
+  });
+  document.getElementById("ciBtn997").addEventListener("click", function(){
+    renderCi(997, "99.7");
+    this.className = "btn";
+    document.getElementById("ciBtn68").className = "btn ghost";
+    document.getElementById("ciBtn95").className = "btn ghost";
+  });
+  renderCi(68, "68");
+
+})();
+</script>
+</body>
+</html>

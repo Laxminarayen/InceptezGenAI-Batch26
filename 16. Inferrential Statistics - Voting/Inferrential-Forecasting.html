@@ -1,0 +1,1838 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Hour 1 · How Do We Guess Big Things? — Aamwadi &amp; the Lok Sabha</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+
+    --c-population:#178E7A; --c-census:#B06E0E; --c-clt:#C93E71;
+    --c-sim:#7247CE; --c-election:#2454A6; --c-intro:#3B6E63;
+
+    --bjp:#D97A24; --inc:#2D6FC4; --unrevealed:#B9AF97;
+
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+
+    --accent: var(--c-population);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+      --c-population:#3FCBAE; --c-census:#E3A238; --c-clt:#F17BA3;
+      --c-sim:#A587F7; --c-election:#6C9EE8; --c-intro:#79C0AE;
+      --bjp:#C97836; --inc:#5B93DD; --unrevealed:#454B5E;
+      --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+      --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+    --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+    --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+    --c-population:#3FCBAE; --c-census:#E3A238; --c-clt:#F17BA3;
+    --c-sim:#A587F7; --c-election:#6C9EE8; --c-intro:#79C0AE;
+    --bjp:#C97836; --inc:#5B93DD; --unrevealed:#454B5E;
+    --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+    --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+  }
+  :root[data-theme="light"]{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+    --c-population:#178E7A; --c-census:#B06E0E; --c-clt:#C93E71;
+    --c-sim:#7247CE; --c-election:#2454A6; --c-intro:#3B6E63;
+    --bjp:#D97A24; --inc:#2D6FC4; --unrevealed:#B9AF97;
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    overflow:hidden; -webkit-font-smoothing:antialiased;
+  }
+  body[data-section="population"]{--accent:var(--c-population);}
+  body[data-section="census"]{--accent:var(--c-census);}
+  body[data-section="clt"]{--accent:var(--c-clt);}
+  body[data-section="sim"]{--accent:var(--c-sim);}
+  body[data-section="election"]{--accent:var(--c-election);}
+  body[data-section="intro"]{--accent:var(--c-intro);}
+
+  h1,h2,h3,p{margin:0;}
+  h1,h2,h3{text-wrap:balance; letter-spacing:-0.01em;}
+  ::selection{background:var(--accent); color:#fff;}
+
+  .eyebrow{
+    font-size:.74rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent);
+  }
+  .slide h1{font-size:clamp(1.7rem,3.2vw,2.9rem); font-weight:800; color:var(--ink);}
+  .slide h2{font-size:clamp(1.2rem,1.8vw,1.6rem); font-weight:800; color:var(--ink);}
+  .body-text{font-size:clamp(1rem,1.25vw,1.2rem); font-weight:500; line-height:1.6; color:var(--ink-soft);}
+  .body-text b, .body-text strong{color:var(--ink); font-weight:800;}
+  .tabular{font-variant-numeric:tabular-nums;}
+
+  /* ---------- chrome ---------- */
+  .chrome-top{
+    position:fixed; top:0; left:0; right:0; height:52px; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 20px; pointer-events:none;
+  }
+  .chrome-top > *{pointer-events:auto;}
+  .hour-badge{
+    font-size:.72rem; font-weight:800; letter-spacing:.12em; color:var(--ink-faint);
+    background:var(--paper-2); border:1px solid var(--line); padding:6px 12px; border-radius:999px;
+  }
+  .chapter-chip{
+    display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:700;
+    color:var(--ink-soft); background:var(--paper-2); border:1px solid var(--line);
+    padding:6px 14px 6px 8px; border-radius:999px;
+  }
+  .chapter-chip .num{
+    display:inline-flex; align-items:center; justify-content:center; width:20px;height:20px;
+    border-radius:50%; background:var(--accent); color:#fff; font-size:.68rem; font-weight:800;
+  }
+  .icon-btn{
+    width:36px;height:36px; border-radius:50%; border:1px solid var(--line); background:var(--paper-2);
+    color:var(--ink); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .icon-btn:hover{background:var(--paper-3);}
+  .icon-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  .deck{position:absolute; inset:0; top:52px; bottom:64px;}
+  .slide{
+    position:absolute; inset:0; display:none; flex-direction:column;
+    padding:clamp(18px,3vw,40px) clamp(24px,5vw,80px);
+    overflow:auto;
+  }
+  .slide.active{display:flex;}
+  .slide-inner{display:flex; flex-direction:column; gap:clamp(12px,1.8vh,20px); max-width:1360px; width:100%; margin:0 auto; flex:1; min-height:0;}
+
+  .chrome-bottom{
+    position:fixed; left:0; right:0; bottom:0; height:64px; z-index:50;
+    display:flex; align-items:center; gap:14px; padding:0 clamp(14px,3vw,32px);
+    background:linear-gradient(0deg, var(--paper) 60%, transparent);
+  }
+  .nav-btn{
+    width:40px;height:40px;border-radius:50%; border:1px solid var(--line); background:var(--paper-2);
+    color:var(--ink); font-size:1.2rem; cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center;
+  }
+  .nav-btn:hover:not(:disabled){background:var(--accent); color:#fff; border-color:transparent;}
+  .nav-btn:disabled{opacity:.35; cursor:default;}
+  .progress{flex:1; display:flex; align-items:center; gap:5px; overflow-x:auto; scrollbar-width:none;}
+  .progress::-webkit-scrollbar{display:none;}
+  .dot{
+    width:9px;height:9px;border-radius:50%; background:var(--paper-3); border:none; cursor:pointer; flex:none;
+    transition:transform .15s ease;
+  }
+  .dot.gap{width:14px; height:2px; border-radius:1px; background:transparent; cursor:default;}
+  .dot.active{transform:scale(1.5);}
+  .slide-counter{font-size:.8rem; font-weight:700; color:var(--ink-faint); flex:none; white-space:nowrap;}
+
+  /* ---------- layout helpers ---------- */
+  .split{display:grid; grid-template-columns:1.05fr 1.35fr; gap:clamp(20px,4vw,52px); align-items:center; flex:1; min-height:0;}
+  @media (max-width:920px){ .split{grid-template-columns:1fr; overflow:auto;} }
+  .split.reverse{grid-template-columns:1.35fr 1.05fr;}
+  .stack{display:flex; flex-direction:column; gap:12px; min-height:0;}
+  .center-col{display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:16px; flex:1;}
+  .visual-box{
+    background:var(--surface-canvas); border:1px solid var(--line); border-radius:24px;
+    padding:14px; box-shadow:var(--shadow); min-height:0; display:flex; flex-direction:column; gap:8px;
+  }
+  .canvas-wrap{position:relative; flex:1; min-height:160px;}
+  canvas{display:block; width:100%; height:100%;}
+
+  /* ---------- components ---------- */
+  .vocab-card{
+    border-left:5px solid var(--accent); background:var(--paper-2); border-radius:14px;
+    padding:12px 18px; display:flex; flex-direction:column; gap:4px;
+  }
+  .vocab-term{font-size:1rem; font-weight:900; letter-spacing:.04em; color:var(--accent);}
+  .vocab-def{font-size:1rem; color:var(--ink); font-weight:600; line-height:1.4;}
+
+  .reallife{border:1.5px dashed var(--accent); background:transparent; border-radius:14px; padding:10px 16px;}
+  .reallife .tag{font-size:.68rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); display:flex; align-items:center; gap:6px;}
+  .reallife p{font-size:.92rem; color:var(--ink); font-weight:600; margin-top:5px; line-height:1.45;}
+
+  .console{
+    display:flex; flex-wrap:wrap; gap:14px 26px; align-items:flex-end;
+    background:var(--paper-2); border:1px solid var(--line); border-radius:20px;
+    padding:16px 20px;
+  }
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field label{font-size:.76rem; font-weight:800; color:var(--ink-soft); letter-spacing:.03em;}
+  .field .val{color:var(--accent); font-weight:900;}
+  input[type="range"]{width:180px; accent-color:var(--accent);}
+
+  .btn{
+    font:inherit; font-size:.92rem; font-weight:800; border:1px solid var(--line); border-radius:999px;
+    padding:11px 20px; cursor:pointer; background:var(--paper-3); color:var(--ink);
+    transition:transform .12s ease, box-shadow .12s ease; white-space:nowrap;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn:active{transform:translateY(0);}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .btn-primary{background:var(--accent); color:#fff; border-color:transparent; box-shadow:0 8px 18px -8px var(--accent);}
+  .btn-ghost{background:transparent;}
+  .btn.toggled{background:var(--accent); color:#fff; border-color:transparent;}
+  .btn-row{display:flex; flex-wrap:wrap; gap:10px;}
+
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px;}
+  .stat-tile{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:12px 14px;}
+  .stat-tile .label{font-size:.7rem; font-weight:800; color:var(--ink-faint); letter-spacing:.05em; text-transform:uppercase;}
+  .stat-tile .value{font-size:1.35rem; font-weight:900; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .stat-tile .value small{font-size:.85rem; font-weight:700; color:var(--ink-faint);}
+  .stat-tile.accent .value{color:var(--accent);}
+
+  .card{background:var(--paper-2); border:1px solid var(--line); border-radius:18px; padding:18px 20px;}
+  .card-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px;}
+  .card .ico{font-size:1.8rem;}
+  .card h3{font-size:1.02rem; margin-top:8px;}
+  .card p{font-size:.92rem; color:var(--ink-soft); margin-top:4px; line-height:1.45;}
+
+  .compare-table{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .compare-col{background:var(--paper-2); border-radius:18px; padding:20px; border-top:5px solid var(--accent);}
+  .compare-col.b{border-top-color:var(--c-census);}
+
+  .banner{border-radius:14px; padding:12px 16px; font-weight:800; font-size:.92rem; display:flex; align-items:center; gap:10px;}
+  .banner.warn{background:color-mix(in srgb, var(--warn) 18%, var(--paper-2)); color:var(--warn);}
+  .banner.good{background:color-mix(in srgb, var(--good) 18%, var(--paper-2)); color:var(--good);}
+  .banner.bad{background:color-mix(in srgb, var(--bad) 18%, var(--paper-2)); color:var(--bad);}
+  .banner.info{background:var(--paper-3); color:var(--ink); font-weight:600; align-items:flex-start;}
+
+  .headline-card{background:var(--paper-2); border:1px solid var(--line); border-radius:18px; padding:16px 20px; display:flex; flex-direction:column; gap:10px;}
+  .headline-title{font-family:Georgia, "Times New Roman", serif; font-size:clamp(1.05rem,1.7vw,1.4rem); font-weight:800; line-height:1.3;}
+  .masthead{font-size:.68rem; font-weight:800; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); border-bottom:2px solid var(--ink); padding-bottom:6px; margin-bottom:2px;}
+
+  .ci-wrap{display:flex; flex-direction:column; gap:6px;}
+  .ci-track{position:relative; height:32px; background:var(--paper-3); border-radius:10px; overflow:visible;}
+  .ci-fill{position:absolute; top:0; bottom:0; border-radius:10px;}
+  .ci-point{position:absolute; top:50%; width:12px; height:12px; margin-left:-6px; margin-top:-6px; border-radius:50%; box-shadow:0 0 0 3px var(--paper);}
+  .ci-tie{position:absolute; top:-6px; bottom:-6px; width:0; border-left:2px dashed var(--ink-faint);}
+  .ci-ticks{display:flex; justify-content:space-between; font-size:.7rem; color:var(--ink-faint); font-weight:700;}
+  .ci-row{display:flex; align-items:center; gap:10px;}
+  .ci-row .name{width:56px; font-size:.7rem; font-weight:800; color:var(--ink-faint); flex:none;}
+  .ci-row .ci-track{height:14px; border-radius:7px;}
+  .ci-row .ci-point{width:8px; height:8px; margin-left:-4px; margin-top:-4px;}
+
+  .roadmap{display:grid; grid-template-columns:repeat(5,1fr); gap:14px;}
+  .roadmap .stop{background:var(--paper-2); border-radius:18px; padding:16px 10px; text-align:center; border-top:5px solid var(--stop-color, var(--accent));}
+  .roadmap .stop .ico{font-size:2rem;}
+  .roadmap .stop .t{font-size:.8rem; font-weight:800; margin-top:6px;}
+  @media (max-width:920px){ .roadmap{grid-template-columns:repeat(2,1fr);} .compare-table{grid-template-columns:1fr;} }
+
+  .kicker-big{font-size:clamp(2.2rem,5.6vw,3.9rem); font-weight:900; letter-spacing:-0.02em;}
+  .glow{color:var(--accent);}
+
+  .rule-list{display:flex; flex-direction:column; gap:12px;}
+  .rule{display:flex; gap:14px; align-items:flex-start;}
+  .rule .n{width:34px;height:34px;border-radius:50%; background:var(--accent); color:#fff; font-weight:900; display:flex; align-items:center; justify-content:center; flex:none;}
+  .rule .t h3{font-size:1rem;}
+  .rule .t p{font-size:.92rem; color:var(--ink-soft); margin-top:2px;}
+
+  .legend{display:flex; gap:16px; font-size:.8rem; font-weight:700; color:var(--ink-soft); flex-wrap:wrap;}
+  .legend .sw{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle;}
+
+  .footnote{font-size:.82rem; color:var(--ink-faint); font-weight:600;}
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+</style>
+</head>
+<body data-section="intro">
+  <div class="chrome-top">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="hour-badge">HOUR 1 OF 3</div>
+      <div class="chapter-chip" id="chapterChip" style="display:none;">
+        <span class="num" id="chapterNum">1</span>
+        <span id="chapterLabel">—</span>
+      </div>
+    </div>
+    <button class="icon-btn" id="themeToggle" title="Toggle light / dark">🌗</button>
+  </div>
+
+  <main class="deck" id="deck">
+
+    <!-- ============ S0 — INTRO / ROADMAP ============ -->
+    <section class="slide" data-section="intro" id="s0">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Aamwadi &amp; the Lok Sabha · Hour 1</div>
+        <h1 class="kicker-big">How do we guess <span class="glow">BIG</span> things<br/>from a <span class="glow">small</span> peek?</h1>
+        <p class="body-text" style="max-width:660px;">Today we become mango-orchard scientists — and by the end of the hour, election-night reporters working with <b>real 2019 Lok Sabha data</b>. Here's where we're headed:</p>
+        <div class="roadmap" style="width:100%; margin-top:6px;">
+          <div class="stop" style="--stop-color:var(--c-population);"><div class="ico">🥭</div><div class="t">Population &amp; Sample</div></div>
+          <div class="stop" style="--stop-color:var(--c-census);"><div class="ico">📋</div><div class="t">Census &amp; Survey</div></div>
+          <div class="stop" style="--stop-color:var(--c-clt);"><div class="ico">🔔</div><div class="t">The Magic Bell (CLT)</div></div>
+          <div class="stop" style="--stop-color:var(--c-sim);"><div class="ico">🧪</div><div class="t">CLT Laboratory</div></div>
+          <div class="stop" style="--stop-color:var(--c-election);"><div class="ico">🗞️</div><div class="t">2019 Exit Poll Newsroom</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ A1 — MEET AAMWADI ============ -->
+    <section class="slide" data-section="population" id="s1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Chapter 1 · Population &amp; Sample</div>
+          <h1>Meet Aamwadi's<br/>mango harvest 🥭</h1>
+          <p class="body-text">Imagine a basket with <b>360 mangoes</b> from this year's harvest. Some are small and light. Some are <b>BIG and heavy</b>. Nobody has ever weighed every single one!</p>
+          <p class="body-text">Watch the basket fill up →</p>
+        </div>
+        <div class="visual-box" style="height:min(54vh,500px);">
+          <div class="canvas-wrap"><canvas id="cvA1"></canvas></div>
+          <div class="legend"><span><span style="font-size:14px; vertical-align:middle;">🥭</span> small &amp; light</span><span><span style="font-size:28px; vertical-align:middle;">🥭</span> big &amp; heavy</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ A2 — POPULATION DEFINED ============ -->
+    <section class="slide" data-section="population" id="s2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Chapter 1 · Population &amp; Sample</div>
+          <h1>This whole basket is our <span class="glow">POPULATION</span></h1>
+          <div class="vocab-card">
+            <div class="vocab-term">POPULATION</div>
+            <div class="vocab-def">Every single thing you care about — the WHOLE basket. Every kid in a school. Every voter in India. Every mango in the harvest.</div>
+          </div>
+          <p class="body-text">If we wanted the basket's <i>true</i> average weight, we could weigh <b>every single mango</b>... but that takes forever. Still — let's peek at the answer, just this once:</p>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Mangoes in the basket</div><div class="value tabular">360</div></div>
+            <div class="stat-tile accent"><div class="label">True average weight</div><div class="value tabular" id="popMeanA2">—</div></div>
+          </div>
+          <div class="reallife"><div class="tag">🌍 Real life</div><p>All ~1.4 billion people in India. Every run Virat Kohli has ever scored. Every student in your entire school — not just your classroom.</p></div>
+        </div>
+        <div class="visual-box" style="height:min(54vh,500px);">
+          <div class="canvas-wrap"><canvas id="cvA2"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ A3 — SAMPLE INTERACTIVE ============ -->
+    <section class="slide" data-section="population" id="s3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Chapter 1 · Population &amp; Sample</div>
+          <h1>Grab a <span class="glow">SAMPLE</span> — a scoop!</h1>
+          <div class="vocab-card">
+            <div class="vocab-term">SAMPLE</div>
+            <div class="vocab-def">A small scoop you grab from the basket to GUESS about the whole harvest — without weighing every mango.</div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Scoop average</div><div class="value tabular" id="sampMeanA3">—</div></div>
+            <div class="stat-tile"><div class="label">True basket average</div><div class="value tabular" id="trueMeanA3">—</div></div>
+            <div class="stat-tile accent"><div class="label">How close?</div><div class="value tabular" id="diffA3">—</div></div>
+          </div>
+          <div class="reallife"><div class="tag">🌍 Real life</div><p>The 30 kids in your class (sample) out of every schoolkid in India (population). One spoon of dal you taste (sample) from the whole pot (population).</p></div>
+        </div>
+        <div class="stack" style="min-height:0;">
+          <div class="visual-box" style="height:min(42vh,380px);">
+            <div class="canvas-wrap"><canvas id="cvA3"></canvas></div>
+          </div>
+          <div class="console">
+            <div class="field"><label>Scoop size (n = <span class="val" id="nA3label">30</span>)</label><input type="range" id="nA3" min="5" max="120" value="30"></div>
+            <button class="btn btn-primary" id="scoopA3">🥄 Scoop a sample!</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ A4 — RECAP TABLE ============ -->
+    <section class="slide" data-section="population" id="s4">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Chapter 1 · Recap</div>
+        <h1 style="text-align:center;">Population vs. Sample</h1>
+        <div class="compare-table" style="margin-top:6px;">
+          <div class="compare-col">
+            <div class="ico" style="font-size:2rem;">🧺</div>
+            <h3 style="font-size:1.15rem; margin-top:6px;">POPULATION</h3>
+            <p class="body-text" style="margin-top:6px;">Every mango in the harvest. Every person in India. Every ball in a cricket match. Every vote in an election.</p>
+          </div>
+          <div class="compare-col b">
+            <div class="ico" style="font-size:2rem;">🥄</div>
+            <h3 style="font-size:1.15rem; margin-top:6px;">SAMPLE</h3>
+            <p class="body-text" style="margin-top:6px;">One scoop. The 30 kids in your classroom. The overs you actually watched. The voters an exit poll actually asks.</p>
+          </div>
+        </div>
+        <p class="body-text" style="text-align:center; margin-top:4px;">We use a <b>sample</b> to make a smart guess about the <b>population</b> — that's the whole game.</p>
+      </div>
+    </section>
+
+    <!-- ============ B1 — CENSUS/SURVEY DEFINED ============ -->
+    <section class="slide" data-section="census" id="s5">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Chapter 2 · Census &amp; Survey</div>
+        <h1 style="text-align:center;">Two ways to find the truth</h1>
+        <div class="card-grid" style="margin-top:8px;">
+          <div class="card" style="border-top:5px solid var(--c-census);">
+            <div class="ico">📋</div><h3>CENSUS</h3>
+            <p>Weigh / ask <b>every single one</b> — the whole population. Perfectly accurate. Perfectly slow.</p>
+          </div>
+          <div class="card" style="border-top:5px solid var(--c-population);">
+            <div class="ico">📝</div><h3>SURVEY</h3>
+            <p>Ask a <b>sample</b> — just a scoop. Fast and cheap. A tiny bit of guessing wobble.</p>
+          </div>
+        </div>
+        <div class="reallife" style="margin-top:4px;"><div class="tag">🌍 Real life</div><p>India's Census asks every single household — but only once every 10 years (it's HUGE effort). Between census years, the government uses quick sample surveys, like the NSSO, instead.</p></div>
+        <p class="body-text" style="text-align:center; margin-top:4px;">A <b>census</b> counts the <span class="glow">population</span>. A <b>survey</b> questions a <span class="glow">sample</span>. Let's race them!</p>
+      </div>
+    </section>
+
+    <!-- ============ B2 — RACE INTERACTIVE ============ -->
+    <section class="slide" data-section="census" id="s6">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Chapter 2 · Census &amp; Survey</div>
+          <h1>Census vs. Survey: <span class="glow">the race</span> ⏱️</h1>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="censusBtn">📋 Take the Census</button>
+            <button class="btn" id="surveyBtn">📝 Take a Survey (n=30)</button>
+            <button class="btn btn-ghost" id="resetRaceBtn">🔄 Reset basket</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Census · weighed</div><div class="value tabular" id="censusCount">0 / 360</div></div>
+            <div class="stat-tile"><div class="label">Census · time</div><div class="value tabular" id="censusTime">—</div></div>
+            <div class="stat-tile"><div class="label">Survey · time</div><div class="value tabular" id="surveyTime">—</div></div>
+          </div>
+          <div class="banner" id="raceCompare" style="display:none;"></div>
+          <p class="footnote">India's real Census happens roughly once every 10 years (1951, 1961 ... 2011) — millions of workers going door to door across the WHOLE country. Imagine THESE seconds are really <b>months</b> (census) vs. <b>one afternoon</b> (survey).</p>
+        </div>
+        <div class="visual-box" style="height:min(54vh,500px);">
+          <div class="canvas-wrap"><canvas id="cvB2"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ B3 — REAL WORLD EXAMPLES ============ -->
+    <section class="slide" data-section="census" id="s7">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Chapter 2 · Out in the real world</div>
+        <h1 style="text-align:center;">You've seen this everywhere</h1>
+        <div class="card-grid" style="margin-top:8px;">
+          <div class="card"><div class="ico">🏛️</div><h3>India's Census</h3><p>Counts every household in the country — the last one was in 2011. Massive census, massive effort.</p></div>
+          <div class="card"><div class="ico">🏏</div><h3>Batting average</h3><p>A batsman's FULL career record (every ball, ever) vs. the last 10 innings commentators quote.</p></div>
+          <div class="card"><div class="ico">🗳️</div><h3>Election exit poll</h3><p>Reporters ask a sample of voters leaving the booth, hours before every vote is counted.</p></div>
+          <div class="card"><div class="ico">🥣</div><h3>Tasting dal</h3><p>One spoonful tells you the whole pot's flavour — you don't eat it all!</p></div>
+          <div class="card"><div class="ico">🌡️</div><h3>Doctor's checkup</h3><p>One thermometer reading samples your body's heat — not every single cell.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ C1 — PUZZLE / REPEAT SCOOPING ============ -->
+    <section class="slide" data-section="clt" id="s8">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Chapter 3 · The Magic Bell (CLT)</div>
+          <h1>Wait... will I get the <span class="glow">same</span> answer every time?</h1>
+          <p class="body-text">Scoop the basket again and again. Write down each scoop's average weight. Watch what happens below.</p>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="scoopAgainC">🥄 Scoop again (n=30)</button>
+            <button class="btn" id="scoopFastC1">⚡ Scoop 500 times fast (n=30)</button>
+            <button class="btn btn-ghost" id="resetC1">🔄 Start over</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile accent"><div class="label">Latest scoop #</div><div class="value tabular" id="scoopNumC1">0</div></div>
+            <div class="stat-tile"><div class="label">Latest average</div><div class="value tabular" id="scoopMeanC1">—</div></div>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(38vh,340px);">
+          <div class="canvas-wrap"><canvas id="cvC1"></canvas></div>
+          <p class="footnote" id="c1Footnote">Each mango = one scoop's average weight, lined up from light to heavy. Click "×500" to see the curve appear.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ C2 — FAST FORWARD / BELL REVEAL ============ -->
+    <section class="slide" data-section="clt" id="s9">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Chapter 3 · The Magic Bell (CLT)</div>
+        <h1>Scoop 200 times... and watch the shape 🔔</h1>
+        <div class="split" style="flex:1; min-height:0;">
+          <div class="visual-box" style="height:100%;">
+            <div class="eyebrow" style="padding:2px 4px;">The BASKET is lopsided</div>
+            <div class="canvas-wrap"><canvas id="cvC2pop"></canvas></div>
+          </div>
+          <div class="visual-box" style="height:100%;">
+            <div class="eyebrow" style="padding:2px 4px; color:var(--c-clt);">The AVERAGES make a bell</div>
+            <div class="canvas-wrap"><canvas id="cvC2means"></canvas></div>
+          </div>
+        </div>
+        <div class="card-grid" style="grid-template-columns:1fr 1fr;">
+          <div class="reallife"><div class="tag">🔭 Where CLT actually came from</div><p>Old-time astronomers measuring a star's position never got the exact same number twice — each reading had a tiny random error. But if they measured it 50 times and averaged, the errors cancelled out and the average landed very close to the truth. This is the exact problem the Central Limit Theorem was built to explain.</p></div>
+          <div class="reallife"><div class="tag">📦 Where it's used today</div><p>A biscuit factory can't weigh every single packet. An inspector weighs a random SAMPLE off the line — the sample's average reliably estimates the true average weight of the whole batch, even though each packet wobbles a little. This is literally how quality control works.</p></div>
+        </div>
+        <div class="console">
+          <button class="btn btn-primary" id="scoopFastC2">⚡ Scoop 200 times!</button>
+          <button class="btn btn-ghost" id="resetC2">🔄 Reset</button>
+          <div class="field"><label>Scoops so far</label><div class="val tabular" id="fastCountC2" style="font-size:1.1rem;">0</div></div>
+          <div class="banner good" id="bellRevealC2" style="display:none;">🔔 Ta-da! Even from a lopsided basket, the averages make a BELL!</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ C3 — THREE RULES ============ -->
+    <section class="slide" data-section="clt" id="s10">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Chapter 3 · The Central Limit Theorem</div>
+          <h1>The 3 kid rules of the Magic Bell</h1>
+          <div class="rule-list">
+            <div class="rule"><div class="n">1</div><div class="t"><h3>Grab a decent scoop</h3><p>Around 30 or more mangoes per scoop works great — tiny scoops (like 2) are too wobbly.</p></div></div>
+            <div class="rule"><div class="n">2</div><div class="t"><h3>The bell centers on the TRUTH</h3><p>The middle of the bell lands right on the basket's real average. No cheating, no bias.</p></div></div>
+            <div class="rule"><div class="n">3</div><div class="t"><h3>Bigger scoops = skinnier bell</h3><p>More mangoes per scoop means less wobble — a tighter, more confident guess.</p></div></div>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="visual-box" style="height:170px;"><div class="eyebrow" style="padding:2px 4px;">small scoop → wide bell</div><div class="canvas-wrap"><canvas id="cvBellWide"></canvas></div></div>
+          <div class="visual-box" style="height:170px;"><div class="eyebrow" style="padding:2px 4px;">big scoop → narrow bell</div><div class="canvas-wrap"><canvas id="cvBellNarrow"></canvas></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ C3b — STATE THE CLT FORMALLY ============ -->
+    <section class="slide" data-section="clt" id="sCLTdef">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Chapter 3 · Now, precisely</div>
+          <h1>Let's say it like a textbook 📐</h1>
+          <div class="vocab-card" style="border-left-color:var(--c-clt);">
+            <div class="vocab-term" style="color:var(--c-clt);">THE CENTRAL LIMIT THEOREM</div>
+            <div class="vocab-def">Take repeated random samples of size <b>n</b> from ANY population with mean <b>μ</b> and standard deviation <b>σ</b>. As <b>n</b> gets reasonably large (a common rule of thumb: n ≥ 30), the distribution of the <b>sample mean</b> gets closer and closer to a <b>Normal (bell-shaped)</b> distribution — centered at <b>μ</b>, with standard deviation <b>σ/√n</b> — no matter what shape the original population has.</div>
+          </div>
+          <p class="body-text" style="font-family:Georgia, 'Times New Roman', serif; font-size:1.15rem;">x̄ ~ approximately Normal( μ, σ/√n )</p>
+          <p class="body-text">That's it. That's the whole theorem — the same magic bell you just built by scooping mangoes.</p>
+        </div>
+        <div class="stack">
+          <div class="card">
+            <h3 style="margin-bottom:8px;">Kid words → textbook words</h3>
+            <div class="stack" style="gap:8px;">
+              <div class="body-text">🧺 Basket &nbsp;→&nbsp; <b>Population</b></div>
+              <div class="body-text">🥄 Scoop (size n) &nbsp;→&nbsp; <b>Sample</b></div>
+              <div class="body-text">Scoop's average &nbsp;→&nbsp; <b>Sample mean (x̄)</b></div>
+              <div class="body-text">The Magic Bell &nbsp;→&nbsp; <b>Sampling distribution of the mean</b></div>
+              <div class="body-text">The wobble &nbsp;→&nbsp; <b>Standard Error (SE = σ/√n)</b></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ C4 — BRIDGE ============ -->
+    <section class="slide" data-section="clt" id="s11">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Chapter 3 → Chapter 4</div>
+        <h1 class="kicker-big">Ready to build<br/>your own <span class="glow">Lab</span>? 🧪</h1>
+        <p class="body-text" style="max-width:560px;">Different baskets, different scoop sizes — let's see the Magic Bell appear <i>every time</i>, no matter the shape of the population.</p>
+      </div>
+    </section>
+
+    <!-- ============ D1 — CLT LAB ============ -->
+    <section class="slide" data-section="sim" id="s12">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Chapter 4 · CLT Laboratory</div>
+        <h1>The CLT Laboratory</h1>
+        <div class="split" style="flex:1.4; min-height:0;">
+          <div class="visual-box" style="height:100%;">
+            <div class="eyebrow" style="padding:2px 4px;">Population shape</div>
+            <div class="canvas-wrap"><canvas id="cvDpop"></canvas></div>
+          </div>
+          <div class="visual-box" style="height:100%;">
+            <div class="eyebrow" style="padding:2px 4px; color:var(--c-clt);">Sampling distribution of the mean</div>
+            <div class="canvas-wrap"><canvas id="cvDmeans"></canvas></div>
+          </div>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-tile"><div class="label">Population mean (μ)</div><div class="value tabular" id="dPopMean">—</div></div>
+          <div class="stat-tile accent"><div class="label">Mean of sample means</div><div class="value tabular" id="dMeanOfMeans">—</div></div>
+          <div class="stat-tile"><div class="label">Population SD (σ)</div><div class="value tabular" id="dPopSD">—</div></div>
+          <div class="stat-tile"><div class="label">Scoops taken</div><div class="value tabular" id="dCount">0</div></div>
+          <div class="stat-tile"><div class="label">Empirical SE (actual wobble)</div><div class="value tabular" id="dEmpSE">—</div></div>
+          <div class="stat-tile accent"><div class="label">Theoretical SE = σ/√n</div><div class="value tabular" id="dTheorySE">—</div></div>
+        </div>
+        <div class="console">
+          <div class="field"><label>Population shape</label>
+            <div class="btn-row">
+              <button class="btn toggled" data-shape="skewed">🥭 Skewed</button>
+              <button class="btn" data-shape="uniform">🎲 Flat</button>
+              <button class="btn" data-shape="bimodal">🐫 Two humps</button>
+            </div>
+            <p class="footnote" id="shapeCaption" style="margin-top:4px;">Like a mango harvest, or T20 cricket scores — most modest, a few huge.</p>
+          </div>
+          <div class="field"><label>Scoop size (n = <span class="val" id="nDlabel">30</span>)</label><input type="range" id="nD" min="2" max="100" value="30"></div>
+          <button class="btn btn-primary" id="draw1D">Draw 1</button>
+          <button class="btn btn-primary" id="draw25D">Draw 25</button>
+          <button class="btn btn-primary" id="draw200D">Draw 200</button>
+          <button class="btn btn-ghost" id="resetD">🔄 Reset lab</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ D2 — CHALLENGES ============ -->
+    <section class="slide" data-section="sim" id="s13">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Chapter 4 · Try it yourself</div>
+        <h1 style="text-align:center;">4 experiments to try in the Lab</h1>
+        <div class="card-grid" style="margin-top:8px;">
+          <div class="card"><div class="ico">1️⃣</div><h3>Tiny scoops</h3><p>Set n = 5 on the Skewed population. Is the bell narrow or wide? Perfectly symmetric, or still a bit lopsided?</p></div>
+          <div class="card"><div class="ico">2️⃣</div><h3>Big scoops</h3><p>Now set n = 80. What happens to the width of the bell? Watch the SE numbers shrink.</p></div>
+          <div class="card"><div class="ico">3️⃣</div><h3>Two humps</h3><p>Switch to "Two Humps" — like a school with a junior wing and a senior wing. Does the AVERAGE still make one single bell?</p></div>
+          <div class="card"><div class="ico">4️⃣</div><h3>Break it!</h3><p>Try n = 2 on Two Humps. Can you break the Magic Bell? Why does the rule say "big enough" scoops?</p></div>
+        </div>
+        <p class="body-text" style="text-align:center; margin-top:6px;">Flip back to the Lab (◂) any time — it remembers exactly where you left it.</p>
+      </div>
+    </section>
+
+    <!-- ============ E0 — THE REAL STAKES ============ -->
+    <section class="slide" data-section="election" id="sE0">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Chapter 5 · Exit Poll Newsroom</div>
+        <h1 style="text-align:center;">Let's rewind to a <span class="glow">real</span> election night 🗞️</h1>
+        <p class="body-text" style="text-align:center; max-width:720px; margin:0 auto;">India's <b>Lok Sabha election</b>: <b>543 seats</b> up for grabs across the country. Whichever side's team wins more than half of them gets to form the government.</p>
+        <div class="stack" style="gap:6px; max-width:720px; width:100%; margin:8px auto 0;">
+          <div style="position:relative; height:30px; background:var(--paper-3); border-radius:9px;">
+            <div style="position:absolute; left:50.1%; top:-8px; bottom:-8px; width:0; border-left:3px dashed var(--ink);"></div>
+          </div>
+          <div style="display:flex; justify-content:space-between; font-size:.8rem; font-weight:800; color:var(--ink-faint);">
+            <span>0 seats</span><span>272 seats = majority</span><span>543 seats</span>
+          </div>
+        </div>
+        <p class="body-text" style="text-align:center; max-width:720px; margin:8px auto 0;">Two big camps competed: the <b>BJP-led NDA</b> and the <b>Congress-led INDIA bloc</b>. To practice our statistics, we'll simplify this to just <b>BJP vs. Congress</b>.</p>
+      </div>
+    </section>
+
+    <!-- ============ E1 — WHAT'S AN EXIT POLL ============ -->
+    <section class="slide" data-section="election" id="sE1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Chapter 5 · Exit Poll Newsroom</div>
+          <h1>What's an <span class="glow">exit poll</span>? 🎤</h1>
+          <div class="vocab-card">
+            <div class="vocab-term">EXIT POLL</div>
+            <div class="vocab-def">Asking a SAMPLE of voters what they just voted, right as they walk out of the booth — hours before the official count is ready.</div>
+          </div>
+          <p class="body-text">It's the same words from Chapters 1 &amp; 2, just wearing election clothes: <b>Population</b> = every voter. <b>Sample</b> = the voters an exit poll asks. <b>Survey</b> = the exit poll itself. <b>Census</b> = the official vote count.</p>
+          <div class="headline-card" style="padding:12px 16px;">
+            <div class="masthead">EXIT POLL · MAY 19, 2019</div>
+            <div class="headline-title">India Today–Axis My India predicts NDA win: 339–365 seats</div>
+          </div>
+          <p class="body-text">We'll build a model of the <b>2019 Lok Sabha electorate</b> and run <b>your own</b> exit poll on it — one small, clear step at a time, so nothing is a mystery.</p>
+          <p class="footnote">We simplify to BJP vs. Congress vote share only (ignoring allies), since that's what our maths works with cleanly — and seats aren't exactly proportional to votes anyway (India's "first past the post" system).</p>
+        </div>
+        <div class="visual-box" style="height:min(50vh,460px);">
+          <div class="canvas-wrap"><canvas id="cvVoters"></canvas></div>
+          <div class="legend">
+            <span><span class="sw" style="background:var(--unrevealed);"></span>not yet asked</span>
+            <span><span class="sw" style="background:var(--bjp);"></span>BJP</span>
+            <span><span class="sw" style="background:var(--inc);"></span>Congress</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E2a — WORD 1: VOTE SHARE ============ -->
+    <section class="slide" data-section="election" id="sE2a">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Chapter 5 · Word 1 of 4</div>
+        <h1 style="text-align:center;">VOTE SHARE (%)</h1>
+        <div class="vocab-card" style="max-width:640px; margin:0 auto;">
+          <div class="vocab-term">VOTE SHARE</div>
+          <div class="vocab-def">Out of everyone we asked, what % said BJP? What % said Congress? That's the vote share.</div>
+        </div>
+        <p class="body-text" style="text-align:center; max-width:640px; margin:8px auto 0;">If you ask 10 voters and 6 say BJP, BJP's vote share (in your sample) is 6 out of 10 = <b>60%</b>.</p>
+      </div>
+    </section>
+
+    <!-- ============ E2b — WORD 2: MARGIN OF ERROR ============ -->
+    <section class="slide" data-section="election" id="sE2b">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Chapter 5 · Word 2 of 4</div>
+        <h1 style="text-align:center;">MARGIN OF ERROR (±)</h1>
+        <div class="vocab-card" style="max-width:640px; margin:0 auto;">
+          <div class="vocab-term">MARGIN OF ERROR</div>
+          <div class="vocab-def">Our best guess is never PERFECT. ± is the wobble room — how far off we might be, just from asking a sample instead of everyone.</div>
+        </div>
+        <p class="body-text" style="text-align:center; max-width:640px; margin:8px auto 0;">It's like guessing how full a stadium is by counting ONE section and scaling up — you'll be close, not exact. The margin of error is how far "not exact" might stretch.</p>
+      </div>
+    </section>
+
+    <!-- ============ E2c — WORD 3: CONFIDENCE INTERVAL ============ -->
+    <section class="slide" data-section="election" id="sE2c">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Chapter 5 · Word 3 of 4</div>
+        <h1 style="text-align:center;">CONFIDENCE INTERVAL</h1>
+        <div class="vocab-card" style="max-width:640px; margin:0 auto;">
+          <div class="vocab-term">CONFIDENCE INTERVAL</div>
+          <div class="vocab-def">Best guess ± margin of error = a RANGE where we're pretty confident the true answer is hiding.</div>
+        </div>
+        <div class="card" style="max-width:640px; width:100%; margin:10px auto 0;">
+          <p class="footnote" style="margin-bottom:8px;">Example (not real data): "BJP 60% ± 5%" means we think the true number is somewhere between 55% and 65%.</p>
+          <div class="ci-wrap">
+            <div class="ci-track">
+              <div class="ci-fill" style="left:55%; width:10%; background:color-mix(in srgb, var(--c-election) 35%, transparent);"></div>
+              <div class="ci-tie" style="left:50%;"></div>
+              <div class="ci-point" style="left:60%; background:var(--c-election);"></div>
+            </div>
+            <div class="ci-ticks"><span>0%</span><span>50%</span><span>100%</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E2d — WORD 4: TOO CLOSE TO CALL ============ -->
+    <section class="slide" data-section="election" id="sE2d">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Chapter 5 · Word 4 of 4</div>
+        <h1 style="text-align:center;">TOO CLOSE TO CALL</h1>
+        <div class="vocab-card" style="max-width:640px; margin:0 auto;">
+          <div class="vocab-term">TOO CLOSE TO CALL</div>
+          <div class="vocab-def">If the confidence interval crosses the halfway (50%) mark, we genuinely don't know who's ahead — a responsible reporter says so instead of guessing!</div>
+        </div>
+        <div class="card" style="max-width:640px; width:100%; margin:10px auto 0;">
+          <p class="footnote" style="margin-bottom:8px;">Example: "BJP 51% ± 5%" ranges from 46% to 56% — that crosses 50%, so it's too close to call, even though 51% "looks" ahead.</p>
+          <div class="ci-wrap">
+            <div class="ci-track">
+              <div class="ci-fill" style="left:46%; width:10%; background:color-mix(in srgb, var(--warn) 35%, transparent);"></div>
+              <div class="ci-tie" style="left:50%;"></div>
+              <div class="ci-point" style="left:51%; background:var(--warn);"></div>
+            </div>
+            <div class="ci-ticks"><span>0%</span><span>50%</span><span>100%</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E3 — A VOTE IS SECRETLY A MANGO ============ -->
+    <section class="slide" data-section="election" id="sE3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Chapter 5 · The big connection</div>
+          <h1>A vote is secretly a <span class="glow">mango</span>! 🥭➡️🗳️</h1>
+          <div class="vocab-card" style="border-left-color:var(--c-clt);">
+            <div class="vocab-term" style="color:var(--c-clt);">THE SECRET</div>
+            <div class="vocab-def">A vote share % is just an AVERAGE — of a bunch of 1s and 0s! Say "BJP" → write down 1. Say "Congress" → write down 0. The vote share is simply the AVERAGE of those numbers.</div>
+          </div>
+          <p class="body-text">Just like a mango's <b>weight</b> was a number we averaged in Chapters 1–4, a voter's <b>choice</b> is a number (1 or 0) we average here. <b>Same theorem. New costume.</b></p>
+        </div>
+        <div class="card">
+          <h3 style="margin-bottom:10px;">A worked example — 5 voters</h3>
+          <div class="stack" style="gap:6px;">
+            <div class="body-text tabular">Voter 1: BJP &nbsp;→&nbsp; 1</div>
+            <div class="body-text tabular">Voter 2: BJP &nbsp;→&nbsp; 1</div>
+            <div class="body-text tabular">Voter 3: Congress &nbsp;→&nbsp; 0</div>
+            <div class="body-text tabular">Voter 4: BJP &nbsp;→&nbsp; 1</div>
+            <div class="body-text tabular">Voter 5: Congress &nbsp;→&nbsp; 0</div>
+          </div>
+          <div class="banner good" style="margin-top:12px;">Average = (1+1+0+1+0) ÷ 5 = 3 ÷ 5 = <b>0.60 = 60% BJP</b></div>
+          <div class="stack" style="gap:8px; margin-top:12px;">
+            <div class="body-text">🥭 Basket &nbsp;→&nbsp; 🗳️ Electorate</div>
+            <div class="body-text">🥄 Scoop &nbsp;→&nbsp; 📋 Exit poll sample</div>
+            <div class="body-text">Average weight &nbsp;→&nbsp; Vote share %</div>
+            <div class="body-text">The Magic Bell &nbsp;→&nbsp; The Magic Bell (same one!)</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E3b — STANDARD DEVIATION OF A VOTE, BY HAND ============ -->
+    <section class="slide" data-section="election" id="sE3b">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Chapter 5 · Standard deviation of a vote</div>
+          <h1>How spread out are the votes?</h1>
+          <div class="vocab-card">
+            <div class="vocab-term">RECALL: STANDARD DEVIATION</div>
+            <div class="vocab-def">From Chapter 3: σ (standard deviation) = how far, ON AVERAGE, values are from the mean.<br/>Formula: σ = √( average of (value − mean)² )</div>
+          </div>
+          <p class="body-text">A vote is a value too — just 1 or 0. Let's run the EXACT same calculation on votes that we ran on mango weights.</p>
+          <p class="body-text">Notice: <b>0.49</b> is a LOT of spread for a number that's only ever 0 or 1! That makes sense — every single vote is either the FARTHEST possible above the average, or the farthest possible below it. There's no "medium" vote.</p>
+        </div>
+        <div class="card">
+          <h3 style="margin-bottom:10px;">Same 5 voters, now measuring spread</h3>
+          <div style="display:grid; grid-template-columns:0.6fr 1fr 1.4fr 0.8fr; gap:7px 10px; font-size:.86rem;">
+            <div class="footnote" style="font-weight:800;">Voter</div>
+            <div class="footnote" style="font-weight:800;">Vote (X)</div>
+            <div class="footnote" style="font-weight:800;">Deviation (X − mean)</div>
+            <div class="footnote" style="font-weight:800;">Squared</div>
+
+            <div class="body-text tabular">1</div><div class="body-text tabular">1 (BJP)</div><div class="body-text tabular">1 − 0.6 = 0.4</div><div class="body-text tabular">0.16</div>
+            <div class="body-text tabular">2</div><div class="body-text tabular">1 (BJP)</div><div class="body-text tabular">1 − 0.6 = 0.4</div><div class="body-text tabular">0.16</div>
+            <div class="body-text tabular">3</div><div class="body-text tabular">0 (Congress)</div><div class="body-text tabular">0 − 0.6 = −0.6</div><div class="body-text tabular">0.36</div>
+            <div class="body-text tabular">4</div><div class="body-text tabular">1 (BJP)</div><div class="body-text tabular">1 − 0.6 = 0.4</div><div class="body-text tabular">0.16</div>
+            <div class="body-text tabular">5</div><div class="body-text tabular">0 (Congress)</div><div class="body-text tabular">0 − 0.6 = −0.6</div><div class="body-text tabular">0.36</div>
+          </div>
+          <div class="banner good" style="margin-top:12px;">Sum of squared deviations = 0.16+0.16+0.36+0.16+0.36 = <b>1.20</b><br/>Average (÷ 5 voters) = <b>0.24</b> &nbsp;→&nbsp; Standard deviation = √0.24 ≈ <b>0.49</b></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E3c — THE SHORTCUT FORMULA ============ -->
+    <section class="slide" data-section="election" id="sE3c">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Chapter 5 · A beautiful shortcut</div>
+          <h1>The shortcut: SD = <span class="glow">√(p × (1−p))</span></h1>
+          <p class="body-text">Redoing that deviation-squaring dance for 500 voters would take forever. Luckily, for ANY 0-or-1 variable, the answer always simplifies to one clean formula:</p>
+          <div class="vocab-card" style="border-left-color:var(--c-clt);">
+            <div class="vocab-term" style="color:var(--c-clt);">STANDARD DEVIATION OF A VOTE</div>
+            <div class="vocab-def" style="font-family:Georgia, 'Times New Roman', serif; font-size:1.2rem;">SD(vote) = √( p × (1 − p) )</div>
+            <div class="vocab-def">...where <b>p</b> = the probability a random voter picks BJP.</div>
+          </div>
+          <p class="footnote">✅ Check it against our 5-voter example: p = 0.6 &nbsp;→&nbsp; 0.6 × 0.4 = 0.24 — exactly the 0.24 we calculated by hand on the last slide!</p>
+        </div>
+        <div class="card">
+          <h3 style="margin-bottom:10px;">Why does it simplify so perfectly?</h3>
+          <div class="stack" style="gap:9px;">
+            <p class="body-text">Say BJP happens with probability <b>p</b>:</p>
+            <p class="body-text">• When someone votes BJP (chance = p), their distance from the mean is (1 − p).</p>
+            <p class="body-text">• When someone votes Congress (chance = 1 − p), their distance from the mean is p.</p>
+            <p class="body-text">Multiply each squared distance by how often it happens, and add the two together:</p>
+            <p class="body-text tabular" style="font-family:Georgia, 'Times New Roman', serif; font-size:1.05rem;">p·(1−p)² + (1−p)·p² = p(1−p)·[(1−p)+p] = p(1−p)</p>
+            <p class="body-text">The p's and (1−p)'s collapse into ONE tidy number — no matter what p is!</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E4 — ONE EXIT POLL = ONE SCOOP ============ -->
+    <section class="slide" data-section="election" id="sE4">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Chapter 5 · Exit Poll Newsroom</div>
+          <h1>One exit poll = <span class="glow">one scoop</span> 🥄</h1>
+          <p class="body-text">Ask a random SAMPLE of voters — just like scooping mangoes from the basket.</p>
+          <div class="console" style="padding:14px 16px;">
+            <div class="field"><label>Exit poll size (n = <span class="val" id="nElabel">60</span>)</label><input type="range" id="nE" min="20" max="350" value="60"></div>
+            <button class="btn btn-primary" id="conductPollBtn">🎤 Ask these voters</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Voters asked (n)</div><div class="value tabular" id="rawN">—</div></div>
+            <div class="stat-tile"><div class="label">Said BJP</div><div class="value tabular" id="rawCount">—</div></div>
+            <div class="stat-tile accent"><div class="label">p̂ = your sample proportion</div><div class="value tabular" id="rawPhat">—</div></div>
+          </div>
+          <p class="footnote">p̂ (say "p-hat") is just the statistician's short way of writing "sample proportion" — the AVERAGE of your sample's 1s and 0s.</p>
+        </div>
+        <div class="visual-box" style="height:min(50vh,460px);">
+          <div class="canvas-wrap"><canvas id="cvVoters2"></canvas></div>
+          <div class="legend">
+            <span><span class="sw" style="background:var(--unrevealed);"></span>not yet asked</span>
+            <span><span class="sw" style="background:var(--bjp);"></span>BJP</span>
+            <span><span class="sw" style="background:var(--inc);"></span>Congress</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E5 — MARGIN OF ERROR, STEP BY STEP ============ -->
+    <section class="slide" data-section="election" id="sE5">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Chapter 5 · Exit Poll Newsroom</div>
+          <h1>Margin of error, <span class="glow">step by step</span></h1>
+          <p class="body-text">Using YOUR poll from Slide 4, and the standard deviation shortcut we just derived, here's exactly how the ± gets calculated:</p>
+          <div id="moeSteps"></div>
+        </div>
+        <div class="stack">
+          <div id="finalHeadlineArea"></div>
+          <p class="footnote">1.96 is the "magic number" for 95% confidence — it comes from the Magic Bell itself: about 95% of a bell curve's area sits within 1.96 wobbles (standard errors) of the middle.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E6 — IS ONE POLL ENOUGH? ============ -->
+    <section class="slide" data-section="election" id="sE6">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Chapter 5 · A nagging question</div>
+        <h1 class="kicker-big">Is <span class="glow">ONE</span> poll<br/>really enough?</h1>
+        <p class="body-text" style="max-width:600px;">Your poll gave one estimate. If a DIFFERENT reporter asked a DIFFERENT random group of the same size, would they get the exact same %? We already know the answer from Chapter 3 — let's prove it here too, by running MANY exit polls at once.</p>
+      </div>
+    </section>
+
+    <!-- ============ E7 — RUN MANY EXIT POLLS (AVERAGE OF AVERAGES) ============ -->
+    <section class="slide" data-section="election" id="sE7">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Chapter 5 · Average of averages</div>
+        <h1>Let's run MANY exit polls 🗳️🗳️🗳️</h1>
+        <p class="body-text">Each bar below is itself an AVERAGE (one poll's %). Now watch the AVERAGE... of averages.</p>
+        <div class="visual-box" style="flex:1; min-height:0;">
+          <div class="eyebrow" style="padding:2px 4px; color:var(--c-clt);">Distribution of poll results (n = <span id="nE7label">60</span> each)</div>
+          <div class="canvas-wrap"><canvas id="cvManyPolls"></canvas></div>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-tile"><div class="label">Polls run so far</div><div class="value tabular" id="manyCount">0</div></div>
+          <div class="stat-tile accent"><div class="label">Average of all poll %s</div><div class="value tabular" id="manyMeanOfMeans">—</div></div>
+          <div class="stat-tile"><div class="label">Empirical SE (actual wobble)</div><div class="value tabular" id="manyEmpSE">—</div></div>
+          <div class="stat-tile"><div class="label">Theoretical SE = SD(vote)/√n</div><div class="value tabular" id="manyTheorySE">—</div></div>
+        </div>
+        <div class="console">
+          <button class="btn btn-primary" id="run5Btn">Run 5 more polls</button>
+          <button class="btn btn-primary" id="run50Btn">Run 50 more polls</button>
+          <button class="btn btn-primary" id="run500Btn">Run 500 more polls</button>
+          <button class="btn btn-ghost" id="resetManyBtn">🔄 Reset</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E8 — WHAT DOES 95% CONFIDENCE MEAN ============ -->
+    <section class="slide" data-section="election" id="sE8">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Chapter 5 · The meaning of "95% confident"</div>
+        <h1>What does <span class="glow">95% confidence</span> really mean?</h1>
+        <p class="body-text">Using the polls you just ran, let's check: how many of THEIR own ± ranges actually caught the true value?</p>
+        <div class="console">
+          <button class="btn btn-primary" id="checkCoverageBtn">🔍 Check coverage</button>
+          <div class="field"><label>Ranges that caught the truth</label><div class="val tabular" id="coverageTally" style="font-size:1.2rem;">—</div></div>
+        </div>
+        <div class="visual-box" style="flex:1; min-height:0; overflow:auto;">
+          <p class="footnote" style="margin-bottom:4px;">A sample of your polls (green = caught the truth, red = missed):</p>
+          <div id="coverageRows" class="stack" style="gap:6px;"></div>
+        </div>
+        <div id="coverageConclusion"></div>
+      </div>
+    </section>
+
+    <!-- ============ E9 — REVEAL, STEP BY STEP ============ -->
+    <section class="slide" data-section="election" id="sE9">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Chapter 5 · Exit Poll Newsroom</div>
+          <h1>📊 What <span class="glow">really</span> happened</h1>
+          <button class="btn btn-primary" id="revealBtn">📊 Reveal what really happened in 2019</button>
+          <div class="stack" style="gap:6px;">
+            <div class="eyebrow" style="padding:2px 4px;">Step 1 · What real pollsters guessed</div>
+            <div class="stat-tile"><div class="label">Real exit poll said (Axis My India)</div><div class="value tabular" id="realExitE3" style="font-size:1.05rem;">—</div></div>
+          </div>
+          <div class="stack" style="gap:6px;">
+            <div class="eyebrow" style="padding:2px 4px;">Step 2 · What actually happened</div>
+            <div class="stat-tile"><div class="label">Real actual result</div><div class="value tabular" id="realResultE3" style="font-size:1.05rem;">—</div></div>
+          </div>
+          <div class="stack" style="gap:6px;">
+            <div class="eyebrow" style="padding:2px 4px; color:var(--c-clt);">Step 3 · How YOUR poll did</div>
+            <div class="stat-grid">
+              <div class="stat-tile"><div class="label">Model's true share</div><div class="value tabular" id="trueShareE3">—</div></div>
+              <div class="stat-tile accent"><div class="label">Your poll said</div><div class="value tabular" id="pollResultE3" style="font-size:1.05rem;">—</div></div>
+            </div>
+          </div>
+          <div id="verdictArea"></div>
+          <div id="cltCompareArea"></div>
+        </div>
+        <div class="visual-box" style="height:min(54vh,500px);">
+          <div class="canvas-wrap"><canvas id="cvVoters3"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E10 — TWO KINDS OF ERROR ============ -->
+    <section class="slide" data-section="election" id="sE10">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Chapter 5 · One more idea</div>
+        <h1 style="text-align:center;">Two very different kinds of error</h1>
+        <div class="compare-table" style="margin-top:6px;">
+          <div class="compare-col">
+            <div class="ico" style="font-size:2rem;">🎲</div>
+            <h3 style="font-size:1.15rem; margin-top:6px;">RANDOM ERROR</h3>
+            <p class="body-text" style="margin-top:6px;">Comes from asking only a SAMPLE, not everyone. Shrinks if you ask MORE people. This is exactly what margin of error measures — and what the Central Limit Theorem explains.</p>
+          </div>
+          <div class="compare-col b">
+            <div class="ico" style="font-size:2rem;">⚠️</div>
+            <h3 style="font-size:1.15rem; margin-top:6px;">BIAS</h3>
+            <p class="body-text" style="margin-top:6px;">Comes from asking the WRONG mix of people, or people not answering honestly. Does NOT shrink just by asking more people. Margin of error does NOT protect you from this.</p>
+          </div>
+        </div>
+        <p class="body-text" style="text-align:center; margin-top:6px;">You just proved random error is small and predictable (Chapter 5's poll lab). So... did the REAL 2019 exit polls actually work that well?</p>
+      </div>
+    </section>
+
+    <!-- ============ E11 — WHY THE REAL 2019 POLLS WERE SO ACCURATE ============ -->
+    <section class="slide" data-section="election" id="sE11">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Chapter 5 · The real story</div>
+        <h1 style="text-align:center;">Why were the real 2019 polls so accurate?</h1>
+        <div class="banner good" style="margin-top:6px;">✅ Real exit polls (Axis My India) predicted <b>NDA 339–365 seats</b>. The real result: <b>353</b> — right inside the predicted range! That's exactly what proper, unbiased random sampling promises: best guess ± margin of error, catching the truth.</div>
+        <p class="body-text">This is the Central Limit Theorem working exactly as advertised. Honest random sampling, measured carefully, gave a reliable, trustworthy prediction — no drama, no surprises, just the Magic Bell doing its job.</p>
+        <div class="banner bad">📉 Not every year goes this smoothly, though: the SAME pollster's <b>2024</b> exit poll predicted NDA 361–401 seats, but the real result was only 293 — a miss of 68+ seats. Same maths, same team, different year. <b>Margin of error protects you from RANDOMNESS. It can't protect you from BIAS</b> — which is likely what crept in during 2024.</div>
+      </div>
+    </section>
+
+    <!-- ============ E12 — RUN 20 HONEST POLLS ============ -->
+    <section class="slide" data-section="election" id="sE12">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Chapter 5 · Exit Poll Newsroom</div>
+        <h1>What does <span class="glow">honest</span> random sampling look like?</h1>
+        <p class="body-text">The real 2019 exit polls landed right on target. Is THAT how reliable honest random sampling normally is? Let's check — using PURE random sampling (no bias) on our 2019 model, here's what 20 independent exit polls really look like:</p>
+        <div class="console">
+          <button class="btn btn-primary" id="run20Btn">🗞️ Simulate 20 honest exit polls (uses n above)</button>
+          <div class="field"><label>Correctly captured truth</label><div class="val tabular" id="tally20" style="font-size:1.2rem;">— / 20</div></div>
+        </div>
+        <div class="visual-box" style="flex:1; min-height:0; overflow:auto;">
+          <p class="footnote" style="margin-bottom:4px;">Each row below is one reporter's exit poll: a dot (best guess) with a shaded range (± margin of error).</p>
+          <div id="caterpillar" class="stack" style="gap:6px;"></div>
+        </div>
+        <div id="honestConclusion"></div>
+      </div>
+    </section>
+
+    <!-- ============ E13 — CHAPTER 5 RECAP ============ -->
+    <section class="slide" data-section="election" id="sE13">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Chapter 5 · Recap</div>
+        <h1 style="text-align:center;">Everything we just learned 🗞️</h1>
+        <div class="card-grid" style="margin-top:8px;">
+          <div class="card"><div class="ico">🎤</div><h3>Exit poll = survey</h3><p>A sample of voters asked before the official census (the full vote count).</p></div>
+          <div class="card"><div class="ico">🥭</div><h3>Vote share = average</h3><p>Every vote is a 1 or a 0. Vote share % is just their average — the same maths as mango weights.</p></div>
+          <div class="card"><div class="ico">📐</div><h3>Margin of error</h3><p>SD(vote) = √(p̂(1−p̂)), then ± = 1.96 × SD/√n — the same σ/√n wobble from Chapter 3, calculated for votes.</p></div>
+          <div class="card"><div class="ico">🗳️🗳️🗳️</div><h3>Average of averages</h3><p>Run many polls, and their %s form a bell curve too — confirming CLT works for proportions.</p></div>
+          <div class="card"><div class="ico">🎯</div><h3>95% confidence</h3><p>Run this method 100 times, about 95 of the ranges catch the truth. It's a promise about the METHOD.</p></div>
+          <div class="card"><div class="ico">✅</div><h3>Random sampling really works</h3><p>2019's real exit polls proved it — best guess ± margin of error caught the truth. (2024 shows what happens when bias creeps in instead.)</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ RECAP ============ -->
+    <section class="slide" data-section="intro" id="s18">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Hour 1 · Recap</div>
+        <h1 style="text-align:center;">5 big ideas, before the break 🎉</h1>
+        <div class="card-grid" style="margin-top:8px;">
+          <div class="card" style="border-top:5px solid var(--c-population);"><div class="ico">🥭</div><h3>Population &amp; Sample</h3><p>A sample is a small scoop we use to guess about the whole population.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-census);"><div class="ico">📋</div><h3>Census &amp; Survey</h3><p>A census counts everyone (perfect, slow). A survey asks a sample (fast, tiny wobble).</p></div>
+          <div class="card" style="border-top:5px solid var(--c-clt);"><div class="ico">🔔</div><h3>CLT</h3><p>No matter the population's shape, sample averages form a bell — centered on the truth.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-sim);"><div class="ico">🧪</div><h3>Bigger scoops win</h3><p>Bigger samples make a narrower, more confident bell (smaller SE).</p></div>
+          <div class="card" style="border-top:5px solid var(--c-election);"><div class="ico">🗞️</div><h3>Exit polls</h3><p>Margin of error protects you from RANDOMNESS — as India's real 2019 exit polls proved. It can't protect you from BIAS, though (2024 shows what that looks like).</p></div>
+        </div>
+        <p class="footnote" style="text-align:center;">Election figures: publicly reported 2019 &amp; 2024 Lok Sabha results and India Today–Axis My India exit polls.</p>
+        <p class="body-text" style="text-align:center; margin-top:2px;">🧃 Take a 5-minute stretch break — see you for Hour 2!</p>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="chrome-bottom">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous slide">‹</button>
+    <div class="progress" id="progress"></div>
+    <div class="slide-counter"><span id="curNum" class="tabular">1</span> / <span id="totalNum" class="tabular">19</span></div>
+    <button class="nav-btn" id="nextBtn" aria-label="Next slide">›</button>
+  </nav>
+
+<script>
+"use strict";
+
+/* =========================== helpers =========================== */
+const $  = (sel, el=document) => el.querySelector(sel);
+const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+
+const rand  = (a,b) => a + Math.random()*(b-a);
+const clamp = (v,lo,hi) => Math.max(lo, Math.min(hi,v));
+const mean  = arr => arr.reduce((s,v)=>s+v,0) / arr.length;
+const sd    = arr => { const m = mean(arr); return Math.sqrt(arr.reduce((s,v)=>s+(v-m)**2,0) / arr.length); };
+const fmt   = (v,d=2) => Number(v).toFixed(d);
+const fmtG  = v => Math.round(v) + 'g';
+
+function shuffledIndices(n){
+  const a = Array.from({length:n}, (_,i)=>i);
+  for(let i=n-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function sampleIdx(popSize, n){ return shuffledIndices(popSize).slice(0, Math.min(n, popSize)); }
+
+function normalPDF(x, mu, sigma){
+  if(sigma <= 0) return 0;
+  return Math.exp(-0.5*((x-mu)/sigma)**2) / (sigma*Math.sqrt(2*Math.PI));
+}
+
+/* mango weights in grams: skewed / flat / two-humped harvest shapes */
+const W_MIN = 150, W_MAX = 410;
+function genSkewed(n){ return Array.from({length:n}, ()=> clamp(150 + 260*Math.pow(Math.random(),2.3), W_MIN, W_MAX)); }
+function genUniform(n){ return Array.from({length:n}, ()=> rand(W_MIN, W_MAX)); }
+function genBimodal(n){ return Array.from({length:n}, ()=> { const lo = Math.random() < 0.5; const base = lo ? 190 : 380; return clamp(base + rand(-40,40), W_MIN, W_MAX); }); }
+
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+
+function mangoColor(v){
+  const t = clamp((v-W_MIN)/(W_MAX-W_MIN), 0, 1);
+  const L = 62 - t*36;
+  const S = 52;
+  return `hsl(33 ${S}% ${L}%)`;
+}
+function mangoSizeScale(v){
+  const t = clamp((v-W_MIN)/(W_MAX-W_MIN), 0, 1);
+  return 0.6 + 0.5*t;
+}
+
+/* ---- canvas fit ---- */
+function fitCanvas(cv){
+  const rect = cv.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const w = Math.max(1, Math.round(rect.width*dpr));
+  const h = Math.max(1, Math.round(rect.height*dpr));
+  if(cv.width !== w || cv.height !== h){ cv.width = w; cv.height = h; }
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return { ctx, w: rect.width, h: rect.height };
+}
+
+/* ---- dot grid (population / voters) ---- */
+function drawDotGrid(cv, n, colorFn, opts={}){
+  if(!cv || cv.clientWidth === 0) return null;
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const pad = 10;
+  const availW = w - pad*2, availH = h - pad*2;
+  const aspect = availW / Math.max(1,availH);
+  let cols = Math.max(1, Math.round(Math.sqrt(n*aspect)));
+  const rows = Math.ceil(n/cols);
+  const cellW = availW/cols, cellH = availH/rows;
+  const r = Math.max(1.6, Math.min(cellW,cellH)/2 - 1.4);
+  const glyph = opts.glyph || null;
+  const plainColor = opts.plainColor || null;
+  for(let i=0;i<n;i++){
+    const col = i % cols, row = (i / cols) | 0;
+    const cx = pad + cellW*col + cellW/2;
+    const cy = pad + cellH*row + cellH/2;
+    const fill = colorFn(i);
+    if(fill === 'transparent'){ continue; }
+    if(glyph && fill !== plainColor){
+      const scale = opts.sizeFn ? opts.sizeFn(i) : 1;
+      const fontSize = Math.max(7, Math.min(cellW,cellH) * 0.86 * scale);
+      ctx.font = fontSize + 'px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(glyph, cx, cy + fontSize*0.04);
+    } else {
+      ctx.beginPath();
+      ctx.fillStyle = fill;
+      ctx.arc(cx,cy,r,0,Math.PI*2);
+      ctx.fill();
+    }
+    if(opts.ringSet && opts.ringSet.has(i)){
+      ctx.lineWidth = Math.max(1.5, r*0.4);
+      ctx.strokeStyle = opts.ringColor || cssVar('--ink');
+      ctx.beginPath();
+      ctx.arc(cx,cy,r + ctx.lineWidth*0.9,0,Math.PI*2);
+      ctx.stroke();
+    }
+  }
+  return { cols, rows, cellW, cellH, pad, r };
+}
+
+/* ---- histogram ---- */
+function roundRectTop(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  if(h <= 0.5){ return; }
+  r = Math.max(0, Math.min(r, w/2, h));
+  ctx.moveTo(x, y+h);
+  ctx.lineTo(x, y+r);
+  ctx.arcTo(x, y, x+r, y, r);
+  ctx.lineTo(x+w-r, y);
+  ctx.arcTo(x+w, y, x+w, y+r, r);
+  ctx.lineTo(x+w, y+h);
+  ctx.closePath();
+}
+
+function drawHistogram(cv, values, opts={}){
+  if(!cv || cv.clientWidth === 0) return;
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const min = opts.min ?? W_MIN, max = opts.max ?? W_MAX;
+  const bins = opts.bins ?? 18;
+  const binW = (max-min)/bins;
+  const counts = new Array(bins).fill(0);
+  for(const v of values){
+    let b = Math.floor((v-min)/binW);
+    b = clamp(b, 0, bins-1);
+    counts[b]++;
+  }
+  const maxCount = Math.max(1, ...counts, opts.minScaleCount||0);
+  const padL=10, padR=10, padT=16, padB=24;
+  const plotW = w-padL-padR, plotH = h-padT-padB;
+  const barGap = 2;
+  const barW = plotW/bins;
+
+  if(opts.glyphBars){
+    const maxIcons = opts.maxIcons ?? 10;
+    ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+    for(let i=0;i<bins;i++){
+      const count = counts[i];
+      if(count<=0) continue;
+      const bh = (count/maxCount)*plotH;
+      const cx = padL + i*barW + barW/2;
+      const baseY = h - padB;
+      const shown = Math.min(count, maxIcons);
+      const step = bh/shown;
+      const fontSize = Math.max(6, Math.min(barW*0.85, step*0.95, 20));
+      ctx.font = fontSize + 'px sans-serif';
+      for(let k=0;k<shown;k++){
+        const y = baseY - step*k - step*0.5;
+        ctx.fillText(opts.glyphBars, cx, y + fontSize*0.35);
+      }
+    }
+  } else {
+    ctx.fillStyle = opts.color || cssVar('--c-population');
+    for(let i=0;i<bins;i++){
+      const bh = (counts[i]/maxCount)*plotH;
+      const x = padL + i*barW;
+      const y = h - padB - bh;
+      const bw = Math.max(1, barW-barGap);
+      roundRectTop(ctx, x, y, bw, bh, Math.min(4, bw/2));
+      ctx.fill();
+    }
+  }
+  ctx.strokeStyle = opts.baselineColor || cssVar('--line');
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(padL, h-padB); ctx.lineTo(w-padR, h-padB); ctx.stroke();
+
+  if(opts.overlayNormal){
+    const { muVal, sigma, n } = opts.overlayNormal;
+    if(sigma > 0){
+      ctx.beginPath();
+      ctx.strokeStyle = opts.overlayColor || cssVar('--ink');
+      ctx.lineWidth = 2;
+      let first = true;
+      for(let px=0; px<=plotW; px+=2){
+        const xVal = min + (px/plotW)*(max-min);
+        const density = normalPDF(xVal, muVal, sigma);
+        const expected = density*binW*n;
+        const y = h - padB - (expected/maxCount)*plotH;
+        if(first){ ctx.moveTo(padL+px, y); first=false; } else { ctx.lineTo(padL+px, y); }
+      }
+      ctx.stroke();
+    }
+  }
+  if(opts.markerValue != null){
+    const mx = padL + ((opts.markerValue-min)/(max-min))*plotW;
+    ctx.setLineDash([4,3]);
+    ctx.strokeStyle = opts.markerColor || cssVar('--ink-faint');
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(mx, padT); ctx.lineTo(mx, h-padB); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
+
+/* ---- CI bar (DOM) ---- */
+function ciBarHTML(phat, me, opts={}){
+  const lo = clamp(phat-me,0,1)*100, hi = clamp(phat+me,0,1)*100, pt = clamp(phat,0,1)*100;
+  const color = opts.color || cssVar('--c-election');
+  return `<div class="ci-wrap">
+    <div class="ci-track">
+      <div class="ci-fill" style="left:${lo}%; width:${Math.max(0.5,hi-lo)}%; background:color-mix(in srgb, ${color} 35%, transparent);"></div>
+      <div class="ci-tie" style="left:50%;"></div>
+      <div class="ci-point" style="left:${pt}%; background:${color};"></div>
+    </div>
+    <div class="ci-ticks"><span>0% (all Congress)</span><span>50%</span><span>100% (all BJP)</span></div>
+  </div>`;
+}
+
+/* =========================== deck engine =========================== */
+const slideEls = $$('.slide');
+const slideIds = slideEls.map(s => s.id);
+let cur = 0;
+
+const CHAPTERS = {
+  population: { num:1, label:'Population &amp; Sample' },
+  census:     { num:2, label:'Census &amp; Survey' },
+  clt:        { num:3, label:'The Magic Bell (CLT)' },
+  sim:        { num:4, label:'CLT Laboratory' },
+  election:   { num:5, label:'2019 Exit Poll Newsroom' },
+};
+
+const onEnter = {}; // id -> fn, populated by each section's init
+
+function buildDots(){
+  const wrap = $('#progress');
+  wrap.innerHTML = '';
+  let lastSection = null;
+  slideEls.forEach((s, i) => {
+    const sec = s.dataset.section;
+    if(lastSection !== null && sec !== lastSection){
+      const gap = document.createElement('span');
+      gap.className = 'dot gap';
+      wrap.appendChild(gap);
+    }
+    const b = document.createElement('button');
+    b.className = 'dot';
+    b.setAttribute('aria-label', 'Go to slide ' + (i+1));
+    b.addEventListener('click', () => goTo(i));
+    wrap.appendChild(b);
+    lastSection = sec;
+  });
+}
+
+function goTo(i){
+  i = clamp(i, 0, slideEls.length-1);
+  slideEls[cur].classList.remove('active');
+  cur = i;
+  const s = slideEls[cur];
+  s.classList.add('active');
+  document.body.dataset.section = s.dataset.section;
+
+  const chip = $('#chapterChip');
+  const meta = CHAPTERS[s.dataset.section];
+  if(meta){
+    chip.style.display = 'flex';
+    $('#chapterNum').textContent = meta.num;
+    $('#chapterLabel').innerHTML = meta.label;
+  } else {
+    chip.style.display = 'none';
+  }
+
+  $('#curNum').textContent = cur+1;
+  $('#prevBtn').disabled = cur === 0;
+  $('#nextBtn').disabled = cur === slideEls.length-1;
+
+  $$('.dot:not(.gap)', $('#progress')).forEach((d,idx)=> d.classList.toggle('active', idx===cur));
+
+  const fn = onEnter[s.id];
+  if(fn) requestAnimationFrame(fn);
+}
+
+function next(){ if(cur < slideEls.length-1) goTo(cur+1); }
+function prev(){ if(cur > 0) goTo(cur-1); }
+
+$('#nextBtn').addEventListener('click', next);
+$('#prevBtn').addEventListener('click', prev);
+window.addEventListener('keydown', e => {
+  if(e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+  else if(e.key === 'ArrowLeft'){ e.preventDefault(); prev(); }
+});
+
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => { const fn = onEnter[slideEls[cur].id]; if(fn) fn(); }, 120);
+});
+
+/* theme toggle */
+const themeBtn = $('#themeToggle');
+function applyStoredTheme(){
+  const t = localStorage.getItem('sv-theme');
+  if(t) document.documentElement.setAttribute('data-theme', t);
+}
+applyStoredTheme();
+themeBtn.addEventListener('click', () => {
+  const now = document.documentElement.getAttribute('data-theme');
+  const dark = now ? now === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const next = dark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('sv-theme', next);
+  const fn = onEnter[slideEls[cur].id]; if(fn) fn();
+});
+
+/* =========================== SECTION A — population/sample =========================== */
+const mangoPop = genSkewed(360);
+const popMean = mean(mangoPop), popSD = sd(mangoPop);
+
+const MANGO_GLYPH_OPTS = { glyph:'🥭', sizeFn: i => mangoSizeScale(mangoPop[i]) };
+
+onEnter['s1'] = () => {
+  const cv = $('#cvA1');
+  const total = 360;
+  let shown = 0;
+  clearInterval(cv._timer);
+  const draw = () => drawDotGrid(cv, total, i => i < shown ? mangoColor(mangoPop[i]) : 'transparent', MANGO_GLYPH_OPTS);
+  draw();
+  cv._timer = setInterval(() => {
+    shown += 12;
+    draw();
+    if(shown >= total) clearInterval(cv._timer);
+  }, 30);
+};
+
+onEnter['s2'] = () => {
+  drawDotGrid($('#cvA2'), 360, i => mangoColor(mangoPop[i]), MANGO_GLYPH_OPTS);
+  $('#popMeanA2').textContent = fmtG(popMean) + ' 🥭';
+};
+
+let a3Ring = new Set();
+function drawA3(){
+  drawDotGrid($('#cvA3'), 360, i => mangoColor(mangoPop[i]), { ringSet:a3Ring, ringColor: cssVar('--ink'), ...MANGO_GLYPH_OPTS });
+}
+onEnter['s3'] = () => {
+  drawA3();
+  $('#trueMeanA3').textContent = fmtG(popMean);
+};
+$('#nA3').addEventListener('input', e => $('#nA3label').textContent = e.target.value);
+$('#scoopA3').addEventListener('click', () => {
+  const n = +$('#nA3').value;
+  const idx = sampleIdx(360, n);
+  a3Ring = new Set(idx);
+  const vals = idx.map(i => mangoPop[i]);
+  const sm = mean(vals);
+  $('#sampMeanA3').textContent = fmtG(sm);
+  $('#trueMeanA3').textContent = fmtG(popMean);
+  $('#diffA3').textContent = '± ' + fmtG(Math.abs(sm-popMean));
+  drawA3();
+});
+
+/* =========================== SECTION B — census/survey race =========================== */
+let censusMean = null, surveyMean = null;
+function drawRace(revealedIdx, colorForIdx){
+  drawDotGrid($('#cvB2'), 360, i => revealedIdx.has(i) ? colorForIdx(i) : cssVar('--unrevealed'), { glyph:'🥭', plainColor: cssVar('--unrevealed'), sizeFn: i => mangoSizeScale(mangoPop[i]) });
+}
+onEnter['s6'] = () => drawRace(new Set(), () => cssVar('--unrevealed'));
+
+function updateRaceCompare(){
+  if(censusMean != null && surveyMean != null){
+    const diff = Math.abs(censusMean-surveyMean);
+    const el = $('#raceCompare');
+    el.style.display = 'flex';
+    el.className = 'banner good';
+    el.textContent = `Census average ${fmtG(censusMean)} vs. survey average ${fmtG(surveyMean)} — only ${fmtG(diff)} apart, but the survey was WAY faster!`;
+  }
+}
+
+$('#censusBtn').addEventListener('click', () => {
+  clearInterval($('#cvB2')._timer);
+  const revealed = new Set();
+  let i = 0;
+  const start = performance.now();
+  $('#censusCount').textContent = '0 / 360';
+  $('#censusTime').textContent = '—';
+  $('#cvB2')._timer = setInterval(() => {
+    for(let k=0;k<3 && i<360;k++,i++) revealed.add(i);
+    drawRace(revealed, idx => mangoColor(mangoPop[idx]));
+    const vals = [...revealed].map(idx => mangoPop[idx]);
+    $('#censusCount').textContent = revealed.size + ' / 360';
+    $('#censusTime').textContent = fmt((performance.now()-start)/1000,1) + ' s';
+    if(i >= 360){
+      clearInterval($('#cvB2')._timer);
+      censusMean = mean(vals);
+      $('#censusTime').textContent = fmt((performance.now()-start)/1000,1) + ' s (all weighed!)';
+      updateRaceCompare();
+    }
+  }, 40);
+});
+
+$('#surveyBtn').addEventListener('click', () => {
+  const idx = sampleIdx(360, 30);
+  const revealed = new Set();
+  let k = 0;
+  const start = performance.now();
+  clearInterval($('#cvB2')._surveyTimer);
+  $('#cvB2')._surveyTimer = setInterval(() => {
+    for(let b=0;b<5 && k<idx.length;b++,k++) revealed.add(idx[k]);
+    drawRace(revealed, i => mangoColor(mangoPop[i]));
+    if(k >= idx.length){
+      clearInterval($('#cvB2')._surveyTimer);
+      surveyMean = mean(idx.map(i => mangoPop[i]));
+      $('#surveyTime').textContent = fmt((performance.now()-start)/1000,2) + ' s';
+      updateRaceCompare();
+    }
+  }, 30);
+});
+
+$('#resetRaceBtn').addEventListener('click', () => {
+  clearInterval($('#cvB2')._timer); clearInterval($('#cvB2')._surveyTimer);
+  censusMean = null; surveyMean = null;
+  $('#censusCount').textContent = '0 / 360';
+  $('#censusTime').textContent = '—';
+  $('#surveyTime').textContent = '—';
+  $('#raceCompare').style.display = 'none';
+  drawRace(new Set(), () => cssVar('--unrevealed'));
+});
+
+/* =========================== SECTION C — CLT intuition =========================== */
+let c1Means = [];
+const C1_CURVE_THRESHOLD = 40;
+function drawC1(){
+  const cv = $('#cvC1');
+  if(!cv || cv.clientWidth===0) return;
+
+  if(c1Means.length > C1_CURVE_THRESHOLD){
+    drawHistogram(cv, c1Means, {
+      glyphBars:'🥭', maxIcons:9, bins:20,
+      markerValue: popMean, markerColor: cssVar('--ink'),
+      overlayNormal: { muVal: popMean, sigma: popSD/Math.sqrt(30), n: c1Means.length }
+    });
+    $('#c1Footnote').textContent = c1Means.length + ' scoops so far — now smoothed into a curve so the shape is easy to see. The dashed line marks the true basket average.';
+    return;
+  }
+  $('#c1Footnote').textContent = 'Each mango = one scoop\'s average weight, lined up from light to heavy. Click "×500" to see the curve appear.';
+
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const padL=14, padR=14, padB=20, padT=10;
+  const plotW = w-padL-padR;
+  ctx.strokeStyle = cssVar('--line'); ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(padL, h-padB); ctx.lineTo(w-padR, h-padB); ctx.stroke();
+  ctx.fillStyle = cssVar('--ink-faint'); ctx.font = '11px sans-serif'; ctx.textAlign='center';
+  ctx.fillText(W_MIN+'g', padL, h-4); ctx.fillText(W_MAX+'g', w-padR, h-4); ctx.fillText('weight →', w/2, h-4);
+
+  const stackCount = {};
+  ctx.font = '15px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  for(const m of c1Means){
+    const x = padL + ((m-W_MIN)/(W_MAX-W_MIN))*plotW;
+    const bin = Math.round(x);
+    stackCount[bin] = (stackCount[bin]||0)+1;
+    const y = h - padB - 13 - (stackCount[bin]-1)*15;
+    ctx.fillText('🥭', x, y);
+  }
+}
+onEnter['s8'] = drawC1;
+$('#scoopAgainC').addEventListener('click', () => {
+  const idx = sampleIdx(360, 30);
+  const m = mean(idx.map(i => mangoPop[i]));
+  c1Means.push(m);
+  $('#scoopNumC1').textContent = c1Means.length;
+  $('#scoopMeanC1').textContent = fmtG(m);
+  drawC1();
+});
+$('#scoopFastC1').addEventListener('click', () => {
+  clearInterval($('#cvC1')._timer);
+  let added = 0;
+  $('#cvC1')._timer = setInterval(() => {
+    for(let k=0;k<15 && added<500; k++, added++){
+      const idx = sampleIdx(360, 30);
+      c1Means.push(mean(idx.map(i => mangoPop[i])));
+    }
+    $('#scoopNumC1').textContent = c1Means.length;
+    $('#scoopMeanC1').textContent = fmtG(c1Means[c1Means.length-1]);
+    drawC1();
+    if(added >= 500) clearInterval($('#cvC1')._timer);
+  }, 25);
+});
+$('#resetC1').addEventListener('click', () => {
+  clearInterval($('#cvC1')._timer);
+  c1Means = []; $('#scoopNumC1').textContent='0'; $('#scoopMeanC1').textContent='—'; drawC1();
+});
+
+let c2Means = [];
+function drawC2(){
+  drawHistogram($('#cvC2pop'), mangoPop, { glyphBars:'🥭', maxIcons:9 });
+  drawHistogram($('#cvC2means'), c2Means, {
+    glyphBars:'🥭', maxIcons:9,
+    markerValue: popMean, markerColor: cssVar('--ink'),
+    overlayNormal: c2Means.length>=8 ? { muVal:popMean, sigma:popSD/Math.sqrt(30), n:c2Means.length } : null
+  });
+  $('#fastCountC2').textContent = c2Means.length;
+  $('#bellRevealC2').style.display = c2Means.length >= 60 ? 'flex' : 'none';
+}
+onEnter['s9'] = drawC2;
+$('#scoopFastC2').addEventListener('click', () => {
+  clearInterval($('#cvC2means')._timer);
+  let added = 0;
+  $('#cvC2means')._timer = setInterval(() => {
+    for(let k=0;k<8 && added<200;k++,added++){
+      const idx = sampleIdx(360, 30);
+      c2Means.push(mean(idx.map(i => mangoPop[i])));
+    }
+    drawC2();
+    if(added >= 200) clearInterval($('#cvC2means')._timer);
+  }, 25);
+});
+$('#resetC2').addEventListener('click', () => { clearInterval($('#cvC2means')._timer); c2Means = []; drawC2(); });
+
+onEnter['s10'] = () => {
+  const wide = Array.from({length:400}, () => popMean + (Math.random()+Math.random()+Math.random()-1.5)*(popSD/Math.sqrt(5))*1.3);
+  const narrow = Array.from({length:400}, () => popMean + (Math.random()+Math.random()+Math.random()-1.5)*(popSD/Math.sqrt(80))*1.3);
+  const lo = Math.min(...wide, ...narrow), hi = Math.max(...wide, ...narrow);
+  drawHistogram($('#cvBellWide'), wide, { glyphBars:'🥭', maxIcons:8, bins:16, min:lo, max:hi });
+  drawHistogram($('#cvBellNarrow'), narrow, { glyphBars:'🥭', maxIcons:8, bins:16, min:lo, max:hi });
+};
+
+/* =========================== SECTION D — CLT lab =========================== */
+let labShape = 'skewed';
+let labPop = genSkewed(4000);
+let dMeans = [];
+const SHAPE_CAPTIONS = {
+  skewed: 'Like a mango harvest, or T20 cricket scores — most modest, a few huge.',
+  uniform: 'Like birthdays spread evenly across the 12 months of the year.',
+  bimodal: 'Like a school with a junior wing and a senior wing — two very different height groups.'
+};
+
+function regenLab(){
+  labPop = labShape==='skewed' ? genSkewed(4000) : labShape==='uniform' ? genUniform(4000) : genBimodal(4000);
+  dMeans = [];
+  drawLab();
+}
+function drawLab(){
+  const n = +$('#nD').value;
+  const muPop = mean(labPop), sigmaPop = sd(labPop);
+  drawHistogram($('#cvDpop'), labPop, { color: cssVar('--c-population'), bins:22 });
+  drawHistogram($('#cvDmeans'), dMeans, {
+    color: cssVar('--c-clt'), bins:22,
+    markerValue: muPop, markerColor: cssVar('--ink'),
+    overlayNormal: dMeans.length>=8 ? { muVal:muPop, sigma:sigmaPop/Math.sqrt(n), n:dMeans.length } : null
+  });
+  $('#dPopMean').textContent = fmtG(muPop);
+  $('#dMeanOfMeans').textContent = dMeans.length>=1 ? fmtG(mean(dMeans)) : '—';
+  $('#dPopSD').textContent = fmtG(sigmaPop);
+  $('#dCount').textContent = dMeans.length;
+  $('#dEmpSE').textContent = dMeans.length>=2 ? fmtG(sd(dMeans)) : '—';
+  $('#dTheorySE').textContent = fmtG(sigmaPop/Math.sqrt(n));
+}
+onEnter['s12'] = drawLab;
+
+$$('button[data-shape]').forEach(btn => btn.addEventListener('click', () => {
+  $$('button[data-shape]').forEach(b => b.classList.remove('toggled'));
+  btn.classList.add('toggled');
+  labShape = btn.dataset.shape;
+  $('#shapeCaption').textContent = SHAPE_CAPTIONS[labShape];
+  regenLab();
+}));
+$('#nD').addEventListener('input', e => {
+  $('#nDlabel').textContent = e.target.value;
+  dMeans = [];
+  drawLab();
+});
+function drawNSamples(count){
+  const n = +$('#nD').value;
+  let added = 0;
+  clearInterval($('#cvDmeans')._timer);
+  const batch = count <= 25 ? count : 10;
+  $('#cvDmeans')._timer = setInterval(() => {
+    for(let k=0;k<batch && added<count;k++,added++){
+      const idx = sampleIdx(labPop.length, n);
+      dMeans.push(mean(idx.map(i => labPop[i])));
+    }
+    drawLab();
+    if(added >= count) clearInterval($('#cvDmeans')._timer);
+  }, 20);
+}
+$('#draw1D').addEventListener('click', () => drawNSamples(1));
+$('#draw25D').addEventListener('click', () => drawNSamples(25));
+$('#draw200D').addEventListener('click', () => drawNSamples(200));
+$('#resetD').addEventListener('click', () => { dMeans = []; drawLab(); });
+regenLab();
+onEnter['s13'] = () => {};
+
+/* =========================== SECTION E — real 2019 Lok Sabha exit poll newsroom =========================== */
+const VOTERS_N = 500;
+const BJP_VS_2019 = 37.4, INC_VS_2019 = 19.5;
+const truePctBJP = BJP_VS_2019/(BJP_VS_2019+INC_VS_2019);
+const electionPop = Array.from({length:VOTERS_N}, () => Math.random() < truePctBJP ? 'bjp' : 'inc');
+let lastPoll = null;
+
+function drawVoters(revealedSet){
+  const colorFn = i => revealedSet.has(i) ? (electionPop[i]==='bjp' ? cssVar('--bjp') : cssVar('--inc')) : cssVar('--unrevealed');
+  drawDotGrid($('#cvVoters'), VOTERS_N, colorFn);
+  drawDotGrid($('#cvVoters2'), VOTERS_N, colorFn);
+  drawDotGrid($('#cvVoters3'), VOTERS_N, colorFn);
+}
+onEnter['sE1'] = () => drawVoters(new Set());
+onEnter['sE4'] = () => drawVoters(lastPoll ? lastPoll.revealed : new Set());
+onEnter['sE9'] = () => drawVoters(lastPoll ? lastPoll.revealed : new Set());
+
+$('#nE').addEventListener('input', e => { $('#nElabel').textContent = e.target.value; });
+
+/* ---- E4: one exit poll = one scoop ---- */
+$('#conductPollBtn').addEventListener('click', () => {
+  const n = +$('#nE').value;
+  const idx = sampleIdx(VOTERS_N, n);
+  const revealed = new Set(idx);
+  drawVoters(revealed);
+  const bjpCount = idx.filter(i => electionPop[i]==='bjp').length;
+  const phat = bjpCount/n;
+  const se = Math.sqrt(phat*(1-phat)/n);
+  const me = 1.96*se;
+  lastPoll = { n, bjpCount, phat, se, me, lo: clamp(phat-me,0,1), hi: clamp(phat+me,0,1), revealed };
+  $('#rawN').textContent = n;
+  $('#rawCount').textContent = bjpCount;
+  $('#rawPhat').textContent = fmt(phat*100,1) + '%';
+});
+
+/* ---- E5: margin of error, step by step ---- */
+function headlineHTML(poll){
+  const pct = Math.round(poll.phat*100), mePct = Math.round(poll.me*100);
+  const bjpLeads = poll.phat >= 0.5;
+  const leaderName = bjpLeads ? 'BJP' : 'Congress';
+  const leaderColor = bjpLeads ? cssVar('--bjp') : cssVar('--inc');
+  const tooClose = poll.lo < 0.5 && poll.hi > 0.5;
+  return `
+    <div class="headline-card">
+      <div class="masthead">Exit Poll · n = ${poll.n} · 2019 model</div>
+      <div class="headline-title">${tooClose ? '🐘⚖️ Too close to call between BJP and Congress' : leaderName + ' leads with ' + pct + '% (± ' + mePct + ' pts) of the two-party vote'}</div>
+      ${ciBarHTML(poll.phat, poll.me, {color:leaderColor})}
+      ${tooClose ? `<div class="banner warn">⚠️ The margin of error crosses 50% — a responsible reporter can't call this race yet!</div>` : `<div class="banner good">🏆 ${leaderName} projected ahead by more than the margin of error.</div>`}
+    </div>`;
+}
+function renderMoESteps(){
+  const stepsArea = $('#moeSteps'), finalArea = $('#finalHeadlineArea');
+  if(!lastPoll){
+    stepsArea.innerHTML = `<div class="banner warn">Go back one slide and ask some voters first!</div>`;
+    finalArea.innerHTML = '';
+    return;
+  }
+  const p = lastPoll;
+  const sdVote = Math.sqrt(p.phat*(1-p.phat));
+  const sqrtN = Math.sqrt(p.n);
+  stepsArea.innerHTML = `
+    <div class="stack" style="gap:8px;">
+      <div class="stat-tile"><div class="label">Step 1 · Your sample proportion</div><div class="value tabular" style="font-size:1.1rem;">p̂ = ${p.bjpCount}/${p.n} = ${fmt(p.phat,3)}</div></div>
+      <div class="stat-tile"><div class="label">Step 2 · Standard deviation of ONE vote — SD = √(p̂ × (1 − p̂))</div><div class="value tabular" style="font-size:1.1rem;">√(${fmt(p.phat,3)} × ${fmt(1-p.phat,3)}) = √${fmt(p.phat*(1-p.phat),4)} = ${fmt(sdVote,4)}</div></div>
+      <div class="stat-tile"><div class="label">Step 3 · Standard Error = SD ÷ √n &nbsp;(same σ/√n formula as Chapter 3!)</div><div class="value tabular" style="font-size:1.1rem;">${fmt(sdVote,4)} ÷ √${p.n} = ${fmt(sdVote,4)} ÷ ${fmt(sqrtN,2)} = ${fmt(p.se,4)}</div></div>
+      <div class="stat-tile accent"><div class="label">Step 4 · × 1.96 for 95% confidence = Margin of error</div><div class="value tabular" style="font-size:1.1rem;">${fmt(p.se,4)} × 1.96 = ± ${fmt(p.me*100,1)}%</div></div>
+    </div>`;
+  finalArea.innerHTML = headlineHTML(p);
+}
+onEnter['sE5'] = renderMoESteps;
+
+/* ---- E7: run many polls (average of averages) ---- */
+let manyPolls = [];
+function drawManyPollsChart(n){
+  drawHistogram($('#cvManyPolls'), manyPolls.map(p=>p.phat), {
+    min:0, max:1, bins:24, color: cssVar('--c-election'),
+    markerValue: truePctBJP, markerColor: cssVar('--ink'),
+    overlayNormal: manyPolls.length>=8 ? { muVal: truePctBJP, sigma: Math.sqrt(truePctBJP*(1-truePctBJP)/n), n: manyPolls.length } : null
+  });
+  $('#nE7label').textContent = n;
+  $('#manyCount').textContent = manyPolls.length;
+  $('#manyMeanOfMeans').textContent = manyPolls.length ? fmt(mean(manyPolls.map(p=>p.phat))*100,1)+'%' : '—';
+  $('#manyEmpSE').textContent = manyPolls.length>=2 ? fmt(sd(manyPolls.map(p=>p.phat))*100,2)+'%' : '—';
+  $('#manyTheorySE').textContent = fmt(Math.sqrt(truePctBJP*(1-truePctBJP)/n)*100,2)+'%';
+}
+onEnter['sE7'] = () => drawManyPollsChart(+$('#nE').value);
+function runManyPolls(count){
+  const n = +$('#nE').value;
+  let added = 0;
+  clearInterval($('#cvManyPolls')._timer);
+  const batch = count <= 10 ? count : 15;
+  $('#cvManyPolls')._timer = setInterval(() => {
+    for(let k=0;k<batch && added<count; k++, added++){
+      const idx = sampleIdx(VOTERS_N, n);
+      const bjpCount = idx.filter(i => electionPop[i]==='bjp').length;
+      const phat = bjpCount/n;
+      const se = Math.sqrt(phat*(1-phat)/n);
+      const me = 1.96*se;
+      manyPolls.push({ n, phat, me, lo: clamp(phat-me,0,1), hi: clamp(phat+me,0,1) });
+    }
+    drawManyPollsChart(n);
+    if(added >= count) clearInterval($('#cvManyPolls')._timer);
+  }, 20);
+}
+$('#run5Btn').addEventListener('click', () => runManyPolls(5));
+$('#run50Btn').addEventListener('click', () => runManyPolls(50));
+$('#run500Btn').addEventListener('click', () => runManyPolls(500));
+$('#resetManyBtn').addEventListener('click', () => { clearInterval($('#cvManyPolls')._timer); manyPolls=[]; drawManyPollsChart(+$('#nE').value); });
+
+/* ---- E8: what does 95% confidence mean ---- */
+$('#checkCoverageBtn').addEventListener('click', () => {
+  if(manyPolls.length === 0){
+    $('#coverageTally').textContent = 'Go back and run some polls first!';
+    return;
+  }
+  let correct = 0;
+  manyPolls.forEach(p => { if(truePctBJP >= p.lo && truePctBJP <= p.hi) correct++; });
+  const pct = fmt(100*correct/manyPolls.length,1);
+  $('#coverageTally').textContent = correct + ' / ' + manyPolls.length + ' (' + pct + '%)';
+  const sampleRows = manyPolls.slice(0, 30);
+  const html = sampleRows.map((row,idx) => {
+    const capture = truePctBJP >= row.lo && truePctBJP <= row.hi;
+    return `
+    <div class="ci-row">
+      <div class="name">Poll ${idx+1}</div>
+      <div class="ci-track" style="flex:1;">
+        <div class="ci-fill" style="left:${row.lo*100}%; width:${Math.max(0.5,(row.hi-row.lo)*100)}%; background:${capture ? 'color-mix(in srgb, var(--good) 45%, transparent)' : 'color-mix(in srgb, var(--bad) 55%, transparent)'};"></div>
+        <div class="ci-tie" style="left:${truePctBJP*100}%; border-left:2px dashed var(--ink);"></div>
+        <div class="ci-point" style="left:${row.phat*100}%; background:${capture?'var(--good)':'var(--bad)'};"></div>
+      </div>
+      <div style="width:16px; text-align:center;">${capture ? '✅' : '❌'}</div>
+    </div>`;
+  }).join('');
+  $('#coverageRows').innerHTML = html;
+  $('#coverageConclusion').innerHTML = `<p class="body-text">That's what "95% confidence" really means: if you ran this exact method 100 times, about 95 of those little ranges would catch the truth. It's a promise about the <b>RELIABILITY OF THE METHOD</b>, not a guarantee for any ONE single poll.</p>`;
+});
+
+/* ---- E9: reveal what really happened ---- */
+$('#revealBtn').addEventListener('click', () => {
+  const allIdx = shuffledIndices(VOTERS_N);
+  const revealed = new Set();
+  let k = 0;
+  clearInterval($('#cvVoters3')._timer);
+  $('#cvVoters3')._timer = setInterval(() => {
+    for(let b=0;b<25 && k<allIdx.length;b++,k++) revealed.add(allIdx[k]);
+    drawDotGrid($('#cvVoters3'), VOTERS_N, i => revealed.has(i) ? (electionPop[i]==='bjp'?cssVar('--bjp'):cssVar('--inc')) : cssVar('--unrevealed'));
+    if(k >= allIdx.length){
+      clearInterval($('#cvVoters3')._timer);
+      finalizeReveal();
+    }
+  }, 10);
+});
+function finalizeReveal(){
+  const realized = mean(electionPop.map(v => v==='bjp'?1:0));
+  $('#realExitE3').textContent = 'NDA predicted 339–365 seats';
+  $('#realResultE3').textContent = 'NDA 353 seats · BJP 303 · Congress 52';
+  $('#trueShareE3').textContent = 'BJP ' + fmt(realized*100,1) + '% (2019 model)';
+  if(lastPoll){
+    const pollPct = Math.round(lastPoll.phat*100);
+    $('#pollResultE3').textContent = (lastPoll.phat>=0.5?'BJP ':'Congress ') + pollPct + '% (±' + Math.round(lastPoll.me*100) + ')';
+    const captured = realized >= lastPoll.lo && realized <= lastPoll.hi;
+    $('#verdictArea').innerHTML = captured
+      ? `<div class="banner good">✅ Your own honest random sample caught the true two-party share inside its margin of error.</div>`
+      : `<div class="banner bad">❌ This one slipped past your margin — with a 95% margin, that happens about 1 time in 20 by pure chance.</div>`;
+  } else {
+    $('#pollResultE3').textContent = 'No poll taken yet';
+    $('#verdictArea').innerHTML = `<div class="banner warn">Go back a few slides and conduct an exit poll first!</div>`;
+  }
+  renderCLTCompare();
+}
+
+function renderCLTCompare(){
+  const area = $('#cltCompareArea');
+  if(!area) return;
+  if(manyPolls.length === 0){
+    area.innerHTML = `<div class="banner info">💡 <span>Notice "Your poll said" above uses just ONE poll's own margin of error — not an average of the many polls from the CLT Lab. That's on purpose: a single poll's formula-based margin already tells you exactly how much it would wobble if repeated, which is precisely what the CLT Lab was there to prove. Real newsrooms report ONE poll's margin, not a combination of hundreds of separate polls.</span></div>`;
+    return;
+  }
+  const totalN = manyPolls.reduce((s,p)=>s+p.n,0);
+  const combinedPhat = manyPolls.reduce((s,p)=>s+p.phat*p.n,0) / totalN;
+  const combinedSD = Math.sqrt(combinedPhat*(1-combinedPhat));
+  const combinedME = 1.96*combinedSD/Math.sqrt(totalN);
+  const singleME = lastPoll ? fmt(lastPoll.me*100,1) : '—';
+  area.innerHTML = `
+    <div class="card">
+      <h3 style="margin-bottom:8px;">🔬 Bonus: what if you POOLED all your CLT Lab polls?</h3>
+      <p class="footnote" style="margin-bottom:8px;">You ran ${manyPolls.length} simulated polls in the CLT Lab, totalling ${totalN} responses. If you combined every one of them into a single giant sample:</p>
+      <div class="stat-tile accent"><div class="label">Pooled estimate (n = ${totalN})</div><div class="value tabular">${combinedPhat>=0.5?'BJP ':'Congress '}${fmt(combinedPhat*100,1)}% (± ${fmt(combinedME*100,2)})</div></div>
+      <p class="footnote" style="margin-top:8px;">Much tighter than your single poll's ± ${singleME}%! That's because pooling ${manyPolls.length} polls is mathematically the same as running ONE poll of ${totalN} people — bigger n, smaller SE. But real newsrooms don't do this: they run ONE poll of a fixed size and report ITS OWN margin, which is exactly what "Your poll said" above shows. The CLT Lab's job was to PROVE that formula is trustworthy, not to sneak a bigger sample into the headline.</p>
+    </div>`;
+}
+
+/* ---- E12: run 20 honest polls ---- */
+$('#run20Btn').addEventListener('click', () => {
+  const n = +$('#nE').value;
+  const realized = mean(electionPop.map(v => v==='bjp'?1:0));
+  const rows = [];
+  let correct = 0;
+  for(let r=0;r<20;r++){
+    const idx = sampleIdx(VOTERS_N, n);
+    const bjpCount = idx.filter(i => electionPop[i]==='bjp').length;
+    const phat = bjpCount/n;
+    const se = Math.sqrt(phat*(1-phat)/n);
+    const me = 1.96*se;
+    const lo = clamp(phat-me,0,1), hi = clamp(phat+me,0,1);
+    const capture = realized >= lo && realized <= hi;
+    if(capture) correct++;
+    rows.push({phat, me, lo, hi, capture});
+  }
+  $('#tally20').textContent = correct + ' / 20';
+  const html = rows.map((row,idx) => `
+    <div class="ci-row">
+      <div class="name">Poll ${idx+1}</div>
+      <div class="ci-track" style="flex:1;">
+        <div class="ci-fill" style="left:${row.lo*100}%; width:${Math.max(0.5,(row.hi-row.lo)*100)}%; background:${row.capture ? 'color-mix(in srgb, var(--good) 45%, transparent)' : 'color-mix(in srgb, var(--bad) 55%, transparent)'};"></div>
+        <div class="ci-tie" style="left:${realized*100}%; border-left:2px dashed var(--ink);"></div>
+        <div class="ci-point" style="left:${row.phat*100}%; background:${row.capture?'var(--good)':'var(--bad)'};"></div>
+      </div>
+      <div style="width:16px; text-align:center;">${row.capture ? '✅' : '❌'}</div>
+    </div>`).join('');
+  $('#caterpillar').innerHTML = `<p class="footnote">Dashed line = the model's true BJP two-party share. Green = your poll's margin caught it. Red = it missed.</p>` + html;
+  $('#honestConclusion').innerHTML = `<p class="body-text">Notice how tightly these honest polls cluster around the truth — just like the <b>real 2019 exit polls</b> did. That's exactly what proper random sampling promises: reliable, predictable wobble, not wild misses.</p>`;
+});
+
+/* =========================== boot =========================== */
+buildDots();
+$('#totalNum').textContent = slideEls.length;
+drawVoters(new Set());
+goTo(0);
+</script>
+</body>
+</html>
