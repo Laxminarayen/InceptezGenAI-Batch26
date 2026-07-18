@@ -6,6 +6,13 @@
     "body": "This is the instructor posting a welcome note.",
     "createdAt": "2026-07-18T05:19:25.284Z",
     "likes": [],
-    "comments": []
+    "comments": [
+      {
+        "id": "mrpx39gms3gwn0",
+        "author": "aStudent",
+        "body": "Thanks!",
+        "createdAt": "2026-07-18T05:19:27.142Z"
+      }
+    ]
   }
 ]
