@@ -72,29 +72,41 @@
     <header class="page-header">
       <h1>Notes</h1>
       <p>
-        Found a cleaner way to explain something? Made a cheat sheet? Share it with the batch. Notes are
-        posted under your real GitHub username, and anyone can 👍 like or comment on them right in the thread.
+        Found a cleaner way to explain something? Made a cheat sheet? Share it with the batch — write it
+        right here. Notes are stored under your name, and anyone can like or comment on them.
       </p>
     </header>
 
-    <div class="forum-cta">
-      <div>
-        <h2>Have something worth sharing?</h2>
-        <p>Opens a pre-filled GitHub issue tagged <code>note</code> — sign in with your GitHub account to post. Your GitHub username becomes the byline.</p>
+    <div class="forum-app" id="forum-app" data-collection="notes" data-reaction-emoji="👍" data-answer-noun="Comments" data-empty-text="No notes shared yet — be the first!">
+      <div class="post-form-wrap">
+        <h2>Share a note</h2>
+        <form id="post-form" class="post-form">
+          <div class="form-row">
+            <input type="text" name="author" placeholder="Your name (e.g. your GitHub username)" maxlength="60" required />
+          </div>
+          <div class="form-row">
+            <input type="text" name="title" placeholder="Title (e.g. which class/topic this is about)" maxlength="200" required />
+          </div>
+          <div class="form-row">
+            <textarea name="body" placeholder="Write your note…" maxlength="8000" rows="4" required></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">📝 Share Note</button>
+            <span class="form-status"></span>
+          </div>
+        </form>
       </div>
-      <a class="btn btn-primary" href="https://github.com/Laxminarayen/InceptezGenAI-Batch26/issues/new?title=%5BNote%5D+&body=%2A%2ATopic+%2F+Session%3A%2A%2A%0A%28e.g.+14.+Data+Preprocessing%29%0A%0A%2A%2AYour+note%3A%2A%2A%0A&labels=note" target="_blank" rel="noopener">
-        📝 Share a Note
-      </a>
+
+      <div class="forum-feed">
+        <div class="feed-status">Loading notes…</div>
+      </div>
     </div>
 
-    <div class="forum-feed" id="notes-feed" data-issue-feed data-feed-type="notes" data-label="note" data-empty-text="No notes shared yet — be the first!">
-      <div class="feed-status">Loading notes…</div>
-    </div>
-
-    <p class="footer-note">👍 to like a note, or open it to leave a comment — both happen right on GitHub.</p>
+    <p class="footer-note">👍 to like a note, or open its comments to reply.</p>
   </main>
 </div>
 
 <script src="assets/forum.js"></script>
+<script src="assets/collections.js"></script>
 </body>
 </html>

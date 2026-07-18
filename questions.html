@@ -72,30 +72,42 @@
     <header class="page-header">
       <h1>Questions</h1>
       <p>
-        Stuck on a concept, a notebook cell, or something from a slide deck? Ask here. Every question
-        becomes a GitHub Issue, so answers are threaded, searchable, and visible to the whole batch —
-        no more asking the same thing twice.
+        Stuck on a concept, a notebook cell, or something from a slide deck? Ask here. Answers are
+        threaded right under the question and visible to the whole batch — no more asking the same
+        thing twice.
       </p>
     </header>
 
-    <div class="forum-cta">
-      <div>
-        <h2>Got something to ask?</h2>
-        <p>Opens a pre-filled GitHub issue tagged <code>question</code> — sign in with your GitHub account to post.</p>
+    <div class="forum-app" id="forum-app" data-collection="questions" data-reaction-emoji="👍" data-answer-noun="Answers" data-empty-text="No questions yet — be the first to ask!">
+      <div class="post-form-wrap">
+        <h2>Ask a question</h2>
+        <form id="post-form" class="post-form">
+          <div class="form-row">
+            <input type="text" name="author" placeholder="Your name (e.g. your GitHub username)" maxlength="60" required />
+          </div>
+          <div class="form-row">
+            <input type="text" name="title" placeholder="Title (e.g. which class/session this is about)" maxlength="200" required />
+          </div>
+          <div class="form-row">
+            <textarea name="body" placeholder="What's your question?" maxlength="8000" rows="4" required></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">💬 Ask</button>
+            <span class="form-status"></span>
+          </div>
+        </form>
       </div>
-      <a class="btn btn-primary" href="https://github.com/Laxminarayen/InceptezGenAI-Batch26/issues/new?title=%5BQuestion%5D+&body=%2A%2AWhich+class%2Fsession+is+this+about%3F%2A%2A%0A%28e.g.+08.+Python_Day7_Pandas%29%0A%0A%2A%2AYour+question%3A%2A%2A%0A&labels=question" target="_blank" rel="noopener">
-        💬 Ask a Question
-      </a>
+
+      <div class="forum-feed">
+        <div class="feed-status">Loading questions…</div>
+      </div>
     </div>
 
-    <div class="forum-feed" id="questions-feed" data-issue-feed data-label="question" data-empty-text="No questions yet — be the first to ask!">
-      <div class="feed-status">Loading questions…</div>
-    </div>
-
-    <p class="footer-note">Answers happen right inside the GitHub thread — click any question to reply or read replies.</p>
+    <p class="footer-note">Answers happen right under each question — click Answers to reply or read replies.</p>
   </main>
 </div>
 
 <script src="assets/forum.js"></script>
+<script src="assets/collections.js"></script>
 </body>
 </html>

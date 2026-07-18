@@ -1,0 +1,6 @@
+name = "inceptez-forum-api"
+main = "src/index.js"
+compatibility_date = "2024-11-01"
+
+# Set the real GitHub token as a secret, never in this file:
+#   wrangler secret put GITHUB_TOKEN
