@@ -1,6 +1,9 @@
 (function () {
   // After running `wrangler deploy` in worker/, replace this with your Worker's URL.
   const API_BASE = "https://inceptez-forum-api.YOUR-SUBDOMAIN.workers.dev";
+  const API_READY = !API_BASE.includes("YOUR-SUBDOMAIN");
+  const NOT_READY_MSG =
+    "This isn't wired up yet — the site owner needs to deploy the Worker (see worker/README.md) and set API_BASE in assets/collections.js.";
 
   const INSTRUCTOR_LOGIN = "laxminarayen";
   const ANON_KEY = "forum-anon-id";
@@ -187,6 +190,10 @@
 
   async function loadFeed(app, config) {
     const feed = app.querySelector(".forum-feed");
+    if (!API_READY) {
+      feed.innerHTML = `<div class="feed-status">${NOT_READY_MSG}</div>`;
+      return;
+    }
     try {
       const res = await fetch(`${API_BASE}/collection/${config.collection}`);
       if (!res.ok) throw new Error(`fetch failed: ${res.status}`);
@@ -213,6 +220,11 @@
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
+      if (!API_READY) {
+        statusEl.textContent = NOT_READY_MSG;
+        statusEl.className = "form-status is-error";
+        return;
+      }
       const author = form.author.value.trim();
       const title = form.title.value.trim();
       const body = form.body.value.trim();
@@ -254,14 +266,6 @@
       answerNoun: app.dataset.answerNoun || "Comments",
       emptyText: app.dataset.emptyText || "Nothing here yet — be the first to post!",
     };
-
-    if (API_BASE.includes("YOUR-SUBDOMAIN")) {
-      const form = app.querySelector("#post-form");
-      if (form) {
-        form.querySelector(".form-status").textContent =
-          "Posting isn't wired up yet — the site owner needs to deploy the Worker and set API_BASE in assets/collections.js.";
-      }
-    }
 
     loadFeed(app, config);
     wirePostForm(app, config);
