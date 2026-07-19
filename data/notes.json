@@ -5,9 +5,7 @@
     "title": "3 Pillars of ML",
     "body": "1. supervised learning: data + labeled set = return rules\n2. unsupervised learning: data, no Labeled set =return  rules\n3. reinforcement: no data, no labeled set, it learn from feedback/experience = return rules",
     "createdAt": "2026-07-19T03:12:31.330Z",
-    "likes": [
-      "anon-y544gbojmrr89icq"
-    ],
+    "likes": [],
     "comments": []
   }
 ]
