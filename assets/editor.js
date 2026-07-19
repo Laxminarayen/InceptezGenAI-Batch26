@@ -84,6 +84,74 @@
     textarea.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
+  const MAX_IMAGE_DIMENSION = 1280;
+  const IMAGE_QUALITY = 0.85;
+  const MAX_SOURCE_FILE_BYTES = 12 * 1024 * 1024; // reject absurdly large source files outright
+
+  function readFileAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => reject(new Error("Couldn't read the file."));
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function loadImageEl(dataUrl) {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => reject(new Error("That doesn't look like a valid image."));
+      img.src = dataUrl;
+    });
+  }
+
+  // Resizes/re-encodes large images client-side before upload. GIFs pass through
+  // untouched (canvas would flatten animation to a single frame).
+  async function prepareImage(file) {
+    if (file.size > MAX_SOURCE_FILE_BYTES) throw new Error("Image is too large (max 12MB).");
+
+    if (file.type === "image/gif") {
+      const dataUrl = await readFileAsDataUrl(file);
+      return { dataUrl, contentType: "image/gif" };
+    }
+
+    const sourceDataUrl = await readFileAsDataUrl(file);
+    const img = await loadImageEl(sourceDataUrl);
+    const scale = Math.min(1, MAX_IMAGE_DIMENSION / Math.max(img.width, img.height));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.max(1, Math.round(img.width * scale));
+    canvas.height = Math.max(1, Math.round(img.height * scale));
+    const ctx = canvas.getContext("2d");
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const outType = "image/jpeg";
+    const dataUrl = canvas.toDataURL(outType, IMAGE_QUALITY);
+    return { dataUrl, contentType: outType };
+  }
+
+  async function uploadImageFile(file, collection, onStatus) {
+    if (!file.type.startsWith("image/")) throw new Error("Only image files are supported.");
+    if (!window.ForumAPI) throw new Error("Image uploads aren't available on this page.");
+    if (!window.ForumAPI.ready) throw new Error(window.ForumAPI.notReadyMessage);
+
+    onStatus && onStatus("Preparing image…");
+    const { dataUrl, contentType } = await prepareImage(file);
+    const base64 = dataUrl.split(",")[1];
+
+    onStatus && onStatus("Uploading…");
+    const result = await window.ForumAPI.uploadImage({
+      collection,
+      filename: file.name || "image",
+      contentType,
+      dataBase64: base64,
+    });
+    return result.url;
+  }
+
+  function altTextFromFilename(name) {
+    return (name || "image").replace(/\.[a-z0-9]+$/i, "").replace(/[_-]+/g, " ").trim() || "image";
+  }
+
   function handleEnterAutoList(e, textarea) {
     if (e.key !== "Enter" || e.shiftKey) return false;
     const { value, selectionStart } = textarea;
@@ -273,6 +341,13 @@
     toolbar.appendChild(buildToolbarButton("1.", "Numbered list", () => toggleNumberedList(textarea)));
     toolbar.appendChild(buildToolbarButton("🔗", "Link (Ctrl+K)", () => insertLink(textarea)));
 
+    const imageInput = document.createElement("input");
+    imageInput.type = "file";
+    imageInput.accept = "image/png,image/jpeg,image/webp,image/gif";
+    imageInput.hidden = true;
+    toolbar.appendChild(buildToolbarButton("🖼️", "Add image", () => imageInput.click()));
+    toolbar.appendChild(imageInput);
+
     const emojiWrap = document.createElement("div");
     emojiWrap.className = "editor-emoji-wrap";
     const emojiBtn = buildToolbarButton("😊", "Emoji", () => {
@@ -325,12 +400,72 @@
     footer.className = "editor-footer";
     const hint = document.createElement("span");
     hint.className = "editor-hint";
-    hint.textContent = "Markdown supported · @mention · :emoji:";
+    hint.textContent = "Markdown supported · @mention · :emoji: · drop or paste an image";
+    const uploadStatus = document.createElement("span");
+    uploadStatus.className = "editor-upload-status";
     const charCount = document.createElement("span");
     charCount.className = "editor-charcount";
     footer.appendChild(hint);
+    footer.appendChild(uploadStatus);
     footer.appendChild(charCount);
     wrap.appendChild(footer);
+
+    function collectionFor(el) {
+      const host = el.closest("[data-collection]");
+      return host ? host.dataset.collection : "";
+    }
+
+    async function handleImageFile(file) {
+      const collection = collectionFor(textarea);
+      uploadStatus.textContent = "";
+      uploadStatus.className = "editor-upload-status";
+      try {
+        const url = await uploadImageFile(file, collection, (msg) => {
+          uploadStatus.textContent = msg;
+        });
+        insertAtCursor(textarea, `![${altTextFromFilename(file.name)}](${url})\n`);
+        uploadStatus.textContent = "Image added ✓";
+        setTimeout(() => (uploadStatus.textContent = ""), 2500);
+      } catch (err) {
+        uploadStatus.textContent = err.message || "Couldn't upload that image.";
+        uploadStatus.className = "editor-upload-status is-error";
+      }
+    }
+
+    imageInput.addEventListener("change", () => {
+      if (imageInput.files && imageInput.files[0]) handleImageFile(imageInput.files[0]);
+      imageInput.value = "";
+    });
+
+    ["dragenter", "dragover"].forEach((evt) =>
+      wrap.addEventListener(evt, (e) => {
+        if (!e.dataTransfer || !Array.from(e.dataTransfer.types || []).includes("Files")) return;
+        e.preventDefault();
+        wrap.classList.add("is-dragover");
+      })
+    );
+    ["dragleave", "dragend"].forEach((evt) =>
+      wrap.addEventListener(evt, () => wrap.classList.remove("is-dragover"))
+    );
+    wrap.addEventListener("drop", (e) => {
+      wrap.classList.remove("is-dragover");
+      const file = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+      if (file && file.type.startsWith("image/")) {
+        e.preventDefault();
+        handleImageFile(file);
+      }
+    });
+
+    textarea.addEventListener("paste", (e) => {
+      const items = e.clipboardData && e.clipboardData.items;
+      if (!items) return;
+      const imageItem = Array.from(items).find((it) => it.type && it.type.startsWith("image/"));
+      if (!imageItem) return;
+      const file = imageItem.getAsFile();
+      if (!file) return;
+      e.preventDefault();
+      handleImageFile(file);
+    });
 
     function updateCharCount() {
       const max = textarea.getAttribute("maxlength");

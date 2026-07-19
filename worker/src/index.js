@@ -10,6 +10,8 @@ const ALLOWED_ORIGINS = new Set([
 const COLLECTIONS = new Set(["notes", "articles", "questions"]);
 const LIMITS = { author: 60, title: 200, body: 8000, comment: 2000 };
 const MAX_RETRIES = 5;
+const IMAGE_EXT_BY_TYPE = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/gif": "gif" };
+const MAX_IMAGE_BASE64_LEN = 7_000_000; // ~5MB decoded
 
 function corsHeaders(origin) {
   const allow = ALLOWED_ORIGINS.has(origin) ? origin : "https://laxminarayen.github.io";
@@ -187,6 +189,42 @@ async function handleComment(request, env, origin) {
   return json(result.entry, 201, origin);
 }
 
+async function handleUpload(request, env, origin) {
+  const body = await request.json().catch(() => null);
+  if (!body) return json({ error: "Invalid JSON" }, 400, origin);
+
+  const { collection, filename, contentType, dataBase64 } = body;
+  if (!COLLECTIONS.has(collection)) return json({ error: "Invalid collection" }, 400, origin);
+
+  const ext = IMAGE_EXT_BY_TYPE[contentType];
+  if (!ext) return json({ error: "Unsupported image type. Use PNG, JPEG, WEBP, or GIF." }, 400, origin);
+
+  if (!dataBase64 || typeof dataBase64 !== "string" || dataBase64.length > MAX_IMAGE_BASE64_LEN) {
+    return json({ error: "Image is missing or too large (max ~5MB)." }, 400, origin);
+  }
+
+  const safeName = clean(filename, 40)
+    .toLowerCase()
+    .replace(/\.[a-z0-9]+$/, "")
+    .replace(/[^a-z0-9-]+/g, "-")
+    .replace(/^-+|-+$/g, "") || "image";
+  const uniqueId = Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+  const path = `data/uploads/${collection}/${uniqueId}-${safeName}.${ext}`;
+
+  const res = await ghRequest(env, path, {
+    method: "PUT",
+    body: JSON.stringify({
+      message: `forum: upload image to ${collection}`,
+      content: dataBase64,
+      branch: BRANCH,
+    }),
+  });
+  if (!res.ok) return json({ error: `Upload failed: ${res.status} ${await res.text()}` }, 502, origin);
+
+  const url = `https://raw.githubusercontent.com/${OWNER}/${REPO}/${BRANCH}/${path}`;
+  return json({ url }, 201, origin);
+}
+
 export { genId, clean, toBase64Utf8, fromBase64Utf8, ghGetCollection, ghPutCollection, mutateCollection };
 
 export default {
@@ -209,6 +247,7 @@ export default {
       if (request.method === "POST" && url.pathname === "/post") return await handlePost(request, env, origin);
       if (request.method === "POST" && url.pathname === "/like") return await handleLike(request, env, origin);
       if (request.method === "POST" && url.pathname === "/comment") return await handleComment(request, env, origin);
+      if (request.method === "POST" && url.pathname === "/upload") return await handleUpload(request, env, origin);
       return json({ error: "Not found" }, 404, origin);
     } catch (e) {
       return json({ error: e.message || "Server error" }, 500, origin);
