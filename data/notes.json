@@ -5,7 +5,9 @@
     "title": "Evaluation Metrics",
     "body": "1. SSE - Sum of Squared Errors - (Sum(Actual - Predicted)2) - (square to remove the -ve sign)\n2. MSE - Mean(Sum of Square Errors) - On an average what is the error of prediciton for my model?\n3. RMSE - Sqrt(MEAN(SSE)) - sqrt(MSE) - Root Mean squared Error..",
     "createdAt": "2026-07-19T05:16:50.957Z",
-    "likes": [],
+    "likes": [
+      "anon-939uq8fimrrchgbx"
+    ],
     "comments": [
       {
         "id": "mrrcgoml52hmx2",
