@@ -36,6 +36,75 @@
     return stripped.length > maxLen ? stripped.slice(0, maxLen).trim() + "…" : stripped;
   }
 
+  // Turns "@name" text (outside code/links) into a styled span. Builds real DOM
+  // nodes via textContent, never string concatenation, so it can't reintroduce
+  // any HTML/script injection risk.
+  function highlightMentions(html) {
+    const container = document.createElement("div");
+    container.innerHTML = html;
+
+    const walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, {
+      acceptNode(node) {
+        return node.parentElement && node.parentElement.closest("code, pre, a")
+          ? NodeFilter.FILTER_REJECT
+          : NodeFilter.FILTER_ACCEPT;
+      },
+    });
+    const textNodes = [];
+    let n;
+    while ((n = walker.nextNode())) textNodes.push(n);
+
+    const mentionRe = /@([a-zA-Z0-9][\w-]{0,38})/g;
+    textNodes.forEach((node) => {
+      const text = node.nodeValue;
+      mentionRe.lastIndex = 0;
+      if (!mentionRe.test(text)) return;
+      mentionRe.lastIndex = 0;
+      const frag = document.createDocumentFragment();
+      let lastIndex = 0;
+      let match;
+      while ((match = mentionRe.exec(text))) {
+        if (match.index > lastIndex) frag.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
+        const span = document.createElement("span");
+        span.className = "mention";
+        span.textContent = "@" + match[1];
+        frag.appendChild(span);
+        lastIndex = match.index + match[0].length;
+      }
+      if (lastIndex < text.length) frag.appendChild(document.createTextNode(text.slice(lastIndex)));
+      node.parentNode.replaceChild(frag, node);
+    });
+
+    container.querySelectorAll("a[href]").forEach((a) => {
+      a.setAttribute("target", "_blank");
+      a.setAttribute("rel", "noopener noreferrer");
+    });
+
+    return container.innerHTML;
+  }
+
+  const ALLOWED_TAGS = [
+    "p", "br", "strong", "em", "del", "ul", "ol", "li",
+    "blockquote", "code", "pre", "a", "h2", "h3", "h4", "hr", "img", "span",
+  ];
+  const ALLOWED_ATTR = ["href", "target", "rel", "src", "alt", "class"];
+
+  // Markdown -> sanitized HTML. If marked/DOMPurify failed to load (e.g. CDN
+  // blocked), degrades to plain escaped text rather than rendering nothing.
+  function renderMarkdown(text) {
+    if (!text) return "";
+    if (!window.marked || !window.DOMPurify) {
+      return `<p>${escapeHtml(text)}</p>`;
+    }
+    const rawHtml = window.marked.parse(text, { gfm: true, breaks: true });
+    const clean = window.DOMPurify.sanitize(rawHtml, {
+      ALLOWED_TAGS,
+      ALLOWED_ATTR,
+      ALLOW_DATA_ATTR: false,
+    });
+    return highlightMentions(clean);
+  }
+
   function getAnonId() {
     let id = localStorage.getItem(ANON_KEY);
     if (!id) {
@@ -70,7 +139,8 @@
     const liked = (post.likes || []).includes(anonId);
     const likeCount = (post.likes || []).length;
     const commentCount = (post.comments || []).length;
-    const preview = previewText(post.body, 320);
+    const bodyHtml = renderMarkdown(post.body);
+    const isLong = (post.body || "").length > 380 || (post.body || "").split("\n").length > 6;
     const comments = (post.comments || []).map(renderComment).join("");
 
     return `
@@ -81,7 +151,10 @@
           <span class="note-date">${formatDate(post.createdAt)}</span>
         </header>
         <h3 class="post-title">${escapeHtml(post.title)}</h3>
-        <p class="note-preview post-body">${escapeHtml(preview)}</p>
+        <div class="post-body-wrap ${isLong ? "is-clamped" : ""}">
+          <div class="post-body rendered-content">${bodyHtml}</div>
+        </div>
+        ${isLong ? `<button type="button" class="read-more-btn" data-action="toggle-body">Read more ▾</button>` : ""}
         <footer class="article-actions">
           <button type="button" class="clap-btn ${liked ? "is-clapped" : ""}" data-action="like" aria-pressed="${liked}">
             ${config.reactionEmoji} <span class="clap-count">${likeCount}</span>
@@ -153,6 +226,15 @@
       }
     });
 
+    const readMoreBtn = card.querySelector('[data-action="toggle-body"]');
+    if (readMoreBtn) {
+      const bodyWrap = card.querySelector(".post-body-wrap");
+      readMoreBtn.addEventListener("click", () => {
+        const expanded = bodyWrap.classList.toggle("is-clamped") === false;
+        readMoreBtn.textContent = expanded ? "Show less ▴" : "Read more ▾";
+      });
+    }
+
     const toggleBtn = card.querySelector('[data-action="toggle-comments"]');
     const section = card.querySelector(".comment-section");
     toggleBtn.addEventListener("click", () => {
@@ -171,6 +253,7 @@
       statusEl.textContent = "Posting…";
       try {
         const comment = await apiPost("/comment", { collection: config.collection, postId, author, body });
+        rememberAuthor(config, author);
         const list = card.querySelector(".comment-list");
         const empty = list.querySelector(".comment-empty");
         if (empty) empty.remove();
@@ -188,6 +271,13 @@
     });
   }
 
+  function rememberAuthor(config, name) {
+    if (!name) return;
+    window.ForumKnownAuthors = window.ForumKnownAuthors || {};
+    const set = (window.ForumKnownAuthors[config.collection] = window.ForumKnownAuthors[config.collection] || new Set());
+    set.add(name);
+  }
+
   async function loadFeed(app, config) {
     const feed = app.querySelector(".forum-feed");
     if (!API_READY) {
@@ -198,6 +288,10 @@
       const res = await fetch(`${API_BASE}/collection/${config.collection}`);
       if (!res.ok) throw new Error(`fetch failed: ${res.status}`);
       const posts = await res.json();
+      posts.forEach((p) => {
+        rememberAuthor(config, p.author);
+        (p.comments || []).forEach((c) => rememberAuthor(config, c.author));
+      });
       if (!Array.isArray(posts) || !posts.length) {
         feed.innerHTML = `<div class="feed-status">${config.emptyText}</div>`;
         return;
@@ -237,6 +331,7 @@
 
       try {
         const post = await apiPost("/post", { collection: config.collection, author, title, body });
+        rememberAuthor(config, author);
         const feed = app.querySelector(".forum-feed");
         const emptyStatus = feed.querySelector(".feed-status");
         if (emptyStatus) feed.innerHTML = "";
@@ -270,4 +365,6 @@
     loadFeed(app, config);
     wirePostForm(app, config);
   });
+
+  window.ForumMarkdown = { render: renderMarkdown };
 })();

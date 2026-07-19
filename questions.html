@@ -6,6 +6,8 @@
 <title>Questions — Inceptez Batch 26 Class Forum</title>
 <meta name="description" content="Ask questions about any Inceptez GenAI Batch 26 class — powered by GitHub Issues, answered right in the thread." />
 <link rel="stylesheet" href="assets/style.css" />
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
 </head>
 <body>
 <header class="topbar">
@@ -89,7 +91,7 @@
             <input type="text" name="title" placeholder="Title (e.g. which class/session this is about)" maxlength="200" required />
           </div>
           <div class="form-row">
-            <textarea name="body" placeholder="What's your question?" maxlength="8000" rows="4" required></textarea>
+            <textarea name="body" class="js-rich-editor" placeholder="What's your question?" maxlength="8000" rows="4" required></textarea>
           </div>
           <div class="form-actions">
             <button type="submit" class="btn btn-primary">💬 Ask</button>
@@ -109,5 +111,6 @@
 
 <script src="assets/forum.js"></script>
 <script src="assets/collections.js"></script>
+<script src="assets/editor.js"></script>
 </body>
 </html>
