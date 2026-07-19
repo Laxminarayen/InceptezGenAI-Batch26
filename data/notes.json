@@ -1,5 +1,14 @@
 [
   {
+    "id": "mrrcld46os3lko",
+    "author": "Laxminarayen",
+    "title": "OLS",
+    "body": "OLS - Ordinary Least Squares Method.. \nOrdinary Least Squares (OLS) is a fundamental linear regression method that models the relationship between a dependent variable and one or more independent variables by minimizing the sum of squared residuals",
+    "createdAt": "2026-07-19T05:21:12.102Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mrrcfrm5pf8w2o",
     "author": "Laxminarayen",
     "title": "Evaluation Metrics",
