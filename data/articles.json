@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "id": "mrreztofby9ey6",
+    "author": "imageTestAuthor",
+    "title": "Article with an embedded image",
+    "body": "![pasted](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mrrezstckjkesw-pasted.jpg)",
+    "createdAt": "2026-07-19T06:28:25.983Z",
+    "likes": [],
+    "comments": []
+  }
+]
