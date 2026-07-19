@@ -367,4 +367,11 @@
   });
 
   window.ForumMarkdown = { render: renderMarkdown };
+  window.ForumAPI = {
+    ready: API_READY,
+    notReadyMessage: NOT_READY_MSG,
+    uploadImage(payload) {
+      return apiPost("/upload", payload);
+    },
+  };
 })();
