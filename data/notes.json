@@ -5,7 +5,9 @@
     "title": "deploy verification",
     "body": "temporary — will be cleaned up",
     "createdAt": "2026-07-19T03:07:48.509Z",
-    "likes": [],
+    "likes": [
+      "deploy-check-anon"
+    ],
     "comments": []
   }
 ]
