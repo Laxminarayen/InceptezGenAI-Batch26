@@ -8,6 +8,13 @@
     "likes": [
       "deploy-check-anon"
     ],
-    "comments": []
+    "comments": [
+      {
+        "id": "mrr7u4wkoxsmmf",
+        "author": "deployCheckReplier",
+        "body": "looks good",
+        "createdAt": "2026-07-19T03:08:03.284Z"
+      }
+    ]
   }
 ]
