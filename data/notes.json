@@ -6,7 +6,14 @@
     "body": "1. SSE - Sum of Squared Errors - (Sum(Actual - Predicted)2) - (square to remove the -ve sign)\n2. MSE - Mean(Sum of Square Errors) - On an average what is the error of prediciton for my model?\n3. RMSE - Sqrt(MEAN(SSE)) - sqrt(MSE) - Root Mean squared Error..",
     "createdAt": "2026-07-19T05:16:50.957Z",
     "likes": [],
-    "comments": []
+    "comments": [
+      {
+        "id": "mrrcgoml52hmx2",
+        "author": "Laxminarayen",
+        "body": "Please mind this is Evaluation metrics for Regression only so far..!",
+        "createdAt": "2026-07-19T05:17:33.741Z"
+      }
+    ]
   },
   {
     "id": "mrr7zvqaqra3fc",
