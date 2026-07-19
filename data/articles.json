@@ -1,1 +1,11 @@
-[]
+[
+  {
+    "id": "mrr8efuoh3i7y7",
+    "author": "editorTestAuthor",
+    "title": "Rich formatting test article",
+    "body": "## A heading\n\nSome **bold** and _italic_ text, plus a mention of @editorTestAuthor.\n\n- point one\n- point two\n\n> a quote\n\n`inline code`\n\n[a link](https://example.com)\n\nXSS attempts: <img src=x onerror=alert(1)> and [bad](javascript:alert(1)) and <script>alert(2)</script>\n\npadding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding padding",
+    "createdAt": "2026-07-19T03:23:50.592Z",
+    "likes": [],
+    "comments": []
+  }
+]
