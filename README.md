@@ -22,7 +22,7 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 - [Day 14: Data Preprocessing](#day-14)
 - [Day 15: Multivariate Statistics - Random Variables & Distributions](#day-15)
 - [Day 16: Inferential Statistics - Sampling, CLT & Voting Forecasts](#day-16)
-- [Day 17: Machine Learning Foundations](#day-17)
+- [Day 17: ML Foundations & Simple Linear Regression](#day-17)
 - [Assignments](#assignments)
 
 ---
@@ -245,7 +245,7 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 ---
 
 <a name="day-17"></a>
-## 🗓️ Day 17: Machine Learning Foundations (18-Jul-2026)
+## 🗓️ Day 17: ML Foundations & Simple Linear Regression (18-Jul-2026 to 19-Jul-2026)
 
 ### Highlights
 - **What Is ML, Really?** Going from hard-coded rules to algorithms that learn patterns from data.
@@ -253,9 +253,13 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 - **Supervised Learning:** Classification vs. regression — "you be the model" style walkthroughs.
 - **Unsupervised Learning:** Clustering and finding structure without labels — "you be the algorithm."
 - **Reinforcement Learning:** Reward-driven learning, illustrated with a mouse-in-a-maze / game-playing bot analogy.
+- **Simple Linear Regression:** Fitting a line to data, residuals, and minimizing error with Ordinary Least Squares (OLS).
+- **R² & Model Fit:** What R² actually measures, and reading it as the standard scoreboard for regression models.
+- **Underfitting vs. Overfitting:** The complexity dial, and why more complexity isn't always better.
+- **Beyond One Feature:** A first look at Multiple Linear Regression as the natural next step.
 
 ### Resources
-- **Slide Deck:** [`17. Machine Learning/ml-foundations-slides.html`](17.%20Machine%20Learning/ml-foundations-slides.html)
+- **Slide Deck:** [`17. Foundations of Machine Learning - Simple Linear Regression/ml-foundations-slides.html`](17.%20Foundations%20of%20Machine%20Learning%20-%20Simple%20Linear%20Regression/ml-foundations-slides.html)
 
 ---
 
