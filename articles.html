@@ -6,6 +6,8 @@
 <title>Articles — Inceptez Batch 26 Class Forum</title>
 <meta name="description" content="Student-written explanations and deep dives on any Inceptez GenAI Batch 26 class — clap, share, and comment." />
 <link rel="stylesheet" href="assets/style.css" />
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
 </head>
 <body>
 <header class="topbar">
@@ -88,7 +90,7 @@
             <input type="text" name="title" placeholder="Title (e.g. which class/topic this is about)" maxlength="200" required />
           </div>
           <div class="form-row">
-            <textarea name="body" placeholder="Write as much as you like — explain it your way." maxlength="8000" rows="6" required></textarea>
+            <textarea name="body" class="js-rich-editor" placeholder="Write as much as you like — explain it your way." maxlength="8000" rows="6" required></textarea>
           </div>
           <div class="form-actions">
             <button type="submit" class="btn btn-primary">✍️ Publish Article</button>
@@ -108,5 +110,6 @@
 
 <script src="assets/forum.js"></script>
 <script src="assets/collections.js"></script>
+<script src="assets/editor.js"></script>
 </body>
 </html>
