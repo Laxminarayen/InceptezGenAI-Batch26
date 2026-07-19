@@ -1,6 +1,6 @@
 (function () {
   // After running `wrangler deploy` in worker/, replace this with your Worker's URL.
-  const API_BASE = "https://inceptez-forum-api.YOUR-SUBDOMAIN.workers.dev";
+  const API_BASE = "https://inceptez-forum-api.nvlnarayen2496.workers.dev";
   const API_READY = !API_BASE.includes("YOUR-SUBDOMAIN");
   const NOT_READY_MSG =
     "This isn't wired up yet — the site owner needs to deploy the Worker (see worker/README.md) and set API_BASE in assets/collections.js.";
