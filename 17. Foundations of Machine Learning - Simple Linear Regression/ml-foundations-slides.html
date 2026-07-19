@@ -1,0 +1,2935 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Intro to ML · From Averages to Algorithms — Aamwadi &amp; the Lok Sabha</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+
+    --c-landscape:#6B4FCE; --c-baseline:#B5790F; --c-linreg:#C13D68; --c-eval:#1E6FA8; --c-intro:#3B6E63;
+
+    --bjp:#D97A24; --inc:#2D6FC4; --unrevealed:#B9AF97;
+
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+
+    --accent: var(--c-landscape);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+      --c-landscape:#A78BFA; --c-baseline:#E0A94A; --c-linreg:#F17BA0; --c-eval:#5FA8E0; --c-intro:#79C0AE;
+      --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+      --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+    --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+    --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+    --c-landscape:#A78BFA; --c-baseline:#E0A94A; --c-linreg:#F17BA0; --c-eval:#5FA8E0; --c-intro:#79C0AE;
+    --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+    --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+  }
+  :root[data-theme="light"]{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+    --c-landscape:#6B4FCE; --c-baseline:#B5790F; --c-linreg:#C13D68; --c-eval:#1E6FA8; --c-intro:#3B6E63;
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    overflow:hidden; -webkit-font-smoothing:antialiased;
+  }
+  body[data-section="landscape"]{--accent:var(--c-landscape);}
+  body[data-section="baseline"]{--accent:var(--c-baseline);}
+  body[data-section="linreg"]{--accent:var(--c-linreg);}
+  body[data-section="eval"]{--accent:var(--c-eval);}
+  body[data-section="intro"]{--accent:var(--c-intro);}
+
+  h1,h2,h3,p{margin:0;}
+  h1,h2,h3{text-wrap:balance; letter-spacing:-0.01em;}
+  ::selection{background:var(--accent); color:#fff;}
+
+  .eyebrow{
+    font-size:.74rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent);
+  }
+  .slide h1{font-size:clamp(1.7rem,3.2vw,2.9rem); font-weight:800; color:var(--ink);}
+  .slide h2{font-size:clamp(1.2rem,1.8vw,1.6rem); font-weight:800; color:var(--ink);}
+  .body-text{font-size:clamp(1rem,1.25vw,1.2rem); font-weight:500; line-height:1.6; color:var(--ink-soft);}
+  .body-text b, .body-text strong{color:var(--ink); font-weight:800;}
+  .tabular{font-variant-numeric:tabular-nums;}
+
+  /* ---------- chrome ---------- */
+  .chrome-top{
+    position:fixed; top:0; left:0; right:0; height:52px; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 20px; pointer-events:none;
+  }
+  .chrome-top > *{pointer-events:auto;}
+  .hour-badge{
+    font-size:.72rem; font-weight:800; letter-spacing:.12em; color:var(--ink-faint);
+    background:var(--paper-2); border:1px solid var(--line); padding:6px 12px; border-radius:999px;
+  }
+  .chapter-chip{
+    display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:700;
+    color:var(--ink-soft); background:var(--paper-2); border:1px solid var(--line);
+    padding:6px 14px 6px 8px; border-radius:999px;
+  }
+  .chapter-chip .num{
+    display:inline-flex; align-items:center; justify-content:center; width:20px;height:20px;
+    border-radius:50%; background:var(--accent); color:#fff; font-size:.68rem; font-weight:800;
+  }
+  .icon-btn{
+    width:36px;height:36px; border-radius:50%; border:1px solid var(--line); background:var(--paper-2);
+    color:var(--ink); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .icon-btn:hover{background:var(--paper-3);}
+  .icon-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  .deck{position:absolute; inset:0; top:52px; bottom:64px;}
+  .slide{
+    position:absolute; inset:0; display:none; flex-direction:column;
+    padding:clamp(18px,3vw,40px) clamp(24px,5vw,80px);
+    overflow:auto;
+  }
+  .slide.active{display:flex;}
+  .slide-inner{display:flex; flex-direction:column; gap:clamp(12px,1.8vh,20px); max-width:1360px; width:100%; margin:0 auto; flex:1; min-height:0;}
+
+  .chrome-bottom{
+    position:fixed; left:0; right:0; bottom:0; height:64px; z-index:50;
+    display:flex; align-items:center; gap:14px; padding:0 clamp(14px,3vw,32px);
+    background:linear-gradient(0deg, var(--paper) 60%, transparent);
+  }
+  .nav-btn{
+    width:40px;height:40px;border-radius:50%; border:1px solid var(--line); background:var(--paper-2);
+    color:var(--ink); font-size:1.2rem; cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center;
+  }
+  .nav-btn:hover:not(:disabled){background:var(--accent); color:#fff; border-color:transparent;}
+  .nav-btn:disabled{opacity:.35; cursor:default;}
+  .progress{flex:1; display:flex; align-items:center; gap:5px; overflow-x:auto; scrollbar-width:none;}
+  .progress::-webkit-scrollbar{display:none;}
+  .dot{
+    width:9px;height:9px;border-radius:50%; background:var(--paper-3); border:none; cursor:pointer; flex:none;
+    transition:transform .15s ease;
+  }
+  .dot.gap{width:14px; height:2px; border-radius:1px; background:transparent; cursor:default;}
+  .dot.active{transform:scale(1.5);}
+  .slide-counter{font-size:.8rem; font-weight:700; color:var(--ink-faint); flex:none; white-space:nowrap;}
+
+  /* ---------- layout helpers ---------- */
+  .split{display:grid; grid-template-columns:1.05fr 1.35fr; gap:clamp(20px,4vw,52px); align-items:center; flex:1; min-height:0;}
+  @media (max-width:920px){ .split{grid-template-columns:1fr; overflow:auto;} }
+  .split.reverse{grid-template-columns:1.35fr 1.05fr;}
+  .stack{display:flex; flex-direction:column; gap:12px; min-height:0;}
+  .center-col{display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:16px; flex:1;}
+  .visual-box{
+    background:var(--surface-canvas); border:1px solid var(--line); border-radius:24px;
+    padding:14px; box-shadow:var(--shadow); min-height:0; display:flex; flex-direction:column; gap:8px;
+  }
+  .canvas-wrap{position:relative; flex:1; min-height:160px;}
+  canvas{display:block; width:100%; height:100%;}
+
+  /* ---------- components ---------- */
+  .vocab-card{
+    border-left:5px solid var(--accent); background:var(--paper-2); border-radius:14px;
+    padding:12px 18px; display:flex; flex-direction:column; gap:4px;
+  }
+  .vocab-term{font-size:1rem; font-weight:900; letter-spacing:.04em; color:var(--accent);}
+  .vocab-def{font-size:1rem; color:var(--ink); font-weight:600; line-height:1.4;}
+
+  .reallife{border:1.5px dashed var(--accent); background:transparent; border-radius:14px; padding:10px 16px;}
+  .reallife .tag{font-size:.68rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); display:flex; align-items:center; gap:6px;}
+  .reallife p{font-size:.92rem; color:var(--ink); font-weight:600; margin-top:5px; line-height:1.45;}
+
+  .console{
+    display:flex; flex-wrap:wrap; gap:14px 26px; align-items:flex-end;
+    background:var(--paper-2); border:1px solid var(--line); border-radius:20px;
+    padding:16px 20px;
+  }
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field label{font-size:.76rem; font-weight:800; color:var(--ink-soft); letter-spacing:.03em;}
+  .field .val{color:var(--accent); font-weight:900;}
+  input[type="range"]{width:180px; accent-color:var(--accent);}
+  input[type="text"]{
+    font:inherit; font-size:.92rem; font-weight:700; padding:9px 14px; border-radius:999px;
+    border:1px solid var(--line); background:var(--paper); color:var(--ink); min-width:160px;
+  }
+  input[type="text"]:focus-visible{ outline:2px solid var(--accent); outline-offset:2px; }
+  .draw-cursor{ cursor:crosshair; touch-action:none; }
+
+  .btn{
+    font:inherit; font-size:.92rem; font-weight:800; border:1px solid var(--line); border-radius:999px;
+    padding:11px 20px; cursor:pointer; background:var(--paper-3); color:var(--ink);
+    transition:transform .12s ease, box-shadow .12s ease; white-space:nowrap;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn:active{transform:translateY(0);}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .btn-primary{background:var(--accent); color:#fff; border-color:transparent; box-shadow:0 8px 18px -8px var(--accent);}
+  .btn-ghost{background:transparent;}
+  .btn.toggled{background:var(--accent); color:#fff; border-color:transparent;}
+  .btn.correct{background:var(--good); color:#fff; border-color:transparent;}
+  .btn.wrong{background:var(--bad); color:#fff; border-color:transparent;}
+  .btn:disabled{opacity:.55; cursor:default; transform:none;}
+  .btn-row{display:flex; flex-wrap:wrap; gap:10px;}
+
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px;}
+  .stat-tile{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:12px 14px;}
+  .stat-tile .label{font-size:.7rem; font-weight:800; color:var(--ink-faint); letter-spacing:.05em; text-transform:uppercase;}
+  .stat-tile .value{font-size:1.35rem; font-weight:900; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .stat-tile .value small{font-size:.85rem; font-weight:700; color:var(--ink-faint);}
+  .stat-tile.accent .value{color:var(--accent);}
+
+  .card{background:var(--paper-2); border:1px solid var(--line); border-radius:18px; padding:18px 20px;}
+  .card-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px;}
+  .card .ico{font-size:1.8rem;}
+  .card h3{font-size:1.02rem; margin-top:8px;}
+  .card p{font-size:.92rem; color:var(--ink-soft); margin-top:4px; line-height:1.45;}
+
+  .compare-table{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  .compare-col{background:var(--paper-2); border-radius:18px; padding:20px; border-top:5px solid var(--accent);}
+  .compare-col.b{border-top-color:var(--c-baseline);}
+
+  .trio-table{display:grid; grid-template-columns:repeat(3,1fr); gap:16px;}
+  .trio-col{background:var(--paper-2); border-radius:18px; padding:18px; border-top:5px solid var(--col-color, var(--accent));}
+  .trio-col h3{font-size:1.05rem; margin-top:6px;}
+  .trio-col p{font-size:.88rem; color:var(--ink-soft); margin-top:6px; line-height:1.45;}
+  .trio-col .tagline{font-size:.72rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--col-color, var(--accent)); margin-top:10px;}
+  @media (max-width:920px){ .trio-table{grid-template-columns:1fr;} }
+
+  .banner{border-radius:14px; padding:12px 16px; font-weight:800; font-size:.92rem; display:flex; align-items:center; gap:10px;}
+  .banner.warn{background:color-mix(in srgb, var(--warn) 18%, var(--paper-2)); color:var(--warn);}
+  .banner.good{background:color-mix(in srgb, var(--good) 18%, var(--paper-2)); color:var(--good);}
+  .banner.bad{background:color-mix(in srgb, var(--bad) 18%, var(--paper-2)); color:var(--bad);}
+  .banner.info{background:var(--paper-3); color:var(--ink); font-weight:600; align-items:flex-start;}
+
+  .flow-row{display:flex; align-items:stretch; gap:12px; flex-wrap:wrap;}
+  .flow-box{background:var(--paper-2); border:1px solid var(--line); border-radius:16px; padding:14px 18px; font-weight:800; text-align:center; flex:1; min-width:130px; display:flex; align-items:center; justify-content:center;}
+  .flow-box.accent{background:var(--accent); color:#fff;}
+  .flow-arrow{font-size:1.6rem; color:var(--accent); display:flex; align-items:center; font-weight:800;}
+  .flow-label{font-size:.7rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:6px;}
+
+  .bar-compare{display:flex; flex-direction:column; gap:4px;}
+  .bar-track{height:34px; background:var(--paper-3); border-radius:9px; overflow:hidden;}
+  .bar-fill{height:100%; width:0%; transition:width 1.1s cubic-bezier(.2,.8,.2,1);}
+
+  .roadmap{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  .roadmap .stop{background:var(--paper-2); border-radius:18px; padding:16px 10px; text-align:center; border-top:5px solid var(--stop-color, var(--accent));}
+  .roadmap .stop .ico{font-size:2rem;}
+  .roadmap .stop .t{font-size:.8rem; font-weight:800; margin-top:6px;}
+  @media (max-width:920px){ .roadmap{grid-template-columns:repeat(2,1fr);} .compare-table{grid-template-columns:1fr;} }
+
+  .kicker-big{font-size:clamp(2.2rem,5.6vw,3.9rem); font-weight:900; letter-spacing:-0.02em;}
+  .glow{color:var(--accent);}
+
+  .rule-list{display:flex; flex-direction:column; gap:12px;}
+  .rule{display:flex; gap:14px; align-items:flex-start;}
+  .rule .n{width:34px;height:34px;border-radius:50%; background:var(--accent); color:#fff; font-weight:900; display:flex; align-items:center; justify-content:center; flex:none;}
+  .rule .t h3{font-size:1rem;}
+  .rule .t p{font-size:.92rem; color:var(--ink-soft); margin-top:2px;}
+
+  .legend{display:flex; gap:16px; font-size:.8rem; font-weight:700; color:var(--ink-soft); flex-wrap:wrap;}
+  .legend .sw{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle;}
+  .legend .sw.diamond{border-radius:2px; transform:rotate(45deg);}
+
+  .footnote{font-size:.82rem; color:var(--ink-faint); font-weight:600;}
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+</style>
+</head>
+<body data-section="intro">
+  <div class="chrome-top">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="hour-badge" id="hourBadge">ML FOUNDATIONS</div>
+      <div class="chapter-chip" id="chapterChip" style="display:none;">
+        <span class="num" id="chapterNum">1</span>
+        <span id="chapterLabel">—</span>
+      </div>
+    </div>
+    <button class="icon-btn" id="themeToggle" title="Toggle light / dark">🌗</button>
+  </div>
+
+  <main class="deck" id="deck">
+
+    <!-- ============ S0 — INTRO / ROADMAP ============ -->
+    <section class="slide" data-section="intro" id="s0">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Aamwadi &amp; the Lok Sabha · Intro to Machine Learning</div>
+        <h1 class="kicker-big">You already think<br/>like a <span class="glow">machine</span>.</h1>
+        <p class="body-text" style="max-width:700px;">Last time, we scooped mangoes and polled voters to guess big truths from small peeks. Today we teach a <b>computer</b> to do that guessing for us — automatically, from data alone. Four hours, four stops:</p>
+        <div class="roadmap" style="width:100%; margin-top:6px;">
+          <div class="stop" style="--stop-color:var(--c-landscape);"><div class="ico">🧭</div><div class="t">The ML Landscape</div></div>
+          <div class="stop" style="--stop-color:var(--c-baseline);"><div class="ico">⚖️</div><div class="t">The Mean Line Baseline</div></div>
+          <div class="stop" style="--stop-color:var(--c-linreg);"><div class="ico">📈</div><div class="t">Simple Linear Regression</div></div>
+          <div class="stop" style="--stop-color:var(--c-eval);"><div class="ico">🎯</div><div class="t">Evaluation &amp; Pitfalls</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ L1 — BRIDGE FROM HOUR 1 ============ -->
+    <section class="slide" data-section="landscape" id="sL1">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Hour 1 · The ML Landscape</div>
+        <h1 style="text-align:center;">From a <span class="glow">scoop of mangoes</span> to a <span class="glow">thinking machine</span></h1>
+        <div class="card-grid" style="margin-top:8px;">
+          <div class="card"><div class="ico">🥭</div><h3>You learned: sampling</h3><p>A small scoop can responsibly estimate the whole basket.</p></div>
+          <div class="card"><div class="ico">🔔</div><h3>You learned: the Magic Bell</h3><p>Averages of samples settle into a predictable bell curve (CLT).</p></div>
+          <div class="card"><div class="ico">🗳️</div><h3>You learned: exit polls</h3><p>Best guess ± margin of error, from real 2019 Lok Sabha data.</p></div>
+        </div>
+        <p class="body-text" style="text-align:center; margin-top:6px;">Every one of those was <b>YOU</b>, the human, doing the scooping, the averaging, the guessing. What if instead, we handed a computer a pile of data and let <b>IT</b> find the pattern, on its own? That's the whole idea behind <b>Machine Learning</b>.</p>
+      </div>
+    </section>
+
+    <!-- ============ L2 — THE PARADIGM SHIFT ============ -->
+    <section class="slide" data-section="landscape" id="sL2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 1 · The Paradigm Shift</div>
+        <h1>The oldest trick in programming — <span class="glow">flipped</span></h1>
+        <div class="stack" style="gap:18px; margin-top:6px;">
+          <div>
+            <div class="flow-label">Traditional programming (what you may already know)</div>
+            <div class="flow-row">
+              <div class="flow-box">📄 Data<br/><span class="footnote">e.g. words in an email</span></div>
+              <div class="flow-arrow">+</div>
+              <div class="flow-box">📐 Rules<br/><span class="footnote">a formula a human wrote</span></div>
+              <div class="flow-arrow">=</div>
+              <div class="flow-box accent">✅ Answers<br/><span class="footnote" style="color:#fff;">spam or not?</span></div>
+            </div>
+          </div>
+          <div id="mlFlowReveal" style="display:none;">
+            <div class="flow-label" style="color:var(--accent);">Machine Learning (what we're doing today)</div>
+            <div class="flow-row">
+              <div class="flow-box">📄 Data<br/><span class="footnote">millions of past emails</span></div>
+              <div class="flow-arrow">+</div>
+              <div class="flow-box">✅ Answers<br/><span class="footnote">already labeled spam or not</span></div>
+              <div class="flow-arrow">=</div>
+              <div class="flow-box accent">📐 Rules<br/><span class="footnote" style="color:#fff;">the computer writes the formula!</span></div>
+            </div>
+          </div>
+        </div>
+        <button class="btn btn-primary" id="revealMlFlowBtn" style="align-self:flex-start;">🔄 Flip it — show me Machine Learning</button>
+        <div class="banner good" id="paradigmBanner" style="display:none;">That's the entire paradigm shift. In ML, we no longer WRITE the rules — we show the computer enough examples of "data → correct answer" and let it work the rule out for itself.</div>
+      </div>
+    </section>
+
+    <!-- ============ L3 — SUPERVISED LEARNING ============ -->
+    <section class="slide" data-section="landscape" id="sL3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 1 · Pillar 1 of 3</div>
+          <h1>SUPERVISED <span class="glow">Learning</span></h1>
+          <div class="vocab-card">
+            <div class="vocab-term">SUPERVISED LEARNING</div>
+            <div class="vocab-def">The computer learns from labeled data — every example comes with the correct answer attached, like a teacher checking homework.</div>
+          </div>
+          <div class="reallife"><div class="tag">🍎🍊 Industry example: Image classification</div><p>Show the computer thousands of fruit photos, each already labeled "Apple" or "Orange" by a human. It learns which visual patterns mean what, then classifies brand-new photos automatically — exactly like real photo-classification apps.</p></div>
+          <p class="body-text">Every image below already has its answer written under it — that's what makes it "supervised."</p>
+        </div>
+        <div class="visual-box" style="height:min(54vh,500px);">
+          <div id="fruitGallery" style="flex:1; display:grid; grid-template-columns:repeat(4,1fr); gap:8px; overflow:auto; align-content:start; padding:4px;"></div>
+          <div class="legend"><span><span class="sw" style="background:var(--bad);"></span>Apple</span><span><span class="sw" style="background:var(--c-baseline);"></span>Orange</span></div>
+          <p class="footnote">Each photo = one past fruit. We already KNOW what it is — that's the label the teacher provides.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ L3b — ACTIVITY: YOU BE THE MODEL ============ -->
+    <section class="slide" data-section="landscape" id="sL3b">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 1 · Activity — Supervised Learning</div>
+        <h1>You be the model! 🎓</h1>
+        <p class="body-text">A supervised model is trained on labeled examples, one at a time, and gets checked against the real answer every time. Let's see if YOU can classify correctly — one mystery fruit at a time.</p>
+        <div class="card" id="supQuizCard">
+          <div class="footnote" id="supQuizProgress">Fruit 1 of 6</div>
+          <div style="text-align:center; margin:8px 0;">
+            <div id="mysteryFruitDisplay" style="font-size:5.5rem; line-height:1;">🍎</div>
+          </div>
+          <p class="body-text" id="supQuizPrompt" style="margin-top:2px; font-size:1.1rem; text-align:center;">What is this fruit?</p>
+          <div class="btn-row" style="margin-top:14px; justify-content:center;" id="supQuizOptions">
+            <button class="btn" data-bucket="apple">🍎 Apple</button>
+            <button class="btn" data-bucket="orange">🍊 Orange</button>
+          </div>
+          <div class="banner" id="supQuizExplain" style="display:none; margin-top:14px;"></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="supQuizNextBtn" style="display:none;">Next fruit →</button>
+          <button class="btn btn-ghost" id="supQuizRestartBtn" style="display:none;">🔄 Try again</button>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-tile accent"><div class="label">Your score</div><div class="value tabular" id="supQuizScore">0 / 0</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ L4 — UNSUPERVISED LEARNING ============ -->
+    <section class="slide" data-section="landscape" id="sL4">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 1 · Pillar 2 of 3</div>
+          <h1>UNSUPERVISED <span class="glow">Learning</span></h1>
+          <div class="vocab-card">
+            <div class="vocab-term">UNSUPERVISED LEARNING</div>
+            <div class="vocab-def">The computer finds hidden patterns in unlabeled data — nobody tells it the groups beforehand. Pure self-discovery.</div>
+          </div>
+          <div class="reallife"><div class="tag">🛍️ Industry example: Customer segmentation</div><p>Give it 60 customers (spending amount, purchase frequency) with NO group labels. Ask it to discover natural "customer segments" on its own — no one tells it what the segments should be.</p></div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="runClusterBtn">🔍 Let the AI find the groups</button>
+            <button class="btn btn-ghost" id="resetClusterBtn">🔄 Reset</button>
+          </div>
+          <p class="footnote" id="clusterFootnote">Right now every customer looks the same to us — one gray blob. Watch what the algorithm sees.</p>
+        </div>
+        <div class="visual-box" style="height:min(54vh,500px);">
+          <div class="canvas-wrap"><canvas id="cvCluster"></canvas></div>
+          <div class="legend" id="clusterLegend"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ L4b — ACTIVITY: YOU BE THE ALGORITHM ============ -->
+    <section class="slide" data-section="landscape" id="sL4b">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 1 · Activity — Unsupervised Learning</div>
+        <h1>You be the algorithm! 🔍</h1>
+        <p class="body-text">Click each customer to cycle it through 4 group colors. Sort them into whatever natural groups YOU see — nobody's telling you the "right" answer, just like unsupervised learning.</p>
+        <div class="split" style="flex:1; min-height:0;">
+          <div class="visual-box" style="height:100%;">
+            <div class="eyebrow" style="padding:2px 4px;">Your grouping (click dots to cycle color)</div>
+            <div class="canvas-wrap"><canvas id="cvManualCluster" class="draw-cursor"></canvas></div>
+          </div>
+          <div class="visual-box" style="height:100%;">
+            <div class="eyebrow" style="padding:2px 4px; color:var(--c-baseline);">What the k-means algorithm found</div>
+            <div class="canvas-wrap"><canvas id="cvAlgoCluster"></canvas></div>
+            <p class="footnote" id="algoClusterFootnote">Group your customers, then reveal the algorithm's answer.</p>
+          </div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="revealAlgoClusterBtn">🤖 Reveal the algorithm's groups</button>
+          <button class="btn btn-ghost" id="resetManualClusterBtn">🔄 Reset my grouping</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ L4c — ILLUSTRATION: CUSTOMER & PROPERTY CLUSTERING ============ -->
+    <section class="slide" data-section="landscape" id="sL4c">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 1 · Unsupervised Learning in the Real World</div>
+          <h1>Clustering shows up <span class="glow">everywhere</span> in business</h1>
+          <p class="body-text">One more everyday example — real-estate platforms cluster properties by price and size to build listings like "Luxury Homes" or "Budget Homes," with zero labels given upfront. The algorithm finds the groups; humans just name them afterward.</p>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="revealPropertyBtn">🔍 Reveal clusters</button>
+            <button class="btn btn-ghost" id="resetPropertyBtn">🔄 Reset</button>
+          </div>
+          <div class="legend" id="propertyLegend"></div>
+        </div>
+        <div class="visual-box" style="height:min(54vh,500px);">
+          <div class="eyebrow" style="padding:2px 4px; color:var(--c-baseline);">🏘️ Property clustering</div>
+          <div class="canvas-wrap"><canvas id="cvPropertyCluster"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ L5 — REINFORCEMENT LEARNING ============ -->
+    <section class="slide" data-section="landscape" id="sL5">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 1 · Pillar 3 of 3</div>
+          <h1>REINFORCEMENT <span class="glow">Learning</span></h1>
+          <div class="vocab-card">
+            <div class="vocab-term">REINFORCEMENT LEARNING</div>
+            <div class="vocab-def">Learning by trial and error, through rewards and penalties. Nobody labels the data — the machine just tries things and keeps what works. Gamified!</div>
+          </div>
+          <div class="reallife"><div class="tag">🎮 Industry example: Game-playing bots</div><p>A game-playing bot tests 4 different strategies every round. Each round gives a 👍 (win) or 👎 (loss). Over time, the bot leans harder into whatever wins — this is exactly how game AI and recommendation engines learn.</p></div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="runBanditBtn">▶️ Play 1 round</button>
+            <button class="btn btn-primary" id="runBanditFastBtn">⚡ Play 100 rounds fast</button>
+            <button class="btn btn-ghost" id="resetBanditBtn">🔄 Reset bot</button>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="visual-box" style="height:min(40vh,380px);">
+            <div class="canvas-wrap"><canvas id="cvBandit"></canvas></div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Rounds played</div><div class="value tabular" id="banditDays">0</div></div>
+            <div class="stat-tile accent"><div class="label">Total wins</div><div class="value tabular" id="banditReward">0</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ L5c — ILLUSTRATION: MOUSE IN A MAZE ============ -->
+    <section class="slide" data-section="landscape" id="sL5c">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 1 · Classic RL Illustration</div>
+          <h1>The mouse in a <span class="glow">maze</span> 🐭🧀</h1>
+          <p class="body-text">No one tells the mouse the shortest path. It just wanders, bumps into walls, and eventually stumbles onto the cheese — earning a reward. Run it again and again, and it starts remembering which turns paid off.</p>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="mazeRunOneBtn">▶️ Run 1 episode</button>
+            <button class="btn btn-primary" id="mazeTrainFastBtn">⚡ Train 100 episodes fast</button>
+            <button class="btn btn-ghost" id="mazeResetBtn">🔄 Reset maze</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Episodes run</div><div class="value tabular" id="mazeEpisodeCount">0</div></div>
+            <div class="stat-tile"><div class="label">Steps this episode</div><div class="value tabular" id="mazeStepsThis">—</div></div>
+            <div class="stat-tile accent"><div class="label">Best steps so far</div><div class="value tabular" id="mazeBestSteps">—</div></div>
+          </div>
+          <div class="banner good" id="mazeLearnedBanner" style="display:none;">🧀 After training, the mouse now beelines almost straight to the cheese — no more random wandering! That's trial-and-error learning: rewarded paths get remembered, dead ends get avoided.</div>
+        </div>
+        <div class="visual-box" style="height:min(54vh,500px);">
+          <div class="canvas-wrap"><canvas id="cvMaze"></canvas></div>
+          <p class="footnote">Dark tiles = walls. 🐭 starts top-left, 🧀 is the reward at bottom-right.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ L5d — ILLUSTRATION: PING-PONG BOT ============ -->
+    <section class="slide" data-section="landscape" id="sL5d">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 1 · Classic RL Illustration</div>
+          <h1>Teaching a bot to play <span class="glow">Ping-Pong</span> 🏓</h1>
+          <p class="body-text">This is a famous real case: DeepMind trained an RL agent to play Atari Pong purely from trial, error, and the score as a reward — nobody ever explained the rules of Pong to it. Compare an untrained bot to one that's had 10,000 games of practice.</p>
+          <div class="btn-row" id="pongModeButtons">
+            <button class="btn toggled" data-mode="untrained">🎲 Untrained bot</button>
+            <button class="btn" data-mode="trained">🧠 Trained bot (10,000 games)</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Rallies hit</div><div class="value tabular" id="pongHits">0</div></div>
+            <div class="stat-tile"><div class="label">Misses</div><div class="value tabular" id="pongMisses">0</div></div>
+            <div class="stat-tile accent"><div class="label">Hit rate</div><div class="value tabular" id="pongRate">—</div></div>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(54vh,500px);">
+          <div class="canvas-wrap"><canvas id="cvPong"></canvas></div>
+          <p class="footnote">The paddle is the RL agent. Watch how differently it tracks the ball in each mode.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ L5b — ACTIVITY: YOU DRIVE THE CAMPAIGN ============ -->
+    <section class="slide" data-section="landscape" id="sL5b">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 1 · Activity — Reinforcement Learning</div>
+          <h1>You play the game! 🕹️</h1>
+          <p class="body-text">Forget the bot for a second — YOU pick the strategy each round. Click one, see if it wins (👍) or loses (👎), and try to maximize your win rate over 10 rounds.</p>
+          <div class="btn-row" id="humanBanditOptions">
+            <button class="btn" data-channel="0">⚔️ Aggressive</button>
+            <button class="btn" data-channel="1">🛡️ Defensive</button>
+            <button class="btn" data-channel="2">⚖️ Balanced</button>
+            <button class="btn" data-channel="3">🎲 Random</button>
+          </div>
+          <div class="banner" id="humanBanditFeedback" style="display:none;"></div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Your rounds</div><div class="value tabular" id="humanBanditDays">0 / 10</div></div>
+            <div class="stat-tile accent"><div class="label">Your win rate</div><div class="value tabular" id="humanBanditRate">—</div></div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="compareBotBtn" disabled>🤖 See how the bot did over the same 10 rounds</button>
+            <button class="btn btn-ghost" id="resetHumanBanditBtn">🔄 Reset</button>
+          </div>
+          <div class="banner good" id="humanVsBotBanner" style="display:none;"></div>
+        </div>
+        <div class="visual-box">
+          <div class="eyebrow" style="padding:2px 4px;">Your picks so far</div>
+          <div class="canvas-wrap"><canvas id="cvHumanBandit"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ L6 — TRIO RECAP TABLE ============ -->
+    <section class="slide" data-section="landscape" id="sL6">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Hour 1 · Recap</div>
+        <h1 style="text-align:center;">The Big Three, side by side</h1>
+        <div class="trio-table" style="margin-top:8px;">
+          <div class="trio-col" style="--col-color:var(--c-landscape);">
+            <div class="ico" style="font-size:1.8rem;">🎓</div>
+            <h3>SUPERVISED</h3>
+            <p>Learns from labeled data — a teacher gives the correct answer for every example.</p>
+            <div class="tagline">Predict spam from email features</div>
+          </div>
+          <div class="trio-col" style="--col-color:var(--c-baseline);">
+            <div class="ico" style="font-size:1.8rem;">🔍</div>
+            <h3>UNSUPERVISED</h3>
+            <p>Finds hidden patterns in unlabeled data — pure self-discovery, no answer key.</p>
+            <div class="tagline">Group customers into segments</div>
+          </div>
+          <div class="trio-col" style="--col-color:var(--c-linreg);">
+            <div class="ico" style="font-size:1.8rem;">🎮</div>
+            <h3>REINFORCEMENT</h3>
+            <p>Learns by trial, error, and reward — gamified feedback loops.</p>
+            <div class="tagline">Learn winning game strategies</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ L7 — REAL WORLD GRID ============ -->
+    <section class="slide" data-section="landscape" id="sL7">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Hour 1 · Out in the real world</div>
+        <h1 style="text-align:center;">You use all three before breakfast</h1>
+        <div class="card-grid" style="margin-top:8px;">
+          <div class="card"><div class="ico">📧</div><h3>Spam filter</h3><p>Supervised — trained on millions of emails already labeled "spam" or "not spam."</p></div>
+          <div class="card"><div class="ico">🎬</div><h3>Netflix "you might like"</h3><p>Unsupervised — groups viewers with similar taste, no one labels the clusters.</p></div>
+          <div class="card"><div class="ico">🚗</div><h3>Self-driving cars</h3><p>Reinforcement — rewarded for smooth, safe driving; penalized for mistakes.</p></div>
+          <div class="card"><div class="ico">💳</div><h3>Fraud detection</h3><p>Supervised — learns from past transactions already tagged fraud / genuine.</p></div>
+          <div class="card"><div class="ico">🛍️</div><h3>Customer segmentation</h3><p>Unsupervised — a retailer discovers shopper "types" it never defined upfront.</p></div>
+          <div class="card"><div class="ico">🎮</div><h3>Game-playing AI</h3><p>Reinforcement — AlphaGo learned Go purely by playing itself and keeping what won.</p></div>
+          <div class="card"><div class="ico">🎙️</div><h3>Voice assistants</h3><p>Supervised — trained on huge datasets of audio clips already labeled with the correct transcribed words.</p></div>
+          <div class="card"><div class="ico">🏦</div><h3>Bank anomaly detection</h3><p>Unsupervised — flags transactions that don't fit any normal spending cluster, without being told what fraud looks like.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ L8 — INTERACTIVE CHECKPOINT QUIZ ============ -->
+    <section class="slide" data-section="landscape" id="sL8">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 1 · Interactive Checkpoint</div>
+        <h1>Quick vote: which kind of learning? 🗳️</h1>
+        <div class="card" id="quizCard">
+          <div class="footnote" id="quizProgress">Scenario 1 of 3</div>
+          <p class="body-text" id="quizQuestion" style="margin-top:6px; font-size:1.15rem;">—</p>
+          <div class="btn-row" style="margin-top:14px;" id="quizOptions">
+            <button class="btn" data-answer="supervised">🎓 Supervised</button>
+            <button class="btn" data-answer="unsupervised">🔍 Unsupervised</button>
+            <button class="btn" data-answer="reinforcement">🎮 Reinforcement</button>
+          </div>
+          <div class="banner" id="quizExplain" style="display:none; margin-top:14px;"></div>
+        </div>
+        <button class="btn btn-primary" id="quizNextBtn" style="align-self:flex-start; display:none;">Next scenario →</button>
+      </div>
+    </section>
+
+    <!-- ============ L9 — CHAPTER RECAP + BRIDGE ============ -->
+    <section class="slide" data-section="landscape" id="sL9">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Hour 1 → Hour 2</div>
+        <h1 class="kicker-big">Let's go deep on<br/>the <span class="glow">simplest</span> pillar</h1>
+        <p class="body-text" style="max-width:640px;">Supervised learning splits into two flavors: predicting a <b>category</b> (Spam or Not?) or predicting a <b>number</b> (exact salary). The rest of today, we master the number version — <b>Regression</b> — starting from the simplest possible guess.</p>
+      </div>
+    </section>
+
+    <!-- ============ B1 — CONTINUOUS VS CATEGORICAL ============ -->
+    <section class="slide" data-section="baseline" id="sB1">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Hour 2 · Meet Regression</div>
+        <h1 style="text-align:center;">Two kinds of question a machine can answer</h1>
+        <div class="card-grid" style="margin-top:8px;">
+          <div class="card" style="border-top:5px solid var(--c-linreg);"><div class="ico">🏷️</div><h3>CATEGORICAL</h3><p>Predicting a bucket / label. "Is this email Spam or Not?" Finitely many answers.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-baseline);"><div class="ico">🔢</div><h3>CONTINUOUS (Regression)</h3><p>Predicting a precise, specific number. "What EXACT salary should this employee get?" Infinitely many possible answers.</p></div>
+        </div>
+        <div class="vocab-card" style="margin-top:4px;">
+          <div class="vocab-term">REGRESSION</div>
+          <div class="vocab-def">Supervised learning where the target Y is a continuous number — like salary, temperature, weight, or price — not a category.</div>
+        </div>
+        <p class="body-text" style="text-align:center; margin-top:4px;">Today's challenge: predict <b>Y</b> (Salary, ₹ LPA) using exactly one feature, <b>X</b> (Years of Experience) of the employee.</p>
+      </div>
+    </section>
+
+    <!-- ============ B2 — MEET THE DISTRICTS ============ -->
+    <section class="slide" data-section="baseline" id="sB2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 2 · The Challenge</div>
+          <h1>Meet <span class="glow">42 employees</span> 💼</h1>
+          <p class="body-text">Each dot is one employee at a tech company. We know their <b>years of experience</b> (X) and their <b>salary</b> (Y).</p>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Employees</div><div class="value tabular">42</div></div>
+            <div class="stat-tile accent"><div class="label">Average salary</div><div class="value tabular" id="districtMeanStat">—</div></div>
+          </div>
+          <div class="reallife"><div class="tag">🎯 The mission</div><p>A 43rd employee just joined. We know NOTHING about them yet. What's our best guess for their salary?</p></div>
+        </div>
+        <div class="visual-box" style="height:min(54vh,500px);">
+          <div class="canvas-wrap"><canvas id="cvDistrictsIntro"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ B3 — THE COMPLETELY BLIND GUESS ============ -->
+    <section class="slide" data-section="baseline" id="sB3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 2 · The Completely Blind Guess</div>
+          <h1>What if we know <span class="glow">nothing</span> about X?</h1>
+          <p class="body-text">Forget years of experience for a second. Squint, and all you see is a pile of salary numbers. If a new employee joins and you must guess their salary <b>right now</b>, with zero other information — what do you say?</p>
+          <div class="reallife"><div class="tag">🥭 Remember Aamwadi?</div><p>This is the exact same problem as Hour 1's mango basket. With zero context, the <b>average of everything you've seen so far</b> is mathematically your safest, most balanced bet.</p></div>
+          <div class="vocab-card" style="border-left-color:var(--c-baseline);">
+            <div class="vocab-term" style="color:var(--c-baseline);">THE MEAN LINE</div>
+            <div class="vocab-def">Our simplest possible model: always guess the average, no matter what X is. A flat, boring, but surprisingly solid baseline.</div>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(50vh,460px);">
+          <div class="canvas-wrap"><canvas id="cvBlindGuess"></canvas></div>
+          <p class="footnote">Salary values only — no X in sight. Just a shape, waiting for a single best guess.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ B4 — INTERACTIVE: GUESS THE FLAT LINE ============ -->
+    <section class="slide" data-section="baseline" id="sB4">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 2 · Try it yourself</div>
+          <h1>Drag the line — find the <span class="glow">best</span> guess</h1>
+          <p class="body-text">Every employee is sorted left→right by salary, just for spacing. Slide the flat guess line up and down. Watch the total squared error as you go.</p>
+          <div class="console">
+            <div class="field"><label>Your guess (Y = ₹<span class="val" id="guessValLabel">15.0</span>L)</label><input type="range" id="guessSlider" min="0" max="30" value="15" step="0.5"></div>
+            <button class="btn btn-ghost" id="snapMeanBtn">🎯 Snap to the true mean</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile accent"><div class="label">Total squared error</div><div class="value tabular" id="guessSSE">—</div></div>
+            <div class="stat-tile"><div class="label">True average salary</div><div class="value tabular" id="guessTrueMean">—</div></div>
+          </div>
+          <div class="banner good" id="guessFoundBanner" style="display:none;">🎉 That's it — you found the Mean Line! No other flat guess beats this total squared error.</div>
+        </div>
+        <div class="visual-box" style="height:min(54vh,500px);">
+          <div class="canvas-wrap"><canvas id="cvGuessGame"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ B5 — VISUALIZING RESIDUALS ============ -->
+    <section class="slide" data-section="baseline" id="sB5">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 2 · Visualizing Error</div>
+          <h1>Every mistake has a name: <span class="glow">residual</span></h1>
+          <div class="vocab-card">
+            <div class="vocab-term">RESIDUAL</div>
+            <div class="vocab-def">The gap between a real value and our guess. Residual = Actual (Y) − Predicted (Ŷ). Some employees sit ABOVE the mean line, some sit BELOW it.</div>
+          </div>
+          <p class="body-text">The dashed lines below are residuals — each employee's personal "mistake" against our flat guess.</p>
+        </div>
+        <div class="visual-box" style="height:min(54vh,500px);">
+          <div class="canvas-wrap"><canvas id="cvResiduals"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--good);"></span>above the line (+)</span><span><span class="sw" style="background:var(--bad);"></span>below the line (−)</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ B6 — WHY WE SQUARE ERRORS ============ -->
+    <section class="slide" data-section="baseline" id="sB6">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 2 · A sneaky problem</div>
+        <h1>Why not just <span class="glow">add up</span> the mistakes?</h1>
+        <p class="body-text">Seems obvious: sum every residual to measure total error. Let's actually try it on our 42 employees.</p>
+        <div class="console">
+          <button class="btn btn-primary" id="sumRawBtn">➕ Sum the raw residuals</button>
+          <button class="btn btn-primary" id="sumSquaredBtn">🔲 Square them first, then sum</button>
+          <button class="btn btn-ghost" id="resetSumBtn">🔄 Reset</button>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-tile"><div class="label">Sum of raw residuals</div><div class="value tabular" id="sumRawVal">—</div></div>
+          <div class="stat-tile accent"><div class="label">Sum of SQUARED residuals</div><div class="value tabular" id="sumSquaredVal">—</div></div>
+        </div>
+        <div class="banner warn" id="cancelBanner" style="display:none;">😬 Positive and negative residuals CANCEL each other out — the raw sum is basically zero, even though every single employee missed the guess! That's a useless error score.</div>
+        <div class="banner good" id="squareBanner" style="display:none;">✅ Squaring makes every mistake positive first — big misses count as big, and nothing cancels. This total is called the <b>Sum of Squared Errors (SSE)</b>, and it's the honest way to score a guess.</div>
+      </div>
+    </section>
+
+    <!-- ============ B7 — CHAPTER RECAP + BRIDGE ============ -->
+    <section class="slide" data-section="baseline" id="sB7">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Hour 2 → Hour 3</div>
+        <h1 class="kicker-big">But we've been<br/>ignoring <span class="glow">X</span> this whole time!</h1>
+        <p class="body-text" style="max-width:640px;">The flat Mean Line is a fine baseline for total ignorance. But we DO know each employee's years of experience. What if that hint actually changes the picture? Time to bring X back into the story.</p>
+      </div>
+    </section>
+
+    <!-- ============ R1 — BRINGING BACK X ============ -->
+    <section class="slide" data-section="linreg" id="sR1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 3 · Bringing Back X</div>
+          <h1>The cloud isn't a blob — it <span class="glow">tilts</span></h1>
+          <p class="body-text">Add years of experience back onto the X-axis. Suddenly the employees aren't just scattered randomly — as experience climbs, salary climbs too. Our flat Mean Line cuts straight through, ignoring that tilt completely.</p>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Mean Line's error (SSE)</div><div class="value tabular" id="r1SseMean">—</div></div>
+          </div>
+          <div class="banner warn">😕 The Mean Line treats a fresh graduate and a 15-year veteran identically. That's clearly leaving information on the table.</div>
+        </div>
+        <div class="visual-box" style="height:min(54vh,500px);">
+          <div class="canvas-wrap"><canvas id="cvBringBackX"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ R1b — CLASS CHALLENGE: DRAW YOUR OWN LINE ============ -->
+    <section class="slide" data-section="linreg" id="sRDraw">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 3 · Class Challenge</div>
+          <h1>Draw <span class="glow">YOUR</span> best-fit line ✍️</h1>
+          <p class="body-text">Click and drag across the chart to draw a straight line through the employees. Try to hug as many dots as you can — lowest error wins!</p>
+          <div class="console">
+            <div class="field" style="flex:1;"><label>Your name</label><input type="text" id="drawNameInput" placeholder="e.g. Priya" maxlength="24"></div>
+            <button class="btn btn-primary" id="submitLineBtn" disabled>🏁 Submit my line</button>
+            <button class="btn btn-ghost" id="clearLineBtn">🔄 Clear</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile accent"><div class="label">Your line's MSE (live)</div><div class="value tabular" id="liveDrawMSE">—</div></div>
+            <div class="stat-tile"><div class="label">Lines submitted</div><div class="value tabular" id="drawSubmitCount">0</div></div>
+          </div>
+          <div class="card">
+            <div style="display:flex; align-items:center; justify-content:space-between;">
+              <h3 style="margin-top:0;">🏆 Class Leaderboard</h3>
+              <button class="btn btn-ghost" id="resetLeaderboardBtn" style="padding:6px 14px; font-size:.78rem;">Reset</button>
+            </div>
+            <div class="stack" id="leaderboardList" style="gap:6px; margin-top:8px;"></div>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(54vh,500px);">
+          <div class="canvas-wrap"><canvas id="cvDrawLine" class="draw-cursor"></canvas></div>
+          <p class="footnote">Drag left→right anywhere on the chart to draw your guess line.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ R2 — THE FORMAL MODEL ============ -->
+    <section class="slide" data-section="linreg" id="sR2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 3 · The Formal Model</div>
+        <h1>Meet the classic straight line: <span class="glow">Y = β₀ + β₁X + ε</span></h1>
+        <p class="body-text">Every line you just drew by hand already had a starting height and a tilt — you were eyeballing β₀ and β₁ the whole time. Let's give them proper names.</p>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card"><div class="ico">🎯</div><h3>Y</h3><p>Salary (₹ LPA) — the target we want to predict. The <b>dependent variable</b>.</p></div>
+          <div class="card"><div class="ico">💡</div><h3>X</h3><p>Years of Experience — the hint we use to guess. The <b>independent variable / feature</b>.</p></div>
+          <div class="card"><div class="ico">🚩</div><h3>β₀ (Intercept)</h3><p>Where the line starts when X = 0. The predicted starting salary for a fresh graduate.</p></div>
+          <div class="card"><div class="ico">📐</div><h3>β₁ (Slope)</h3><p>The weight — how much Y moves for every extra year of experience. The salary "raise per year."</p></div>
+          <div class="card"><div class="ico">🎲</div><h3>ε (Epsilon)</h3><p>The residual error — organic randomness (company, negotiation, role...) the line can't capture.</p></div>
+        </div>
+        <p class="body-text" style="text-align:center; margin-top:4px;">Notice: the Mean Line was secretly just this same formula with <b>β₁ = 0</b> — a slope of nothing at all!</p>
+      </div>
+    </section>
+
+    <!-- ============ R3 — INTERACTIVE LINE-FITTING GAME ============ -->
+    <section class="slide" data-section="linreg" id="sR3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 3 · Try it yourself</div>
+          <h1>Be the machine — <span class="glow">fit the line</span></h1>
+          <p class="body-text">Drag β₀ and β₁ until the line hugs the employees as closely as possible. Try to make the MSE as small as you can.</p>
+          <div class="console">
+            <div class="field"><label>β₀ Intercept (= ₹<span class="val" id="b0Label">5.0</span>L)</label><input type="range" id="b0Slider" min="0" max="15" value="5" step="0.5"></div>
+            <div class="field"><label>β₁ Slope (= <span class="val" id="b1Label">0.00</span>)</label><input type="range" id="b1Slider" min="-50" max="350" value="0" step="5"></div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile accent"><div class="label">Your MSE</div><div class="value tabular" id="yourMSE">—</div></div>
+            <div class="stat-tile"><div class="label">Your best MSE so far</div><div class="value tabular" id="bestMSE">—</div></div>
+          </div>
+          <button class="btn btn-ghost" id="revealOlsBtn" style="align-self:flex-start;">📐 Reveal the machine's best line (OLS)</button>
+          <div class="banner good" id="olsCompareBanner" style="display:none;"></div>
+        </div>
+        <div class="visual-box" style="height:min(54vh,500px);">
+          <div class="canvas-wrap"><canvas id="cvLineGame"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ R4 — MSE FORMULA + SQUARED-AREA INTUITION ============ -->
+    <section class="slide" data-section="linreg" id="sR4">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 3 · Scoring a Line</div>
+          <h1>Mean Squared Error: the <span class="glow">quality score</span></h1>
+          <div class="vocab-card" style="border-left-color:var(--c-linreg);">
+            <div class="vocab-term" style="color:var(--c-linreg);">MSE</div>
+            <div class="vocab-def" style="font-family:Georgia,'Times New Roman',serif; font-size:1.15rem;">MSE = (1/n) · Σ (Yᵢ − Ŷᵢ)²</div>
+            <div class="vocab-def">Average the SQUARED residual across every employee. Smaller MSE = a line that hugs the data more closely.</div>
+          </div>
+          <p class="body-text">Picture each residual as the SIDE of a square. Squaring the error is literally the AREA of that square — big misses create big squares fast.</p>
+        </div>
+        <div class="visual-box" style="height:min(46vh,420px);">
+          <div class="canvas-wrap"><canvas id="cvMseSquares"></canvas></div>
+          <p class="footnote">Each shaded square's area = one employee's squared error. MSE is their average area. Remember this — in Hour 4, we stop averaging and start SUMMING these same squares. That sum has a name: SSE.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ R5 — HOW THE MACHINE LEARNS (OLS SEARCH) ============ -->
+    <section class="slide" data-section="linreg" id="sR5">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 3 · How the Machine "Learns"</div>
+          <h1>A game of <span class="glow">hot and cold</span> 🔥❄️</h1>
+          <p class="body-text">Exactly like the kids' game: someone hides an object, and you guess where — "warmer" means your last move helped, "colder" means it didn't. The machine plays the same game with its line:</p>
+          <div class="rule-list">
+            <div class="rule"><div class="n">1</div><div class="t"><h3>Propose a handful of nearby lines</h3><p>Nudge β₀ and β₁ by a small random amount, a few different ways.</p></div></div>
+            <div class="rule"><div class="n">2</div><div class="t"><h3>Score every candidate</h3><p>Compute the MSE for each nudged line — no guessing about quality, just measure it.</p></div></div>
+            <div class="rule"><div class="n">3</div><div class="t"><h3>Keep the warmest, discard the rest</h3><p>Lower MSE = warmer = keep it as the new "current line." Everything else is thrown away.</p></div></div>
+            <div class="rule"><div class="n">4</div><div class="t"><h3>Shrink the nudges, repeat</h3><p>Take smaller steps each round (cooling down) so it settles instead of overshooting forever.</p></div></div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="watchRoundBtn">🔍 Watch ONE round up close</button>
+            <button class="btn btn-primary" id="startSearchBtn">⏩ Fast-forward the rest</button>
+            <button class="btn btn-ghost" id="resetSearchBtn">🔄 Reset search</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Search step</div><div class="value tabular" id="searchStep">0</div></div>
+            <div class="stat-tile accent"><div class="label">Current MSE</div><div class="value tabular" id="searchMSE">—</div></div>
+          </div>
+          <div class="banner good" id="searchDoneBanner" style="display:none;">🧊 Fully cooled — the machine settled on almost exactly the same line Ordinary Least Squares gives in one shot algebraically!</div>
+          <div class="footnote">👀 This "nudge and check" approach is called random search. Next week you'll meet a smarter, faster version — <b>Gradient Descent</b> — which uses calculus to know exactly which direction to nudge, instead of guessing randomly.</div>
+        </div>
+        <div class="stack">
+          <div class="visual-box" style="height:min(42vh,380px);">
+            <div class="canvas-wrap"><canvas id="cvOlsSearch"></canvas></div>
+          </div>
+          <div class="card" id="roundExplainCard" style="display:none;">
+            <h3 style="margin-bottom:8px;">This round's candidates</h3>
+            <div id="roundExplain" style="font-size:.88rem; line-height:1.7;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ R6 — HUMAN VS MACHINE COMPARE ============ -->
+    <section class="slide" data-section="linreg" id="sR6">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 3 · The Showdown</div>
+          <h1>Did you <span class="glow">beat</span> the machine?</h1>
+          <p class="body-text">Here's your best manual line from the slider game, the class champion's hand-drawn line, and the machine's OLS line — the mathematically-guaranteed minimum-MSE fit for this data.</p>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Your best MSE</div><div class="value tabular" id="finalYourMSE">—</div></div>
+            <div class="stat-tile"><div class="label" id="championLabel">Class champion's MSE</div><div class="value tabular" id="finalChampionMSE">—</div></div>
+            <div class="stat-tile accent"><div class="label">Machine's OLS MSE</div><div class="value tabular" id="finalOlsMSE">—</div></div>
+          </div>
+          <div class="banner info" id="showdownBanner">Go back and try Slide 3 first if these read "—".</div>
+        </div>
+        <div class="visual-box" style="height:min(54vh,500px);">
+          <div class="canvas-wrap"><canvas id="cvCompareLines"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--ink-faint);"></span>your line</span><span><span class="sw" style="background:var(--c-linreg);"></span>OLS line</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ R7 — CHAPTER RECAP + BRIDGE ============ -->
+    <section class="slide" data-section="linreg" id="sR7">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Hour 3 → Hour 4</div>
+        <h1 class="kicker-big">We have a line.<br/>But is it <span class="glow">good</span>?</h1>
+        <p class="body-text" style="max-width:640px;">A sloped line always looks fancier than a flat one. But "fancier" isn't the same as "better." Next, we learn to grade our model honestly — and catch it when it's lying to us.</p>
+      </div>
+    </section>
+
+    <!-- ============ E0 — THREE DISTANCES (BUILDING TOWARD SST/SSR/SSE) ============ -->
+    <section class="slide" data-section="eval" id="sE0">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 4 · Building Toward R²</div>
+          <h1>Every point hides <span class="glow">three distances</span></h1>
+          <p class="body-text">Pick any employee below. There are THREE ways to measure how far their salary sits from "ordinary" — and they're related in a beautiful way.</p>
+          <div class="rule-list">
+            <div class="rule"><div class="n" style="background:var(--ink-faint);">1</div><div class="t"><h3>Total deviation (grey) → feeds SST</h3><p>Actual − Mean. How far this employee sits from doing nothing at all.</p></div></div>
+            <div class="rule"><div class="n" style="background:var(--c-eval);">2</div><div class="t"><h3>Explained deviation (blue) → feeds SSR</h3><p>Predicted − Mean. What experience alone accounts for.</p></div></div>
+            <div class="rule"><div class="n" style="background:var(--c-linreg);">3</div><div class="t"><h3>Unexplained deviation (pink) → feeds SSE</h3><p>Actual − Predicted. The leftover mistake our line still misses.</p></div></div>
+          </div>
+          <div class="banner info" id="tdQuestion">🤔 Before you click through a few employees — do you think "Explained + Unexplained" will always add up to exactly the "Total"? Try it and watch the numbers below.</div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="tdPrevBtn">◀ Previous</button>
+            <button class="btn btn-primary" id="tdNextBtn">Next ▶</button>
+            <button class="btn btn-ghost" id="tdRandomBtn">🎲 Random employee</button>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="visual-box" style="height:min(42vh,380px);">
+            <div class="canvas-wrap"><canvas id="cvThreeDistances"></canvas></div>
+            <p class="footnote" id="tdEmployeeLabel">Employee 1 of 42</p>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Total { → SST</div><div class="value tabular" id="tdTotal">—</div></div>
+            <div class="stat-tile accent"><div class="label">Explained { → SSR</div><div class="value tabular" id="tdExplained">—</div></div>
+            <div class="stat-tile"><div class="label">Unexplained { → SSE</div><div class="value tabular" id="tdUnexplained">—</div></div>
+          </div>
+          <div class="banner good" id="tdCheck" style="font-size:.88rem;">—</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E0b — SST, SSR, SSE FORMALIZED ============ -->
+    <section class="slide" data-section="eval" id="sE0b">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 4 · Building Toward R²</div>
+        <h1>Square it, sum it, for <span class="glow">all 42</span></h1>
+        <p class="body-text">Remember Hour 2: raw deviations cancel out, so we square them first. Do that to all three distances, for every single employee, and add them up. Three new names are born:</p>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card" style="border-top:5px solid var(--ink-faint);"><h3>SST <span class="footnote" style="font-weight:600;">Total Sum of Squares</span></h3><p style="font-family:Georgia,'Times New Roman',serif; font-size:1.05rem;">Σ(Yᵢ − Ȳ)²</p><p><b>What it explains:</b> how much salaries vary overall — before X even enters the picture.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-eval);"><h3>SSR <span class="footnote" style="font-weight:600;">Regression Sum of Squares</span></h3><p style="font-family:Georgia,'Times New Roman',serif; font-size:1.05rem;">Σ(Ŷᵢ − Ȳ)²</p><p><b>What it explains:</b> how much of that variation OUR LINE accounts for, using experience.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-linreg);"><h3>SSE <span class="footnote" style="font-weight:600;">Error Sum of Squares</span></h3><p style="font-family:Georgia,'Times New Roman',serif; font-size:1.05rem;">Σ(Yᵢ − Ŷᵢ)²</p><p><b>What it explains:</b> how much is STILL left over — the mistakes our line misses. (Same SSE as Hour 3 — just SSE = MSE × n.)</p></div>
+        </div>
+        <button class="btn btn-primary" id="computeSstBtn" style="align-self:center;">🧮 Compute all three for our 42 employees</button>
+        <div class="stat-grid" style="max-width:720px; margin:0 auto; width:100%;">
+          <div class="stat-tile"><div class="label">SST (total)</div><div class="value tabular" id="sstVal">—</div></div>
+          <div class="stat-tile accent"><div class="label">SSR (explained)</div><div class="value tabular" id="ssrVal">—</div></div>
+          <div class="stat-tile"><div class="label">SSE (unexplained)</div><div class="value tabular" id="sseVal">—</div></div>
+        </div>
+        <div class="banner good" id="sstIdentityBanner" style="display:none; max-width:720px; margin:0 auto; width:100%;"></div>
+      </div>
+    </section>
+
+    <!-- ============ E1 — R² DERIVATION ============ -->
+    <section class="slide" data-section="eval" id="sE1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 4 · Measuring Success</div>
+          <h1>R²: the <span class="glow">proportion explained</span></h1>
+          <div class="vocab-card" style="border-left-color:var(--c-eval);">
+            <div class="vocab-term" style="color:var(--c-eval);">R² (COEFFICIENT OF DETERMINATION)</div>
+            <div class="vocab-def" style="font-family:Georgia,'Times New Roman',serif; font-size:1.15rem;">R² = SSR ⁄ SST&nbsp;&nbsp;=&nbsp;&nbsp;1 − (SSE ⁄ SST)</div>
+            <div class="vocab-def">Both formulas give the SAME number. Since SST = SSR + SSE, "SSR's share of the total" is mathematically identical to "1 minus SSE's share."</div>
+          </div>
+          <p class="body-text">Plug in the real numbers from the last slide and watch both formulas agree.</p>
+          <button class="btn btn-primary" id="compareBarsBtn" style="align-self:flex-start;">📊 Show the split</button>
+          <div class="banner good" id="r2Banner" style="display:none;"></div>
+        </div>
+        <div class="stack">
+          <p class="footnote" style="text-align:center;">SST — total variation, split into explained + unexplained</p>
+          <div style="display:flex; height:56px; border-radius:12px; overflow:hidden; background:var(--paper-3);">
+            <div id="barSSR" style="background:var(--c-eval); width:0%; transition:width 1s cubic-bezier(.2,.8,.2,1);"></div>
+            <div id="barSSEofSST" style="background:var(--c-linreg); width:0%; transition:width 1s cubic-bezier(.2,.8,.2,1);"></div>
+          </div>
+          <div class="legend"><span><span class="sw" style="background:var(--c-eval);"></span>SSR (explained)</span><span><span class="sw" style="background:var(--c-linreg);"></span>SSE (unexplained)</span></div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">SSR ÷ SST</div><div class="value tabular" id="ssrOverSst">—</div></div>
+            <div class="stat-tile"><div class="label">1 − (SSE ÷ SST)</div><div class="value tabular" id="oneMinusSseOverSst">—</div></div>
+            <div class="stat-tile accent"><div class="label">R²</div><div class="value tabular" id="r2Value">—</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E2 — R² EDGE CASES ============ -->
+    <section class="slide" data-section="eval" id="sE2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 4 · The Two Extremes</div>
+        <h1>R² = 0 vs. R² = <span class="glow">1</span></h1>
+        <div class="split" style="flex:1; min-height:0;">
+          <div class="visual-box" style="height:100%;">
+            <div class="eyebrow" style="padding:2px 4px;">R² ≈ 0 — no relationship at all</div>
+            <div class="canvas-wrap"><canvas id="cvR2zero"></canvas></div>
+            <p class="footnote">The best sloped line is basically flat — it gives us NOTHING the Mean Line didn't already have. SSR ≈ 0, so SST ≈ SSE.</p>
+          </div>
+          <div class="visual-box" style="height:100%;">
+            <div class="eyebrow" style="padding:2px 4px; color:var(--c-eval);">R² = 1 — a perfect fit</div>
+            <div class="canvas-wrap"><canvas id="cvR2one"></canvas></div>
+            <p class="footnote">Every single point falls exactly on the line. SSE = 0, so SST = SSR — nothing left unexplained. (Rare in real life!)</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E2b — WHY R² MATTERS ============ -->
+    <section class="slide" data-section="eval" id="sE2b">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Hour 4 · Why This Number Matters</div>
+        <h1 style="text-align:center;">Why data scientists <span class="glow">love</span> R²</h1>
+        <div class="card-grid" style="margin-top:8px;">
+          <div class="card"><div class="ico">📏</div><h3>It's unitless</h3><p>Salary in lakhs, dollars, or yen — R² always lands between 0 and 1. You can compare a salary model to a completely different weather model.</p></div>
+          <div class="card"><div class="ico">🗣️</div><h3>It's instantly interpretable</h3><p>"R² = 0.95" translates directly to English: "experience explains 95% of the variation in salary we see."</p></div>
+          <div class="card"><div class="ico">⚖️</div><h3>It's the standard scoreboard</h3><p>Every regression report, paper, and dashboard quotes R² first — it's the universal "how good is this model?" number.</p></div>
+          <div class="card"><div class="ico">⚠️</div><h3>...but it has a blind spot</h3><p>A high R² on data the model has ALREADY SEEN proves nothing about brand-new data. Coming up next: models that cheat.</p></div>
+        </div>
+        <p class="body-text" style="text-align:center; margin-top:6px;">🤔 Quick check before moving on: if SSE = 0, what is R²? If SSR = 0, what is R²? Look back at the formula — you already know both answers.</p>
+      </div>
+    </section>
+
+    <!-- ============ E2c — METRICS FAMILY: SSE, MSE, RMSE, MAE ============ -->
+    <section class="slide" data-section="eval" id="sE2c">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 4 · The Evaluation Metrics Family</div>
+        <h1>Meet the whole <span class="glow">metrics family</span></h1>
+        <p class="body-text">R² isn't the only score in town. Here are the other measuring sticks you'll see everywhere — every one of them is built from the same residuals, just combined differently.</p>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card" style="border-top:5px solid var(--ink-faint);"><h3>SSE</h3><p style="font-family:Georgia,'Times New Roman',serif; font-size:1.05rem;">Σ(Yᵢ−Ŷᵢ)²</p><p><b>Sum of Squared Errors.</b> The raw total — grows with more data. Mostly a building block (it's literally what OLS minimizes).</p></div>
+          <div class="card" style="border-top:5px solid var(--c-linreg);"><h3>MSE</h3><p style="font-family:Georgia,'Times New Roman',serif; font-size:1.05rem;">SSE ÷ n</p><p><b>Mean Squared Error.</b> The AVERAGE squared miss — comparable across datasets of different sizes. Still in squared units.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-eval);"><h3>RMSE</h3><p style="font-family:Georgia,'Times New Roman',serif; font-size:1.05rem;">√MSE</p><p><b>Root Mean Squared Error.</b> Back to ORIGINAL units (₹ LPA) — "on average, we're off by about this much." The most commonly reported metric.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-baseline);"><h3>MAE</h3><p style="font-family:Georgia,'Times New Roman',serif; font-size:1.05rem;">(1/n)Σ|Yᵢ−Ŷᵢ|</p><p><b>Mean Absolute Error.</b> Averages the raw (unsquared) distance — same units as Y, and less swayed by one huge miss.</p></div>
+        </div>
+        <button class="btn btn-primary" id="computeMetricsBtn" style="align-self:center;">🧮 Compute all four for our OLS line</button>
+        <div class="stat-grid" style="max-width:820px; margin:0 auto; width:100%;">
+          <div class="stat-tile"><div class="label">SSE</div><div class="value tabular" id="metricSSE">—</div></div>
+          <div class="stat-tile"><div class="label">MSE = SSE ÷ 42</div><div class="value tabular" id="metricMSE">—</div></div>
+          <div class="stat-tile accent"><div class="label">RMSE = √MSE</div><div class="value tabular" id="metricRMSE">—</div></div>
+          <div class="stat-tile"><div class="label">MAE</div><div class="value tabular" id="metricMAE">—</div></div>
+        </div>
+        <div class="banner good" id="metricsBanner" style="display:none; max-width:820px; margin:0 auto; width:100%;"></div>
+      </div>
+    </section>
+
+    <!-- ============ E2d — RMSE VS MAE: OUTLIER SENSITIVITY ============ -->
+    <section class="slide" data-section="eval" id="sE2d">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 4 · RMSE vs. MAE</div>
+          <h1>Does <span class="glow">one big miss</span> matter more?</h1>
+          <p class="body-text">RMSE squares every error before averaging, so ONE huge miss can drag the whole score up. MAE treats every error equally, in a straight line. Let's add one dramatically wrong prediction and watch what happens.</p>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="addOutlierBtn">➕ Add one outlier employee</button>
+            <button class="btn btn-ghost" id="removeOutlierBtn">🔄 Remove outlier</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">RMSE</div><div class="value tabular" id="outlierRMSE">—</div></div>
+            <div class="stat-tile"><div class="label">MAE</div><div class="value tabular" id="outlierMAE">—</div></div>
+          </div>
+          <div class="banner warn" id="outlierBanner" style="display:none;"></div>
+        </div>
+        <div class="visual-box" style="height:min(54vh,500px);">
+          <div class="canvas-wrap"><canvas id="cvOutlier"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--c-linreg);"></span>regular employees</span><span><span class="sw diamond" style="background:var(--bad);"></span>the outlier</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E3 — UNDERFITTING ============ -->
+    <section class="slide" data-section="eval" id="sE3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 4 · Pitfall 1 of 2</div>
+          <h1>UNDERFITTING — <span class="glow">too simple</span></h1>
+          <div class="vocab-card">
+            <div class="vocab-term">UNDERFITTING</div>
+            <div class="vocab-def">Forcing a rigid straight line through data that naturally bends — like years of experience vs. salary, which rises fast early on then plateaus later in a career (diminishing returns).</div>
+          </div>
+          <p class="body-text">Watch the residuals: they're not random anymore. Junior AND very senior employees both sit ABOVE the line, while mid-career employees sit below — a systematic curve the line is blind to.</p>
+        </div>
+        <div class="visual-box" style="height:min(54vh,500px);">
+          <div class="canvas-wrap"><canvas id="cvUnderfit"></canvas></div>
+          <p class="footnote">Years of experience vs. salary (₹ LPA). A straight line can't follow the curve's bend.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E4 — OVERFITTING ============ -->
+    <section class="slide" data-section="eval" id="sE4">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 4 · Pitfall 2 of 2</div>
+          <h1>OVERFITTING — <span class="glow">memorizing noise</span></h1>
+          <div class="vocab-card">
+            <div class="vocab-term">OVERFITTING</div>
+            <div class="vocab-def">A jagged, chaotic curve that hits every single training point perfectly — but has just memorized the noise, not the pattern.</div>
+          </div>
+          <button class="btn btn-primary" id="revealTestPtsBtn" style="align-self:flex-start;">🆕 Reveal 5 brand-new employees</button>
+          <div class="banner bad" id="overfitBanner" style="display:none;"></div>
+        </div>
+        <div class="visual-box" style="height:min(54vh,500px);">
+          <div class="canvas-wrap"><canvas id="cvOverfit"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--c-linreg);"></span>training employees</span><span><span class="sw diamond" style="background:var(--warn);"></span>brand-new employees</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E5 — THE COMPLEXITY DIAL ============ -->
+    <section class="slide" data-section="eval" id="sE5">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 4 · Try it yourself</div>
+        <h1>The complexity dial 🎛️</h1>
+        <p class="body-text">Slide through curve complexity (degree 1 = straight line, degree 12 = wildly wiggly). Watch Train error keep shrinking... while Test error does something very different.</p>
+        <div class="split" style="flex:1; min-height:0;">
+          <div class="visual-box" style="height:100%;">
+            <div class="eyebrow" style="padding:2px 4px;">Fitted curve</div>
+            <div class="canvas-wrap"><canvas id="cvDial"></canvas></div>
+          </div>
+          <div class="visual-box" style="height:100%;">
+            <div class="eyebrow" style="padding:2px 4px; color:var(--c-eval);">Test error vs. complexity (explore the U!)</div>
+            <div class="canvas-wrap"><canvas id="cvDialUcurve"></canvas></div>
+          </div>
+        </div>
+        <div class="console">
+          <div class="field"><label>Complexity (degree = <span class="val" id="dialDegreeLabel">1</span>)</label><input type="range" id="dialSlider" min="1" max="12" value="1"></div>
+          <div class="field"><label>Train error</label><div class="val tabular" id="dialTrainMSE" style="font-size:1.1rem;">—</div></div>
+          <div class="field"><label>Test error</label><div class="val tabular" id="dialTestMSE" style="font-size:1.1rem;">—</div></div>
+          <div class="field"><label>Zone</label><div class="val tabular" id="dialZone" style="font-size:1.05rem;">—</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E6 — RECAP CARDS ============ -->
+    <section class="slide" data-section="eval" id="sE6">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Hour 4 · Recap</div>
+        <h1 style="text-align:center;">The whole regression journey</h1>
+        <div class="card-grid" style="margin-top:8px;">
+          <div class="card" style="border-top:5px solid var(--c-baseline);"><div class="ico">⚖️</div><h3>Mean Line</h3><p>Zero information → the average is your safest guess.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-linreg);"><div class="ico">📈</div><h3>Simple Linear Regression</h3><p>Add a feature X → a sloped line captures the trend, fit by minimizing MSE (OLS).</p></div>
+          <div class="card" style="border-top:5px solid var(--c-eval);"><div class="ico">🎯</div><h3>R² = SSR/SST</h3><p>The % of total variation (SST) our line explains (SSR). 0 = no better than the mean, 1 = perfect.</p></div>
+          <div class="card" style="border-top:5px solid var(--bad);"><div class="ico">📉</div><h3>Underfitting</h3><p>Too simple a model misses a real, bending pattern.</p></div>
+          <div class="card" style="border-top:5px solid var(--warn);"><div class="ico">🌀</div><h3>Overfitting</h3><p>Too complex a model memorizes noise and fails on new data.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-landscape);"><div class="ico">🎛️</div><h3>The sweet spot</h3><p>The best model minimizes error on NEW, unseen data — not just training data.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E7 — LOOK AHEAD: MULTIPLE FEATURES ============ -->
+    <section class="slide" data-section="eval" id="sE7">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Hour 4 · A Look Ahead</div>
+        <h1 style="text-align:center;">What if we had MORE than one X?</h1>
+        <p class="body-text" style="text-align:center; max-width:700px; margin:0 auto;">Real predictions rarely rely on just one feature. The same OLS idea scales up effortlessly — just add more β's:</p>
+        <div class="vocab-card" style="max-width:720px; margin:8px auto 0; border-left-color:var(--c-landscape);">
+          <div class="vocab-def" style="font-family:Georgia,'Times New Roman',serif; font-size:1.2rem; text-align:center;">Y = β₀ + β₁X₁ + β₂X₂ + β₃X₃ + ... + ε</div>
+        </div>
+        <div class="card-grid" style="margin-top:10px;">
+          <div class="card"><div class="ico">🎓</div><h3>X₁ — Education level</h3><p>An advanced degree often shifts the whole salary curve upward.</p></div>
+          <div class="card"><div class="ico">🏙️</div><h3>X₂ — City / cost of living</h3><p>The same role pays differently in different cities.</p></div>
+          <div class="card"><div class="ico">🧑‍💻</div><h3>X₃ — Role / skillset</h3><p>Specialized skills command a premium on top of pure experience.</p></div>
+        </div>
+        <p class="body-text" style="text-align:center; margin-top:6px;">Same MSE. Same OLS logic. Just more dimensions — this is <b>Multiple Linear Regression</b>, our next stop.</p>
+      </div>
+    </section>
+
+    <!-- ============ E8 — FINAL WRAP-UP ============ -->
+    <section class="slide" data-section="eval" id="sE8">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">The Journey, Complete</div>
+        <h1 class="kicker-big">From a scoop of mangoes<br/>to <span class="glow">predicting the future</span> 🎉</h1>
+        <p class="body-text" style="max-width:680px;">Hour 1: samples estimate populations, and averages settle into bell curves. Hour 2 today: those same averages become baseline predictions. Hour 3: a sloped line beats a flat guess by listening to a feature. Hour 4: R² and the under/overfitting trap taught us to tell truth from illusion.</p>
+        <p class="body-text" style="max-width:680px; font-weight:800; color:var(--ink);">You just built your first real machine learning model, by hand, from first principles.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="chrome-bottom">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous slide">‹</button>
+    <div class="progress" id="progress"></div>
+    <div class="slide-counter"><span id="curNum" class="tabular">1</span> / <span id="totalNum" class="tabular">—</span></div>
+    <button class="nav-btn" id="nextBtn" aria-label="Next slide">›</button>
+  </nav>
+
+<script>
+"use strict";
+
+/* =========================== helpers =========================== */
+const $  = (sel, el=document) => el.querySelector(sel);
+const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+
+const rand  = (a,b) => a + Math.random()*(b-a);
+const clamp = (v,lo,hi) => Math.max(lo, Math.min(hi,v));
+const mean  = arr => arr.reduce((s,v)=>s+v,0) / arr.length;
+const sd    = arr => { const m = mean(arr); return Math.sqrt(arr.reduce((s,v)=>s+(v-m)**2,0) / arr.length); };
+const fmt   = (v,d=2) => Number(v).toFixed(d);
+const fmtPct = (v,d=1) => Number(v).toFixed(d) + '%';
+const fmtLPA = (v,d=1) => '₹' + Number(v).toFixed(d) + 'L';
+const fmtSignedLPA = (v,d=2) => (v>=0?'+':'−') + '₹' + Math.abs(v).toFixed(d) + 'L';
+
+function shuffledIndices(n){
+  const a = Array.from({length:n}, (_,i)=>i);
+  for(let i=n-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+
+/* ---- canvas fit ---- */
+function fitCanvas(cv){
+  const rect = cv.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const w = Math.max(1, Math.round(rect.width*dpr));
+  const h = Math.max(1, Math.round(rect.height*dpr));
+  if(cv.width !== w || cv.height !== h){ cv.width = w; cv.height = h; }
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return { ctx, w: rect.width, h: rect.height };
+}
+
+/* ---- histogram (1D) ---- */
+function roundRectTop(ctx,x,y,w,h,r){
+  ctx.beginPath();
+  if(h <= 0.5){ return; }
+  r = Math.max(0, Math.min(r, w/2, h));
+  ctx.moveTo(x, y+h);
+  ctx.lineTo(x, y+r);
+  ctx.arcTo(x, y, x+r, y, r);
+  ctx.lineTo(x+w-r, y);
+  ctx.arcTo(x+w, y, x+w, y+r, r);
+  ctx.lineTo(x+w, y+h);
+  ctx.closePath();
+}
+function drawHistogram(cv, values, opts={}){
+  if(!cv || cv.clientWidth === 0) return;
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const min = opts.min ?? 0, max = opts.max ?? 100;
+  const bins = opts.bins ?? 16;
+  const binW = (max-min)/bins;
+  const counts = new Array(bins).fill(0);
+  for(const v of values){
+    let b = Math.floor((v-min)/binW);
+    b = clamp(b, 0, bins-1);
+    counts[b]++;
+  }
+  const maxCount = Math.max(1, ...counts);
+  const padL=10, padR=10, padT=16, padB=24;
+  const plotW = w-padL-padR, plotH = h-padT-padB;
+  const barGap = 2;
+  const barW = plotW/bins;
+  ctx.fillStyle = opts.color || cssVar('--accent');
+  for(let i=0;i<bins;i++){
+    const bh = (counts[i]/maxCount)*plotH;
+    const x = padL + i*barW;
+    const y = h - padB - bh;
+    const bw = Math.max(1, barW-barGap);
+    roundRectTop(ctx, x, y, bw, bh, Math.min(4, bw/2));
+    ctx.fill();
+  }
+  ctx.strokeStyle = opts.baselineColor || cssVar('--line');
+  ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(padL, h-padB); ctx.lineTo(w-padR, h-padB); ctx.stroke();
+  ctx.fillStyle = cssVar('--ink-faint'); ctx.font = '11px sans-serif'; ctx.textAlign='center';
+  ctx.fillText((opts.min ?? 0)+(opts.unit||''), padL, h-4);
+  ctx.fillText((opts.max ?? 100)+(opts.unit||''), w-padR, h-4);
+  if(opts.xLabel) ctx.fillText(opts.xLabel, w/2, h-4);
+  if(opts.markerValue != null){
+    const mx = padL + ((opts.markerValue-min)/(max-min))*plotW;
+    ctx.setLineDash([4,3]);
+    ctx.strokeStyle = opts.markerColor || cssVar('--ink');
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.moveTo(mx, padT); ctx.lineTo(mx, h-padB); ctx.stroke();
+    ctx.setLineDash([]);
+  }
+}
+
+/* ---- generic X/Y scatter plot (points, optional line/curve, optional residuals) ---- */
+function drawScatter(cv, opts){
+  if(!cv || cv.clientWidth === 0) return null;
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const padL=40, padR=16, padT=16, padB=32;
+  const plotW=w-padL-padR, plotH=h-padT-padB;
+  const [xmin,xmax] = opts.xDomain, [ymin,ymax]=opts.yDomain;
+  const X = x => padL + ((x-xmin)/(xmax-xmin))*plotW;
+  const Y = y => padT + plotH - ((y-ymin)/(ymax-ymin))*plotH;
+
+  ctx.strokeStyle = cssVar('--line'); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT+plotH); ctx.lineTo(padL+plotW, padT+plotH); ctx.stroke();
+  ctx.fillStyle=cssVar('--ink-faint'); ctx.font='10.5px sans-serif'; ctx.textAlign='center';
+  if(opts.xLabel) ctx.fillText(opts.xLabel, padL+plotW/2, h-6);
+  if(opts.yLabel){
+    ctx.save(); ctx.translate(11, padT+plotH/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center';
+    ctx.fillText(opts.yLabel, 0,0);
+    ctx.restore();
+  }
+
+  if(opts.residualLine){
+    const {b0,b1} = opts.residualLine;
+    ctx.lineWidth=1.3;
+    ctx.setLineDash([3,2]);
+    for(const p of opts.points){
+      const py = b0+b1*p.x;
+      ctx.strokeStyle = opts.residualColorFn ? opts.residualColorFn(p,py) : cssVar('--ink-faint');
+      ctx.beginPath(); ctx.moveTo(X(p.x), Y(p.y)); ctx.lineTo(X(p.x), Y(py)); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+  }
+
+  if(opts.line){
+    const {b0,b1} = opts.line;
+    ctx.strokeStyle = opts.lineColor || cssVar('--ink');
+    ctx.lineWidth = 2.6;
+    ctx.beginPath();
+    ctx.moveTo(X(xmin), Y(b0+b1*xmin));
+    ctx.lineTo(X(xmax), Y(b0+b1*xmax));
+    ctx.stroke();
+  }
+  if(opts.line2){
+    const {b0,b1} = opts.line2;
+    ctx.strokeStyle = opts.line2Color || cssVar('--c-linreg');
+    ctx.lineWidth = 2.6;
+    ctx.beginPath();
+    ctx.moveTo(X(xmin), Y(b0+b1*xmin));
+    ctx.lineTo(X(xmax), Y(b0+b1*xmax));
+    ctx.stroke();
+  }
+  if(opts.curveFn){
+    ctx.strokeStyle = opts.curveColor || cssVar('--accent');
+    ctx.lineWidth = 2.6;
+    ctx.beginPath();
+    let first=true;
+    for(let px=0; px<=plotW; px+=2){
+      const xVal = xmin + (px/plotW)*(xmax-xmin);
+      const yVal = clamp(opts.curveFn(xVal), ymin-40, ymax+40);
+      const cx=padL+px, cy=Y(yVal);
+      if(first){ctx.moveTo(cx,cy); first=false;} else ctx.lineTo(cx,cy);
+    }
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = opts.color || cssVar('--accent');
+  const r = opts.radius || 4.6;
+  for(const p of opts.points){
+    ctx.fillStyle = opts.colorFn ? opts.colorFn(p) : (opts.color || cssVar('--accent'));
+    ctx.beginPath(); ctx.arc(X(p.x), Y(p.y), r, 0, Math.PI*2); ctx.fill();
+  }
+  if(opts.testPoints){
+    ctx.fillStyle = opts.testColor || cssVar('--warn');
+    for(const p of opts.testPoints){
+      const cx=X(p.x), cy=Y(p.y), s=6;
+      ctx.beginPath(); ctx.moveTo(cx, cy-s); ctx.lineTo(cx+s,cy); ctx.lineTo(cx,cy+s); ctx.lineTo(cx-s,cy); ctx.closePath(); ctx.fill();
+      if(opts.testResidualTo){
+        const py = opts.testResidualTo(p.x);
+        ctx.strokeStyle = cssVar('--bad'); ctx.lineWidth=1.5; ctx.setLineDash([3,2]);
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx, Y(py)); ctx.stroke();
+        ctx.setLineDash([]);
+      }
+    }
+  }
+  return {X,Y,padL,padT,plotW,plotH};
+}
+
+/* ---- regression math ---- */
+function olsFit(points){
+  const n=points.length;
+  const mx=mean(points.map(p=>p.x)), my=mean(points.map(p=>p.y));
+  let num=0,den=0;
+  for(const p of points){ num+=(p.x-mx)*(p.y-my); den+=(p.x-mx)**2; }
+  const b1=num/den, b0=my-b1*mx;
+  return {b0,b1};
+}
+function lineMSE(points,b0,b1){ return mean(points.map(p=>(p.y-(b0+b1*p.x))**2)); }
+function lineSSE(points,b0,b1){ return points.reduce((s,p)=>s+(p.y-(b0+b1*p.x))**2, 0); }
+function flatSSE(points, guess){ return points.reduce((s,p)=>s+(p.y-guess)**2, 0); }
+function computeSSR(points, meanY, b0, b1){ return points.reduce((s,p)=>{ const pred=b0+b1*p.x; return s+(pred-meanY)**2; }, 0); }
+
+/* ---- polynomial least-squares fit (normalized x for stability) ---- */
+function solveLinearSystem(A, b){
+  const n = b.length;
+  const M = A.map((row,i)=>[...row, b[i]]);
+  for(let col=0; col<n; col++){
+    let piv = col;
+    for(let r=col+1;r<n;r++) if(Math.abs(M[r][col])>Math.abs(M[piv][col])) piv=r;
+    [M[col],M[piv]]=[M[piv],M[col]];
+    const div = M[col][col] || 1e-9;
+    for(let c=col;c<=n;c++) M[col][c]/=div;
+    for(let r=0;r<n;r++){
+      if(r===col) continue;
+      const factor = M[r][col];
+      for(let c=col;c<=n;c++) M[r][c]-=factor*M[col][c];
+    }
+  }
+  return M.map(row=>row[n]);
+}
+function evalPoly(coeffs, xn){
+  let acc=0, p=1;
+  for(let k=0;k<coeffs.length;k++){ acc+=coeffs[k]*p; p*=xn; }
+  return acc;
+}
+function fitPoly(points, degree, xmin, xmax){
+  const norm = x => ((x-xmin)/(xmax-xmin))*2-1;
+  const m = degree+1;
+  const XtX = Array.from({length:m},()=>new Array(m).fill(0));
+  const Xty = new Array(m).fill(0);
+  for(const p of points){
+    const xn = norm(p.x);
+    const powers = new Array(m);
+    let pw=1;
+    for(let k=0;k<m;k++){ powers[k]=pw; pw*=xn; }
+    for(let a=0;a<m;a++){
+      Xty[a] += powers[a]*p.y;
+      for(let b=0;b<m;b++) XtX[a][b] += powers[a]*powers[b];
+    }
+  }
+  const coeffs = solveLinearSystem(XtX, Xty);
+  return { coeffs, predict: x => evalPoly(coeffs, norm(x)) };
+}
+
+/* =========================== deck engine =========================== */
+const slideEls = $$('.slide');
+const slideIds = slideEls.map(s => s.id);
+let cur = 0;
+
+const CHAPTERS = {
+  landscape: { num:1, label:'The ML Landscape' },
+  baseline:  { num:2, label:'The Mean Line Baseline' },
+  linreg:    { num:3, label:'Simple Linear Regression' },
+  eval:      { num:4, label:'Evaluation &amp; Pitfalls' },
+};
+const HOURS = { landscape:1, baseline:2, linreg:3, eval:4 };
+
+const onEnter = {};
+const onLeave = {};
+
+function buildDots(){
+  const wrap = $('#progress');
+  wrap.innerHTML = '';
+  let lastSection = null;
+  slideEls.forEach((s, i) => {
+    const sec = s.dataset.section;
+    if(lastSection !== null && sec !== lastSection){
+      const gap = document.createElement('span');
+      gap.className = 'dot gap';
+      wrap.appendChild(gap);
+    }
+    const b = document.createElement('button');
+    b.className = 'dot';
+    b.setAttribute('aria-label', 'Go to slide ' + (i+1));
+    b.addEventListener('click', () => goTo(i));
+    wrap.appendChild(b);
+    lastSection = sec;
+  });
+}
+
+function goTo(i){
+  i = clamp(i, 0, slideEls.length-1);
+  const leaveFn = onLeave[slideEls[cur].id];
+  if(leaveFn) leaveFn();
+  slideEls[cur].classList.remove('active');
+  cur = i;
+  const s = slideEls[cur];
+  s.classList.add('active');
+  document.body.dataset.section = s.dataset.section;
+
+  const chip = $('#chapterChip');
+  const meta = CHAPTERS[s.dataset.section];
+  if(meta){
+    chip.style.display = 'flex';
+    $('#chapterNum').textContent = meta.num;
+    $('#chapterLabel').innerHTML = meta.label;
+  } else {
+    chip.style.display = 'none';
+  }
+  const hourNum = HOURS[s.dataset.section];
+  $('#hourBadge').textContent = hourNum ? ('HOUR ' + hourNum + ' OF 4') : 'ML FOUNDATIONS';
+
+  $('#curNum').textContent = cur+1;
+  $('#prevBtn').disabled = cur === 0;
+  $('#nextBtn').disabled = cur === slideEls.length-1;
+
+  $$('.dot:not(.gap)', $('#progress')).forEach((d,idx)=> d.classList.toggle('active', idx===cur));
+
+  const fn = onEnter[s.id];
+  if(fn) requestAnimationFrame(fn);
+}
+
+function next(){ if(cur < slideEls.length-1) goTo(cur+1); }
+function prev(){ if(cur > 0) goTo(cur-1); }
+
+$('#nextBtn').addEventListener('click', next);
+$('#prevBtn').addEventListener('click', prev);
+window.addEventListener('keydown', e => {
+  if(e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+  else if(e.key === 'ArrowLeft'){ e.preventDefault(); prev(); }
+});
+
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => { const fn = onEnter[slideEls[cur].id]; if(fn) fn(); }, 120);
+});
+
+/* theme toggle */
+const themeBtn = $('#themeToggle');
+function applyStoredTheme(){
+  const t = localStorage.getItem('sv-theme-ml');
+  if(t) document.documentElement.setAttribute('data-theme', t);
+}
+applyStoredTheme();
+themeBtn.addEventListener('click', () => {
+  const now = document.documentElement.getAttribute('data-theme');
+  const dark = now ? now === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const nextTheme = dark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', nextTheme);
+  localStorage.setItem('sv-theme-ml', nextTheme);
+  const fn = onEnter[slideEls[cur].id]; if(fn) fn();
+});
+
+/* =========================== shared datasets =========================== */
+/* DISTRICTS: employees — x = years of experience, y = salary (₹ LPA) */
+function genDistricts(n){
+  return Array.from({length:n}, () => {
+    const exp = rand(0, 15);
+    const noise = rand(-2.2,2.2);
+    const salary = 3 + 1.3*exp + noise;
+    return { x: exp, y: clamp(salary, 1, 28) };
+  });
+}
+const DISTRICTS = genDistricts(42);
+const DISTRICTS_SORTED = [...DISTRICTS].sort((a,b)=>a.y-b.y).map((d,i)=>({...d, xi:i}));
+const districtMeanY = mean(DISTRICTS.map(d=>d.y));
+const districtOLS = olsFit(DISTRICTS);
+const DIST_X_DOMAIN = [0, 16];
+const DIST_Y_DOMAIN = [0, 30];
+
+/* SPEND_FULL/TRAIN/NEW: a wider-career plateau curve (experience 0-40y) for under/overfitting demos */
+function genSpendingCurve(n){
+  return Array.from({length:n}, () => {
+    const exp = rand(0, 40);
+    const trueVal = 3 + 27*(1-Math.exp(-exp/12));
+    const noisy = trueVal + rand(-2.5,2.5);
+    return { x: exp, y: clamp(noisy, 1, 32) };
+  });
+}
+const SPEND_FULL = genSpendingCurve(36);
+const SPEND_TRAIN14 = genSpendingCurve(14);
+const SPEND_NEW5 = genSpendingCurve(5);
+const SPEND_X_DOMAIN = [0, 40];
+const SPEND_Y_DOMAIN = [0, 32];
+
+const DIAL_TRAIN = genSpendingCurve(16);
+const DIAL_TEST = genSpendingCurve(8);
+
+function genBlobPoints(blobs, perBlob, spread){
+  const pts=[];
+  for(const b of blobs){
+    for(let i=0;i<perBlob;i++) pts.push({ x:clamp(b.cx+rand(-spread,spread),4,96), y:clamp(b.cy+rand(-spread,spread),4,96) });
+  }
+  return pts;
+}
+const CUSTOMER_PTS = genBlobPoints([{cx:80,cy:80},{cx:25,cy:78},{cx:78,cy:25},{cx:22,cy:22}], 15, 13);
+const PROPERTY_PTS = genBlobPoints([{cx:82,cy:78},{cx:38,cy:62},{cx:78,cy:24},{cx:20,cy:25}], 15, 13);
+const CUSTOMER_LABELS = { hihi:'💎 Big Spenders', lohi:'🛒 Frequent Shoppers', hilo:'🎯 Occasional Big Buyers', lolo:'👀 Window Shoppers' };
+const PROPERTY_LABELS = { hihi:'🏰 Luxury Homes', lohi:'🏠 Spacious Family Homes', hilo:'🏙️ Compact &amp; Pricey (Urban)', lolo:'💰 Budget Homes' };
+function quadrantLabel(c, labels){
+  if(c.x>50 && c.y>50) return labels.hihi;
+  if(c.x<=50 && c.y>50) return labels.lohi;
+  if(c.x>50 && c.y<=50) return labels.hilo;
+  return labels.lolo;
+}
+
+const CHANNELS = [
+  { name:'Aggressive', trueP:0.74 },
+  { name:'Defensive',  trueP:0.52 },
+  { name:'Balanced',   trueP:0.38 },
+  { name:'Random',     trueP:0.27 },
+];
+const CHANNEL_HUES = [265, 205, 25, 340];
+
+/* =========================== CHAPTER 1 — THE ML LANDSCAPE =========================== */
+
+/* --- L2: paradigm shift --- */
+$('#revealMlFlowBtn').addEventListener('click', () => {
+  $('#mlFlowReveal').style.display = 'block';
+  $('#paradigmBanner').style.display = 'flex';
+});
+
+/* --- L3: supervised learning — fruit image gallery (apple vs. orange classification) --- */
+function genFruitGallery(n){
+  const items = [];
+  for(let i=0;i<n;i++){
+    const isApple = Math.random()<0.5;
+    items.push({ emoji: isApple ? (Math.random()<0.5?'🍎':'🍏') : '🍊', label: isApple ? 'apple' : 'orange' });
+  }
+  return items;
+}
+const FRUIT_GALLERY_ITEMS = genFruitGallery(16);
+onEnter['sL3'] = () => {
+  $('#fruitGallery').innerHTML = FRUIT_GALLERY_ITEMS.map(item => `
+    <div style="text-align:center;">
+      <div style="font-size:2.4rem; line-height:1;">${item.emoji}</div>
+      <div style="font-size:.7rem; font-weight:800; margin-top:2px; color:${item.label==='apple'?'var(--bad)':'var(--c-baseline)'};">${item.label==='apple'?'Apple':'Orange'}</div>
+    </div>`).join('');
+};
+
+/* --- L3b: activity — you be the model (apple/orange guessing game, with a trick fruit!) --- */
+const BUCKET_LABEL = { apple:'Apple', orange:'Orange' };
+const QUIZ_FRUITS_BASE = [
+  { emoji:'🍎', hue:0,   label:'apple' },
+  { emoji:'🍊', hue:0,   label:'orange' },
+  { emoji:'🍏', hue:0,   label:'apple' },
+  { emoji:'🍊', hue:0,   label:'orange' },
+  { emoji:'🍎', hue:50,  sat:2,   label:'apple',  trick:true },
+  { emoji:'🍊', hue:-30, sat:1.8, label:'orange', trick:true },
+];
+let supQuizItems = [], supQuizIdx = 0, supQuizScore = 0;
+function renderSupQuiz(){
+  const item = supQuizItems[supQuizIdx];
+  $('#supQuizProgress').textContent = `Fruit ${supQuizIdx+1} of ${supQuizItems.length}`;
+  $('#mysteryFruitDisplay').textContent = item.emoji;
+  $('#mysteryFruitDisplay').style.filter = item.hue ? `hue-rotate(${item.hue}deg) saturate(${item.sat||1}) brightness(1.05)` : 'none';
+  $('#supQuizPrompt').textContent = 'What is this fruit?';
+  $('#supQuizExplain').style.display = 'none';
+  $('#supQuizNextBtn').style.display = 'none';
+  $('#supQuizRestartBtn').style.display = 'none';
+  $$('#supQuizOptions .btn').forEach(b => { b.classList.remove('correct','wrong'); b.disabled=false; });
+  $('#supQuizScore').textContent = `${supQuizScore} / ${supQuizIdx}`;
+}
+onEnter['sL3b'] = () => {
+  supQuizItems = shuffledIndices(QUIZ_FRUITS_BASE.length).map(i=>QUIZ_FRUITS_BASE[i]);
+  supQuizIdx = 0; supQuizScore = 0;
+  renderSupQuiz();
+};
+$$('#supQuizOptions .btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const item = supQuizItems[supQuizIdx];
+    const actual = item.label;
+    const chosen = btn.dataset.bucket;
+    const correct = chosen === actual;
+    if(correct) supQuizScore++;
+    $$('#supQuizOptions .btn').forEach(b => {
+      b.disabled = true;
+      if(b.dataset.bucket === actual) b.classList.add('correct');
+      else if(b === btn) b.classList.add('wrong');
+    });
+    const isLast = supQuizIdx >= supQuizItems.length-1;
+    const banner = $('#supQuizExplain');
+    banner.className = 'banner ' + (correct ? 'good' : 'warn');
+    banner.style.display = 'flex';
+    banner.textContent = `${correct ? '✅' : '❌'} Actual answer: ${BUCKET_LABEL[actual]}.`
+      + (item.trick ? ` 😲 Trick fruit! This was a real ${BUCKET_LABEL[actual]} that just happened to look unusually ${actual==='apple'?'orange':'red'}-colored. A real classifier looks at shape and texture too, not just color!` : '')
+      + (isLast ? ` Final score: ${supQuizScore}/${supQuizItems.length} — that's basically what a supervised model does with a labeled training set, except it never gets tired!` : '');
+    $('#supQuizScore').textContent = `${supQuizScore} / ${supQuizIdx+1}`;
+    $('#supQuizNextBtn').style.display = isLast ? 'none' : 'inline-flex';
+    $('#supQuizRestartBtn').style.display = isLast ? 'inline-flex' : 'none';
+  });
+});
+$('#supQuizNextBtn').addEventListener('click', () => {
+  supQuizIdx = Math.min(supQuizIdx+1, supQuizItems.length-1);
+  renderSupQuiz();
+});
+$('#supQuizRestartBtn').addEventListener('click', () => { onEnter['sL3b'](); });
+
+/* --- L4: unsupervised clustering --- */
+function kmeansPlusPlusInit(points, k){
+  const centroids = [];
+  const firstIdx = (Math.random()*points.length)|0;
+  centroids.push({x:points[firstIdx].x, y:points[firstIdx].y});
+  while(centroids.length < k){
+    const dists = points.map(p => Math.min(...centroids.map(c => (p.x-c.x)**2 + (p.y-c.y)**2)));
+    const total = dists.reduce((s,d)=>s+d,0);
+    if(total <= 0){
+      centroids.push({x:points[(Math.random()*points.length)|0].x, y:points[(Math.random()*points.length)|0].y});
+      continue;
+    }
+    let r = Math.random()*total, chosenIdx = dists.length-1;
+    for(let i=0;i<dists.length;i++){ r -= dists[i]; if(r<=0){ chosenIdx=i; break; } }
+    centroids.push({x:points[chosenIdx].x, y:points[chosenIdx].y});
+  }
+  return centroids;
+}
+function kmeansStep(points, centroids){
+  const k = centroids.length;
+  const assign = new Array(points.length);
+  for(let i=0;i<points.length;i++){
+    let best=0, bd=Infinity;
+    for(let c=0;c<k;c++){
+      const d = (points[i].x-centroids[c].x)**2 + (points[i].y-centroids[c].y)**2;
+      if(d<bd){ bd=d; best=c; }
+    }
+    assign[i]=best;
+  }
+  const sums = Array.from({length:k},()=>({x:0,y:0,n:0}));
+  for(let i=0;i<points.length;i++){ const a=assign[i]; sums[a].x+=points[i].x; sums[a].y+=points[i].y; sums[a].n++; }
+  const newCentroids = sums.map((s,c) => {
+    if(s.n>0) return {x:s.x/s.n, y:s.y/s.n};
+    let farIdx=0, farDist=-1;
+    for(let i=0;i<points.length;i++){
+      const a = assign[i];
+      const d = (points[i].x-centroids[a].x)**2 + (points[i].y-centroids[a].y)**2;
+      if(d>farDist){ farDist=d; farIdx=i; }
+    }
+    return {x:points[farIdx].x, y:points[farIdx].y};
+  });
+  return { assign, centroids: newCentroids };
+}
+let clusterAssign = null, clusterCentroids = null, clusterTimer = null;
+function drawClusters(){
+  const cv = $('#cvCluster');
+  drawScatter(cv, {
+    points: CUSTOMER_PTS,
+    xDomain: [0,100], yDomain: [0,100],
+    xLabel: 'spending →', yLabel: 'purchase frequency',
+    radius: 5,
+    colorFn: p => {
+      if(!clusterAssign) return cssVar('--unrevealed');
+      const idx = CUSTOMER_PTS.indexOf(p);
+      const c = clusterAssign[idx];
+      return `hsl(${CHANNEL_HUES[c % CHANNEL_HUES.length]} 55% 55%)`;
+    }
+  });
+  const legend = $('#clusterLegend');
+  if(clusterAssign){
+    legend.innerHTML = clusterCentroids.map((c,i)=>
+      `<span><span class="sw" style="background:hsl(${CHANNEL_HUES[i%CHANNEL_HUES.length]} 55% 55%);"></span>${quadrantLabel(c,CUSTOMER_LABELS)}</span>`
+    ).join('');
+  } else {
+    legend.innerHTML = '';
+  }
+}
+onEnter['sL4'] = drawClusters;
+$('#runClusterBtn').addEventListener('click', () => {
+  clearInterval(clusterTimer);
+  clusterCentroids = kmeansPlusPlusInit(CUSTOMER_PTS, 4);
+  clusterAssign = new Array(CUSTOMER_PTS.length).fill(0);
+  let iter = 0;
+  $('#clusterFootnote').textContent = 'Watching the algorithm sort customers into groups by nearest centroid...';
+  clusterTimer = setInterval(() => {
+    const res = kmeansStep(CUSTOMER_PTS, clusterCentroids);
+    clusterAssign = res.assign; clusterCentroids = res.centroids;
+    drawClusters();
+    iter++;
+    if(iter >= 20){
+      clearInterval(clusterTimer);
+      $('#clusterFootnote').textContent = '4 customer segments emerged — the AI was never told what they were, or how many to expect beyond k=4.';
+    }
+  }, 350);
+});
+$('#resetClusterBtn').addEventListener('click', () => {
+  clearInterval(clusterTimer);
+  clusterAssign = null; clusterCentroids = null;
+  $('#clusterFootnote').textContent = 'Right now every customer looks the same to us — one gray blob. Watch what the algorithm sees.';
+  drawClusters();
+});
+
+/* --- L4b: activity — you be the algorithm (manual clustering) --- */
+const MANUAL_CLUSTER_PTS = CUSTOMER_PTS.filter((_,i)=> i%4===0);
+let manualGroups = new Array(MANUAL_CLUSTER_PTS.length).fill(-1);
+let algoClusterResult = null;
+function drawManualCluster(){
+  drawScatter($('#cvManualCluster'), {
+    points: MANUAL_CLUSTER_PTS,
+    xDomain:[0,100], yDomain:[0,100],
+    xLabel:'spending →', yLabel:'purchase frequency',
+    radius:7,
+    colorFn: p => {
+      const idx = MANUAL_CLUSTER_PTS.indexOf(p);
+      const g = manualGroups[idx];
+      return g===-1 ? cssVar('--unrevealed') : `hsl(${CHANNEL_HUES[g%CHANNEL_HUES.length]} 55% 55%)`;
+    }
+  });
+}
+function drawAlgoClusterPanel(){
+  const cv = $('#cvAlgoCluster');
+  if(!algoClusterResult){
+    drawScatter(cv, {
+      points: MANUAL_CLUSTER_PTS,
+      xDomain:[0,100], yDomain:[0,100],
+      xLabel:'spending →', yLabel:'purchase frequency',
+      radius:7, color: cssVar('--unrevealed'),
+    });
+    return;
+  }
+  drawScatter(cv, {
+    points: MANUAL_CLUSTER_PTS,
+    xDomain:[0,100], yDomain:[0,100],
+    xLabel:'spending →', yLabel:'purchase frequency',
+    radius:7,
+    colorFn: p => {
+      const idx = MANUAL_CLUSTER_PTS.indexOf(p);
+      const c = algoClusterResult.assign[idx];
+      return `hsl(${CHANNEL_HUES[c%CHANNEL_HUES.length]} 55% 55%)`;
+    }
+  });
+}
+onEnter['sL4b'] = () => {
+  manualGroups = new Array(MANUAL_CLUSTER_PTS.length).fill(-1);
+  algoClusterResult = null;
+  $('#algoClusterFootnote').textContent = "Group your customers, then reveal the algorithm's answer.";
+  drawManualCluster();
+  drawAlgoClusterPanel();
+};
+const cvManualClusterEl = $('#cvManualCluster');
+cvManualClusterEl.addEventListener('click', e => {
+  const rect = cvManualClusterEl.getBoundingClientRect();
+  const dataPt = pxToData(cvManualClusterEl, e.clientX-rect.left, e.clientY-rect.top, [0,100], [0,100]);
+  let nearestIdx=-1, nearestDist=Infinity;
+  MANUAL_CLUSTER_PTS.forEach((p,i)=>{
+    const d = (p.x-dataPt.x)**2 + (p.y-dataPt.y)**2;
+    if(d<nearestDist){ nearestDist=d; nearestIdx=i; }
+  });
+  if(nearestIdx>=0 && nearestDist < 36){
+    manualGroups[nearestIdx] = manualGroups[nearestIdx]===-1 ? 0 : (manualGroups[nearestIdx]+1)%4;
+    drawManualCluster();
+  }
+});
+$('#revealAlgoClusterBtn').addEventListener('click', () => {
+  let centroids = kmeansPlusPlusInit(MANUAL_CLUSTER_PTS, 4);
+  let assign = new Array(MANUAL_CLUSTER_PTS.length).fill(0);
+  for(let iter=0; iter<20; iter++){
+    const res = kmeansStep(MANUAL_CLUSTER_PTS, centroids);
+    assign = res.assign; centroids = res.centroids;
+  }
+  algoClusterResult = { assign, centroids };
+  drawAlgoClusterPanel();
+  const groupedCount = manualGroups.filter(g=>g!==-1).length;
+  $('#algoClusterFootnote').textContent = groupedCount > 0
+    ? 'Compare colors across both panels — did you and the algorithm draw similar boundaries?'
+    : 'The algorithm found its own 4 groups — try grouping some customers yourself first for a real comparison!';
+});
+$('#resetManualClusterBtn').addEventListener('click', () => {
+  manualGroups = new Array(MANUAL_CLUSTER_PTS.length).fill(-1);
+  drawManualCluster();
+});
+
+/* --- L4c: illustration — property clustering (customer segmentation is now the main L4 demo) --- */
+function runKMeansOn(points, itersTotal){
+  let centroids = kmeansPlusPlusInit(points, 4);
+  let assign = new Array(points.length).fill(0);
+  for(let it=0; it<itersTotal; it++){
+    const res = kmeansStep(points, centroids);
+    assign = res.assign; centroids = res.centroids;
+  }
+  return { assign, centroids };
+}
+let propertyResult = null;
+function drawPropertyPanel(){
+  drawScatter($('#cvPropertyCluster'), {
+    points: PROPERTY_PTS, xDomain:[0,100], yDomain:[0,100],
+    xLabel:'price →', yLabel:'size (sq ft)', radius:5,
+    colorFn: p => {
+      if(!propertyResult) return cssVar('--unrevealed');
+      const idx = PROPERTY_PTS.indexOf(p);
+      return `hsl(${CHANNEL_HUES[propertyResult.assign[idx]%CHANNEL_HUES.length]} 55% 55%)`;
+    }
+  });
+  $('#propertyLegend').innerHTML = propertyResult ? propertyResult.centroids.map((c,i)=>
+    `<span><span class="sw" style="background:hsl(${CHANNEL_HUES[i%CHANNEL_HUES.length]} 55% 55%);"></span>${quadrantLabel(c,PROPERTY_LABELS)}</span>`
+  ).join('') : '';
+}
+onEnter['sL4c'] = () => { propertyResult = null; drawPropertyPanel(); };
+$('#revealPropertyBtn').addEventListener('click', () => { propertyResult = runKMeansOn(PROPERTY_PTS, 20); drawPropertyPanel(); });
+$('#resetPropertyBtn').addEventListener('click', () => { propertyResult = null; drawPropertyPanel(); });
+
+/* --- L5: reinforcement learning bandit --- */
+let banditStats = CHANNELS.map(()=>({est:0.5, n:0}));
+let banditDays = 0, banditReward = 0, banditFastTimer = null;
+function pickChannel(){
+  if(Math.random() < 0.15) return (Math.random()*CHANNELS.length)|0;
+  let best=0;
+  for(let i=1;i<CHANNELS.length;i++) if(banditStats[i].est > banditStats[best].est) best=i;
+  return best;
+}
+function runBanditDay(){
+  const idx = pickChannel();
+  const reward = Math.random() < CHANNELS[idx].trueP ? 1 : 0;
+  const s = banditStats[idx];
+  s.n++; s.est += (reward - s.est)/s.n;
+  banditDays++; banditReward += reward;
+}
+function drawBandit(){
+  const cv = $('#cvBandit');
+  if(!cv || cv.clientWidth===0) return;
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const padL=90, padR=50, padT=16, padB=16;
+  const plotW = w-padL-padR, plotH = h-padT-padB;
+  const rowH = plotH/CHANNELS.length;
+  let bestIdx=0;
+  for(let i=1;i<CHANNELS.length;i++) if(banditStats[i].est>banditStats[bestIdx].est) bestIdx=i;
+  CHANNELS.forEach((ch,i)=>{
+    const y = padT + i*rowH + rowH*0.24;
+    const barH = rowH*0.52;
+    ctx.fillStyle = cssVar('--ink-soft'); ctx.font='11px sans-serif'; ctx.textAlign='right'; ctx.textBaseline='middle';
+    ctx.fillText(ch.name, padL-10, y+barH/2);
+    ctx.fillStyle = cssVar('--paper-3');
+    roundRectTop(ctx, padL, y, plotW, barH, 6); ctx.fill();
+    const est = banditStats[i].est;
+    ctx.fillStyle = `hsl(${CHANNEL_HUES[i]} 55% 55%)`;
+    roundRectTop(ctx, padL, y, plotW*clamp(est,0,1), barH, 6); ctx.fill();
+    ctx.fillStyle = cssVar('--ink'); ctx.textAlign='left';
+    ctx.fillText(fmtPct(est*100) + (banditStats[i].n? ' · n='+banditStats[i].n : '') + (i===bestIdx && banditDays>0 ? ' ⭐' : ''), padL + plotW*clamp(est,0,1) + 8, y+barH/2);
+  });
+}
+onEnter['sL5'] = drawBandit;
+function updateBanditStats(){
+  $('#banditDays').textContent = banditDays;
+  $('#banditReward').textContent = banditReward;
+}
+$('#runBanditBtn').addEventListener('click', () => { runBanditDay(); drawBandit(); updateBanditStats(); });
+$('#runBanditFastBtn').addEventListener('click', () => {
+  clearInterval(banditFastTimer);
+  let added=0;
+  banditFastTimer = setInterval(() => {
+    for(let k=0;k<4 && added<100; k++, added++) runBanditDay();
+    drawBandit(); updateBanditStats();
+    if(added>=100) clearInterval(banditFastTimer);
+  }, 30);
+});
+$('#resetBanditBtn').addEventListener('click', () => {
+  clearInterval(banditFastTimer);
+  banditStats = CHANNELS.map(()=>({est:0.5, n:0}));
+  banditDays=0; banditReward=0;
+  drawBandit(); updateBanditStats();
+});
+
+/* --- L5c: illustration — mouse in a maze (tabular Q-learning) --- */
+const MAZE = [
+  [0,0,0,1,0,0],
+  [0,1,0,1,0,0],
+  [0,1,0,0,0,1],
+  [0,1,1,1,0,0],
+  [0,0,0,0,0,0],
+];
+const MAZE_ROWS = MAZE.length, MAZE_COLS = MAZE[0].length;
+const MAZE_START = {r:0,c:0}, MAZE_GOAL = {r:4,c:5};
+const MAZE_ACTIONS = [{dr:-1,dc:0},{dr:1,dc:0},{dr:0,dc:-1},{dr:0,dc:1}];
+let mazeQ = null, mazeEpisode = 0, mazeBestSteps = Infinity, mazeAnimTimer = null;
+function initMazeQ(){ mazeQ = Array.from({length:MAZE_ROWS},()=>Array.from({length:MAZE_COLS},()=>[0,0,0,0])); }
+initMazeQ();
+function mazeIsWall(r,c){ return r<0||c<0||r>=MAZE_ROWS||c>=MAZE_COLS||MAZE[r][c]===1; }
+function mazeStep(pos, actionIdx){
+  const a = MAZE_ACTIONS[actionIdx];
+  const nr = pos.r+a.dr, nc = pos.c+a.dc;
+  if(mazeIsWall(nr,nc)) return { pos, reward:-5 };
+  return { pos:{r:nr,c:nc}, reward: (nr===MAZE_GOAL.r && nc===MAZE_GOAL.c) ? 50 : -1 };
+}
+function trainMazeEpisode(epsilon){
+  let pos = {...MAZE_START};
+  const alpha=0.5, gamma=0.9, maxSteps=200;
+  let steps=0;
+  const path=[{...pos}];
+  while(!(pos.r===MAZE_GOAL.r && pos.c===MAZE_GOAL.c) && steps<maxSteps){
+    let a;
+    if(Math.random()<epsilon) a = (Math.random()*4)|0;
+    else { const q=mazeQ[pos.r][pos.c]; a=0; for(let i=1;i<4;i++) if(q[i]>q[a]) a=i; }
+    const { pos:newPos, reward } = mazeStep(pos, a);
+    const oldQ = mazeQ[pos.r][pos.c][a];
+    const nextMax = Math.max(...mazeQ[newPos.r][newPos.c]);
+    mazeQ[pos.r][pos.c][a] = oldQ + alpha*(reward + gamma*nextMax - oldQ);
+    pos = newPos;
+    steps++;
+    path.push({...pos});
+  }
+  return { steps, path };
+}
+function drawMaze(pos){
+  const cv = $('#cvMaze');
+  if(!cv || cv.clientWidth===0) return;
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const cellW = w/MAZE_COLS, cellH = h/MAZE_ROWS;
+  for(let r=0;r<MAZE_ROWS;r++){
+    for(let c=0;c<MAZE_COLS;c++){
+      ctx.fillStyle = MAZE[r][c]===1 ? cssVar('--ink-faint') : cssVar('--paper-3');
+      ctx.fillRect(c*cellW+1, r*cellH+1, cellW-2, cellH-2);
+    }
+  }
+  ctx.font = Math.min(cellW,cellH)*0.6+'px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('🧀', MAZE_GOAL.c*cellW+cellW/2, MAZE_GOAL.r*cellH+cellH/2);
+  ctx.fillText('🐭', pos.c*cellW+cellW/2, pos.r*cellH+cellH/2);
+}
+function animateMazePath(path, onDone){
+  clearInterval(mazeAnimTimer);
+  let i=0;
+  mazeAnimTimer = setInterval(() => {
+    drawMaze(path[i]);
+    i++;
+    if(i>=path.length){ clearInterval(mazeAnimTimer); if(onDone) onDone(); }
+  }, 90);
+}
+function updateMazeStats(steps){
+  $('#mazeEpisodeCount').textContent = mazeEpisode;
+  $('#mazeStepsThis').textContent = steps;
+  $('#mazeBestSteps').textContent = isFinite(mazeBestSteps) ? mazeBestSteps : '—';
+}
+onEnter['sL5c'] = () => { clearInterval(mazeAnimTimer); drawMaze(MAZE_START); };
+onLeave['sL5c'] = () => clearInterval(mazeAnimTimer);
+$('#mazeRunOneBtn').addEventListener('click', () => {
+  const { steps, path } = trainMazeEpisode(0.3);
+  mazeEpisode++;
+  mazeBestSteps = Math.min(mazeBestSteps, steps);
+  updateMazeStats(steps);
+  animateMazePath(path);
+});
+$('#mazeTrainFastBtn').addEventListener('click', () => {
+  clearInterval(mazeAnimTimer);
+  for(let i=0;i<100;i++){
+    const { steps } = trainMazeEpisode(0.3);
+    mazeEpisode++;
+    mazeBestSteps = Math.min(mazeBestSteps, steps);
+  }
+  const finalRun = trainMazeEpisode(0);
+  mazeBestSteps = Math.min(mazeBestSteps, finalRun.steps);
+  updateMazeStats(finalRun.steps);
+  animateMazePath(finalRun.path, () => { $('#mazeLearnedBanner').style.display = 'flex'; });
+});
+$('#mazeResetBtn').addEventListener('click', () => {
+  clearInterval(mazeAnimTimer);
+  initMazeQ(); mazeEpisode=0; mazeBestSteps=Infinity;
+  $('#mazeEpisodeCount').textContent='0'; $('#mazeStepsThis').textContent='—'; $('#mazeBestSteps').textContent='—';
+  $('#mazeLearnedBanner').style.display='none';
+  drawMaze(MAZE_START);
+});
+
+/* --- L5d: illustration — untrained vs. trained Ping-Pong bot --- */
+let pongMode='untrained', pongBall, pongPaddle, pongHits=0, pongMisses=0, pongTimer=null;
+function resetPongBall(){ pongBall = { x: rand(15,35), y: rand(20,80), vx: rand(1.3,1.8), vy: (Math.random()<0.5?-1:1)*rand(0.6,1.2) }; }
+function resetPongGame(){ resetPongBall(); pongPaddle = { y:50, targetY:50, height:18 }; }
+resetPongGame();
+function updatePongStats(){
+  $('#pongHits').textContent = pongHits;
+  $('#pongMisses').textContent = pongMisses;
+  const total = pongHits+pongMisses;
+  $('#pongRate').textContent = total>0 ? fmtPct(pongHits/total*100) : '—';
+}
+function drawPong(){
+  const cv = $('#cvPong');
+  if(!cv || cv.clientWidth===0) return;
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  ctx.strokeStyle = cssVar('--line'); ctx.setLineDash([4,6]);
+  ctx.beginPath(); ctx.moveTo(w*0.5,0); ctx.lineTo(w*0.5,h); ctx.stroke(); ctx.setLineDash([]);
+  const paddleX=92, paddleW=2.2;
+  ctx.fillStyle = cssVar('--c-linreg');
+  ctx.fillRect((paddleX-paddleW/2)/100*w, (pongPaddle.y-pongPaddle.height/2)/100*h, paddleW/100*w, pongPaddle.height/100*h);
+  ctx.fillStyle = cssVar('--ink');
+  ctx.beginPath(); ctx.arc(pongBall.x/100*w, pongBall.y/100*h, Math.max(3,w*0.012), 0, Math.PI*2); ctx.fill();
+}
+function pongTick(){
+  const paddleX=92;
+  const prevX = pongBall.x;
+  pongBall.x += pongBall.vx; pongBall.y += pongBall.vy;
+  if(pongBall.y<=2){ pongBall.y=2; pongBall.vy=Math.abs(pongBall.vy); }
+  if(pongBall.y>=98){ pongBall.y=98; pongBall.vy=-Math.abs(pongBall.vy); }
+  if(pongBall.x<=2){ pongBall.x=2; pongBall.vx=Math.abs(pongBall.vx); }
+  if(pongMode==='trained'){
+    pongPaddle.targetY = pongBall.y;
+    pongPaddle.y += (pongPaddle.targetY-pongPaddle.y)*0.38;
+  } else {
+    if(Math.random()<0.025) pongPaddle.targetY = rand(10,90);
+    pongPaddle.y += (pongPaddle.targetY-pongPaddle.y)*0.10;
+  }
+  if(prevX < paddleX && pongBall.x >= paddleX){
+    if(Math.abs(pongBall.y-pongPaddle.y) <= pongPaddle.height/2){
+      pongBall.vx = -Math.abs(pongBall.vx); pongBall.x=paddleX; pongHits++; updatePongStats();
+    } else {
+      pongMisses++; updatePongStats();
+    }
+  }
+  if(pongBall.x>106) resetPongBall();
+  drawPong();
+}
+onEnter['sL5d'] = () => {
+  clearInterval(pongTimer);
+  drawPong();
+  pongTimer = setInterval(pongTick, 35);
+};
+onLeave['sL5d'] = () => clearInterval(pongTimer);
+$$('#pongModeButtons .btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    pongMode = btn.dataset.mode;
+    $$('#pongModeButtons .btn').forEach(b => b.classList.toggle('toggled', b===btn));
+    pongHits=0; pongMisses=0; updatePongStats();
+    resetPongGame();
+  });
+});
+
+/* --- L5b: activity — you play the game (manual bandit) --- */
+const HUMAN_BANDIT_ROUNDS = 10;
+let humanBanditDays=0, humanBanditReward=0, humanBanditHistory=[];
+function drawHumanBandit(){
+  const cv = $('#cvHumanBandit');
+  if(!cv || cv.clientWidth===0) return;
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const padL=16, padR=16, padT=20, padB=30;
+  const plotW=w-padL-padR, plotH=h-padT-padB;
+  const n = HUMAN_BANDIT_ROUNDS;
+  const cellW = plotW/n;
+  ctx.strokeStyle = cssVar('--line'); ctx.lineWidth=1;
+  for(let i=0;i<n;i++) ctx.strokeRect(padL+i*cellW+2, padT, cellW-4, plotH);
+  humanBanditHistory.forEach((rec,i)=>{
+    const cx = padL + i*cellW + cellW/2;
+    const cy = padT + plotH*0.42;
+    ctx.font = Math.min(cellW*0.7, 26)+'px sans-serif';
+    ctx.textAlign='center'; ctx.textBaseline='middle';
+    ctx.fillText(rec.reward ? '👍' : '👎', cx, cy);
+    ctx.font = '10px sans-serif'; ctx.fillStyle=cssVar('--ink-faint');
+    ctx.fillText(CHANNELS[rec.channel].name.split(' ')[0], cx, padT+plotH*0.8);
+  });
+}
+onEnter['sL5b'] = () => {
+  humanBanditDays=0; humanBanditReward=0; humanBanditHistory=[];
+  $('#humanBanditDays').textContent = `0 / ${HUMAN_BANDIT_ROUNDS}`;
+  $('#humanBanditRate').textContent = '—';
+  $('#humanBanditFeedback').style.display='none';
+  $('#humanVsBotBanner').style.display='none';
+  $('#compareBotBtn').disabled = true;
+  $$('#humanBanditOptions .btn').forEach(b=>b.disabled=false);
+  drawHumanBandit();
+};
+$$('#humanBanditOptions .btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if(humanBanditDays >= HUMAN_BANDIT_ROUNDS) return;
+    const idx = +btn.dataset.channel;
+    const reward = Math.random() < CHANNELS[idx].trueP ? 1 : 0;
+    humanBanditDays++; humanBanditReward += reward;
+    humanBanditHistory.push({channel:idx, reward});
+    const banner = $('#humanBanditFeedback');
+    banner.style.display='flex';
+    banner.className = 'banner ' + (reward ? 'good' : 'bad');
+    banner.textContent = reward ? `👍 ${CHANNELS[idx].name} won that round!` : `👎 ${CHANNELS[idx].name} lost that round.`;
+    $('#humanBanditDays').textContent = `${humanBanditDays} / ${HUMAN_BANDIT_ROUNDS}`;
+    $('#humanBanditRate').textContent = fmtPct(humanBanditReward/humanBanditDays*100);
+    drawHumanBandit();
+    if(humanBanditDays >= HUMAN_BANDIT_ROUNDS){
+      $$('#humanBanditOptions .btn').forEach(b=>b.disabled=true);
+      $('#compareBotBtn').disabled = false;
+    }
+  });
+});
+$('#compareBotBtn').addEventListener('click', () => {
+  let botStats = CHANNELS.map(()=>({est:0.5,n:0}));
+  let botReward=0;
+  function botPick(){
+    if(Math.random()<0.15) return (Math.random()*CHANNELS.length)|0;
+    let best=0;
+    for(let i=1;i<CHANNELS.length;i++) if(botStats[i].est>botStats[best].est) best=i;
+    return best;
+  }
+  for(let r=0;r<HUMAN_BANDIT_ROUNDS;r++){
+    const idx = botPick();
+    const reward = Math.random()<CHANNELS[idx].trueP ? 1:0;
+    const s=botStats[idx]; s.n++; s.est += (reward-s.est)/s.n;
+    botReward += reward;
+  }
+  const humanRate = humanBanditReward/humanBanditDays*100;
+  const botRate = botReward/HUMAN_BANDIT_ROUNDS*100;
+  const banner = $('#humanVsBotBanner');
+  banner.style.display='flex';
+  banner.textContent = `You: ${fmtPct(humanRate)} win rate over ${humanBanditDays} rounds. Bot: ${fmtPct(botRate)} win rate over ${HUMAN_BANDIT_ROUNDS} rounds — it adapts by leaning harder into whatever's working, while a human often keeps spreading picks around evenly.`;
+});
+$('#resetHumanBanditBtn').addEventListener('click', () => { onEnter['sL5b'](); });
+
+/* --- L8: checkpoint quiz --- */
+const QUIZ = [
+  { q: 'A hospital feeds a computer 5,000 past patient records (age, blood pressure, symptoms) PLUS whether each patient was later diagnosed with a disease. The goal: predict if a NEW patient has it.', a:'supervised', explain:'Supervised — every past record already has the correct answer (diagnosed or not) attached.' },
+  { q: 'A music app analyzes 10,000 users\' listening habits (genres, time of day, skip rate) with NO labels, and asks the computer to find natural listener groups on its own.', a:'unsupervised', explain:'Unsupervised — there\'s no answer key. The computer discovers the groups itself.' },
+  { q: 'A smart thermostat tries different temperature schedules, gets a 👍 when the user leaves it alone and a 👎 when they adjust it, and gradually learns the ideal schedule.', a:'reinforcement', explain:'Reinforcement — the thermostat learns purely from trial, error, and reward feedback over time.' },
+];
+let quizIdx = 0;
+function renderQuiz(){
+  const item = QUIZ[quizIdx];
+  $('#quizProgress').textContent = `Scenario ${quizIdx+1} of ${QUIZ.length}`;
+  $('#quizQuestion').textContent = item.q;
+  $('#quizExplain').style.display = 'none';
+  $('#quizNextBtn').style.display = 'none';
+  $$('#quizOptions .btn').forEach(b => { b.classList.remove('correct','wrong'); b.disabled=false; });
+}
+onEnter['sL8'] = () => { quizIdx = 0; renderQuiz(); };
+$$('#quizOptions .btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const item = QUIZ[quizIdx];
+    const chosen = btn.dataset.answer;
+    $$('#quizOptions .btn').forEach(b => {
+      b.disabled = true;
+      if(b.dataset.answer === item.a) b.classList.add('correct');
+      else if(b === btn) b.classList.add('wrong');
+    });
+    const banner = $('#quizExplain');
+    banner.className = 'banner ' + (chosen === item.a ? 'good' : 'warn');
+    banner.style.display = 'flex';
+    banner.textContent = (chosen === item.a ? '✅ ' : '❌ ') + item.explain;
+    $('#quizNextBtn').style.display = quizIdx < QUIZ.length-1 ? 'inline-flex' : 'none';
+  });
+});
+$('#quizNextBtn').addEventListener('click', () => { quizIdx = Math.min(quizIdx+1, QUIZ.length-1); renderQuiz(); });
+
+/* =========================== CHAPTER 2 — THE MEAN LINE BASELINE =========================== */
+
+/* --- B2: meet the districts --- */
+onEnter['sB2'] = () => {
+  $('#districtMeanStat').textContent = fmtLPA(districtMeanY);
+  drawScatter($('#cvDistrictsIntro'), {
+    points: DISTRICTS,
+    xDomain: DIST_X_DOMAIN, yDomain: DIST_Y_DOMAIN,
+    xLabel: 'years of experience →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--c-baseline'),
+  });
+};
+
+/* --- B3: completely blind guess (1D histogram) --- */
+onEnter['sB3'] = () => {
+  drawHistogram($('#cvBlindGuess'), DISTRICTS.map(d=>d.y), {
+    min:0, max:30, bins:16, unit:'L', xLabel:'salary (₹ LPA) →',
+    color: cssVar('--c-baseline'),
+    markerValue: districtMeanY, markerColor: cssVar('--ink'),
+  });
+};
+
+/* --- B4: interactive guess-the-flat-line game --- */
+function drawGuessGame(guess){
+  drawScatter($('#cvGuessGame'), {
+    points: DISTRICTS_SORTED.map(d=>({x:d.xi, y:d.y})),
+    xDomain: [0, DISTRICTS_SORTED.length-1], yDomain: DIST_Y_DOMAIN,
+    xLabel: 'employees, sorted by salary →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--c-baseline'), radius: 4,
+    line: { b0: guess, b1: 0 }, lineColor: cssVar('--ink'),
+    residualLine: { b0: guess, b1: 0 },
+  });
+}
+function updateGuessGame(){
+  const guess = +$('#guessSlider').value;
+  $('#guessValLabel').textContent = fmt(guess,1);
+  const sse = flatSSE(DISTRICTS, guess);
+  $('#guessSSE').textContent = fmt(sse,0);
+  $('#guessTrueMean').textContent = fmtLPA(districtMeanY);
+  drawGuessGame(guess);
+  $('#guessFoundBanner').style.display = Math.abs(guess-districtMeanY) < 0.6 ? 'flex' : 'none';
+}
+onEnter['sB4'] = updateGuessGame;
+$('#guessSlider').addEventListener('input', updateGuessGame);
+$('#snapMeanBtn').addEventListener('click', () => {
+  $('#guessSlider').value = fmt(districtMeanY,1);
+  updateGuessGame();
+});
+
+/* --- B5: visualizing residuals (static, at the true mean) --- */
+onEnter['sB5'] = () => {
+  drawScatter($('#cvResiduals'), {
+    points: DISTRICTS_SORTED.map(d=>({x:d.xi, y:d.y})),
+    xDomain: [0, DISTRICTS_SORTED.length-1], yDomain: DIST_Y_DOMAIN,
+    xLabel: 'employees, sorted by salary →', yLabel: 'salary (₹ LPA)',
+    radius: 4.4,
+    colorFn: p => p.y >= districtMeanY ? cssVar('--good') : cssVar('--bad'),
+    line: { b0: districtMeanY, b1: 0 }, lineColor: cssVar('--ink'),
+    residualLine: { b0: districtMeanY, b1: 0 },
+    residualColorFn: (p,py) => p.y >= py ? cssVar('--good') : cssVar('--bad'),
+  });
+};
+
+/* --- B6: why we square errors --- */
+onEnter['sB6'] = () => {
+  $('#sumRawVal').textContent = '—';
+  $('#sumSquaredVal').textContent = '—';
+  $('#cancelBanner').style.display = 'none';
+  $('#squareBanner').style.display = 'none';
+};
+$('#sumRawBtn').addEventListener('click', () => {
+  const rawSum = DISTRICTS.reduce((s,d)=> s + (d.y-districtMeanY), 0);
+  $('#sumRawVal').textContent = fmt(rawSum,2);
+  $('#cancelBanner').style.display = 'flex';
+});
+$('#sumSquaredBtn').addEventListener('click', () => {
+  const sqSum = DISTRICTS.reduce((s,d)=> s + (d.y-districtMeanY)**2, 0);
+  $('#sumSquaredVal').textContent = fmt(sqSum,0);
+  $('#squareBanner').style.display = 'flex';
+});
+$('#resetSumBtn').addEventListener('click', () => {
+  $('#sumRawVal').textContent = '—';
+  $('#sumSquaredVal').textContent = '—';
+  $('#cancelBanner').style.display = 'none';
+  $('#squareBanner').style.display = 'none';
+});
+
+/* =========================== CHAPTER 3 — LINEAR REGRESSION =========================== */
+
+/* --- R1: bringing back X --- */
+onEnter['sR1'] = () => {
+  $('#r1SseMean').textContent = fmt(flatSSE(DISTRICTS, districtMeanY), 0);
+  drawScatter($('#cvBringBackX'), {
+    points: DISTRICTS,
+    xDomain: DIST_X_DOMAIN, yDomain: DIST_Y_DOMAIN,
+    xLabel: 'years of experience →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--c-linreg'),
+    line: { b0: districtMeanY, b1: 0 }, lineColor: cssVar('--ink-faint'),
+  });
+};
+
+/* --- R1b: class challenge — draw your own line --- */
+function escapeHtml(str){
+  return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+const DRAW_PAD = { l:40, r:16, t:16, b:32 };
+function pxToData(cv, px, py, xDomain, yDomain){
+  const rect = cv.getBoundingClientRect();
+  const plotW = rect.width - DRAW_PAD.l - DRAW_PAD.r, plotH = rect.height - DRAW_PAD.t - DRAW_PAD.b;
+  const [xmin,xmax] = xDomain, [ymin,ymax] = yDomain;
+  const x = xmin + ((px-DRAW_PAD.l)/plotW)*(xmax-xmin);
+  const y = ymin + ((DRAW_PAD.t+plotH-py)/plotH)*(ymax-ymin);
+  return {x,y};
+}
+function pxToDistrictData(cv, px, py){ return pxToData(cv, px, py, DIST_X_DOMAIN, DIST_Y_DOMAIN); }
+function lineFromTwoPoints(p1,p2){
+  const dx = p2.x-p1.x;
+  if(Math.abs(dx) < 0.001) return null;
+  const b1 = (p2.y-p1.y)/dx;
+  const b0 = p1.y - b1*p1.x;
+  return {b0,b1};
+}
+let leaderboard = [];
+let dragP1 = null, dragP2 = null, isDraggingLine = false;
+function currentDrawnLine(){
+  if(!dragP1 || !dragP2) return null;
+  return lineFromTwoPoints(dragP1, dragP2);
+}
+function renderDrawSlide(){
+  const cv = $('#cvDrawLine');
+  const line = currentDrawnLine();
+  drawScatter(cv, {
+    points: DISTRICTS,
+    xDomain: DIST_X_DOMAIN, yDomain: DIST_Y_DOMAIN,
+    xLabel: 'years of experience →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--c-linreg'), radius: 4.6,
+    line: line || undefined, lineColor: cssVar('--ink'),
+    residualLine: line || undefined,
+  });
+  const mseEl = $('#liveDrawMSE'), submitBtn = $('#submitLineBtn');
+  if(line){
+    mseEl.textContent = fmt(lineMSE(DISTRICTS, line.b0, line.b1), 1);
+    submitBtn.disabled = false;
+  } else {
+    mseEl.textContent = '—';
+    submitBtn.disabled = true;
+  }
+}
+function renderLeaderboard(){
+  const list = $('#leaderboardList');
+  $('#drawSubmitCount').textContent = leaderboard.length;
+  if(leaderboard.length === 0){
+    list.innerHTML = '<p class="footnote">No lines submitted yet — be the first!</p>';
+    return;
+  }
+  list.innerHTML = leaderboard.map((s,i) => `
+    <div style="display:flex; justify-content:space-between; align-items:center; background:var(--paper-3); border-radius:10px; padding:8px 12px;">
+      <span style="font-weight:800;">${i===0 ? '🏆 ' : (i+1)+'. '}${escapeHtml(s.name)}</span>
+      <span class="tabular" style="font-weight:800; color:${i===0 ? 'var(--good)' : 'var(--ink-soft)'};">MSE ${fmt(s.mse,1)}</span>
+    </div>`).join('');
+}
+onEnter['sRDraw'] = () => {
+  dragP1 = null; dragP2 = null;
+  renderDrawSlide();
+  renderLeaderboard();
+};
+const cvDrawEl = $('#cvDrawLine');
+function drawPointerPos(e){
+  const rect = cvDrawEl.getBoundingClientRect();
+  return { px: e.clientX-rect.left, py: e.clientY-rect.top };
+}
+cvDrawEl.addEventListener('pointerdown', e => {
+  const { px, py } = drawPointerPos(e);
+  dragP1 = pxToDistrictData(cvDrawEl, px, py);
+  dragP2 = dragP1;
+  isDraggingLine = true;
+  cvDrawEl.setPointerCapture(e.pointerId);
+  renderDrawSlide();
+});
+cvDrawEl.addEventListener('pointermove', e => {
+  if(!isDraggingLine) return;
+  const { px, py } = drawPointerPos(e);
+  dragP2 = pxToDistrictData(cvDrawEl, px, py);
+  renderDrawSlide();
+});
+['pointerup','pointerleave','pointercancel'].forEach(evt => {
+  cvDrawEl.addEventListener(evt, () => { isDraggingLine = false; });
+});
+$('#submitLineBtn').addEventListener('click', () => {
+  const line = currentDrawnLine();
+  if(!line) return;
+  const rawName = $('#drawNameInput').value.trim();
+  const name = rawName ? rawName.slice(0,24) : 'Anonymous';
+  leaderboard.push({ name, b0:line.b0, b1:line.b1, mse: lineMSE(DISTRICTS, line.b0, line.b1) });
+  leaderboard.sort((a,b) => a.mse-b.mse);
+  $('#drawNameInput').value = '';
+  dragP1 = null; dragP2 = null;
+  renderDrawSlide();
+  renderLeaderboard();
+});
+$('#clearLineBtn').addEventListener('click', () => { dragP1=null; dragP2=null; renderDrawSlide(); });
+$('#resetLeaderboardBtn').addEventListener('click', () => { leaderboard = []; renderLeaderboard(); });
+
+/* --- R3: interactive line-fitting game --- */
+let userBestMSE = Infinity;
+function drawLineGame(){
+  const b0 = +$('#b0Slider').value, b1 = +$('#b1Slider').value/100;
+  $('#b0Label').textContent = fmt(b0,1);
+  $('#b1Label').textContent = fmt(b1,2);
+  const mseVal = lineMSE(DISTRICTS, b0, b1);
+  $('#yourMSE').textContent = fmt(mseVal,1);
+  if(mseVal < userBestMSE){ userBestMSE = mseVal; }
+  $('#bestMSE').textContent = fmt(userBestMSE,1);
+  drawScatter($('#cvLineGame'), {
+    points: DISTRICTS,
+    xDomain: DIST_X_DOMAIN, yDomain: DIST_Y_DOMAIN,
+    xLabel: 'years of experience →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--c-linreg'),
+    line: { b0, b1 }, lineColor: cssVar('--ink'),
+    residualLine: { b0, b1 },
+  });
+}
+onEnter['sR3'] = () => {
+  drawLineGame();
+};
+$('#b0Slider').addEventListener('input', drawLineGame);
+$('#b1Slider').addEventListener('input', drawLineGame);
+$('#revealOlsBtn').addEventListener('click', () => {
+  $('#b0Slider').value = fmt(districtOLS.b0,1);
+  $('#b1Slider').value = fmt(districtOLS.b1*100,0);
+  drawLineGame();
+  const olsMse = lineMSE(DISTRICTS, districtOLS.b0, districtOLS.b1);
+  const banner = $('#olsCompareBanner');
+  banner.style.display='flex';
+  banner.textContent = `📐 OLS's line: β₀=${fmt(districtOLS.b0,1)}, β₁=${fmt(districtOLS.b1,2)} → MSE ${fmt(olsMse,1)}. Your best manual MSE was ${fmt(userBestMSE,1)}.`;
+});
+
+/* --- R4: MSE squared-area intuition --- */
+onEnter['sR4'] = () => {
+  const cv = $('#cvMseSquares');
+  const sample = DISTRICTS.slice(0, 10);
+  const res = drawScatter(cv, {
+    points: sample,
+    xDomain: DIST_X_DOMAIN, yDomain: DIST_Y_DOMAIN,
+    xLabel: 'years of experience →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--c-linreg'), radius: 4.6,
+    line: { b0: districtOLS.b0, b1: districtOLS.b1 }, lineColor: cssVar('--ink'),
+    residualLine: { b0: districtOLS.b0, b1: districtOLS.b1 },
+  });
+  if(!res) return;
+  const { X, Y } = res;
+  const ctx = cv.getContext('2d');
+  ctx.fillStyle = 'color-mix(in srgb, ' + cssVar('--c-linreg') + ' 30%, transparent)';
+  for(const p of sample){
+    const py = districtOLS.b0 + districtOLS.b1*p.x;
+    const side = Math.abs(Y(p.y) - Y(py));
+    const x0 = X(p.x);
+    const y0 = Math.min(Y(p.y), Y(py));
+    ctx.fillRect(x0, y0, side, side);
+  }
+};
+
+/* --- R5: OLS hot/cold search animation --- */
+let searchB0=10, searchB1=0, searchTemp=1, searchTimer=null, searchStepCount=0;
+let watchingRound=false, searchDetailTimeout=null;
+function drawSearch(){
+  drawScatter($('#cvOlsSearch'), {
+    points: DISTRICTS,
+    xDomain: DIST_X_DOMAIN, yDomain: DIST_Y_DOMAIN,
+    xLabel: 'years of experience →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--c-linreg'),
+    line: { b0: searchB0, b1: searchB1 }, lineColor: cssVar('--ink'),
+  });
+}
+function generateCandidates(n){
+  const candidates = [];
+  for(let t=0;t<n;t++){
+    const cb0 = searchB0 + rand(-8,8)*searchTemp;
+    const cb1 = searchB1 + rand(-0.35,0.35)*searchTemp;
+    candidates.push({ b0:cb0, b1:cb1, mse: lineMSE(DISTRICTS,cb0,cb1) });
+  }
+  return candidates;
+}
+function drawSearchDetailed(candidates, winnerIdx){
+  const cv = $('#cvOlsSearch');
+  const res = drawScatter(cv, {
+    points: DISTRICTS,
+    xDomain: DIST_X_DOMAIN, yDomain: DIST_Y_DOMAIN,
+    xLabel: 'years of experience →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--ink-faint'), radius: 3.5,
+    line: { b0: searchB0, b1: searchB1 }, lineColor: cssVar('--ink-faint'),
+  });
+  if(!res) return;
+  const { X, Y } = res;
+  const ctx = cv.getContext('2d');
+  const [xmin,xmax] = DIST_X_DOMAIN;
+  candidates.forEach((c,i) => {
+    const isWinner = i===winnerIdx;
+    ctx.globalAlpha = isWinner ? 1 : 0.55;
+    ctx.strokeStyle = isWinner ? cssVar('--good') : cssVar('--bad');
+    ctx.lineWidth = isWinner ? 3.2 : 1.3;
+    ctx.beginPath();
+    ctx.moveTo(X(xmin), Y(c.b0+c.b1*xmin));
+    ctx.lineTo(X(xmax), Y(c.b0+c.b1*xmax));
+    ctx.stroke();
+  });
+  ctx.globalAlpha = 1;
+}
+function resetSearch(){
+  clearInterval(searchTimer);
+  clearTimeout(searchDetailTimeout);
+  watchingRound = false;
+  $('#watchRoundBtn').disabled = false;
+  searchB0 = 10; searchB1 = 0; searchTemp = 1; searchStepCount = 0;
+  $('#searchStep').textContent = '0';
+  $('#searchMSE').textContent = fmt(lineMSE(DISTRICTS, searchB0, searchB1), 1);
+  $('#searchDoneBanner').style.display = 'none';
+  $('#roundExplainCard').style.display = 'none';
+  drawSearch();
+}
+onEnter['sR5'] = resetSearch;
+$('#watchRoundBtn').addEventListener('click', () => {
+  if(watchingRound) return;
+  clearInterval(searchTimer);
+  watchingRound = true;
+  $('#watchRoundBtn').disabled = true;
+  const candidates = generateCandidates(6);
+  let winnerIdx = 0;
+  candidates.forEach((c,i) => { if(c.mse < candidates[winnerIdx].mse) winnerIdx = i; });
+  drawSearchDetailed(candidates, winnerIdx);
+  $('#roundExplainCard').style.display = 'block';
+  $('#roundExplain').innerHTML = candidates.map((c,i) =>
+    `<div style="color:${i===winnerIdx?'var(--good)':'var(--bad)'};">${i===winnerIdx?'✅':'❌'} Candidate ${i+1}: MSE ${fmt(c.mse,1)} — ${i===winnerIdx?'warmer! kept.':'colder, discarded.'}</div>`
+  ).join('');
+  searchDetailTimeout = setTimeout(() => {
+    searchB0 = candidates[winnerIdx].b0; searchB1 = candidates[winnerIdx].b1;
+    searchTemp *= 0.955; searchStepCount++;
+    $('#searchStep').textContent = searchStepCount;
+    $('#searchMSE').textContent = fmt(candidates[winnerIdx].mse,1);
+    drawSearch();
+    watchingRound = false;
+    $('#watchRoundBtn').disabled = false;
+  }, 2200);
+});
+$('#startSearchBtn').addEventListener('click', () => {
+  clearInterval(searchTimer);
+  clearTimeout(searchDetailTimeout);
+  watchingRound = false;
+  $('#watchRoundBtn').disabled = false;
+  $('#roundExplainCard').style.display = 'none';
+  let curMSE = lineMSE(DISTRICTS, searchB0, searchB1);
+  searchTimer = setInterval(() => {
+    let bestB0=searchB0, bestB1=searchB1, bestMse=curMSE;
+    for(let t=0;t<6;t++){
+      const cb0 = searchB0 + rand(-8,8)*searchTemp;
+      const cb1 = searchB1 + rand(-0.35,0.35)*searchTemp;
+      const m = lineMSE(DISTRICTS, cb0, cb1);
+      if(m < bestMse){ bestMse=m; bestB0=cb0; bestB1=cb1; }
+    }
+    searchB0=bestB0; searchB1=bestB1; curMSE=bestMse;
+    searchTemp *= 0.955;
+    searchStepCount++;
+    $('#searchStep').textContent = searchStepCount;
+    $('#searchMSE').textContent = fmt(curMSE,1);
+    drawSearch();
+    if(searchStepCount >= 140){
+      clearInterval(searchTimer);
+      $('#searchDoneBanner').style.display = 'flex';
+    }
+  }, 45);
+});
+$('#resetSearchBtn').addEventListener('click', resetSearch);
+
+/* --- R6: human vs machine compare --- */
+onEnter['sR6'] = () => {
+  const olsMse = lineMSE(DISTRICTS, districtOLS.b0, districtOLS.b1);
+  $('#finalOlsMSE').textContent = fmt(olsMse,1);
+  $('#finalYourMSE').textContent = isFinite(userBestMSE) ? fmt(userBestMSE,1) : '—';
+  if(leaderboard.length){
+    $('#championLabel').textContent = `🏆 ${leaderboard[0].name}'s MSE`;
+    $('#finalChampionMSE').textContent = fmt(leaderboard[0].mse,1);
+  } else {
+    $('#championLabel').textContent = 'Class champion\'s MSE';
+    $('#finalChampionMSE').textContent = '—';
+  }
+  $('#showdownBanner').style.display = (isFinite(userBestMSE) || leaderboard.length) ? 'none' : 'flex';
+  const b0 = +$('#b0Slider').value, b1 = +$('#b1Slider').value/100;
+  drawScatter($('#cvCompareLines'), {
+    points: DISTRICTS,
+    xDomain: DIST_X_DOMAIN, yDomain: DIST_Y_DOMAIN,
+    xLabel: 'years of experience →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--ink-faint'), radius: 4,
+    line: { b0, b1 }, lineColor: cssVar('--ink-faint'),
+    line2: { b0: districtOLS.b0, b1: districtOLS.b1 }, line2Color: cssVar('--c-linreg'),
+  });
+};
+
+/* =========================== CHAPTER 4 — EVALUATION & PITFALLS =========================== */
+
+/* --- E0: three distances (per-point Total/Explained/Unexplained deviation) --- */
+let tdIdx = 0;
+function drawThreeDistances(){
+  const cv = $('#cvThreeDistances');
+  const res = drawScatter(cv, {
+    points: DISTRICTS,
+    xDomain: DIST_X_DOMAIN, yDomain: DIST_Y_DOMAIN,
+    xLabel: 'years of experience →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--ink-faint'), radius: 4,
+    line: { b0: districtMeanY, b1: 0 }, lineColor: cssVar('--ink-faint'),
+    line2: { b0: districtOLS.b0, b1: districtOLS.b1 }, line2Color: cssVar('--c-linreg'),
+  });
+  if(!res) return;
+  const { X, Y } = res;
+  const p = DISTRICTS[tdIdx];
+  const meanY = districtMeanY;
+  const predY = districtOLS.b0 + districtOLS.b1*p.x;
+  const actualY = p.y;
+  const ctx = cv.getContext('2d');
+  const px = X(p.x);
+  ctx.lineWidth = 3.2; ctx.lineCap = 'round';
+  ctx.strokeStyle = cssVar('--ink-faint');
+  ctx.beginPath(); ctx.moveTo(px-9, Y(meanY)); ctx.lineTo(px-9, Y(actualY)); ctx.stroke();
+  ctx.strokeStyle = cssVar('--c-eval');
+  ctx.beginPath(); ctx.moveTo(px, Y(meanY)); ctx.lineTo(px, Y(predY)); ctx.stroke();
+  ctx.strokeStyle = cssVar('--c-linreg');
+  ctx.beginPath(); ctx.moveTo(px+9, Y(predY)); ctx.lineTo(px+9, Y(actualY)); ctx.stroke();
+  ctx.fillStyle = cssVar('--ink');
+  ctx.beginPath(); ctx.arc(px, Y(actualY), 6, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = cssVar('--paper'); ctx.lineWidth = 2; ctx.stroke();
+
+  /* flower-bracket labels connecting each distance to SST/SSR/SSE */
+  const rect = cv.getBoundingClientRect();
+  const placeLeft = px > rect.width*0.55;
+  const anchorX = placeLeft ? px - 20 : px + 20;
+  const valuesY = [Y(meanY), Y(predY), Y(actualY)];
+  const centerY = (Math.min(...valuesY) + Math.max(...valuesY)) / 2;
+  const anchorY = clamp(centerY - 15, res.padT + 10, res.padT + res.plotH - 40);
+  ctx.font = '800 11px Georgia, serif';
+  ctx.textAlign = placeLeft ? 'right' : 'left';
+  ctx.textBaseline = 'middle';
+  const braceLabels = [
+    { text:'{ Total → SST', color: cssVar('--ink-faint') },
+    { text:'{ Explained → SSR', color: cssVar('--c-eval') },
+    { text:'{ Unexplained → SSE', color: cssVar('--c-linreg') },
+  ];
+  const labelWidths = braceLabels.map(l => ctx.measureText(l.text).width);
+  const maxLabelW = Math.max(...labelWidths);
+  const boxPadX = 7, boxPadY = 6;
+  const boxH = braceLabels.length*16 + boxPadY*2 - 4;
+  const boxTop = anchorY - 8 - boxPadY;
+  const boxLeft = placeLeft ? anchorX - maxLabelW - boxPadX*2 : anchorX - boxPadX;
+  ctx.save();
+  ctx.globalAlpha = 0.9;
+  ctx.fillStyle = cssVar('--surface-canvas');
+  ctx.fillRect(boxLeft, boxTop, maxLabelW + boxPadX*2, boxH);
+  ctx.strokeStyle = cssVar('--line'); ctx.lineWidth = 1;
+  ctx.strokeRect(boxLeft, boxTop, maxLabelW + boxPadX*2, boxH);
+  ctx.restore();
+  braceLabels.forEach((l,i) => {
+    ctx.fillStyle = l.color;
+    ctx.fillText(l.text, anchorX, anchorY + i*16);
+  });
+
+  const round2 = v => Math.round(v*100)/100;
+  const explainedR = round2(predY-meanY), unexplainedR = round2(actualY-predY);
+  const totalR = round2(explainedR + unexplainedR);
+  $('#tdEmployeeLabel').textContent = `Employee ${tdIdx+1} of ${DISTRICTS.length} — ${fmt(p.x,1)} years experience, ${fmtLPA(p.y,1)} salary`;
+  $('#tdTotal').textContent = fmtSignedLPA(totalR);
+  $('#tdExplained').textContent = fmtSignedLPA(explainedR);
+  $('#tdUnexplained').textContent = fmtSignedLPA(unexplainedR);
+  $('#tdCheck').textContent = `${fmtSignedLPA(explainedR)} (explained) + ${fmtSignedLPA(unexplainedR)} (unexplained) = ${fmtSignedLPA(totalR)} — exactly the Total. Every single time.`;
+}
+onEnter['sE0'] = () => { drawThreeDistances(); };
+$('#tdPrevBtn').addEventListener('click', () => { tdIdx = (tdIdx-1+DISTRICTS.length)%DISTRICTS.length; drawThreeDistances(); });
+$('#tdNextBtn').addEventListener('click', () => { tdIdx = (tdIdx+1)%DISTRICTS.length; drawThreeDistances(); });
+$('#tdRandomBtn').addEventListener('click', () => { tdIdx = (Math.random()*DISTRICTS.length)|0; drawThreeDistances(); });
+
+/* --- E0b: formalize SST, SSR, SSE and verify the identity --- */
+onEnter['sE0b'] = () => {
+  $('#sstVal').textContent = '—'; $('#ssrVal').textContent = '—'; $('#sseVal').textContent = '—';
+  $('#sstIdentityBanner').style.display = 'none';
+};
+$('#computeSstBtn').addEventListener('click', () => {
+  const sst = flatSSE(DISTRICTS, districtMeanY);
+  const ssr = computeSSR(DISTRICTS, districtMeanY, districtOLS.b0, districtOLS.b1);
+  const sse = lineSSE(DISTRICTS, districtOLS.b0, districtOLS.b1);
+  $('#sstVal').textContent = fmt(sst,0);
+  $('#ssrVal').textContent = fmt(ssr,0);
+  $('#sseVal').textContent = fmt(sse,0);
+  const banner = $('#sstIdentityBanner');
+  banner.style.display = 'flex';
+  banner.textContent = `✅ SSR + SSE = ${fmt(ssr,0)} + ${fmt(sse,0)} = ${fmt(ssr+sse,0)} — matches SST (${fmt(sst,0)})! The identity holds exactly.`;
+});
+
+/* --- E1: R² derivation (SSR/SST split, stacked bar) --- */
+onEnter['sE1'] = () => {
+  $('#barSSR').style.width = '0%'; $('#barSSEofSST').style.width = '0%';
+  $('#ssrOverSst').textContent = '—'; $('#oneMinusSseOverSst').textContent = '—'; $('#r2Value').textContent = '—';
+  $('#r2Banner').style.display = 'none';
+};
+$('#compareBarsBtn').addEventListener('click', () => {
+  const sst = flatSSE(DISTRICTS, districtMeanY);
+  const ssr = computeSSR(DISTRICTS, districtMeanY, districtOLS.b0, districtOLS.b1);
+  const sse = lineSSE(DISTRICTS, districtOLS.b0, districtOLS.b1);
+  const r2FromSsr = ssr/sst;
+  const r2FromSse = 1 - sse/sst;
+  $('#ssrOverSst').textContent = fmt(r2FromSsr,3);
+  $('#oneMinusSseOverSst').textContent = fmt(r2FromSse,3);
+  $('#r2Value').textContent = fmt(r2FromSsr,2);
+  requestAnimationFrame(() => {
+    $('#barSSR').style.width = (ssr/sst*100) + '%';
+    $('#barSSEofSST').style.width = (sse/sst*100) + '%';
+  });
+  const banner = $('#r2Banner');
+  banner.style.display = 'flex';
+  banner.textContent = `SSR÷SST = ${fmt(ssr,0)}÷${fmt(sst,0)} = ${fmt(r2FromSsr,2)}. 1−(SSE÷SST) = 1−(${fmt(sse,0)}÷${fmt(sst,0)}) = ${fmt(r2FromSse,2)}. Same answer — experience explains about ${fmt(r2FromSsr*100,0)}% of the variation in salary.`;
+});
+
+/* --- E2: R² = 0 and R² = 1 edge cases --- */
+function genNoRelation(n){ return Array.from({length:n}, () => ({ x: rand(1,15), y: rand(8,20) })); }
+const R2_ZERO_DATA = genNoRelation(30);
+function genPerfectLine(n){ return Array.from({length:n}, () => { const x = rand(1,15); return { x, y: 5 + 1.2*(x-1) }; }); }
+const R2_ONE_DATA = genPerfectLine(20);
+onEnter['sE2'] = () => {
+  const zeroFit = olsFit(R2_ZERO_DATA);
+  drawScatter($('#cvR2zero'), {
+    points: R2_ZERO_DATA, xDomain:[0,16], yDomain:[0,30],
+    xLabel:'years of experience →', yLabel:'salary (₹ LPA)',
+    color: cssVar('--ink-faint'),
+    line: { b0: zeroFit.b0, b1: zeroFit.b1 }, lineColor: cssVar('--bad'),
+  });
+  const oneFit = olsFit(R2_ONE_DATA);
+  drawScatter($('#cvR2one'), {
+    points: R2_ONE_DATA, xDomain:[0,16], yDomain:[0,30],
+    xLabel:'years of experience →', yLabel:'salary (₹ LPA)',
+    color: cssVar('--c-eval'),
+    line: { b0: oneFit.b0, b1: oneFit.b1 }, lineColor: cssVar('--good'),
+  });
+};
+
+/* --- E2c: metrics family (SSE, MSE, RMSE, MAE) --- */
+onEnter['sE2c'] = () => {
+  $('#metricSSE').textContent='—'; $('#metricMSE').textContent='—';
+  $('#metricRMSE').textContent='—'; $('#metricMAE').textContent='—';
+  $('#metricsBanner').style.display='none';
+};
+$('#computeMetricsBtn').addEventListener('click', () => {
+  const n = DISTRICTS.length;
+  const sseRounded = Math.round(lineSSE(DISTRICTS, districtOLS.b0, districtOLS.b1));
+  const mse = sseRounded/n;
+  const rmse = Math.sqrt(mse);
+  const mae = mean(DISTRICTS.map(p => Math.abs(p.y - (districtOLS.b0+districtOLS.b1*p.x))));
+  $('#metricSSE').textContent = fmt(sseRounded,0);
+  $('#metricMSE').textContent = fmt(mse,2);
+  $('#metricRMSE').textContent = fmtLPA(rmse,2);
+  $('#metricMAE').textContent = fmtLPA(mae,2);
+  const banner = $('#metricsBanner');
+  banner.style.display = 'flex';
+  banner.textContent = `In plain English: our predictions are typically off by about ${fmtLPA(rmse,2)} (RMSE) or ${fmtLPA(mae,2)} (MAE) — both back in the SAME units as salary, unlike SSE/MSE.`;
+});
+
+/* --- E2d: RMSE vs. MAE outlier sensitivity --- */
+const OUTLIER_POINT = { x: 5, y: 45 };
+const OUTLIER_Y_DOMAIN = [0, 50];
+let outlierAdded = false;
+function computeRmseMae(points, b0, b1){
+  const errors = points.map(p => p.y - (b0+b1*p.x));
+  const mse = mean(errors.map(e=>e*e));
+  return { rmse: Math.sqrt(mse), mae: mean(errors.map(e=>Math.abs(e))) };
+}
+function drawOutlierChart(){
+  drawScatter($('#cvOutlier'), {
+    points: DISTRICTS,
+    xDomain: DIST_X_DOMAIN, yDomain: OUTLIER_Y_DOMAIN,
+    xLabel: 'years of experience →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--c-linreg'), radius: 4,
+    line: { b0: districtOLS.b0, b1: districtOLS.b1 }, lineColor: cssVar('--ink'),
+    testPoints: outlierAdded ? [OUTLIER_POINT] : null, testColor: cssVar('--bad'),
+  });
+  const pts = outlierAdded ? [...DISTRICTS, OUTLIER_POINT] : DISTRICTS;
+  const { rmse, mae } = computeRmseMae(pts, districtOLS.b0, districtOLS.b1);
+  $('#outlierRMSE').textContent = fmtLPA(rmse,2);
+  $('#outlierMAE').textContent = fmtLPA(mae,2);
+  const banner = $('#outlierBanner');
+  if(outlierAdded){
+    banner.style.display = 'flex';
+    banner.textContent = `One extreme miss (${OUTLIER_POINT.x} yrs experience → claimed ${fmtLPA(OUTLIER_POINT.y,0)}) dragged RMSE up much harder than MAE — squaring punishes big misses disproportionately.`;
+  } else {
+    banner.style.display = 'none';
+  }
+}
+onEnter['sE2d'] = () => { outlierAdded = false; drawOutlierChart(); };
+$('#addOutlierBtn').addEventListener('click', () => { outlierAdded = true; drawOutlierChart(); });
+$('#removeOutlierBtn').addEventListener('click', () => { outlierAdded = false; drawOutlierChart(); });
+
+/* --- E3: underfitting --- */
+onEnter['sE3'] = () => {
+  const fit = olsFit(SPEND_FULL);
+  drawScatter($('#cvUnderfit'), {
+    points: SPEND_FULL,
+    xDomain: SPEND_X_DOMAIN, yDomain: SPEND_Y_DOMAIN,
+    xLabel: 'years of experience →', yLabel: 'salary (₹ LPA)',
+    radius: 4.6,
+    colorFn: p => Math.abs(p.y-(fit.b0+fit.b1*p.x)) > 12 ? cssVar('--bad') : cssVar('--c-baseline'),
+    line: { b0: fit.b0, b1: fit.b1 }, lineColor: cssVar('--ink'),
+    residualLine: { b0: fit.b0, b1: fit.b1 },
+    residualColorFn: (p,py) => Math.abs(p.y-py) > 12 ? cssVar('--bad') : cssVar('--ink-faint'),
+  });
+};
+
+/* --- E4: overfitting --- */
+onEnter['sE4'] = () => {
+  const wiggly = fitPoly(SPEND_TRAIN14, 9, SPEND_X_DOMAIN[0], SPEND_X_DOMAIN[1]);
+  const smooth = fitPoly(SPEND_TRAIN14, 1, SPEND_X_DOMAIN[0], SPEND_X_DOMAIN[1]);
+  drawScatter($('#cvOverfit'), {
+    points: SPEND_TRAIN14,
+    xDomain: SPEND_X_DOMAIN, yDomain: SPEND_Y_DOMAIN,
+    xLabel: 'years of experience →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--c-linreg'), radius: 4.6,
+    curveFn: wiggly.predict, curveColor: cssVar('--c-linreg'),
+    testPoints: $('#revealTestPtsBtn').dataset.revealed === '1' ? SPEND_NEW5 : null,
+    testColor: cssVar('--warn'),
+    testResidualTo: $('#revealTestPtsBtn').dataset.revealed === '1' ? wiggly.predict : null,
+  });
+  if($('#revealTestPtsBtn').dataset.revealed === '1'){
+    const cv2ctx = $('#cvOverfit').getContext('2d');
+    const testMSE = mean(SPEND_NEW5.map(p=>(p.y-wiggly.predict(p.x))**2));
+    const smoothTestMSE = mean(SPEND_NEW5.map(p=>(p.y-smooth.predict(p.x))**2));
+    const banner = $('#overfitBanner');
+    banner.style.display='flex';
+    banner.textContent = `😬 The wiggly curve's error on brand-new employees: MSE ${fmt(testMSE,0)}. A boring straight line here scores MSE ${fmt(smoothTestMSE,0)} — simpler generalizes better!`;
+  }
+};
+$('#revealTestPtsBtn').addEventListener('click', () => {
+  $('#revealTestPtsBtn').dataset.revealed = '1';
+  onEnter['sE4']();
+});
+$('#revealTestPtsBtn').dataset.revealed = '0';
+
+/* --- E5: complexity dial --- */
+const dialTestMSEByDegree = new Array(13).fill(null);
+function updateDial(){
+  const degree = +$('#dialSlider').value;
+  $('#dialDegreeLabel').textContent = degree;
+  const fit = fitPoly(DIAL_TRAIN, degree, SPEND_X_DOMAIN[0], SPEND_X_DOMAIN[1]);
+  const trainMSE = mean(DIAL_TRAIN.map(p=>(p.y-fit.predict(p.x))**2));
+  const testMSE = mean(DIAL_TEST.map(p=>(p.y-fit.predict(p.x))**2));
+  dialTestMSEByDegree[degree] = testMSE;
+  $('#dialTrainMSE').textContent = fmt(trainMSE,0);
+  $('#dialTestMSE').textContent = fmt(testMSE,0);
+  const zone = degree <= 2 ? '📉 underfitting' : (degree <= 6 ? '✅ sweet spot' : '🌀 overfitting');
+  $('#dialZone').textContent = zone;
+
+  drawScatter($('#cvDial'), {
+    points: DIAL_TRAIN,
+    xDomain: SPEND_X_DOMAIN, yDomain: SPEND_Y_DOMAIN,
+    xLabel: 'years of experience →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--c-baseline'), radius: 4.4,
+    testPoints: DIAL_TEST, testColor: cssVar('--c-eval'),
+    curveFn: fit.predict, curveColor: cssVar('--c-linreg'),
+  });
+
+  const cv = $('#cvDialUcurve');
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const padL=34,padR=14,padT=14,padB=26;
+  const plotW=w-padL-padR, plotH=h-padT-padB;
+  const known = dialTestMSEByDegree.map((v,i)=>({d:i,v})).filter(p=>p.v!=null && p.d>=1);
+  const maxV = Math.max(1, ...known.map(p=>p.v));
+  const Xp = d => padL + ((d-1)/11)*plotW;
+  const Yp = v => padT + plotH - (v/maxV)*plotH;
+  ctx.strokeStyle = cssVar('--line'); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(padL,padT); ctx.lineTo(padL,padT+plotH); ctx.lineTo(padL+plotW,padT+plotH); ctx.stroke();
+  ctx.fillStyle = cssVar('--ink-faint'); ctx.font='10px sans-serif';
+  ctx.textAlign='left'; ctx.fillText('degree 1', padL, h-8);
+  ctx.textAlign='right'; ctx.fillText('degree 12', padL+plotW, h-8);
+  if(known.length>1){
+    ctx.strokeStyle = cssVar('--c-eval'); ctx.lineWidth=2.2;
+    ctx.beginPath();
+    known.forEach((p,i)=>{ const cx=Xp(p.d), cy=Yp(p.v); if(i===0) ctx.moveTo(cx,cy); else ctx.lineTo(cx,cy); });
+    ctx.stroke();
+  }
+  ctx.fillStyle = cssVar('--c-eval');
+  known.forEach(p=>{ ctx.beginPath(); ctx.arc(Xp(p.d), Yp(p.v), 4, 0, Math.PI*2); ctx.fill(); });
+  const curP = known.find(p=>p.d===degree);
+  if(curP){
+    ctx.fillStyle = cssVar('--ink');
+    ctx.beginPath(); ctx.arc(Xp(curP.d), Yp(curP.v), 6, 0, Math.PI*2); ctx.fill();
+  }
+}
+onEnter['sE5'] = updateDial;
+$('#dialSlider').addEventListener('input', updateDial);
+
+/* =========================== init =========================== */
+buildDots();
+$('#totalNum').textContent = slideEls.length;
+const deepLinkSlide = parseInt(new URLSearchParams(location.search).get('slide'), 10);
+goTo(Number.isFinite(deepLinkSlide) ? deepLinkSlide-1 : 0);
+</script>
+</body>
+</html>
