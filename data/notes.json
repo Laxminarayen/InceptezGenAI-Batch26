@@ -1,5 +1,21 @@
 [
   {
+    "id": "mrsvi1vgrx5tnj",
+    "author": "e2eTestUserA",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/1?v=4",
+    "title": "E2E auth test note",
+    "body": "Testing auth + tags.",
+    "classTag": "08 · Pandas",
+    "topics": [
+      "pandas",
+      "eda",
+      "groupby"
+    ],
+    "createdAt": "2026-07-20T06:58:16.444Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mrrcld46os3lko",
     "author": "Laxminarayen",
     "title": "OLS",
