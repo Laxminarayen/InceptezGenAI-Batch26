@@ -1,5 +1,17 @@
 [
   {
+    "id": "mrsvrhpdkox3lv",
+    "author": "debugUser",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/9?v=4",
+    "title": "Debug edit test",
+    "body": "original body",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-07-20T07:05:36.865Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mrsvo9d0snz41d",
     "author": "frontendTestUser",
     "authorAvatar": "https://avatars.githubusercontent.com/u/3?v=4",
