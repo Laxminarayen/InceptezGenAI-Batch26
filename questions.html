@@ -34,6 +34,7 @@
     <span class="like-text">Star</span>
     <span class="like-count" id="star-count">···</span>
   </button>
+  <div id="auth-slot" class="auth-slot"></div>
 </header>
 <div class="layout">
   <aside class="sidebar">
@@ -83,12 +84,14 @@
     <div class="forum-app" id="forum-app" data-collection="questions" data-reaction-emoji="👍" data-answer-noun="Answers" data-empty-text="No questions yet — be the first to ask!">
       <div class="post-form-wrap">
         <h2>Ask a question</h2>
+        <p class="posting-as"></p>
         <form id="post-form" class="post-form">
           <div class="form-row">
-            <input type="text" name="author" placeholder="Your name (e.g. your GitHub username)" maxlength="60" required />
-          </div>
-          <div class="form-row">
             <input type="text" name="title" placeholder="Title (e.g. which class/session this is about)" maxlength="200" required />
+          </div>
+          <div class="form-row form-row-meta">
+            <select name="classTag" class="class-select" title="Which class is this about?"></select>
+            <input type="text" name="topics" placeholder="Topics, comma separated (e.g. loops, syntax)" maxlength="120" />
           </div>
           <div class="form-row">
             <textarea name="body" class="js-rich-editor" placeholder="What's your question?" maxlength="8000" rows="4" required></textarea>
@@ -100,6 +103,8 @@
         </form>
       </div>
 
+      <div class="tag-filter-bar" hidden></div>
+
       <div class="forum-feed">
         <div class="feed-status">Loading questions…</div>
       </div>
@@ -109,6 +114,7 @@
   </main>
 </div>
 
+<script src="assets/auth.js"></script>
 <script src="assets/forum.js"></script>
 <script src="assets/collections.js"></script>
 <script src="assets/editor.js"></script>
