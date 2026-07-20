@@ -1,5 +1,20 @@
 [
   {
+    "id": "mrsvmacqh94llt",
+    "author": "frontendTestUser",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/3?v=4",
+    "title": "Frontend auth test note",
+    "body": "Body of the frontend auth test note.",
+    "classTag": "08 · Pandas",
+    "topics": [
+      "testing",
+      "frontend"
+    ],
+    "createdAt": "2026-07-20T07:01:34.058Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mrrcld46os3lko",
     "author": "Laxminarayen",
     "title": "OLS",
