@@ -550,4 +550,6 @@
   document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("textarea.js-rich-editor").forEach(wrapEditor);
   });
+
+  window.ForumEditor = { wrap: wrapEditor };
 })();
