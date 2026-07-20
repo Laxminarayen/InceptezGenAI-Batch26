@@ -1,30 +1,5 @@
 [
   {
-    "id": "mrsvi1vgrx5tnj",
-    "author": "e2eTestUserA",
-    "authorAvatar": "https://avatars.githubusercontent.com/u/1?v=4",
-    "title": "E2E auth test note (edited)",
-    "body": "Updated body.",
-    "classTag": "09 · Pandas Stats",
-    "topics": [
-      "edited-topic"
-    ],
-    "createdAt": "2026-07-20T06:58:16.444Z",
-    "likes": [
-      "e2eTestUserB"
-    ],
-    "comments": [
-      {
-        "id": "mrsvi60psofnr3",
-        "author": "e2eTestUserB",
-        "authorAvatar": "https://avatars.githubusercontent.com/u/2?v=4",
-        "body": "Nice note!",
-        "createdAt": "2026-07-20T06:58:21.817Z"
-      }
-    ],
-    "editedAt": "2026-07-20T06:58:24.364Z"
-  },
-  {
     "id": "mrrcld46os3lko",
     "author": "Laxminarayen",
     "title": "OLS",
