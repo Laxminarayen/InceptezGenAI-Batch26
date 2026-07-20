@@ -15,7 +15,15 @@
     "likes": [
       "e2eTestUserB"
     ],
-    "comments": []
+    "comments": [
+      {
+        "id": "mrsvi60psofnr3",
+        "author": "e2eTestUserB",
+        "authorAvatar": "https://avatars.githubusercontent.com/u/2?v=4",
+        "body": "Nice note!",
+        "createdAt": "2026-07-20T06:58:21.817Z"
+      }
+    ]
   },
   {
     "id": "mrrcld46os3lko",
