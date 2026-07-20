@@ -3,13 +3,11 @@
     "id": "mrsvi1vgrx5tnj",
     "author": "e2eTestUserA",
     "authorAvatar": "https://avatars.githubusercontent.com/u/1?v=4",
-    "title": "E2E auth test note",
-    "body": "Testing auth + tags.",
-    "classTag": "08 · Pandas",
+    "title": "E2E auth test note (edited)",
+    "body": "Updated body.",
+    "classTag": "09 · Pandas Stats",
     "topics": [
-      "pandas",
-      "eda",
-      "groupby"
+      "edited-topic"
     ],
     "createdAt": "2026-07-20T06:58:16.444Z",
     "likes": [
@@ -23,7 +21,8 @@
         "body": "Nice note!",
         "createdAt": "2026-07-20T06:58:21.817Z"
       }
-    ]
+    ],
+    "editedAt": "2026-07-20T06:58:24.364Z"
   },
   {
     "id": "mrrcld46os3lko",
