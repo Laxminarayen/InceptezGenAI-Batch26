@@ -24,7 +24,12 @@
         "body": "Please mind this is Evaluation metrics for Regression only so far..!",
         "createdAt": "2026-07-19T05:17:33.741Z"
       }
-    ]
+    ],
+    "classTag": "17 · ML Foundations & Simple Linear Regression",
+    "topics": [
+      "evaluation of regression"
+    ],
+    "editedAt": "2026-07-20T16:11:59.459Z"
   },
   {
     "id": "mrr7zvqaqra3fc",
