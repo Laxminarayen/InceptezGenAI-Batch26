@@ -12,7 +12,9 @@
       "groupby"
     ],
     "createdAt": "2026-07-20T06:58:16.444Z",
-    "likes": [],
+    "likes": [
+      "e2eTestUserA"
+    ],
     "comments": []
   },
   {
