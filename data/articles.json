@@ -18,15 +18,15 @@
     "id": "mrsw1yhlyue96j",
     "author": "cycleUserA",
     "authorAvatar": "https://avatars.githubusercontent.com/u/5?v=4",
-    "title": "Full cycle test article",
+    "title": "Full cycle test article (v2)",
     "body": "Original body content.",
     "classTag": "17 · ML Foundations & Simple Linear Regression",
     "topics": [
-      "cycle",
-      "test"
+      "cycle-v2"
     ],
     "createdAt": "2026-07-20T07:13:45.177Z",
     "likes": [],
-    "comments": []
+    "comments": [],
+    "editedAt": "2026-07-20T07:14:15.470Z"
   }
 ]
