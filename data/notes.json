@@ -1,49 +1,5 @@
 [
   {
-    "id": "mrsvrhpdkox3lv",
-    "author": "debugUser",
-    "authorAvatar": "https://avatars.githubusercontent.com/u/9?v=4",
-    "title": "Debug edit test UPDATED",
-    "body": "original body",
-    "classTag": "",
-    "topics": [],
-    "createdAt": "2026-07-20T07:05:36.865Z",
-    "likes": [],
-    "comments": [],
-    "editedAt": "2026-07-20T07:05:39.012Z"
-  },
-  {
-    "id": "mrsvo9d0snz41d",
-    "author": "frontendTestUser",
-    "authorAvatar": "https://avatars.githubusercontent.com/u/3?v=4",
-    "title": "Frontend auth test note",
-    "body": "Body of the frontend auth test note.",
-    "classTag": "08 · Pandas",
-    "topics": [
-      "testing",
-      "frontend"
-    ],
-    "createdAt": "2026-07-20T07:03:06.084Z",
-    "likes": [],
-    "comments": []
-  },
-  {
-    "id": "mrsvmacqh94llt",
-    "author": "frontendTestUser",
-    "authorAvatar": "https://avatars.githubusercontent.com/u/3?v=4",
-    "title": "Frontend auth test note (edited)",
-    "body": "Body of the frontend auth test note.",
-    "classTag": "08 · Pandas",
-    "topics": [
-      "testing",
-      "frontend"
-    ],
-    "createdAt": "2026-07-20T07:01:34.058Z",
-    "likes": [],
-    "comments": [],
-    "editedAt": "2026-07-20T07:03:07.858Z"
-  },
-  {
     "id": "mrrcld46os3lko",
     "author": "Laxminarayen",
     "title": "OLS",
