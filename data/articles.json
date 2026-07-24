@@ -1,5 +1,23 @@
 [
   {
+    "id": "mrz206egkblwwi",
+    "author": "RamyaNaras",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/37861694?v=4",
+    "title": "Sampling Bias - Types and Methods",
+    "body": "![article v2](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mryzn61lm2ifja-article-v2.jpg)\n\n\n## Why we Need a Sample?\nA ‘**sample**’ is a subset of the population, selected so as to be representative of the larger population. Since we cannot study the entire population we need to take a sample.\n\n## What is an ideal Sample?\nA good sample must be representative.\nThe quality of the result depends on how well the sample reflects the population. Representativeness is influenced by:\n- The sampling method used\n- Sample size\n- Response rate\n\n## What does Sampling Bias do?\n- Reduces Representativeness\n- Produces Inaccurate Results\n- Threatens Research Validity\n- Limits Generalization\n- Can Lead to Poor Decisions\nSampling Bias determines whether your **sample gives you a trustworthy picture of the population or a distorted one.**\n\n## Types of Sampling Methods:\n- Probability sampling – every member has a known chance of selection.\n- Non-probability sampling – selection is based on convenience or judgment rather than chance.\n\nThe sampling method chosen depends on the population of interest\n• Careful planning is the key for generating reliable results\n• Probability samples are the gold standard in sampling methodology\n• Probability sampling means one can generalize to the population defined by the sampling frame\n• Non-probability sampling means one cannot generalize beyond the sample\n\n## Sampling Frame\nA sampling frame is the list or source from which the sample is selected. Even with random selection, if the sampling frame does not accurately represent the target population, the results may be biased.\n\n## Example\n\nSuppose a company wants to know whether employees are satisfied with remote work.\n\n**Biased Sample**\n- Survey only employees working from home.\n- Result: 90% satisfied.\nThis ignores employees required to work in the office.\n\n**Unbiased Sample**\n- Randomly select employees from both remote and office locations.\n- Result: 72% satisfied.\nThe second estimate is much more representative of the entire workforce.\n\n**References**\n[https://www.researchgate.net/profile/Anita-Acharya-2/publication/256446902_Sampling_why_and_how_of_it/links/0c960527c82d449788000000/Sampling-why-and-how-of-it.pdf](https://www.researchgate.net/profile/Anita-Acharya-2/publication/256446902_Sampling_why_and_how_of_it/links/0c960527c82d449788000000/Sampling-why-and-how-of-it.pdf)\n\n**Tools and Resources:** Gamma, GPT, Human Reading",
+    "classTag": "16 · Inferential Stats — Voting",
+    "topics": [
+      "sampling bias",
+      "types of sampling",
+      "types of sampling method",
+      "sampling frame",
+      "example"
+    ],
+    "createdAt": "2026-07-24T14:46:56.872Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mrz1e8fzsf2eio",
     "author": "jimmigayatri",
     "authorAvatar": "https://avatars.githubusercontent.com/u/204321957?v=4",
