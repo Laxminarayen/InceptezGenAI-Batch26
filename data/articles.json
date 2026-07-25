@@ -67,7 +67,15 @@
     "likes": [
       "kishorem5"
     ],
-    "comments": []
+    "comments": [
+      {
+        "id": "mrztkpy51htmnv",
+        "author": "akshyagr",
+        "authorAvatar": "https://avatars.githubusercontent.com/u/308881311?v=4",
+        "body": "For illustration, assume the survey found that 90% of active members (630 out of 700) were satisfied with the gym's services. If the 300 cancelled members had also been surveyed, assume only 20% (60 out of 300) would have reported being satisfied, reflecting the reasons many chose to cancel their memberships.\nTherefore:\nSatisfied active members: 630 of 700 (90%)\nSatisfied cancelled members: 60 of 300 (20%)\nTotal satisfied members: 690 of 1,000\nOverall customer satisfaction is calculated as:\nOverall Satisfaction= \n1000\n690\n​\t\n ×100=69%",
+        "createdAt": "2026-07-25T03:38:44.957Z"
+      }
+    ]
   },
   {
     "id": "mrzabklrnn3ksr",
