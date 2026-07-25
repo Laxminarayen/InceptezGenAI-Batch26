@@ -74,6 +74,13 @@
         "authorAvatar": "https://avatars.githubusercontent.com/u/308881311?v=4",
         "body": "For illustration, assume the survey found that 90% of active members (630 out of 700) were satisfied with the gym's services. If the 300 cancelled members had also been surveyed, assume only 20% (60 out of 300) would have reported being satisfied, reflecting the reasons many chose to cancel their memberships.\nTherefore:\nSatisfied active members: 630 of 700 (90%)\nSatisfied cancelled members: 60 of 300 (20%)\nTotal satisfied members: 690 of 1,000\nOverall customer satisfaction is calculated as:\nOverall Satisfaction= \n1000\n690\n​\t\n ×100=69%",
         "createdAt": "2026-07-25T03:38:44.957Z"
+      },
+      {
+        "id": "mrzvc8en799xy2",
+        "author": "akshyagr",
+        "authorAvatar": "https://avatars.githubusercontent.com/u/308881311?v=4",
+        "body": "ypes of Sampling Bias (Using the Gym Survey)\nThe gym survey illustrates how different types of sampling bias can affect survey results.\n1. Undercoverage Bias (Primary Bias)\nOccurs when an important group is excluded from the sample.\nExample: The survey only included active members and excluded the 300 cancelled members, many of whom may have been dissatisfied.\n\n2. Self-Selection (Voluntary Response) Bias\nOccurs when people choose whether to participate.\nExample: Only active members who chose to scan the QR code completed the survey, so the responses may not represent all active members.\n\n3. Convenience Sampling Bias\nOccurs when data is collected from the easiest people to reach.\nExample: The QR code was placed only at the gym reception, making it convenient to survey current visitors but excluding former members.\n\n4. Non-Response Bias\nOccurs when selected individuals choose not to respond.\nExample: If the survey had been sent to all 1,000 members but many ignored it, the results could still be biased if non-respondents had different opinions.\n\nKey Point\nThe primary bias in this case is Undercoverage Bias, while Self-Selection and Convenience Sampling also contribute to the survey's lack of representativeness.",
+        "createdAt": "2026-07-25T04:28:08.207Z"
       }
     ]
   },
