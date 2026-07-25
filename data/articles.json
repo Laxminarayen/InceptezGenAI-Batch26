@@ -1,5 +1,17 @@
 [
   {
+    "id": "mrzte8a0nnj60r",
+    "author": "rdssiva",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/18678227?v=4",
+    "title": "Sampling Bias in the Stock Market",
+    "body": "Sampling Bias in the Stock Market\n\nIn stock market research, sampling bias occurs when investors or analysts select stocks in a way that does not represent the overall market.\n\n1. Survivorship Bias (Most Common)\n\nOnly analyzing companies that are still listed and ignoring those that failed or were delisted.\n\nExample:\n\nStudying only the current Nifty 50 companies and concluding that \"large-cap stocks always perform well.\"\nIgnoring companies that were removed from the index due to poor performance.\n\nEffect: Overestimates historical returns.\n\n2. Selection Bias\n\nChoosing stocks based on personal preference rather than objective criteria.\n\nExample:\n\nAn investor only studies IT companies because they are familiar with the sector.\nIgnoring banking, FMCG, healthcare, or energy stocks.\n\nEffect: Results are not representative of the entire market.\n\n3. Confirmation Bias\n\nLooking only for information that supports an existing opinion.\n\nExample:\n\nYou believe HFCL is a good investment.\nYou only read positive news and ignore weak financial results or negative analyst opinions.\n\nEffect: Poor investment decisions due to ignoring contrary evidence.\n\n4. Time Period Bias\n\nAnalyzing stocks during only a bullish or bearish market.\n\nExample:\n\nEvaluating stocks only during the 2020–2021 bull market.\n\nEffect: Performance expectations may not hold during other market conditions.\n\n5. Sector Bias\n\nFocusing on a single industry.\n\nExample:\n\nInvesting only in defense stocks such as Data Patterns, BEL, and HAL.\n\nEffect: Portfolio becomes less diversified and more exposed to sector-specific risks.\n\n6. Market Capitalization Bias\n\nConsidering only large-cap or only small-cap companies.\n\nExample:\n\nResearching only Nifty 50 companies.\n\nEffect: May miss opportunities or risks present in mid-cap and small-cap stocks.\n\nHow to Reduce Sampling Bias\nUse a random or systematic sample of stocks.\nInclude large-cap, mid-cap, and small-cap companies.\nAnalyze stocks from multiple sectors.\nInclude both successful and failed/delisted companies when studying historical performance.\nEvaluate data across different market cycles (bull, bear, and sideways markets).\nUse objective screening criteria rather than relying on personal preferences.\nExample\n\nSuppose you want to estimate the average annual return of the Indian stock market:\n\nBiased Sample: Select only the top 20 best-performing stocks from the Nifty 500.\nUnbiased Sample: Randomly select 100 stocks from different sectors and market-cap categories across the Nifty 500.\n\nThe unbiased sample is much more likely to provide an accurate estimate of the market's overall performance.",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-07-25T03:33:42.120Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mrzqok8bgs2jrd",
     "author": "kishorem5",
     "authorAvatar": "https://avatars.githubusercontent.com/u/78945546?v=4",
