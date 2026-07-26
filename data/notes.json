@@ -1,5 +1,25 @@
 [
   {
+    "id": "mrtfefme33bgxf",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "SST, SSE and SSR",
+    "body": "Better images explaining, SST, SSR and SSE for Linear Regression.. from Kishore and Sanjay..\n\n![WhatsApp Image 2026 07 19 at 11.25.57 AM](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/notes/mrtfe1t8drtcxu-whatsapp-image-2026-07-19-at-11-25-57-am.jpg)\n![WhatsApp Image 2026 07 19 at 11.25.19 AM](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/notes/mrtfe83ycl8vhs-whatsapp-image-2026-07-19-at-11-25-19-am.jpg)",
+    "classTag": "17 · ML Foundations & Simple Linear Regression",
+    "topics": [
+      "sst",
+      "ssr",
+      "sse"
+    ],
+    "createdAt": "2026-07-20T16:15:19.958Z",
+    "likes": [
+      "RamyaNaras",
+      "kishorem5"
+    ],
+    "comments": [],
+    "editedAt": "2026-07-20T16:16:40.744Z"
+  },
+  {
     "id": "mrrcld46os3lko",
     "author": "Laxminarayen",
     "title": "OLS",
@@ -24,7 +44,12 @@
         "body": "Please mind this is Evaluation metrics for Regression only so far..!",
         "createdAt": "2026-07-19T05:17:33.741Z"
       }
-    ]
+    ],
+    "classTag": "17 · ML Foundations & Simple Linear Regression",
+    "topics": [
+      "evaluation of regression"
+    ],
+    "editedAt": "2026-07-20T16:11:59.459Z"
   },
   {
     "id": "mrr7zvqaqra3fc",
