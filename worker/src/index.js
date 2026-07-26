@@ -215,7 +215,8 @@ async function handleAuthCallback(request, env) {
     const tokenData = await tokenRes.json();
     if (!tokenData.access_token) {
       const dest = new URL(redirectTo);
-      dest.hash = `auth-error=${encodeURIComponent(tokenData.error_description || "login_failed")}`;
+      const message = tokenData.error_description || tokenData.error || `login_failed (http ${tokenRes.status})`;
+      dest.hash = `auth-error=${encodeURIComponent(message)}`;
       return Response.redirect(dest.toString(), 302);
     }
 
