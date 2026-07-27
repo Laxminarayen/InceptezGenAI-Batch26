@@ -23,6 +23,8 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 - [Day 15: Multivariate Statistics - Random Variables & Distributions](#day-15)
 - [Day 16: Inferential Statistics - Sampling, CLT & Voting Forecasts](#day-16)
 - [Day 17: ML Foundations & Simple Linear Regression](#day-17)
+- [Day 18: Gradient Descent](#day-18)
+- [Day 19: Linear Regression Hands-on](#day-19)
 - [Assignments](#assignments)
 
 ---
@@ -260,6 +262,38 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 
 ### Resources
 - **Slide Deck:** [`17. Foundations of Machine Learning - Simple Linear Regression/ml-foundations-slides.html`](17.%20Foundations%20of%20Machine%20Learning%20-%20Simple%20Linear%20Regression/ml-foundations-slides.html)
+
+---
+
+<a name="day-18"></a>
+## 🗓️ Day 18: Gradient Descent (25-Jul-2026)
+
+### Highlights
+- **The Optimization Landscape:** Reframing "fit the best line" as searching a bowl-shaped cost surface over every possible (β₀, β₁) pair.
+- **Gradient Descent, the Blindfolded Hiker:** Feel the local slope, step downhill, repeat — the entire algorithm in one metaphor.
+- **The Learning Rate Dial:** Racing three hikers with different step sizes side by side — too small crawls forever, too large overshoots or diverges.
+- **Random Search vs. Gradient Descent:** A head-to-head race showing why calculated steps beat blind guessing.
+- **The Actual Formulas:** Deriving ∂J/∂β₀ and ∂J/∂β₁ from the residuals using nothing but the chain rule.
+- **Why the Two Dials Must Move Together:** A worked demonstration of why solving β₀ and β₁ one at a time gives the wrong answer.
+- **A Real Worked Example:** Hand-run gradient descent — single-parameter, then joint — on an 8-person Salary vs. Age dataset, converging to the same answer as the closed-form shortcut.
+- **Convergence & Pitfalls:** Knowing when to stop, feature scaling (round bowl vs. narrow ravine), and the divergence danger zone from an oversized learning rate.
+
+### Resources
+- **Slide Deck:** [`18. Gradient Descent/optimization-slides.html`](18.%20Gradient%20Descent/optimization-slides.html)
+
+---
+
+<a name="day-19"></a>
+## 🗓️ Day 19: Linear Regression Hands-on (26-Jul-2026)
+
+### Highlights
+- **Linear Regression with scikit-learn:** Encoding categorical features, train/test splitting, fitting `LinearRegression`, and evaluating with R² and MSE.
+- **Gradient Descent From Scratch:** Building linear regression "the long way" on a real IT salaries dataset — writing the update rule directly instead of calling one library function.
+
+### Resources
+- **Classwork Notebook:** [`19. Linear Regression Hands on/Classwork_notebook.ipynb`](19.%20Linear%20Regression%20Hands%20on/Classwork_notebook.ipynb)
+- **Gradient Descent from Scratch:** [`19. Linear Regression Hands on/IT_Salary_Linear_Regression_GradientDescent.ipynb`](19.%20Linear%20Regression%20Hands%20on/IT_Salary_Linear_Regression_GradientDescent.ipynb)
+- **Dataset:** [`19. Linear Regression Hands on/IT_Salaries_Dataset.csv`](19.%20Linear%20Regression%20Hands%20on/IT_Salaries_Dataset.csv)
 
 ---
 

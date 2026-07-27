@@ -1,0 +1,2308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Optimization · How the Machine Finds β₀ and β₁</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+
+    --c-landscape:#1C8C7A; --c-descent:#6249B0; --c-formula:#C13D68; --c-converge:#1E6FA8; --c-intro:#3B6E63;
+
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+
+    --accent: var(--c-landscape);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+      --c-landscape:#3FCBAE; --c-descent:#A78BFA; --c-formula:#F17BA0; --c-converge:#5FA8E0; --c-intro:#79C0AE;
+      --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+      --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+    --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+    --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+    --c-landscape:#3FCBAE; --c-descent:#A78BFA; --c-formula:#F17BA0; --c-converge:#5FA8E0; --c-intro:#79C0AE;
+    --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+    --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+  }
+  :root[data-theme="light"]{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+    --c-landscape:#1C8C7A; --c-descent:#6249B0; --c-formula:#C13D68; --c-converge:#1E6FA8; --c-intro:#3B6E63;
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    overflow:hidden; -webkit-font-smoothing:antialiased;
+  }
+  body[data-section="landscape"]{--accent:var(--c-landscape);}
+  body[data-section="descent"]{--accent:var(--c-descent);}
+  body[data-section="formula"]{--accent:var(--c-formula);}
+  body[data-section="converge"]{--accent:var(--c-converge);}
+  body[data-section="intro"]{--accent:var(--c-intro);}
+
+  h1,h2,h3,p{margin:0;}
+  h1,h2,h3{text-wrap:balance; letter-spacing:-0.01em;}
+  ::selection{background:var(--accent); color:#fff;}
+
+  .eyebrow{
+    font-size:.74rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent);
+  }
+  .slide h1{font-size:clamp(1.7rem,3.2vw,2.9rem); font-weight:800; color:var(--ink);}
+  .slide h2{font-size:clamp(1.2rem,1.8vw,1.6rem); font-weight:800; color:var(--ink);}
+  .body-text{font-size:clamp(1rem,1.25vw,1.2rem); font-weight:500; line-height:1.6; color:var(--ink-soft);}
+  .body-text b, .body-text strong{color:var(--ink); font-weight:800;}
+  .tabular{font-variant-numeric:tabular-nums;}
+
+  /* ---------- chrome ---------- */
+  .chrome-top{
+    position:fixed; top:0; left:0; right:0; height:52px; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 20px; pointer-events:none;
+  }
+  .chrome-top > *{pointer-events:auto;}
+  .hour-badge{
+    font-size:.72rem; font-weight:800; letter-spacing:.12em; color:var(--ink-faint);
+    background:var(--paper-2); border:1px solid var(--line); padding:6px 12px; border-radius:999px;
+  }
+  .chapter-chip{
+    display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:700;
+    color:var(--ink-soft); background:var(--paper-2); border:1px solid var(--line);
+    padding:6px 14px 6px 8px; border-radius:999px;
+  }
+  .chapter-chip .num{
+    display:inline-flex; align-items:center; justify-content:center; width:20px;height:20px;
+    border-radius:50%; background:var(--accent); color:#fff; font-size:.68rem; font-weight:800;
+  }
+  .icon-btn{
+    width:36px;height:36px; border-radius:50%; border:1px solid var(--line); background:var(--paper-2);
+    color:var(--ink); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .icon-btn:hover{background:var(--paper-3);}
+  .icon-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  .deck{position:absolute; inset:0; top:52px; bottom:64px;}
+  .slide{
+    position:absolute; inset:0; display:none; flex-direction:column;
+    padding:clamp(18px,3vw,40px) clamp(24px,5vw,80px);
+    overflow:auto;
+  }
+  .slide.active{display:flex;}
+  .slide-inner{display:flex; flex-direction:column; gap:clamp(12px,1.8vh,20px); max-width:1360px; width:100%; margin:0 auto; flex:1; min-height:0;}
+
+  .chrome-bottom{
+    position:fixed; left:0; right:0; bottom:0; height:64px; z-index:50;
+    display:flex; align-items:center; gap:14px; padding:0 clamp(14px,3vw,32px);
+    background:linear-gradient(0deg, var(--paper) 60%, transparent);
+  }
+  .nav-btn{
+    width:40px;height:40px;border-radius:50%; border:1px solid var(--line); background:var(--paper-2);
+    color:var(--ink); font-size:1.2rem; cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center;
+  }
+  .nav-btn:hover:not(:disabled){background:var(--accent); color:#fff; border-color:transparent;}
+  .nav-btn:disabled{opacity:.35; cursor:default;}
+  .progress{flex:1; display:flex; align-items:center; gap:5px; overflow-x:auto; scrollbar-width:none;}
+  .progress::-webkit-scrollbar{display:none;}
+  .dot{
+    width:9px;height:9px;border-radius:50%; background:var(--paper-3); border:none; cursor:pointer; flex:none;
+    transition:transform .15s ease;
+  }
+  .dot.gap{width:14px; height:2px; border-radius:1px; background:transparent; cursor:default;}
+  .dot.active{transform:scale(1.5);}
+  .slide-counter{font-size:.8rem; font-weight:700; color:var(--ink-faint); flex:none; white-space:nowrap;}
+
+  /* ---------- layout helpers ---------- */
+  .split{display:grid; grid-template-columns:1.05fr 1.35fr; gap:clamp(20px,4vw,52px); align-items:center; flex:1; min-height:0;}
+  @media (max-width:920px){ .split{grid-template-columns:1fr; overflow:auto;} }
+  .split.reverse{grid-template-columns:1.35fr 1.05fr;}
+  .split.even{grid-template-columns:1fr 1fr;}
+  .split.even3{grid-template-columns:1fr 1fr 1fr;}
+  .stack{display:flex; flex-direction:column; gap:12px; min-height:0;}
+  .center-col{display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:16px; flex:1;}
+  .visual-box{
+    background:var(--surface-canvas); border:1px solid var(--line); border-radius:24px;
+    padding:14px; box-shadow:var(--shadow); min-height:0; display:flex; flex-direction:column; gap:8px;
+  }
+  .canvas-wrap{position:relative; flex:1; min-height:160px;}
+  canvas{display:block; width:100%; height:100%;}
+  .draw-cursor{cursor:crosshair; touch-action:none;}
+
+  /* ---------- components ---------- */
+  .vocab-card{
+    border-left:5px solid var(--accent); background:var(--paper-2); border-radius:14px;
+    padding:12px 18px; display:flex; flex-direction:column; gap:4px;
+  }
+  .vocab-term{font-size:1rem; font-weight:900; letter-spacing:.04em; color:var(--accent);}
+  .vocab-def{font-size:1rem; color:var(--ink); font-weight:600; line-height:1.4;}
+
+  .reallife{border:1.5px dashed var(--accent); background:transparent; border-radius:14px; padding:10px 16px;}
+  .reallife .tag{font-size:.68rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; color:var(--accent); display:flex; align-items:center; gap:6px;}
+  .reallife p{font-size:.92rem; color:var(--ink); font-weight:600; margin-top:5px; line-height:1.45;}
+
+  .console{
+    display:flex; flex-wrap:wrap; gap:14px 26px; align-items:flex-end;
+    background:var(--paper-2); border:1px solid var(--line); border-radius:20px;
+    padding:16px 20px;
+  }
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field label{font-size:.76rem; font-weight:800; color:var(--ink-soft); letter-spacing:.03em;}
+  .field .val{color:var(--accent); font-weight:900;}
+  input[type="range"]{width:180px; accent-color:var(--accent);}
+  input[type="text"]{
+    font:inherit; font-size:.92rem; font-weight:700; padding:9px 14px; border-radius:999px;
+    border:1px solid var(--line); background:var(--paper); color:var(--ink); min-width:160px;
+  }
+
+  .btn{
+    font:inherit; font-size:.92rem; font-weight:800; border:1px solid var(--line); border-radius:999px;
+    padding:11px 20px; cursor:pointer; background:var(--paper-3); color:var(--ink);
+    transition:transform .12s ease, box-shadow .12s ease; white-space:nowrap;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn:active{transform:translateY(0);}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .btn-primary{background:var(--accent); color:#fff; border-color:transparent; box-shadow:0 8px 18px -8px var(--accent);}
+  .btn-ghost{background:transparent;}
+  .btn.toggled{background:var(--accent); color:#fff; border-color:transparent;}
+  .btn:disabled{opacity:.5; cursor:default; transform:none;}
+  .btn-row{display:flex; flex-wrap:wrap; gap:10px;}
+
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px;}
+  .stat-tile{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:12px 14px;}
+  .stat-tile .label{font-size:.7rem; font-weight:800; color:var(--ink-faint); letter-spacing:.05em; text-transform:uppercase;}
+  .stat-tile .value{font-size:1.35rem; font-weight:900; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .stat-tile .value small{font-size:.85rem; font-weight:700; color:var(--ink-faint);}
+  .stat-tile.accent .value{color:var(--accent);}
+
+  .card{background:var(--paper-2); border:1px solid var(--line); border-radius:18px; padding:18px 20px;}
+  .card-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px;}
+  .card .ico{font-size:1.8rem;}
+  .card h3{font-size:1.02rem; margin-top:8px;}
+  .card p{font-size:.92rem; color:var(--ink-soft); margin-top:4px; line-height:1.45;}
+
+  .banner{border-radius:14px; padding:12px 16px; font-weight:800; font-size:.92rem; display:flex; align-items:center; gap:10px;}
+  .banner.warn{background:color-mix(in srgb, var(--warn) 18%, var(--paper-2)); color:var(--warn);}
+  .banner.good{background:color-mix(in srgb, var(--good) 18%, var(--paper-2)); color:var(--good);}
+  .banner.bad{background:color-mix(in srgb, var(--bad) 18%, var(--paper-2)); color:var(--bad);}
+  .banner.info{background:var(--paper-3); color:var(--ink); font-weight:600; align-items:flex-start;}
+
+  .roadmap{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  .roadmap .stop{background:var(--paper-2); border-radius:18px; padding:16px 10px; text-align:center; border-top:5px solid var(--stop-color, var(--accent));}
+  .roadmap .stop .ico{font-size:2rem;}
+  .roadmap .stop .t{font-size:.8rem; font-weight:800; margin-top:6px;}
+  @media (max-width:920px){ .roadmap{grid-template-columns:repeat(2,1fr);} }
+
+  .kicker-big{font-size:clamp(2.2rem,5.6vw,3.9rem); font-weight:900; letter-spacing:-0.02em;}
+  .glow{color:var(--accent);}
+
+  .rule-list{display:flex; flex-direction:column; gap:12px;}
+  .rule{display:flex; gap:14px; align-items:flex-start; border-radius:14px; padding:6px 8px; margin:-6px -8px; transition:background .25s ease;}
+  .rule .n{width:34px;height:34px;border-radius:50%; background:var(--accent); color:#fff; font-weight:900; display:flex; align-items:center; justify-content:center; flex:none;}
+  .rule .t h3{font-size:1rem;}
+  .rule .t p{font-size:.92rem; color:var(--ink-soft); margin-top:2px;}
+  .rule.active-rule{background:color-mix(in srgb, var(--accent) 14%, transparent);}
+
+  .table-wrap{border:1px solid var(--line); border-radius:14px; overflow:hidden;}
+  .data-table{width:100%; border-collapse:collapse; font-size:.88rem;}
+  .data-table th,.data-table td{padding:9px 12px; text-align:center; font-variant-numeric:tabular-nums;}
+  .data-table thead th{background:var(--paper-3); color:var(--ink-soft); font-weight:800; font-size:.74rem; letter-spacing:.03em; text-transform:uppercase;}
+  .data-table thead th .tag{display:block; font-weight:600; text-transform:none; letter-spacing:0; font-size:.7rem; opacity:.75;}
+  .data-table tbody tr{border-top:1px solid var(--line);}
+  .data-table tbody tr.zero-row{background:color-mix(in srgb, var(--accent) 12%, transparent); font-weight:800;}
+  .data-table td.err-col{color:var(--ink-soft);}
+
+  .legend{display:flex; gap:16px; font-size:.8rem; font-weight:700; color:var(--ink-soft); flex-wrap:wrap;}
+  .legend .sw{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle;}
+
+  .footnote{font-size:.82rem; color:var(--ink-faint); font-weight:600;}
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+</style>
+</head>
+<body data-section="intro">
+  <div class="chrome-top">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="hour-badge" id="hourBadge">OPTIMIZATION</div>
+      <div class="chapter-chip" id="chapterChip" style="display:none;">
+        <span class="num" id="chapterNum">1</span>
+        <span id="chapterLabel">—</span>
+      </div>
+    </div>
+    <button class="icon-btn" id="themeToggle" title="Toggle light / dark">🌗</button>
+  </div>
+
+  <main class="deck" id="deck">
+
+    <!-- ============ S0 — INTRO / ROADMAP ============ -->
+    <section class="slide" data-section="intro" id="s0">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Salary &amp; Experience · Optimization Deep Dive</div>
+        <h1 class="kicker-big">How does the machine<br/>actually <span class="glow">find</span> the line?</h1>
+        <p class="body-text" style="max-width:720px;">Last time, we found the best-fit line for salary vs. experience two ways: drawing it by hand, and a "hot and cold" random search. Both worked — but neither is how real machines do it. Today, we open the hood. Four hours, four stops:</p>
+        <div class="roadmap" style="width:100%; margin-top:6px;">
+          <div class="stop" style="--stop-color:var(--c-landscape);"><div class="ico">🗺️</div><div class="t">The Optimization Landscape</div></div>
+          <div class="stop" style="--stop-color:var(--c-descent);"><div class="ico">⛰️</div><div class="t">Gradient Descent</div></div>
+          <div class="stop" style="--stop-color:var(--c-formula);"><div class="ico">📐</div><div class="t">The Actual Formulas</div></div>
+          <div class="stop" style="--stop-color:var(--c-converge);"><div class="ico">🎯</div><div class="t">Convergence &amp; Pitfalls</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ O1 — BRIDGE FROM LAST TIME ============ -->
+    <section class="slide" data-section="landscape" id="sO1">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Hour 1 · The Optimization Landscape</div>
+        <h1 style="text-align:center;">You already solved this <span class="glow">twice</span></h1>
+        <div class="card-grid" style="margin-top:8px;">
+          <div class="card"><div class="ico">✍️</div><h3>By hand</h3><p>You dragged a line across the salary/experience scatter and eyeballed the lowest error you could manage.</p></div>
+          <div class="card"><div class="ico">🔥❄️</div><h3>Hot &amp; cold search</h3><p>The machine nudged β₀ and β₁ randomly, kept whatever shrank the MSE, and cooled down over ~140 rounds.</p></div>
+        </div>
+        <p class="body-text" style="text-align:center; margin-top:6px;">Both WORKED. Neither is how real machines do it — random nudging is slow and wasteful. Today we open the hood: what is the machine actually searching, and how does it find its way there on purpose instead of by luck?</p>
+      </div>
+    </section>
+
+    <!-- ============ O2 — THE COST FUNCTION ============ -->
+    <section class="slide" data-section="landscape" id="sO2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 1 · Naming the Problem</div>
+        <h1>Meet the <span class="glow">cost function</span></h1>
+        <div class="vocab-card">
+          <div class="vocab-term">OPTIMIZATION</div>
+          <div class="vocab-def">The general problem of finding the input that makes some function's output as small (or large) as possible. "Fitting a line" is secretly just optimization wearing a costume.</div>
+        </div>
+        <div class="vocab-card" style="border-left-color:var(--c-formula);">
+          <div class="vocab-term" style="color:var(--c-formula);">COST FUNCTION J(β₀, β₁)</div>
+          <div class="vocab-def" style="font-family:Georgia,'Times New Roman',serif; font-size:1.15rem;">J(β₀, β₁) = MSE = (1/n) · Σ (Yᵢ − β₀ − β₁Xᵢ)²</div>
+          <div class="vocab-def">Feed it ANY pair (β₀, β₁) — any possible line — and it hands back ONE number: how bad that line is on our data. Our entire job today: find the (β₀, β₁) that makes this number smallest.</div>
+        </div>
+        <p class="body-text">Notice: J takes the PARAMETERS as input, not X. We're no longer asking "what's the salary?" — we're asking "which line is best?" That's a totally different question, living in a different space.</p>
+      </div>
+    </section>
+
+    <!-- ============ O3 — MEET THE COST LANDSCAPE ============ -->
+    <section class="slide" data-section="landscape" id="sO3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 1 · A New Kind of Map</div>
+          <h1>Every possible line, <span class="glow">on one map</span></h1>
+          <p class="body-text">This is the <b>cost landscape</b>. The two axes are β₀ and β₁ — NOT experience and salary. Every single point on this map is a different candidate LINE.</p>
+          <div class="rule-list">
+            <div class="rule"><div class="n">1</div><div class="t"><h3>Position = a line</h3><p>Each (β₀, β₁) coordinate is one specific intercept + slope combination.</p></div></div>
+            <div class="rule"><div class="n">2</div><div class="t"><h3>Color = how good that line is</h3><p>Darker (accent) = lower cost, better fit. Lighter = higher cost, worse fit.</p></div></div>
+            <div class="rule"><div class="n">3</div><div class="t"><h3>The star = the best possible line</h3><p>The exact (β₀, β₁) that OLS computes algebraically — the true bottom of the valley.</p></div></div>
+          </div>
+          <div class="banner info">🤔 Notice the shape: it's a smooth, single valley — like a bowl. No matter which direction you approach from, there's exactly one lowest point.</div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvLandscapeIntro"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--accent);"></span>low cost (good line)</span><span><span class="sw" style="background:var(--paper-3); border:1px solid var(--line);"></span>high cost (bad line)</span><span>⭐ true minimum</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ O4 — INTERACTIVE: DRAG THE POINT, WATCH THE LINE ============ -->
+    <section class="slide" data-section="landscape" id="sO4">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 1 · Try It Yourself</div>
+          <h1>Drag on the map — <span class="glow">watch the line</span></h1>
+          <p class="body-text">Click and drag anywhere on the cost landscape. Every point you visit instantly becomes a real line on the right. Two views, one problem.</p>
+          <div class="visual-box" style="height:min(40vh,360px);">
+            <div class="canvas-wrap"><canvas id="cvLandscapeDrag" class="draw-cursor"></canvas></div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">β₀ (intercept)</div><div class="value tabular" id="o4B0">—</div></div>
+            <div class="stat-tile"><div class="label">β₁ (slope)</div><div class="value tabular" id="o4B1">—</div></div>
+            <div class="stat-tile accent"><div class="label">Cost (MSE)</div><div class="value tabular" id="o4Cost">—</div></div>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvLandscapeLine"></canvas></div>
+          <p class="footnote">This is the SAME salary vs. experience data from before — just now driven entirely by where you click on the map.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ O5 — WHY BOWL SHAPED? (interactive: line -> square -> bowl) ============ -->
+    <section class="slide" data-section="landscape" id="sO5">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 1 · The Shape Isn't an Accident</div>
+          <h1>Why is it always a <span class="glow">bowl</span>?</h1>
+          <div class="banner info">📊 Chart basics first: the <b>x-axis</b> (horizontal) is a number we get to pick — here, β₀. The <b>y-axis</b> (vertical) is whatever comes out of a <b>function</b> — a rule that takes one input and returns one output. Below, watch what comes out as we change what that rule does.</div>
+          <div class="rule-list" id="o5Rules">
+            <div class="rule" id="o5Rule0"><div class="n">1</div><div class="t"><h3>One employee's error is a straight LINE</h3><p>Pick one employee. As β₀ slides left or right, their error (actual salary − predicted salary) changes at a steady rate — a steady rate of change is exactly what makes a graph a straight line.</p></div></div>
+            <div class="rule" id="o5Rule1"><div class="n">2</div><div class="t"><h3>Squaring bends the line into a BOWL</h3><p>We square every error so positive and negative mistakes both count as "bad." Square a line and both ends flip upward — that single bend is a parabola: a mini bowl.</p></div></div>
+            <div class="rule" id="o5Rule2"><div class="n">3</div><div class="t"><h3>Add all 42 employees → still one bowl</h3><p>Every employee adds their own parabola. Stack 42 of them and the total (MSE) is still one smooth valley. This special property is called <b>convexity</b>: no false valleys, no traps.</p></div></div>
+            <div class="rule" id="o5Rule3"><div class="n">?</div><div class="t"><h3>What if we used |error| instead of error²?</h3><p>Absolute value also punishes negative and positive errors equally, and also has ONE minimum — but look closely: it forms a sharp <b>V</b>, not a smooth bowl. That corner has no well-defined slope, which breaks gradient descent (Hour 2). Squaring gives us the same "one minimum" guarantee <i>and</i> a smooth slope everywhere — that's why we square, not just take the absolute value.</p></div></div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="o5Step0Btn">1️⃣ One line</button>
+            <button class="btn btn-primary" id="o5Step1Btn">2️⃣ Square it</button>
+            <button class="btn btn-primary" id="o5Step2Btn">3️⃣ Add everyone</button>
+            <button class="btn btn-ghost" id="o5PlayBtn">▶️ Play it through</button>
+            <button class="btn btn-ghost" id="o5Step3Btn">🔀 What if |error| instead?</button>
+          </div>
+          <div class="banner warn">👀 Hold onto this. Later courses (neural networks!) have BUMPY landscapes with many valleys. Simple linear regression is the well-behaved special case.</div>
+        </div>
+        <div class="visual-box" style="height:min(50vh,460px);">
+          <div class="canvas-wrap"><canvas id="cvParabolaBuild"></canvas></div>
+          <p class="footnote" id="o5Footnote">Step 1 of 3 — one employee's error, plotted as β₀ changes.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ O5B — TABLE OF VALUES: SQUARE vs ABS, SIDE BY SIDE ============ -->
+    <section class="slide" data-section="landscape" id="sO5B">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 1 · Prove It With Numbers</div>
+          <h1>Same numbers, <span class="glow">two shapes</span></h1>
+          <p class="body-text">Same employee as the last slide. Pick a few candidate values of β₀, work out the error by hand, then square it and take its absolute value. Same inputs — very different outputs.</p>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>β₀</th><th>error<br/>(actual − predicted)</th><th>error²<span class="tag">→ bowl</span></th><th>|error|<span class="tag">→ V</span></th></tr></thead>
+              <tbody id="o5bTableBody"></tbody>
+            </table>
+          </div>
+          <div class="banner info">🔎 Find the highlighted row, where error ≈ 0 — <b>both</b> right-hand columns hit (about) zero there too. Now compare how fast the numbers grow as you move AWAY from that row: error² grows faster and faster (that curve is the bowl); |error| grows at the same steady rate every step (that's the straight-sided V).</div>
+        </div>
+        <div class="stack" style="gap:14px;">
+          <div class="visual-box" style="height:min(24vh,220px);">
+            <div class="canvas-wrap"><canvas id="cvTableSquare"></canvas></div>
+            <p class="footnote">error² of every row above, plotted — a smooth bowl (parabola)</p>
+          </div>
+          <div class="visual-box" style="height:min(24vh,220px);">
+            <div class="canvas-wrap"><canvas id="cvTableAbs"></canvas></div>
+            <p class="footnote">|error| of every row above, plotted — a sharp V, corner at the bottom</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ O6 — CHECKPOINT: FIND THE BOTTOM BY FEEL ============ -->
+    <section class="slide" data-section="landscape" id="sO6">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 1 · Checkpoint Challenge</div>
+          <h1>Find the bottom — <span class="glow">by eye</span></h1>
+          <p class="body-text">Click ONE point on the map — your single best guess for the minimum. We'll measure how close you landed, in cost terms, versus the true minimum.</p>
+          <div class="btn-row">
+            <button class="btn btn-ghost" id="o6ResetBtn">🔄 Try again</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Your guess's cost</div><div class="value tabular" id="o6YourCost">—</div></div>
+            <div class="stat-tile accent"><div class="label">True minimum cost</div><div class="value tabular" id="o6MinCost">—</div></div>
+          </div>
+          <div class="banner good" id="o6Result" style="display:none;"></div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvLandscapeGuess" class="draw-cursor"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ O7 — CHAPTER RECAP + BRIDGE ============ -->
+    <section class="slide" data-section="landscape" id="sO7">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Hour 1 → Hour 2</div>
+        <h1 class="kicker-big">You can SEE the valley.<br/>The machine <span class="glow">can't.</span></h1>
+        <p class="body-text" style="max-width:640px;">You have the luxury of a bird's-eye map. A real algorithm starts at ONE random point and can only feel what's directly under its feet — the local slope. Hour 2: how do you find the bottom of a valley... blindfolded?</p>
+      </div>
+    </section>
+
+    <!-- ============ D1 — THE BLINDFOLDED HIKER ============ -->
+    <section class="slide" data-section="descent" id="sD1">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Hour 2 · Gradient Descent</div>
+        <h1 style="text-align:center;">The blindfolded <span class="glow">hiker</span> 🥾</h1>
+        <div class="card-grid" style="margin-top:8px;">
+          <div class="card"><div class="ico">🌫️</div><h3>You're on a foggy hillside</h3><p>You can't see the valley floor. You can only feel the ground right under your feet.</p></div>
+          <div class="card"><div class="ico">🦶</div><h3>Feel which way is downhill</h3><p>Tilt your foot. One direction feels steeper-down than the other — that's all the information you need.</p></div>
+          <div class="card"><div class="ico">👣</div><h3>Take a step that way. Repeat.</h3><p>Small step downhill, re-feel the slope, step again. Eventually you reach flat ground — the bottom.</p></div>
+        </div>
+        <p class="body-text" style="text-align:center; margin-top:6px;">This is the ENTIRE idea behind <b>Gradient Descent</b> — the algorithm that trains almost every machine learning model in existence. Let's do it for real, one parameter at a time.</p>
+      </div>
+    </section>
+
+    <!-- ============ D2 — 1D GRADIENT DESCENT INTERACTIVE ============ -->
+    <section class="slide" data-section="descent" id="sD2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 2 · One Parameter First</div>
+          <h1>Warm-up: just <span class="glow">β₀</span> alone</h1>
+          <p class="body-text">To isolate what a "step downhill" even means, we temporarily <b>freeze β₁</b> — hold it fixed at one constant number — so cost depends on β₀ alone: a simple curve, not a whole landscape.</p>
+          <div class="banner info">🔒 Where does that frozen number come from? It's <b>β₁ = <span id="d2B1Frozen">—</span></b> — the exact same slope OLS already solved for back in Hour 1 (the one that placed the ⭐ on the map). We're not skipping ahead on β₀: the hiker still has to walk downhill to find it. We're only borrowing the already-known β₁ so you can watch the stepping mechanic on ONE axis before D4 solves both β₀ <i>and</i> β₁ together, for real, with nothing frozen.</div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="d2StepBtn">👣 Take one step</button>
+            <button class="btn btn-primary" id="d2RunBtn">▶️ Walk to the bottom</button>
+            <button class="btn btn-ghost" id="d2ResetBtn">🔄 Drop hiker randomly</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">β₀ (position — this is what moves)</div><div class="value tabular" id="d2B0">—</div></div>
+            <div class="stat-tile"><div class="label">Slope under feet</div><div class="value tabular" id="d2Slope">—</div></div>
+            <div class="stat-tile accent"><div class="label">Cost here</div><div class="value tabular" id="d2Cost">—</div></div>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvHiker1D"></canvas></div>
+          <p class="footnote">The hiker 🥾 always steps in the direction that REDUCES cost — downhill, never up.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ D3 — WHAT IS A GRADIENT? ============ -->
+    <section class="slide" data-section="descent" id="sD3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 2 · Naming the Feeling</div>
+        <h1>The "slope under your feet" has a name: <span class="glow">the gradient</span></h1>
+        <div class="vocab-card">
+          <div class="vocab-term">GRADIENT</div>
+          <div class="vocab-def">At any point, the gradient is the direction of steepest INCREASE — the way that feels most "uphill." It also tells you HOW steep: a big gradient means a steep slope, a near-zero gradient means you're on flat ground.</div>
+        </div>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card"><div class="ico">⬆️</div><h3>Gradient points UPHILL</h3><p>So to go downhill, we step in the OPPOSITE direction — that minus sign is the whole trick.</p></div>
+          <div class="card"><div class="ico">📏</div><h3>Size = steepness</h3><p>Far from the bottom, slopes are steep → big steps. Near the bottom, slopes flatten → tiny steps automatically.</p></div>
+          <div class="card"><div class="ico">🎯</div><h3>Gradient = 0 means "you're home"</h3><p>Flat ground in every direction is the mathematical signature of the minimum.</p></div>
+        </div>
+        <p class="body-text" style="text-align:center; margin-top:4px;">In 1D, the gradient is just the familiar derivative/slope. In 2D (β₀ AND β₁ together), the gradient becomes an ARROW — pointing uphill in the full landscape. That's next.</p>
+      </div>
+    </section>
+
+    <!-- ============ D4 — 2D GRADIENT DESCENT ON THE LANDSCAPE ============ -->
+    <section class="slide" data-section="descent" id="sD4">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 2 · Now With Both Parameters</div>
+          <h1>Follow the <span class="glow">arrow</span>, downhill</h1>
+          <p class="body-text">The red arrow shows the gradient — uphill. Each step moves the point in the OPPOSITE direction. Watch the path curve smoothly into the minimum.</p>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="d4StepBtn">👣 One step</button>
+            <button class="btn btn-primary" id="d4RunBtn">▶️ Run to convergence</button>
+            <button class="btn btn-ghost" id="d4ResetBtn">🔄 Restart from random point</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Step</div><div class="value tabular" id="d4Step">0</div></div>
+            <div class="stat-tile"><div class="label">β₀, β₁</div><div class="value tabular" id="d4Params">—</div></div>
+            <div class="stat-tile accent"><div class="label">Cost</div><div class="value tabular" id="d4Cost">—</div></div>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvGdPath"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ D5 — LEARNING RATE EXPLORATION ============ -->
+    <section class="slide" data-section="descent" id="sD5">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 2 · How Big Should a Step Be?</div>
+        <h1>The <span class="glow">learning rate</span> dial 🎛️</h1>
+        <p class="body-text">The learning rate (α) scales every step. Watch THREE hikers with different α race down the SAME landscape, simultaneously.</p>
+        <div class="split even3" style="flex:1; min-height:0;">
+          <div class="visual-box" style="height:100%;"><div class="eyebrow" style="padding:2px 4px;">α too small</div><div class="canvas-wrap"><canvas id="cvLrSmall"></canvas></div></div>
+          <div class="visual-box" style="height:100%;"><div class="eyebrow" style="padding:2px 4px; color:var(--good);">α just right</div><div class="canvas-wrap"><canvas id="cvLrGood"></canvas></div></div>
+          <div class="visual-box" style="height:100%;"><div class="eyebrow" style="padding:2px 4px; color:var(--bad);">α too large</div><div class="canvas-wrap"><canvas id="cvLrBig"></canvas></div></div>
+        </div>
+        <div class="console">
+          <button class="btn btn-primary" id="lrStepBtn">👣 Step all three</button>
+          <button class="btn btn-primary" id="lrRunBtn">▶️ Run 40 steps</button>
+          <button class="btn btn-ghost" id="lrResetBtn">🔄 Reset race</button>
+          <div class="field"><label>Steps taken</label><div class="val tabular" id="lrStepCount" style="font-size:1.1rem;">0</div></div>
+        </div>
+        <div class="banner info" id="lrExplain">🐢 Too small crawls forever. 🚀 Too large overshoots and zig-zags (or explodes!). 🎯 Just right glides smoothly to the bottom.</div>
+      </div>
+    </section>
+
+    <!-- ============ D6 — RANDOM SEARCH VS GRADIENT DESCENT RACE ============ -->
+    <section class="slide" data-section="descent" id="sD6">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 2 · The Payoff</div>
+          <h1>Random search <span class="glow">vs.</span> Gradient descent</h1>
+          <p class="body-text">Same landscape, same starting point, same finish line (within 1% of the true minimum cost). Which one gets there first?</p>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="raceRunBtn">🏁 Run the race</button>
+            <button class="btn btn-ghost" id="raceResetBtn">🔄 Reset</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">🔥❄️ Random search steps</div><div class="value tabular" id="raceRandomSteps">—</div></div>
+            <div class="stat-tile accent"><div class="label">⛰️ Gradient descent steps</div><div class="value tabular" id="raceGdSteps">—</div></div>
+          </div>
+          <div class="banner good" id="raceBanner" style="display:none;"></div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvRace"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--ink-faint);"></span>random search path</span><span><span class="sw" style="background:var(--c-descent);"></span>gradient descent path</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ G2 — MEET THE REAL DATASET ============ -->
+    <section class="slide" data-section="descent" id="sG2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 2 · A Real Dataset</div>
+          <h1>Salary vs. <span class="glow">Age</span> — 8 real people</h1>
+          <p class="body-text">Forget the 42-person cloud from before — here are just 8 people: their age, and their salary. Small enough to work through by hand, real enough to trust the numbers.</p>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Age (years)</th><th>Salary (₹ LPA)</th></tr></thead>
+              <tbody id="ageTableBody"></tbody>
+            </table>
+          </div>
+          <p class="body-text">Goal: find the ONE line, <b>salary = β₀ + β₁ × age</b>, that fits these 8 points best — using gradient descent, not a shortcut formula.</p>
+        </div>
+        <div class="visual-box" style="height:min(50vh,460px);">
+          <div class="canvas-wrap"><canvas id="cvAgeScatter"></canvas></div>
+          <p class="footnote">Each dot is one real person. We're about to fit a line through this exact cloud of points, live.</p>
+        </div>
+      </div>
+    </section>
+    <!-- ============ G1C — WHY THE TWO DIALS MUST MOVE TOGETHER ============ -->
+    <section class="slide" data-section="descent" id="sG1C">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 2 · The Two Dials Are Connected</div>
+          <h1>Why can't we just find β₀, <span class="glow">then</span> find β₁?</h1>
+          <p class="body-text">predicted salary = β₀ + β₁ × age. There's only ONE mistake per person, and BOTH dials shape it together — you can't split a mistake into "the β₀ part" and "the β₁ part." Nudge either dial and the very same mistake numbers change. That means: the best β₀ depends on what β₁ currently is, and the best β₁ depends on what β₀ currently is — like a seesaw, move one side and the balance point on the other side shifts too.</p>
+          <button class="btn btn-primary" id="g1cRevealBtn" style="align-self:flex-start;">▶️ Try finding them ONE AT A TIME instead</button>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">One-at-a-time: β₀</div><div class="value tabular" id="g1cSeparateB0">?</div></div>
+            <div class="stat-tile"><div class="label">One-at-a-time: β₁</div><div class="value tabular" id="g1cSeparateB1">?</div></div>
+            <div class="stat-tile"><div class="label">One-at-a-time: cost</div><div class="value tabular" id="g1cSeparateCost">?</div></div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile accent"><div class="label">Together: β₀</div><div class="value tabular" id="g1cJointB0">—</div></div>
+            <div class="stat-tile accent"><div class="label">Together: β₁</div><div class="value tabular" id="g1cJointB1">—</div></div>
+            <div class="stat-tile accent"><div class="label">Together: cost</div><div class="value tabular" id="g1cJointCost">—</div></div>
+          </div>
+          <div class="banner bad" id="g1cExplain" style="display:none;"></div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvCoupling"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--bad);"></span>one-at-a-time line</span><span><span class="sw" style="background:var(--c-descent);"></span>together (true best) line</span></div>
+        </div>
+      </div>
+    </section>
+    <!-- ============ G3 — SINGLE PARAMETER: JUST FIND β₀ ============ -->
+    <section class="slide" data-section="descent" id="sG3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 2 · Step 1: One Parameter</div>
+          <h1>First, forget age. Just find <span class="glow">one number</span></h1>
+          <p class="body-text">Simplest possible model: ignore age completely, and guess the SAME salary — call it β₀ — for every single person. predicted salary = β₀. Only one parameter to find.</p>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="g3StepBtn">👣 Take one round</button>
+            <button class="btn btn-primary" id="g3RunBtn">▶️ Run to the bottom</button>
+            <button class="btn btn-ghost" id="g3ResetBtn">🔄 Restart from β₀ = 0</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Round</div><div class="value tabular" id="g3Iter">0</div></div>
+            <div class="stat-tile"><div class="label">β₀</div><div class="value tabular" id="g3B0">0.00</div></div>
+            <div class="stat-tile"><div class="label">Slope</div><div class="value tabular" id="g3Grad">—</div></div>
+            <div class="stat-tile accent"><div class="label">Cost (MSE)</div><div class="value tabular" id="g3Cost">—</div></div>
+          </div>
+          <div class="banner good" id="g3Done" style="display:none;"></div>
+        </div>
+        <div class="stack" style="gap:14px;">
+          <div class="visual-box" style="height:min(30vh,270px);">
+            <div class="canvas-wrap"><canvas id="cvG3Curve"></canvas></div>
+          </div>
+          <div class="table-wrap" style="max-height:230px; overflow-y:auto;">
+            <table class="data-table">
+              <thead><tr><th>Round</th><th>β₀</th><th>Slope</th><th>Cost</th></tr></thead>
+              <tbody id="g3TableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- ============ G4 — TWO PARAMETERS TOGETHER: β₀ AND β₁ ============ -->
+    <section class="slide" data-section="descent" id="sG4">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 2 · Step 2: Both Parameters</div>
+          <h1>Now bring age back: find <span class="glow">β₀ AND β₁</span> together</h1>
+          <p class="body-text">Real model: predicted salary = β₀ + β₁ × age. Every round, we compute BOTH slopes and update BOTH numbers at the same time — the exact same rule as before, just twice.</p>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="g4StepBtn">👣 Take one round</button>
+            <button class="btn btn-primary" id="g4RunBtn">▶️ Run to the bottom</button>
+            <button class="btn btn-ghost" id="g4ResetBtn">🔄 Restart from β₀=0, β₁=0</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Round</div><div class="value tabular" id="g4Iter">0</div></div>
+            <div class="stat-tile"><div class="label">β₀</div><div class="value tabular" id="g4B0">0.00</div></div>
+            <div class="stat-tile"><div class="label">β₁</div><div class="value tabular" id="g4B1">0.0000</div></div>
+            <div class="stat-tile accent"><div class="label">Cost (MSE)</div><div class="value tabular" id="g4Cost">—</div></div>
+          </div>
+          <div class="banner good" id="g4Done" style="display:none;"></div>
+        </div>
+        <div class="stack" style="gap:14px;">
+          <div class="visual-box" style="height:min(30vh,270px);">
+            <div class="canvas-wrap"><canvas id="cvG4Line"></canvas></div>
+          </div>
+          <div class="table-wrap" style="max-height:230px; overflow-y:auto;">
+            <table class="data-table">
+              <thead><tr><th>Round</th><th>β₀</th><th>β₁</th><th>Cost</th></tr></thead>
+              <tbody id="g4TableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- ============ G5 — FINAL WRAP-UP ============ -->
+    <section class="slide" data-section="descent" id="sG5">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Gradient Descent, Solved</div>
+        <h1 class="kicker-big">Same rule.<br/>Just <span class="glow">more numbers.</span></h1>
+        <p class="body-text" style="max-width:680px;">One parameter? Gradient descent slides down a simple bowl and lands exactly on the average: β₀ = <span id="g5MeanSalary">—</span>. Two parameters? The exact same update rule, applied to both β₀ and β₁ at once, lands on β₀ = <span id="g5FinalB0">—</span>, β₁ = <span id="g5FinalB1">—</span> — matching the exact shortcut formula almost to the decimal.</p>
+        <p class="body-text" style="max-width:680px; font-weight:800; color:var(--ink);">Ten parameters, a million parameters — same rule, every time: compute the slope, subtract it, repeat. That's gradient descent.</p>
+      </div>
+    </section>
+
+    <!-- ============ D7 — CHAPTER RECAP + BRIDGE ============ -->
+    <section class="slide" data-section="descent" id="sD7">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Hour 2 → Hour 3</div>
+        <h1 class="kicker-big">"Follow the gradient."<br/>But <span class="glow">what IS it</span>, exactly?</h1>
+        <p class="body-text" style="max-width:640px;">We've been treating the gradient arrow as magic. It isn't — it's two ordinary formulas, one for each parameter, and they connect directly to something you already know: the residuals. Hour 3: let's derive them.</p>
+      </div>
+    </section>
+
+    <!-- ============ F1 — SETTING UP THE DERIVATION ============ -->
+    <section class="slide" data-section="formula" id="sF1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 3 · The Actual Formulas</div>
+        <h1>Our target: <span class="glow">two questions</span></h1>
+        <div class="vocab-card" style="border-left-color:var(--c-formula);">
+          <div class="vocab-term" style="color:var(--c-formula);">RECALL: THE COST FUNCTION</div>
+          <div class="vocab-def" style="font-family:Georgia,'Times New Roman',serif; font-size:1.15rem;">J(β₀, β₁) = (1/n) · Σ (Yᵢ − β₀ − β₁Xᵢ)²</div>
+        </div>
+        <p class="body-text">The gradient is just two numbers, answered one question each:</p>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card" style="border-top:5px solid var(--c-eval, var(--c-descent));"><div class="ico">1️⃣</div><h3>∂J/∂β₀</h3><p>"If I nudge the INTERCEPT up a tiny bit, how does the total cost change?"</p></div>
+          <div class="card" style="border-top:5px solid var(--c-formula);"><div class="ico">2️⃣</div><h3>∂J/∂β₁</h3><p>"If I nudge the SLOPE up a tiny bit, how does the total cost change?"</p></div>
+        </div>
+        <p class="body-text" style="text-align:center; margin-top:4px;">Answer both, and you have the full gradient arrow. No new math beyond what you've already used — just the chain rule, applied twice.</p>
+      </div>
+    </section>
+
+    <!-- ============ F2 — BUILDING DERIVATIVE INTUITION ============ -->
+    <section class="slide" data-section="formula" id="sF2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 3 · Nudge and See</div>
+          <h1>What does "nudge β₀" <span class="glow">actually do?</span></h1>
+          <p class="body-text">Bump β₀ up by a tiny amount h. EVERY prediction shifts up by exactly h (the whole line lifts). So every residual (Yᵢ−Ŷᵢ) shrinks by h. Push a squared residual (Yᵢ−Ŷᵢ)² down by nudging Ŷᵢ up, and calculus says its rate of change is <b>−2(Yᵢ−Ŷᵢ)</b>.</p>
+          <p class="body-text">Do this for β₁ instead: bumping β₁ by h shifts each prediction by h·Xᵢ — bigger shift for bigger X. So its rate of change carries an extra Xᵢ: <b>−2(Yᵢ−Ŷᵢ)·Xᵢ</b>.</p>
+          <div class="banner info">🤔 Notice both rates involve the residual. That's not a coincidence — the gradient is fundamentally built FROM the residuals you already know how to compute.</div>
+        </div>
+        <div class="visual-box" style="height:min(50vh,460px);">
+          <div class="canvas-wrap"><canvas id="cvNudgeDemo"></canvas></div>
+          <p class="footnote">Nudging β₀ shifts the whole line vertically by h — watch every residual change by the same amount.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ F3 — THE GRADIENT FORMULAS REVEALED ============ -->
+    <section class="slide" data-section="formula" id="sF3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 3 · The Reveal</div>
+        <h1>Sum it over all n, and you get <span class="glow">the gradient</span></h1>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card" style="border-top:5px solid var(--c-descent);">
+            <h3>∂J/∂β₀</h3>
+            <p style="font-family:Georgia,'Times New Roman',serif; font-size:1.1rem; margin-top:6px;">= −(2/n) Σ (Yᵢ − Ŷᵢ)</p>
+            <p><b>Plain English:</b> −2 × the AVERAGE residual. Are our guesses systematically too low or too high, on average?</p>
+          </div>
+          <div class="card" style="border-top:5px solid var(--c-formula);">
+            <h3>∂J/∂β₁</h3>
+            <p style="font-family:Georgia,'Times New Roman',serif; font-size:1.1rem; margin-top:6px;">= −(2/n) Σ (Yᵢ − Ŷᵢ) · Xᵢ</p>
+            <p><b>Plain English:</b> −2 × the average of (residual × X). Does our error get systematically bigger as X grows?</p>
+          </div>
+        </div>
+        <p class="body-text" style="text-align:center; margin-top:4px;">If both are zero — average residual is zero, AND residuals don't correlate with X anymore — there's nothing left to improve. That's the minimum.</p>
+      </div>
+    </section>
+
+    <!-- ============ F4 — INTERACTIVE: COMPUTE REAL GRADIENT NUMBERS ============ -->
+    <section class="slide" data-section="formula" id="sF4">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 3 · Try It Yourself</div>
+          <h1>Pick a line, <span class="glow">compute its gradient</span></h1>
+          <p class="body-text">Drag the sliders to choose any line. We'll compute the real residuals for all 42 employees and plug them straight into both formulas.</p>
+          <div class="console">
+            <div class="field"><label>β₀ (= ₹<span class="val" id="f4B0Label">5.0</span>L)</label><input type="range" id="f4B0Slider" min="0" max="15" value="5" step="0.5"></div>
+            <div class="field"><label>β₁ (= <span class="val" id="f4B1Label">0.00</span>)</label><input type="range" id="f4B1Slider" min="-50" max="350" value="0" step="5"></div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Average residual</div><div class="value tabular" id="f4AvgResid">—</div></div>
+            <div class="stat-tile"><div class="label">Average (residual × X)</div><div class="value tabular" id="f4AvgResidX">—</div></div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile accent"><div class="label">∂J/∂β₀</div><div class="value tabular" id="f4GradB0">—</div></div>
+            <div class="stat-tile accent"><div class="label">∂J/∂β₁</div><div class="value tabular" id="f4GradB1">—</div></div>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvGradientCompute"></canvas></div>
+          <p class="footnote">The arrow shows the gradient direction (uphill) at your chosen point on the landscape.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ F5 — THE FULL UPDATE RULE, ONE REAL STEP ============ -->
+    <section class="slide" data-section="formula" id="sF5">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 3 · The Update Rule</div>
+          <h1>Put it together: <span class="glow">one real step</span></h1>
+          <div class="vocab-card" style="border-left-color:var(--c-formula);">
+            <div class="vocab-term" style="color:var(--c-formula);">THE UPDATE RULE</div>
+            <div class="vocab-def" style="font-family:Georgia,'Times New Roman',serif; font-size:1.05rem;">β₀ ≔ β₀ − α · ∂J/∂β₀<br/>β₁ ≔ β₁ − α · ∂J/∂β₁</div>
+            <div class="vocab-def">Compute both gradients, multiply by the learning rate α, subtract. That's the entire algorithm.</div>
+          </div>
+          <button class="btn btn-primary" id="f5StepBtn" style="align-self:flex-start;">👣 Take ONE real gradient step</button>
+          <div class="card" id="f5Worked" style="display:none;">
+            <h3 style="margin-bottom:8px;">Show the work</h3>
+            <div id="f5WorkedText" style="font-size:.92rem; line-height:1.8;"></div>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvOneStep"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ F6 — RUN TO CONVERGENCE, COMPARE TO OLS ============ -->
+    <section class="slide" data-section="formula" id="sF6">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 3 · The Payoff</div>
+          <h1>Run it to <span class="glow">convergence</span></h1>
+          <p class="body-text">Let gradient descent run for real, using the actual formulas — no more random nudging. Watch it glide smoothly into the same answer OLS gives algebraically.</p>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="f6RunBtn">▶️ Run gradient descent</button>
+            <button class="btn btn-ghost" id="f6ResetBtn">🔄 Reset</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Iteration</div><div class="value tabular" id="f6Iter">0</div></div>
+            <div class="stat-tile"><div class="label">Gradient descent's line</div><div class="value tabular" id="f6GdLine">—</div></div>
+            <div class="stat-tile accent"><div class="label">OLS's exact line</div><div class="value tabular" id="f6OlsLine">—</div></div>
+          </div>
+          <div class="banner good" id="f6Done" style="display:none;"></div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvConvergeCompare"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ F7 — CHAPTER RECAP + BRIDGE ============ -->
+    <section class="slide" data-section="formula" id="sF7">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Hour 3 → Hour 4</div>
+        <h1 class="kicker-big">The algorithm works.<br/>Now let's <span class="glow">break</span> it (safely)</h1>
+        <p class="body-text" style="max-width:640px;">Gradient descent found the right answer — but only because we picked a reasonable learning rate and well-behaved data. Hour 4: when do we stop, when does this go wrong, and why do we even bother when OLS has an exact shortcut?</p>
+      </div>
+    </section>
+
+    <!-- ============ C1 — WHEN DO WE STOP? ============ -->
+    <section class="slide" data-section="converge" id="sC1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 4 · Convergence</div>
+          <h1>When do we <span class="glow">stop</span> walking?</h1>
+          <p class="body-text">The gradient's SIZE shrinks as you approach the bottom (flatter ground = smaller slope). Watch it shrink toward zero as gradient descent runs — that's our stopping signal.</p>
+          <div class="rule-list">
+            <div class="rule"><div class="n">1</div><div class="t"><h3>Gradient ≈ 0</h3><p>Almost flat in every direction — you're basically at the bottom.</p></div></div>
+            <div class="rule"><div class="n">2</div><div class="t"><h3>Cost stops improving</h3><p>If the last step barely changed J at all, further steps won't help much either.</p></div></div>
+            <div class="rule"><div class="n">3</div><div class="t"><h3>Max iterations (a safety net)</h3><p>Just in case — always cap the number of steps so training can't run forever.</p></div></div>
+          </div>
+          <button class="btn btn-primary" id="c1RunBtn" style="align-self:flex-start;">▶️ Run and watch it shrink</button>
+        </div>
+        <div class="stack">
+          <div class="visual-box" style="height:min(38vh,340px);">
+            <div class="canvas-wrap"><canvas id="cvGradientShrink"></canvas></div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Iteration</div><div class="value tabular" id="c1Iter">0</div></div>
+            <div class="stat-tile accent"><div class="label">Gradient magnitude</div><div class="value tabular" id="c1GradMag">—</div></div>
+          </div>
+          <div class="banner good" id="c1StopBanner" style="display:none;">🛑 Gradient magnitude fell below our threshold — converged! No point walking further on flat ground.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ C2 — GD VS THE CLOSED FORM ============ -->
+    <section class="slide" data-section="converge" id="sC2">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Hour 4 · The Honest Question</div>
+        <h1 style="text-align:center;">If there's a shortcut... <span class="glow">why walk at all?</span></h1>
+        <div class="vocab-card" style="max-width:760px; margin:0 auto; border-left-color:var(--c-converge);">
+          <div class="vocab-term" style="color:var(--c-converge);">THE NORMAL EQUATION (CLOSED FORM)</div>
+          <div class="vocab-def">For simple &amp; multiple linear regression, there's an exact algebraic formula — β = (XᵀX)⁻¹XᵀY — that jumps STRAIGHT to the minimum in one shot. No walking required. This is exactly what "OLS" has been computing for us all along.</div>
+        </div>
+        <div class="card-grid" style="margin-top:10px;">
+          <div class="card"><div class="ico">✅</div><h3>Use the shortcut when you can</h3><p>For plain linear regression, the closed form is faster AND exact. Real libraries (like scikit-learn) use it by default.</p></div>
+          <div class="card"><div class="ico">🚧</div><h3>...but the shortcut doesn't always exist</h3><p>Logistic regression, neural networks, and most of modern ML have NO algebraic shortcut — the matrix math simply doesn't solve cleanly.</p></div>
+          <div class="card"><div class="ico">🌍</div><h3>Gradient descent works everywhere</h3><p>It only needs a cost function and its gradient — it doesn't care how ugly the landscape gets. That universality is the entire reason we learn it here, on the one problem where we can also check its answer.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ C3 — PITFALL: FEATURE SCALING ============ -->
+    <section class="slide" data-section="converge" id="sC3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 4 · Pitfall 1 of 2</div>
+        <h1>Pitfall: <span class="glow">unscaled</span> features</h1>
+        <p class="body-text">Same data, same true relationship — except one version has X <b>standardized</b> (rescaled to mean 0, spread 1) and the other keeps X raw, in years (0–15). Same learning rate, same start. Watch the landscape shape and the descent path.</p>
+        <div class="split even" style="flex:1; min-height:0;">
+          <div class="visual-box" style="height:100%;">
+            <div class="eyebrow" style="padding:2px 4px; color:var(--good);">X standardized — round bowl</div>
+            <div class="canvas-wrap"><canvas id="cvScaleGood"></canvas></div>
+          </div>
+          <div class="visual-box" style="height:100%;">
+            <div class="eyebrow" style="padding:2px 4px; color:var(--bad);">X raw, in years — narrow ravine</div>
+            <div class="canvas-wrap"><canvas id="cvScaleBad"></canvas></div>
+          </div>
+        </div>
+        <div class="console">
+          <button class="btn btn-primary" id="scaleRunBtn">▶️ Run both, same learning rate &amp; step budget</button>
+          <button class="btn btn-ghost" id="scaleResetBtn">🔄 Reset</button>
+          <div class="field"><label>Standardized: steps to converge</label><div class="val tabular" id="scaleGoodSteps" style="font-size:1.1rem;">—</div></div>
+          <div class="field"><label>Raw years: steps to converge</label><div class="val tabular" id="scaleBadSteps" style="font-size:1.1rem;">—</div></div>
+        </div>
+        <div class="banner warn">📏 Same information, different scale — but the narrow ravine forces tiny cautious steps in one direction while crawling in the other. Fix: scale features to similar ranges before training. This is exactly why our Hour 2 race was closer than expected!</div>
+      </div>
+    </section>
+
+    <!-- ============ C4 — PITFALL: LEARNING RATE DANGER ZONE ============ -->
+    <section class="slide" data-section="converge" id="sC4">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 4 · Pitfall 2 of 2</div>
+          <h1>Pitfall: <span class="glow">divergence</span></h1>
+          <p class="body-text">Push the learning rate too far and each "step downhill" overshoots so badly it lands HIGHER than where it started. Cost doesn't shrink — it explodes.</p>
+          <div class="console">
+            <div class="field"><label>Learning rate α = <span class="val" id="divAlphaLabel">0.30</span></label><input type="range" id="divAlphaSlider" min="1" max="60" value="30" step="1"></div>
+            <button class="btn btn-primary" id="divRunBtn">▶️ Run 12 steps</button>
+            <button class="btn btn-ghost" id="divResetBtn">🔄 Reset</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Step</div><div class="value tabular" id="divStep">0</div></div>
+            <div class="stat-tile accent"><div class="label">Cost</div><div class="value tabular" id="divCost">—</div></div>
+          </div>
+          <div class="banner bad" id="divBanner" style="display:none;"></div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvDivergence"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ C5 — LOCAL VS GLOBAL MINIMA ============ -->
+    <section class="slide" data-section="converge" id="sC5">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 4 · A Look Ahead</div>
+          <h1>Not every landscape is a <span class="glow">bowl</span></h1>
+          <p class="body-text">Linear regression's cost is always convex — a single smooth valley. But once models get more complex (neural networks!), the landscape can turn bumpy: many dips, and gradient descent can get stuck in a shallow one instead of the deepest one.</p>
+          <div class="card-grid" style="margin-top:6px;">
+            <div class="card" style="border-top:5px solid var(--good);"><div class="ico">🥣</div><h3>Convex (today)</h3><p>One valley. Wherever you start, gradient descent always finds THE minimum.</p></div>
+            <div class="card" style="border-top:5px solid var(--warn);"><div class="ico">🏔️</div><h3>Non-convex (later)</h3><p>Many valleys. Gradient descent can get trapped in a "local minimum" that isn't the best one overall.</p></div>
+          </div>
+          <div class="banner info">👀 This is exactly why simple &amp; multiple linear regression are the perfect place to LEARN gradient descent — you can verify it against the exact answer. Later, on messier landscapes, you'll trust the same walking algorithm without that safety net.</div>
+        </div>
+        <div class="visual-box" style="height:min(50vh,460px);">
+          <div class="canvas-wrap"><canvas id="cvBumpyLandscape"></canvas></div>
+          <p class="footnote">A illustrative bumpy 1D cost curve — several valleys, only one is the true global minimum.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ C6 — RECAP CARDS ============ -->
+    <section class="slide" data-section="converge" id="sC6">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Hour 4 · Recap</div>
+        <h1 style="text-align:center;">The whole optimization journey</h1>
+        <div class="card-grid" style="margin-top:8px;">
+          <div class="card" style="border-top:5px solid var(--c-landscape);"><div class="ico">🗺️</div><h3>Cost landscape</h3><p>Every (β₀,β₁) pair is a line; the cost function maps it to one number — how bad that line is.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-descent);"><div class="ico">⛰️</div><h3>Gradient descent</h3><p>Feel the local slope, step opposite to it, repeat — no map required.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-formula);"><div class="ico">📐</div><h3>The formulas</h3><p>∂J/∂β₀ = avg residual. ∂J/∂β₁ = avg(residual × X). Both built from numbers you already know.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-converge);"><div class="ico">🎯</div><h3>Convergence</h3><p>Stop when the gradient flattens to near-zero — you're at the bottom.</p></div>
+          <div class="card" style="border-top:5px solid var(--warn);"><div class="ico">📏</div><h3>Feature scaling</h3><p>Unscaled features stretch the bowl into a ravine and slow everything down.</p></div>
+          <div class="card" style="border-top:5px solid var(--bad);"><div class="ico">💥</div><h3>Learning rate danger</h3><p>Too big and steps overshoot into divergence; too small and training crawls.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ C7 — FINAL WRAP-UP ============ -->
+    <section class="slide" data-section="converge" id="sC7">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">The Journey, Complete</div>
+        <h1 class="kicker-big">You just opened the hood<br/>on <span class="glow">every</span> ML model 🎉</h1>
+        <p class="body-text" style="max-width:680px;">Hour 1: fitting a line is secretly an optimization problem over a bowl-shaped landscape. Hour 2: gradient descent walks downhill using only local slope. Hour 3: that slope is two simple formulas built from residuals you already understood. Hour 4: knowing when to stop, when it breaks, and why this exact walking algorithm — not the shortcut — is what trains almost everything in modern machine learning.</p>
+        <p class="body-text" style="max-width:680px; font-weight:800; color:var(--ink);">Same gradient descent. Same update rule. Every neural network you'll ever meet is just this, running millions of times.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="chrome-bottom">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous slide">‹</button>
+    <div class="progress" id="progress"></div>
+    <div class="slide-counter"><span id="curNum" class="tabular">1</span> / <span id="totalNum" class="tabular">—</span></div>
+    <button class="nav-btn" id="nextBtn" aria-label="Next slide">›</button>
+  </nav>
+
+<script>
+"use strict";
+
+/* =========================== helpers =========================== */
+const $  = (sel, el=document) => el.querySelector(sel);
+const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+
+const rand  = (a,b) => a + Math.random()*(b-a);
+const clamp = (v,lo,hi) => Math.max(lo, Math.min(hi,v));
+const mean  = arr => arr.reduce((s,v)=>s+v,0) / arr.length;
+const sd    = arr => { const m = mean(arr); return Math.sqrt(arr.reduce((s,v)=>s+(v-m)**2,0) / arr.length); };
+const fmt   = (v,d=2) => Number(v).toFixed(d);
+const fmtLPA = (v,d=1) => '₹' + Number(v).toFixed(d) + 'L';
+
+function shuffledIndices(n){
+  const a = Array.from({length:n}, (_,i)=>i);
+  for(let i=n-1;i>0;i--){ const j=(Math.random()*(i+1))|0; [a[i],a[j]]=[a[j],a[i]]; }
+  return a;
+}
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+
+function fitCanvas(cv){
+  const rect = cv.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const w = Math.max(1, Math.round(rect.width*dpr));
+  const h = Math.max(1, Math.round(rect.height*dpr));
+  if(cv.width !== w || cv.height !== h){ cv.width = w; cv.height = h; }
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return { ctx, w: rect.width, h: rect.height };
+}
+
+/* ---- generic X/Y scatter (data space) ---- */
+function drawScatter(cv, opts){
+  if(!cv || cv.clientWidth === 0) return null;
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const padL=42, padR=16, padT=16, padB=32;
+  const plotW=w-padL-padR, plotH=h-padT-padB;
+  const [xmin,xmax] = opts.xDomain, [ymin,ymax] = opts.yDomain;
+  const X = x => padL + ((x-xmin)/(xmax-xmin))*plotW;
+  const Y = y => padT + plotH - ((y-ymin)/(ymax-ymin))*plotH;
+
+  ctx.strokeStyle = cssVar('--line'); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT+plotH); ctx.lineTo(padL+plotW, padT+plotH); ctx.stroke();
+  ctx.fillStyle=cssVar('--ink-faint'); ctx.font='10.5px sans-serif'; ctx.textAlign='center';
+  if(opts.xLabel) ctx.fillText(opts.xLabel, padL+plotW/2, h-6);
+  if(opts.yLabel){
+    ctx.save(); ctx.translate(11, padT+plotH/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center';
+    ctx.fillText(opts.yLabel, 0,0);
+    ctx.restore();
+  }
+
+  if(opts.line){
+    const {b0,b1} = opts.line;
+    ctx.strokeStyle = opts.lineColor || cssVar('--ink');
+    ctx.lineWidth = 2.6;
+    ctx.beginPath();
+    ctx.moveTo(X(xmin), Y(b0+b1*xmin));
+    ctx.lineTo(X(xmax), Y(b0+b1*xmax));
+    ctx.stroke();
+  }
+  if(opts.line2){
+    const {b0,b1} = opts.line2;
+    ctx.strokeStyle = opts.line2Color || cssVar('--c-formula');
+    ctx.lineWidth = 2.2;
+    ctx.setLineDash(opts.line2Dash || []);
+    ctx.beginPath();
+    ctx.moveTo(X(xmin), Y(b0+b1*xmin));
+    ctx.lineTo(X(xmax), Y(b0+b1*xmax));
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  ctx.fillStyle = opts.color || cssVar('--accent');
+  const r = opts.radius || 4.6;
+  for(const p of opts.points){
+    ctx.fillStyle = opts.colorFn ? opts.colorFn(p) : (opts.color || cssVar('--accent'));
+    ctx.beginPath(); ctx.arc(X(p.x), Y(p.y), r, 0, Math.PI*2); ctx.fill();
+  }
+  if(opts.residualLine){
+    const {b0,b1} = opts.residualLine;
+    ctx.lineWidth=1.2; ctx.setLineDash([3,2]);
+    ctx.strokeStyle = opts.residualColor || cssVar('--ink-faint');
+    for(const p of opts.points){
+      const py = b0+b1*p.x;
+      ctx.beginPath(); ctx.moveTo(X(p.x), Y(p.y)); ctx.lineTo(X(p.x), Y(py)); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+  }
+  return {X,Y,padL,padT,plotW,plotH};
+}
+
+/* =========================== shared dataset (salary vs experience) =========================== */
+function genEmployees(n){
+  return Array.from({length:n}, () => {
+    const exp = rand(0, 15);
+    const noise = rand(-2.2,2.2);
+    const salary = 3 + 1.3*exp + noise;
+    return { x: exp, y: clamp(salary, 1, 28) };
+  });
+}
+const EMPLOYEES = genEmployees(42);
+const EMP_X_DOMAIN = [0, 16], EMP_Y_DOMAIN = [0, 30];
+
+function olsFit(points){
+  const n=points.length;
+  const mx=mean(points.map(p=>p.x)), my=mean(points.map(p=>p.y));
+  let num=0,den=0;
+  for(const p of points){ num+=(p.x-mx)*(p.y-my); den+=(p.x-mx)**2; }
+  const b1=num/den, b0=my-b1*mx;
+  return {b0,b1};
+}
+const OLS = olsFit(EMPLOYEES);
+
+function costMSE(points,b0,b1){ return mean(points.map(p=>(p.y-(b0+b1*p.x))**2)); }
+function gradB0(points,b0,b1){ return -2*mean(points.map(p=>(p.y-(b0+b1*p.x)))); }
+function gradB1(points,b0,b1){ return -2*mean(points.map(p=>(p.y-(b0+b1*p.x))*p.x)); }
+function gdStep(points,b0,b1,alpha){
+  const g0=gradB0(points,b0,b1), g1=gradB1(points,b0,b1);
+  return { b0: b0-alpha*g0, b1: b1-alpha*g1, g0, g1 };
+}
+
+const B0_RANGE = [-5, 20], B1_RANGE = [-1, 3.5];
+const ALPHA_DEFAULT = 0.010;
+
+/* =========================== cost landscape module =========================== */
+function computeCostGrid(points, b0Range, b1Range, resolution){
+  const grid = [];
+  let minCost = Infinity, maxCost = -Infinity;
+  for(let j=0;j<resolution;j++){
+    const row = new Float64Array(resolution);
+    const b1 = b1Range[0] + (j/(resolution-1))*(b1Range[1]-b1Range[0]);
+    for(let i=0;i<resolution;i++){
+      const b0 = b0Range[0] + (i/(resolution-1))*(b0Range[1]-b0Range[0]);
+      const c = costMSE(points, b0, b1);
+      row[i] = c;
+      if(c<minCost) minCost=c;
+      if(c>maxCost) maxCost=c;
+    }
+    grid.push(row);
+  }
+  return { grid, minCost, maxCost, resolution };
+}
+function heatColor(t){
+  t = clamp(t,0,1);
+  const bands = 9;
+  const banded = Math.floor(t*bands)/bands;
+  const light = 34 + banded*52;
+  const sat = 46 - banded*18;
+  return `hsl(174 ${sat}% ${light}%)`;
+}
+function drawCostLandscape(cv, points, b0Range, b1Range, cachedGrid){
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const padL=40, padR=14, padT=14, padB=30;
+  const plotW=w-padL-padR, plotH=h-padT-padB;
+  const { grid, minCost, maxCost, resolution } = cachedGrid;
+  const cellW = plotW/resolution, cellH = plotH/resolution;
+  const range = Math.sqrt(maxCost-minCost) || 1;
+  for(let j=0;j<resolution;j++){
+    for(let i=0;i<resolution;i++){
+      const c = grid[j][i];
+      const t = Math.sqrt(Math.max(0,c-minCost))/range;
+      ctx.fillStyle = heatColor(t);
+      const x = padL + i*cellW;
+      const y = padT + (resolution-1-j)*cellH;
+      ctx.fillRect(x, y, cellW+1, cellH+1);
+    }
+  }
+  ctx.strokeStyle = cssVar('--ink'); ctx.lineWidth = 1;
+  ctx.strokeRect(padL, padT, plotW, plotH);
+  ctx.fillStyle = cssVar('--ink-faint'); ctx.font = '10px sans-serif'; ctx.textAlign='center';
+  ctx.fillText('β₀ (intercept) →', padL+plotW/2, h-8);
+  ctx.save(); ctx.translate(12, padT+plotH/2); ctx.rotate(-Math.PI/2);
+  ctx.fillText('β₁ (slope) →', 0, 0);
+  ctx.restore();
+
+  const toPx = (b0,b1) => ({
+    x: padL + ((b0-b0Range[0])/(b0Range[1]-b0Range[0]))*plotW,
+    y: padT + (1-(b1-b1Range[0])/(b1Range[1]-b1Range[0]))*plotH
+  });
+  const toParams = (px,py) => ({
+    b0: b0Range[0] + ((px-padL)/plotW)*(b0Range[1]-b0Range[0]),
+    b1: b1Range[1] - ((py-padT)/plotH)*(b1Range[1]-b1Range[0])
+  });
+  return { ctx, toPx, toParams, padL, padT, plotW, plotH };
+}
+function drawLandscapeMarker(ctx, toPx, b0, b1, color, radius){
+  const p = toPx(b0,b1);
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.arc(p.x,p.y,radius||7,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle = cssVar('--paper'); ctx.lineWidth = 2; ctx.stroke();
+}
+function drawLandscapeStar(ctx, toPx, b0, b1, color){
+  const p = toPx(b0,b1);
+  const spikes=5, outerR=9, innerR=4;
+  ctx.fillStyle = color;
+  ctx.beginPath();
+  for(let i=0;i<spikes*2;i++){
+    const r = i%2===0 ? outerR : innerR;
+    const a = (Math.PI/spikes)*i - Math.PI/2;
+    const x = p.x+Math.cos(a)*r, y = p.y+Math.sin(a)*r;
+    i===0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  }
+  ctx.closePath(); ctx.fill();
+  ctx.strokeStyle = cssVar('--paper'); ctx.lineWidth = 1.2; ctx.stroke();
+}
+function drawLandscapePath(ctx, toPx, path, color){
+  if(path.length<2) return;
+  ctx.strokeStyle = color; ctx.lineWidth = 2.2; ctx.beginPath();
+  path.forEach((pt,i) => { const p=toPx(pt.b0,pt.b1); i===0?ctx.moveTo(p.x,p.y):ctx.lineTo(p.x,p.y); });
+  ctx.stroke();
+}
+function drawArrowPx(ctx, x1,y1,x2,y2,color){
+  ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=2.6; ctx.lineCap='round';
+  ctx.beginPath(); ctx.moveTo(x1,y1); ctx.lineTo(x2,y2); ctx.stroke();
+  const angle = Math.atan2(y2-y1,x2-x1);
+  const headLen=9;
+  ctx.beginPath();
+  ctx.moveTo(x2,y2);
+  ctx.lineTo(x2-headLen*Math.cos(angle-Math.PI/6), y2-headLen*Math.sin(angle-Math.PI/6));
+  ctx.lineTo(x2-headLen*Math.cos(angle+Math.PI/6), y2-headLen*Math.sin(angle+Math.PI/6));
+  ctx.closePath(); ctx.fill();
+}
+function drawUphillArrow(ctx, points, layout, b0, b1, color){
+  const { toPx, toParams } = layout;
+  const p = toPx(b0,b1);
+  const step = 16;
+  const cHere = costMSE(points,b0,b1);
+  const pr = toParams(p.x+step, p.y);
+  const pu = toParams(p.x, p.y-step);
+  const cRight = costMSE(points, pr.b0, pr.b1);
+  const cUp = costMSE(points, pu.b0, pu.b1);
+  const gx = cRight-cHere, gy = -(cUp-cHere);
+  const mag = Math.sqrt(gx*gx+gy*gy) || 1e-9;
+  const arrowLen = 42;
+  const ux = gx/mag, uy = gy/mag;
+  drawArrowPx(ctx, p.x, p.y, p.x+ux*arrowLen, p.y+uy*arrowLen, color);
+}
+function runGDPath(points, b0start, b1start, alpha, maxIters, stopGradMag){
+  const path = [{b0:b0start, b1:b1start}];
+  let b0=b0start, b1=b1start;
+  let i=0;
+  for(i=1;i<=maxIters;i++){
+    const step = gdStep(points,b0,b1,alpha);
+    b0=step.b0; b1=step.b1;
+    path.push({b0,b1});
+    if(!isFinite(b0) || !isFinite(b1) || Math.abs(b0)>1e5 || Math.abs(b1)>1e5){ path.diverged=true; break; }
+    const gmag = Math.sqrt(step.g0*step.g0+step.g1*step.g1);
+    if(stopGradMag && gmag < stopGradMag) break;
+  }
+  path.iters = i;
+  return path;
+}
+
+/* =========================== deck engine =========================== */
+const slideEls = $$('.slide');
+let cur = 0;
+
+const CHAPTERS = {
+  landscape: { num:1, label:'The Optimization Landscape' },
+  descent:   { num:2, label:'Gradient Descent' },
+  formula:   { num:3, label:'The Actual Formulas' },
+  converge:  { num:4, label:'Convergence &amp; Pitfalls' },
+};
+const HOURS = { landscape:1, descent:2, formula:3, converge:4 };
+
+const onEnter = {};
+const onLeave = {};
+
+function buildDots(){
+  const wrap = $('#progress');
+  wrap.innerHTML = '';
+  let lastSection = null;
+  slideEls.forEach((s, i) => {
+    const sec = s.dataset.section;
+    if(lastSection !== null && sec !== lastSection){
+      const gap = document.createElement('span');
+      gap.className = 'dot gap';
+      wrap.appendChild(gap);
+    }
+    const b = document.createElement('button');
+    b.className = 'dot';
+    b.setAttribute('aria-label', 'Go to slide ' + (i+1));
+    b.addEventListener('click', () => goTo(i));
+    wrap.appendChild(b);
+    lastSection = sec;
+  });
+}
+
+function goTo(i){
+  i = clamp(i, 0, slideEls.length-1);
+  const leaveFn = onLeave[slideEls[cur].id];
+  if(leaveFn) leaveFn();
+  slideEls[cur].classList.remove('active');
+  cur = i;
+  const s = slideEls[cur];
+  s.classList.add('active');
+  document.body.dataset.section = s.dataset.section;
+
+  const chip = $('#chapterChip');
+  const meta = CHAPTERS[s.dataset.section];
+  if(meta){
+    chip.style.display = 'flex';
+    $('#chapterNum').textContent = meta.num;
+    $('#chapterLabel').innerHTML = meta.label;
+  } else {
+    chip.style.display = 'none';
+  }
+  const hourNum = HOURS[s.dataset.section];
+  $('#hourBadge').textContent = hourNum ? ('HOUR ' + hourNum + ' OF 4') : 'OPTIMIZATION';
+
+  $('#curNum').textContent = cur+1;
+  $('#prevBtn').disabled = cur === 0;
+  $('#nextBtn').disabled = cur === slideEls.length-1;
+
+  $$('.dot:not(.gap)', $('#progress')).forEach((d,idx)=> d.classList.toggle('active', idx===cur));
+
+  const fn = onEnter[s.id];
+  if(fn) requestAnimationFrame(fn);
+}
+
+function next(){ if(cur < slideEls.length-1) goTo(cur+1); }
+function prev(){ if(cur > 0) goTo(cur-1); }
+
+$('#nextBtn').addEventListener('click', next);
+$('#prevBtn').addEventListener('click', prev);
+window.addEventListener('keydown', e => {
+  if(e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+  else if(e.key === 'ArrowLeft'){ e.preventDefault(); prev(); }
+});
+
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => { const fn = onEnter[slideEls[cur].id]; if(fn) fn(); }, 120);
+});
+
+const themeBtn = $('#themeToggle');
+function applyStoredTheme(){
+  const t = localStorage.getItem('sv-theme-opt');
+  if(t) document.documentElement.setAttribute('data-theme', t);
+}
+applyStoredTheme();
+themeBtn.addEventListener('click', () => {
+  const now = document.documentElement.getAttribute('data-theme');
+  const dark = now ? now === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const nextTheme = dark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', nextTheme);
+  localStorage.setItem('sv-theme-opt', nextTheme);
+  const fn = onEnter[slideEls[cur].id]; if(fn) fn();
+});
+
+/* =========================== HOUR 1 — THE OPTIMIZATION LANDSCAPE =========================== */
+let landscapeGridCache = null;
+function getLandscapeGrid(){
+  if(!landscapeGridCache) landscapeGridCache = computeCostGrid(EMPLOYEES, B0_RANGE, B1_RANGE, 70);
+  return landscapeGridCache;
+}
+
+/* --- O3: static landscape intro --- */
+onEnter['sO3'] = () => {
+  const layout = drawCostLandscape($('#cvLandscapeIntro'), EMPLOYEES, B0_RANGE, B1_RANGE, getLandscapeGrid());
+  drawLandscapeStar(layout.ctx, layout.toPx, OLS.b0, OLS.b1, cssVar('--ink'));
+};
+
+/* --- O4: drag the point, watch the line --- */
+let o4B0 = 10, o4B1 = 0, o4Layout = null;
+function drawO4(){
+  const layout = drawCostLandscape($('#cvLandscapeDrag'), EMPLOYEES, B0_RANGE, B1_RANGE, getLandscapeGrid());
+  o4Layout = layout;
+  drawLandscapeStar(layout.ctx, layout.toPx, OLS.b0, OLS.b1, cssVar('--ink-faint'));
+  drawLandscapeMarker(layout.ctx, layout.toPx, o4B0, o4B1, cssVar('--c-landscape'));
+  $('#o4B0').textContent = fmt(o4B0,2);
+  $('#o4B1').textContent = fmt(o4B1,2);
+  $('#o4Cost').textContent = fmt(costMSE(EMPLOYEES,o4B0,o4B1),2);
+  drawScatter($('#cvLandscapeLine'), {
+    points: EMPLOYEES, xDomain: EMP_X_DOMAIN, yDomain: EMP_Y_DOMAIN,
+    xLabel:'years of experience →', yLabel:'salary (₹ LPA)',
+    color: cssVar('--ink-faint'),
+    line: {b0:o4B0,b1:o4B1}, lineColor: cssVar('--c-landscape'),
+    residualLine: {b0:o4B0,b1:o4B1},
+  });
+}
+onEnter['sO4'] = drawO4;
+const cvO4 = $('#cvLandscapeDrag');
+let o4Dragging = false;
+function updateO4FromEvent(e){
+  const rect = cvO4.getBoundingClientRect();
+  if(!o4Layout) return;
+  const p = o4Layout.toParams(e.clientX-rect.left, e.clientY-rect.top);
+  o4B0 = clamp(p.b0, B0_RANGE[0], B0_RANGE[1]);
+  o4B1 = clamp(p.b1, B1_RANGE[0], B1_RANGE[1]);
+  drawO4();
+}
+cvO4.addEventListener('pointerdown', e => { o4Dragging=true; cvO4.setPointerCapture(e.pointerId); updateO4FromEvent(e); });
+cvO4.addEventListener('pointermove', e => { if(o4Dragging) updateO4FromEvent(e); });
+['pointerup','pointerleave','pointercancel'].forEach(evt => cvO4.addEventListener(evt, () => { o4Dragging=false; }));
+
+/* --- O5: why bowl shaped — animated line -> square -> bowl --- */
+const O5_HERO_IDX = 0; // representative employee used for the "one line" / "square it" steps
+const O5_STEP_LABELS = [
+  "Step 1 of 3 — one employee's error, plotted as β₀ changes. Notice: it's a straight line.",
+  'Step 2 of 3 — square that error. Both sides now curve upward: a parabola.',
+  "Step 3 of 3 — add all 42 employees' parabolas. Still one smooth bowl (MSE).",
+  "Bonus — what if we took |error| instead of error²? Still one minimum, but a sharp V with a corner, not a smooth bowl."
+];
+const O5_DUR = 700;
+let o5Step = 0, o5Anim = null, o5PlayTimer = null;
+
+function o5BuildFrame(w,h){
+  const padL=44,padR=16,padT=20,padB=34;
+  const plotW=w-padL-padR, plotH=h-padT-padB;
+  const [b0min,b0max] = B0_RANGE;
+  const N = 140;
+  const xs = []; for(let i=0;i<=N;i++) xs.push(b0min+(i/N)*(b0max-b0min));
+  const hero = EMPLOYEES[O5_HERO_IDX];
+  const rawLine = xs.map(b0 => hero.y-(b0+OLS.b1*hero.x));
+  const rawSquare = rawLine.map(v => v*v);
+  const rawAbs = rawLine.map(v => Math.abs(v));
+  const rawSum = xs.map(b0 => costMSE(EMPLOYEES,b0,OLS.b1));
+  const maxAbsLine = Math.max(...rawLine.map(Math.abs))||1;
+  const maxSquare = Math.max(...rawSquare)||1;
+  const maxAbsV = Math.max(...rawAbs)||1;
+  const maxSum = Math.max(...rawSum)||1;
+  const midY = padT+plotH/2;
+  const yLine   = rawLine.map(v => midY-(v/maxAbsLine)*(plotH/2)*0.9);
+  const ySquare = rawSquare.map(v => padT+plotH-(v/maxSquare)*plotH*0.94);
+  const yAbs    = rawAbs.map(v => padT+plotH-(v/maxAbsV)*plotH*0.94);
+  const ySum    = rawSum.map(v => padT+plotH-(v/maxSum)*plotH*0.94);
+  const sampleIdx = shuffledIndices(EMPLOYEES.length).slice(0,5);
+  const faint = sampleIdx.map(idx => {
+    const p = EMPLOYEES[idx];
+    const raw = xs.map(b0 => (p.y-(b0+OLS.b1*p.x))**2);
+    const mx = Math.max(...raw)||1;
+    return raw.map(v => padT+plotH-(v/mx)*plotH*0.94);
+  });
+  return { padL, padT, plotW, plotH, xs, midY, states:[yLine,ySquare,ySum,yAbs], faint };
+}
+function o5PxOf(f,i){ return f.padL + (i/(f.xs.length-1))*f.plotW; }
+function o5AxisLabel(step){ return step===0 ? 'error' : step===3 ? '|error|' : 'error² / cost'; }
+function o5Render(){
+  const cv = $('#cvParabolaBuild');
+  const { ctx, w, h } = fitCanvas(cv);
+  const f = o5BuildFrame(w,h);
+  ctx.clearRect(0,0,w,h);
+
+  let t = 1, from = o5Step, to = o5Step;
+  if(o5Anim){
+    t = Math.min(1, (performance.now()-o5Anim.start)/O5_DUR);
+    from = o5Anim.from; to = o5Anim.to;
+  }
+  const ease = t<0.5 ? 2*t*t : 1-Math.pow(-2*t+2,2)/2;
+  const yFrom = f.states[from], yTo = f.states[to];
+  const yNow = yFrom.map((v,i) => v+(yTo[i]-v)*ease);
+
+  const faintAlpha = (from===2?1:0) + ((to===2?1:0)-(from===2?1:0))*ease;
+  if(faintAlpha>0.01){
+    ctx.save(); ctx.globalAlpha=faintAlpha;
+    ctx.strokeStyle=cssVar('--ink-faint'); ctx.lineWidth=1.2;
+    f.faint.forEach(arr => { ctx.beginPath(); arr.forEach((py,i)=>{ const px=o5PxOf(f,i); i===0?ctx.moveTo(px,py):ctx.lineTo(px,py); }); ctx.stroke(); });
+    ctx.restore();
+  }
+
+  const zeroAlpha = (from===0?1:0) + ((to===0?1:0)-(from===0?1:0))*ease;
+  if(zeroAlpha>0.01){
+    ctx.save(); ctx.globalAlpha=zeroAlpha;
+    ctx.strokeStyle=cssVar('--ink-faint'); ctx.setLineDash([4,4]); ctx.lineWidth=1;
+    ctx.beginPath(); ctx.moveTo(f.padL,f.midY); ctx.lineTo(f.padL+f.plotW,f.midY); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle=cssVar('--ink-faint'); ctx.font='10px sans-serif'; ctx.textAlign='left';
+    ctx.fillText('error = 0', f.padL+4, f.midY-6);
+    ctx.restore();
+  }
+
+  ctx.strokeStyle=cssVar('--c-landscape'); ctx.lineWidth=3; ctx.beginPath();
+  yNow.forEach((py,i) => { const px=o5PxOf(f,i); i===0?ctx.moveTo(px,py):ctx.lineTo(px,py); });
+  ctx.stroke();
+
+  ctx.strokeStyle=cssVar('--line'); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(f.padL,f.padT+f.plotH); ctx.lineTo(f.padL+f.plotW,f.padT+f.plotH); ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(f.padL,f.padT); ctx.lineTo(f.padL,f.padT+f.plotH); ctx.stroke();
+  ctx.fillStyle=cssVar('--ink-faint'); ctx.font='10px sans-serif'; ctx.textAlign='center';
+  ctx.fillText("β₀ (the number we're choosing) →", f.padL+f.plotW/2, h-6);
+  ctx.save(); ctx.translate(14, f.padT+f.plotH/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center';
+  ctx.fillText(o5AxisLabel(t<0.5?from:to), 0, 0);
+  ctx.restore();
+
+  if(o5Anim && t<1){
+    requestAnimationFrame(o5Render);
+  } else if(o5Anim){
+    o5Step = o5Anim.to; o5Anim = null;
+  }
+}
+function o5GoTo(step){
+  if(step===o5Step && !o5Anim) return;
+  o5Anim = { from: o5Anim?o5Anim.to:o5Step, to: step, start: performance.now() };
+  o5Step = step;
+  $('#o5Footnote').textContent = O5_STEP_LABELS[step];
+  [0,1,2,3].forEach(s => {
+    $('#o5Step'+s+'Btn').classList.toggle('toggled', s===step);
+    $('#o5Rule'+s).classList.toggle('active-rule', s===step);
+  });
+  requestAnimationFrame(o5Render);
+}
+onEnter['sO5'] = () => {
+  clearInterval(o5PlayTimer); o5PlayTimer=null;
+  o5Anim = null; o5Step = 0;
+  $('#o5Footnote').textContent = O5_STEP_LABELS[0];
+  [0,1,2,3].forEach(s => {
+    $('#o5Step'+s+'Btn').classList.toggle('toggled', s===0);
+    $('#o5Rule'+s).classList.toggle('active-rule', s===0);
+  });
+  o5Render();
+};
+$('#o5Step0Btn').addEventListener('click', () => { clearInterval(o5PlayTimer); o5PlayTimer=null; o5GoTo(0); });
+$('#o5Step1Btn').addEventListener('click', () => { clearInterval(o5PlayTimer); o5PlayTimer=null; o5GoTo(1); });
+$('#o5Step2Btn').addEventListener('click', () => { clearInterval(o5PlayTimer); o5PlayTimer=null; o5GoTo(2); });
+$('#o5Step3Btn').addEventListener('click', () => { clearInterval(o5PlayTimer); o5PlayTimer=null; o5GoTo(3); });
+$('#o5PlayBtn').addEventListener('click', () => {
+  if(o5PlayTimer) return;
+  let s = 0; o5GoTo(0);
+  o5PlayTimer = setInterval(() => {
+    s += 1;
+    if(s>2){ clearInterval(o5PlayTimer); o5PlayTimer=null; return; }
+    o5GoTo(s);
+  }, O5_DUR+500);
+});
+
+/* --- O5B: table of values -> square vs abs, side by side --- */
+function o5bDrawMiniCurve(canvasId, ys, xs, rowPx, rowYs, color){
+  const cv = $('#'+canvasId);
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const padL=14,padR=14,padT=14,padB=14;
+  const plotW=w-padL-padR, plotH=h-padT-padB;
+  const maxV = Math.max(...ys)||1;
+  const toPx = (i) => padL + (i/(xs.length-1))*plotW;
+  const toPy = (v) => padT+plotH-(v/maxV)*plotH*0.94;
+  ctx.strokeStyle=cssVar('--line'); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(padL,padT+plotH); ctx.lineTo(padL+plotW,padT+plotH); ctx.stroke();
+  ctx.strokeStyle=color; ctx.lineWidth=2.6; ctx.beginPath();
+  ys.forEach((v,i) => { const px=toPx(i), py=toPy(v); i===0?ctx.moveTo(px,py):ctx.lineTo(px,py); });
+  ctx.stroke();
+  rowYs.forEach((v,i) => {
+    const b0 = rowPx[i];
+    const idx = ((b0-xs[0])/(xs[xs.length-1]-xs[0]))*(xs.length-1);
+    const px = padL + (idx/(xs.length-1))*plotW;
+    const py = toPy(v);
+    ctx.fillStyle = color; ctx.beginPath(); ctx.arc(px,py,4,0,Math.PI*2); ctx.fill();
+    ctx.strokeStyle = cssVar('--paper'); ctx.lineWidth=1.5; ctx.stroke();
+  });
+}
+onEnter['sO5B'] = () => {
+  const hero = EMPLOYEES[O5_HERO_IDX];
+  const b0Zero = hero.y - OLS.b1*hero.x;
+  const offsets = [-9,-6,-3,0,3,6,9];
+  const rowB0 = offsets.map(o => clamp(b0Zero+o, B0_RANGE[0], B0_RANGE[1]));
+  const rows = rowB0.map(b0 => {
+    const err = hero.y-(b0+OLS.b1*hero.x);
+    return { b0, err, sq: err*err, ab: Math.abs(err) };
+  });
+  let zeroIdx = 0;
+  rows.forEach((r,i) => { if(Math.abs(r.err) < Math.abs(rows[zeroIdx].err)) zeroIdx = i; });
+  $('#o5bTableBody').innerHTML = rows.map((r,i) =>
+    `<tr class="${i===zeroIdx?'zero-row':''}"><td>${fmt(r.b0,2)}</td><td class="err-col">${fmt(r.err,2)}</td><td>${fmt(r.sq,2)}</td><td>${fmt(r.ab,2)}</td></tr>`
+  ).join('');
+
+  const N = 140;
+  const [b0min,b0max] = B0_RANGE;
+  const xs = []; for(let i=0;i<=N;i++) xs.push(b0min+(i/N)*(b0max-b0min));
+  const rawLine = xs.map(b0 => hero.y-(b0+OLS.b1*hero.x));
+  const rawSquare = rawLine.map(v => v*v);
+  const rawAbs = rawLine.map(v => Math.abs(v));
+  o5bDrawMiniCurve('cvTableSquare', rawSquare, xs, rowB0, rows.map(r=>r.sq), cssVar('--c-landscape'));
+  o5bDrawMiniCurve('cvTableAbs', rawAbs, xs, rowB0, rows.map(r=>r.ab), cssVar('--c-formula'));
+};
+
+/* --- O6: checkpoint — find the bottom by feel --- */
+let o6Layout = null, o6Guess = null;
+function drawO6(){
+  const layout = drawCostLandscape($('#cvLandscapeGuess'), EMPLOYEES, B0_RANGE, B1_RANGE, getLandscapeGrid());
+  o6Layout = layout;
+  if(o6Guess) drawLandscapeMarker(layout.ctx, layout.toPx, o6Guess.b0, o6Guess.b1, cssVar('--c-landscape'));
+  drawLandscapeStar(layout.ctx, layout.toPx, OLS.b0, OLS.b1, cssVar('--ink'));
+}
+onEnter['sO6'] = () => {
+  o6Guess = null;
+  $('#o6YourCost').textContent = '—';
+  $('#o6MinCost').textContent = fmt(costMSE(EMPLOYEES,OLS.b0,OLS.b1),2);
+  $('#o6Result').style.display = 'none';
+  drawO6();
+};
+const cvO6 = $('#cvLandscapeGuess');
+cvO6.addEventListener('click', e => {
+  const rect = cvO6.getBoundingClientRect();
+  if(!o6Layout) return;
+  const p = o6Layout.toParams(e.clientX-rect.left, e.clientY-rect.top);
+  o6Guess = { b0: clamp(p.b0,B0_RANGE[0],B0_RANGE[1]), b1: clamp(p.b1,B1_RANGE[0],B1_RANGE[1]) };
+  const yourCost = costMSE(EMPLOYEES, o6Guess.b0, o6Guess.b1);
+  const minCost = costMSE(EMPLOYEES, OLS.b0, OLS.b1);
+  $('#o6YourCost').textContent = fmt(yourCost,2);
+  $('#o6MinCost').textContent = fmt(minCost,2);
+  const pctOff = (yourCost-minCost)/minCost*100;
+  const banner = $('#o6Result');
+  banner.style.display = 'flex';
+  banner.textContent = pctOff<5
+    ? `🎯 Excellent! You're within ${fmt(pctOff,1)}% of the true minimum cost — practically on target.`
+    : `You're ${fmt(pctOff,0)}% above the true minimum. Try clicking closer to the darkest region!`;
+  drawO6();
+});
+$('#o6ResetBtn').addEventListener('click', () => { o6Guess=null; $('#o6Result').style.display='none'; $('#o6YourCost').textContent='—'; drawO6(); });
+
+/* =========================== HOUR 2 — GRADIENT DESCENT =========================== */
+const ALPHA_1D = 0.3;
+
+/* --- D2: 1D hiker --- */
+let d2B0 = 10, d2Timer = null;
+function draw1DHiker(){
+  const cv = $('#cvHiker1D');
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const padL=44,padR=16,padT=16,padB=30;
+  const plotW=w-padL-padR, plotH=h-padT-padB;
+  const [b0min,b0max] = B0_RANGE;
+  const vals = [];
+  for(let px=0;px<=plotW;px+=2) vals.push(costMSE(EMPLOYEES, b0min+(px/plotW)*(b0max-b0min), OLS.b1));
+  const maxV = Math.max(...vals), minV = Math.min(...vals);
+  ctx.strokeStyle=cssVar('--c-descent'); ctx.lineWidth=2.6; ctx.beginPath();
+  vals.forEach((c,idx) => {
+    const px=padL+idx*2, py=padT+plotH-((c-minV)/(maxV-minV))*plotH*0.92;
+    idx===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+  });
+  ctx.stroke();
+  ctx.strokeStyle=cssVar('--line'); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(padL,padT+plotH); ctx.lineTo(padL+plotW,padT+plotH); ctx.stroke();
+  ctx.fillStyle=cssVar('--ink-faint'); ctx.font='10px sans-serif'; ctx.textAlign='center';
+  ctx.fillText('β₀ →', padL+plotW/2, h-8);
+  const hx = padL + ((d2B0-b0min)/(b0max-b0min))*plotW;
+  const hc = costMSE(EMPLOYEES, d2B0, OLS.b1);
+  const hy = padT+plotH-((hc-minV)/(maxV-minV))*plotH*0.92;
+  ctx.font='26px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('🥾', hx, hy-16);
+  ctx.fillStyle=cssVar('--ink'); ctx.beginPath(); ctx.arc(hx,hy,4,0,Math.PI*2); ctx.fill();
+  $('#d2B0').textContent = fmt(d2B0,2);
+  $('#d2Slope').textContent = fmt(gradB0(EMPLOYEES,d2B0,OLS.b1),2);
+  $('#d2Cost').textContent = fmt(hc,3);
+}
+onEnter['sD2'] = () => { clearInterval(d2Timer); d2B0 = rand(B0_RANGE[0]+2, B0_RANGE[1]-2); $('#d2B1Frozen').textContent = fmt(OLS.b1,3); draw1DHiker(); };
+$('#d2StepBtn').addEventListener('click', () => {
+  const g = gradB0(EMPLOYEES, d2B0, OLS.b1);
+  d2B0 = clamp(d2B0 - ALPHA_1D*g, B0_RANGE[0], B0_RANGE[1]);
+  draw1DHiker();
+});
+$('#d2RunBtn').addEventListener('click', () => {
+  clearInterval(d2Timer);
+  d2Timer = setInterval(() => {
+    const g = gradB0(EMPLOYEES, d2B0, OLS.b1);
+    d2B0 = d2B0 - ALPHA_1D*g;
+    draw1DHiker();
+    if(Math.abs(g) < 0.02) clearInterval(d2Timer);
+  }, 130);
+});
+$('#d2ResetBtn').addEventListener('click', () => { clearInterval(d2Timer); d2B0 = rand(B0_RANGE[0]+2,B0_RANGE[1]-2); draw1DHiker(); });
+onLeave['sD2'] = () => clearInterval(d2Timer);
+
+/* --- D4: 2D gradient descent on the landscape --- */
+let d4B0=10, d4B1=0, d4Path=[], d4Timer=null;
+function drawD4(){
+  const layout = drawCostLandscape($('#cvGdPath'), EMPLOYEES, B0_RANGE, B1_RANGE, getLandscapeGrid());
+  drawLandscapeStar(layout.ctx, layout.toPx, OLS.b0, OLS.b1, cssVar('--ink-faint'));
+  drawLandscapePath(layout.ctx, layout.toPx, d4Path, cssVar('--c-descent'));
+  drawUphillArrow(layout.ctx, EMPLOYEES, layout, d4B0, d4B1, cssVar('--bad'));
+  drawLandscapeMarker(layout.ctx, layout.toPx, d4B0, d4B1, cssVar('--c-descent'));
+  $('#d4Step').textContent = d4Path.length-1;
+  $('#d4Params').textContent = `${fmt(d4B0,2)}, ${fmt(d4B1,3)}`;
+  $('#d4Cost').textContent = fmt(costMSE(EMPLOYEES,d4B0,d4B1),3);
+}
+function resetD4(){
+  clearInterval(d4Timer);
+  d4B0 = rand(12,18); d4B1 = rand(-0.5,0.3);
+  d4Path = [{b0:d4B0,b1:d4B1}];
+  drawD4();
+}
+onEnter['sD4'] = resetD4;
+$('#d4StepBtn').addEventListener('click', () => {
+  const s = gdStep(EMPLOYEES, d4B0, d4B1, ALPHA_DEFAULT);
+  d4B0=s.b0; d4B1=s.b1;
+  d4Path.push({b0:d4B0,b1:d4B1});
+  drawD4();
+});
+$('#d4RunBtn').addEventListener('click', () => {
+  clearInterval(d4Timer);
+  const fullPath = runGDPath(EMPLOYEES, d4B0, d4B1, ALPHA_DEFAULT, 1500, 0.05);
+  let idx=0;
+  d4Timer = setInterval(() => {
+    idx = Math.min(idx+20, fullPath.length-1);
+    d4Path = fullPath.slice(0, idx+1);
+    d4B0 = fullPath[idx].b0; d4B1 = fullPath[idx].b1;
+    drawD4();
+    if(idx>=fullPath.length-1) clearInterval(d4Timer);
+  }, 30);
+});
+$('#d4ResetBtn').addEventListener('click', resetD4);
+onLeave['sD4'] = () => clearInterval(d4Timer);
+
+/* --- D5: learning rate race --- */
+let lrState=null, lrTimer=null;
+function initLrState(){
+  const start = {b0: rand(12,18), b1: rand(-0.5,0.3)};
+  lrState = {
+    small: {alpha:0.002, b0:start.b0, b1:start.b1, path:[{...start}], diverged:false},
+    good:  {alpha:0.010, b0:start.b0, b1:start.b1, path:[{...start}], diverged:false},
+    big:   {alpha:0.015, b0:start.b0, b1:start.b1, path:[{...start}], diverged:false},
+  };
+}
+function drawLr(key, canvasId, color){
+  const st = lrState[key];
+  const layout = drawCostLandscape($('#'+canvasId), EMPLOYEES, B0_RANGE, B1_RANGE, getLandscapeGrid());
+  drawLandscapeStar(layout.ctx, layout.toPx, OLS.b0, OLS.b1, cssVar('--ink-faint'));
+  drawLandscapePath(layout.ctx, layout.toPx, st.path, color);
+  if(!st.diverged) drawLandscapeMarker(layout.ctx, layout.toPx, st.b0, st.b1, color, 6);
+}
+function drawAllLr(){
+  drawLr('small','cvLrSmall', cssVar('--ink-faint'));
+  drawLr('good','cvLrGood', cssVar('--good'));
+  drawLr('big','cvLrBig', cssVar('--bad'));
+}
+onEnter['sD5'] = () => { clearInterval(lrTimer); initLrState(); $('#lrStepCount').textContent='0'; drawAllLr(); };
+function stepLrOnce(){
+  ['small','good','big'].forEach(key => {
+    const st = lrState[key];
+    if(st.diverged) return;
+    const s = gdStep(EMPLOYEES, st.b0, st.b1, st.alpha);
+    if(!isFinite(s.b0) || !isFinite(s.b1) || Math.abs(s.b0)>500 || Math.abs(s.b1)>500){ st.diverged=true; return; }
+    st.b0=s.b0; st.b1=s.b1; st.path.push({b0:st.b0,b1:st.b1});
+  });
+}
+$('#lrStepBtn').addEventListener('click', () => {
+  stepLrOnce();
+  $('#lrStepCount').textContent = (+$('#lrStepCount').textContent)+1;
+  drawAllLr();
+});
+$('#lrRunBtn').addEventListener('click', () => {
+  clearInterval(lrTimer);
+  let count=0;
+  lrTimer = setInterval(() => {
+    stepLrOnce(); count++;
+    $('#lrStepCount').textContent = (+$('#lrStepCount').textContent)+1;
+    drawAllLr();
+    if(count>=40) clearInterval(lrTimer);
+  }, 90);
+});
+$('#lrResetBtn').addEventListener('click', () => { clearInterval(lrTimer); initLrState(); $('#lrStepCount').textContent='0'; drawAllLr(); });
+onLeave['sD5'] = () => clearInterval(lrTimer);
+
+/* --- D6: random search vs gradient descent race --- */
+let raceState=null, raceTimer=null;
+const olsCostVal = costMSE(EMPLOYEES, OLS.b0, OLS.b1);
+const raceTarget = olsCostVal*1.01;
+function initRace(){
+  raceState = {
+    randomB0:10, randomB1:0, randomTemp:1, randomPath:[{b0:10,b1:0}], randomDone:false, randomSteps:0,
+    gdB0:10, gdB1:0, gdPath:[{b0:10,b1:0}], gdDone:false, gdSteps:0,
+  };
+}
+function drawRace(){
+  const layout = drawCostLandscape($('#cvRace'), EMPLOYEES, B0_RANGE, B1_RANGE, getLandscapeGrid());
+  drawLandscapeStar(layout.ctx, layout.toPx, OLS.b0, OLS.b1, cssVar('--ink'));
+  drawLandscapePath(layout.ctx, layout.toPx, raceState.randomPath, cssVar('--ink-faint'));
+  drawLandscapePath(layout.ctx, layout.toPx, raceState.gdPath, cssVar('--c-descent'));
+  drawLandscapeMarker(layout.ctx, layout.toPx, raceState.randomB0, raceState.randomB1, cssVar('--ink-faint'), 6);
+  drawLandscapeMarker(layout.ctx, layout.toPx, raceState.gdB0, raceState.gdB1, cssVar('--c-descent'), 6);
+}
+onEnter['sD6'] = () => { clearInterval(raceTimer); initRace(); $('#raceRandomSteps').textContent='—'; $('#raceGdSteps').textContent='—'; $('#raceBanner').style.display='none'; drawRace(); };
+$('#raceRunBtn').addEventListener('click', () => {
+  clearInterval(raceTimer);
+  initRace();
+  raceTimer = setInterval(() => {
+    if(!raceState.randomDone){
+      let bestB0=raceState.randomB0, bestB1=raceState.randomB1, bestMse=costMSE(EMPLOYEES,raceState.randomB0,raceState.randomB1);
+      for(let t=0;t<6;t++){
+        const cb0=raceState.randomB0+rand(-8,8)*raceState.randomTemp;
+        const cb1=raceState.randomB1+rand(-0.35,0.35)*raceState.randomTemp;
+        const m=costMSE(EMPLOYEES,cb0,cb1);
+        if(m<bestMse){ bestMse=m; bestB0=cb0; bestB1=cb1; }
+      }
+      raceState.randomB0=bestB0; raceState.randomB1=bestB1; raceState.randomTemp*=0.955;
+      raceState.randomPath.push({b0:bestB0,b1:bestB1});
+      raceState.randomSteps++;
+      if(bestMse<=raceTarget) raceState.randomDone=true;
+    }
+    if(!raceState.gdDone){
+      for(let sub=0; sub<8 && !raceState.gdDone; sub++){
+        const s = gdStep(EMPLOYEES, raceState.gdB0, raceState.gdB1, ALPHA_DEFAULT);
+        raceState.gdB0=s.b0; raceState.gdB1=s.b1;
+        raceState.gdPath.push({b0:s.b0,b1:s.b1});
+        raceState.gdSteps++;
+        if(costMSE(EMPLOYEES,s.b0,s.b1)<=raceTarget) raceState.gdDone=true;
+      }
+    }
+    $('#raceRandomSteps').textContent = raceState.randomSteps + (raceState.randomDone?'':'…');
+    $('#raceGdSteps').textContent = raceState.gdSteps + (raceState.gdDone?'':'…');
+    drawRace();
+    if((raceState.randomDone && raceState.gdDone) || raceState.randomSteps>4000 || raceState.gdSteps>4000){
+      clearInterval(raceTimer);
+      const banner = $('#raceBanner');
+      banner.style.display='flex';
+      const winner = raceState.randomSteps < raceState.gdSteps ? 'Random search' : 'Gradient descent';
+      banner.textContent = `🏁 ${winner} reached the finish line first! Random search: ${raceState.randomSteps} rounds (×6 tries each ≈ ${raceState.randomSteps*6} evaluations). Gradient descent: ${raceState.gdSteps} careful steps. Surprised? On this UNSCALED landscape, cautious calculated steps don't always beat lucky big jumps — wait for Hour 4's feature-scaling reveal.`;
+    }
+  }, 30);
+});
+$('#raceResetBtn').addEventListener('click', () => { clearInterval(raceTimer); initRace(); $('#raceRandomSteps').textContent='—'; $('#raceGdSteps').textContent='—'; $('#raceBanner').style.display='none'; drawRace(); });
+onLeave['sD6'] = () => clearInterval(raceTimer);
+
+/* =========================== HOUR 2 CONTINUED — WORKED EXAMPLE (SALARY vs AGE) =========================== */
+const AGE_EMPLOYEES = [
+  {x:22,y:3}, {x:25,y:4}, {x:28,y:4.5}, {x:32,y:6},
+  {x:35,y:7}, {x:39,y:8}, {x:43,y:9.5}, {x:47,y:11}
+];
+const AGE_X_DOMAIN = [18, 52], AGE_Y_DOMAIN = [0, 13];
+const AGE_OLS = olsFit(AGE_EMPLOYEES);
+const AGE_MEAN_SALARY = mean(AGE_EMPLOYEES.map(p=>p.y));
+
+/* --- G2: meet the dataset --- */
+onEnter['sG2'] = () => {
+  $('#ageTableBody').innerHTML = AGE_EMPLOYEES.map(p =>
+    `<tr><td>${p.x}</td><td>${fmt(p.y,1)}</td></tr>`
+  ).join('');
+  drawScatter($('#cvAgeScatter'), {
+    points: AGE_EMPLOYEES, xDomain: AGE_X_DOMAIN, yDomain: AGE_Y_DOMAIN,
+    xLabel: 'age (years) →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--c-descent'), radius: 6,
+  });
+};
+
+
+/* --- G1C: why β0 and β1 must move together (coupling demonstration) --- */
+function g1cSeparateFit(){
+  const b0 = AGE_MEAN_SALARY; // step 1: best β0 assuming β1=0 → just the average
+  let num=0, den=0;           // step 2: fix that β0, find the best β1 for it alone
+  for(const p of AGE_EMPLOYEES){ num += p.x*(p.y-b0); den += p.x*p.x; }
+  return { b0, b1: num/den };
+}
+onEnter['sG1C'] = () => {
+  $('#g1cSeparateB0').textContent = '?';
+  $('#g1cSeparateB1').textContent = '?';
+  $('#g1cSeparateCost').textContent = '?';
+  $('#g1cJointB0').textContent = fmt(AGE_OLS.b0,3);
+  $('#g1cJointB1').textContent = fmt(AGE_OLS.b1,4);
+  $('#g1cJointCost').textContent = fmt(costMSE(AGE_EMPLOYEES,AGE_OLS.b0,AGE_OLS.b1),3);
+  $('#g1cExplain').style.display = 'none';
+  drawScatter($('#cvCoupling'), {
+    points: AGE_EMPLOYEES, xDomain: AGE_X_DOMAIN, yDomain: AGE_Y_DOMAIN,
+    xLabel: 'age (years) →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--ink-faint'),
+    line: {b0:AGE_OLS.b0, b1:AGE_OLS.b1}, lineColor: cssVar('--c-descent'),
+  });
+};
+$('#g1cRevealBtn').addEventListener('click', () => {
+  const sep = g1cSeparateFit();
+  const sepCost = costMSE(AGE_EMPLOYEES, sep.b0, sep.b1);
+  const jointCost = costMSE(AGE_EMPLOYEES, AGE_OLS.b0, AGE_OLS.b1);
+  $('#g1cSeparateB0').textContent = fmt(sep.b0,3);
+  $('#g1cSeparateB1').textContent = fmt(sep.b1,4);
+  $('#g1cSeparateCost').textContent = fmt(sepCost,3);
+  $('#g1cExplain').style.display = 'flex';
+  $('#g1cExplain').textContent = `😬 One-at-a-time landed on β₁ ≈ ${fmt(sep.b1,4)} — barely any raise per year! That's because β₀ got frozen at the "age doesn't matter" guess (the plain average) before β₁ ever got a say. Cost: ${fmt(sepCost,2)} vs. just ${fmt(jointCost,3)} when found together — roughly ${fmt(sepCost/jointCost,0)}× worse. Moving BOTH dials together, round after round, is what actually finds the real relationship.`;
+  drawScatter($('#cvCoupling'), {
+    points: AGE_EMPLOYEES, xDomain: AGE_X_DOMAIN, yDomain: AGE_Y_DOMAIN,
+    xLabel: 'age (years) →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--ink-faint'),
+    line: {b0:AGE_OLS.b0, b1:AGE_OLS.b1}, lineColor: cssVar('--c-descent'),
+    line2: {b0:sep.b0, b1:sep.b1}, line2Color: cssVar('--bad'), line2Dash:[5,3],
+  });
+});
+
+/* --- G3: single-parameter gradient descent (constant model, predicted = β0) --- */
+const G3_ALPHA = 0.2;
+let g3B0 = 0, g3Iter = 0, g3Timer = null;
+function g3Grad(b0){ return -2*mean(AGE_EMPLOYEES.map(p=>p.y-b0)); }
+function g3Cost(b0){ return mean(AGE_EMPLOYEES.map(p=>(p.y-b0)**2)); }
+function g3RowFor(iter, b0){ return { iter, b0, g: g3Grad(b0), c: g3Cost(b0) }; }
+function g3AddRow(r){
+  const tbody = $('#g3TableBody');
+  const row = document.createElement('tr');
+  row.innerHTML = `<td>${r.iter}</td><td>${fmt(r.b0,3)}</td><td>${fmt(r.g,3)}</td><td>${fmt(r.c,3)}</td>`;
+  tbody.appendChild(row);
+  const wrap = tbody.closest('.table-wrap'); if(wrap) wrap.scrollTop = wrap.scrollHeight;
+}
+function drawG3Curve(){
+  const cv = $('#cvG3Curve');
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const padL=44,padR=16,padT=16,padB=28;
+  const plotW=w-padL-padR, plotH=h-padT-padB;
+  const b0min=0, b0max=13;
+  const vals=[]; for(let px=0;px<=plotW;px+=2) vals.push(g3Cost(b0min+(px/plotW)*(b0max-b0min)));
+  const maxV=Math.max(...vals), minV=Math.min(...vals);
+  ctx.strokeStyle=cssVar('--c-descent'); ctx.lineWidth=2.6; ctx.beginPath();
+  vals.forEach((c,idx)=>{ const px=padL+idx*2, py=padT+plotH-((c-minV)/(maxV-minV))*plotH*0.92; idx===0?ctx.moveTo(px,py):ctx.lineTo(px,py); });
+  ctx.stroke();
+  ctx.strokeStyle=cssVar('--line'); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(padL,padT+plotH); ctx.lineTo(padL+plotW,padT+plotH); ctx.stroke();
+  ctx.fillStyle=cssVar('--ink-faint'); ctx.font='10px sans-serif'; ctx.textAlign='center';
+  ctx.fillText('β₀ →', padL+plotW/2, h-6);
+  const hx = padL + ((g3B0-b0min)/(b0max-b0min))*plotW;
+  const hc = g3Cost(g3B0);
+  const hy = padT+plotH-((hc-minV)/(maxV-minV))*plotH*0.92;
+  ctx.fillStyle=cssVar('--c-descent'); ctx.beginPath(); ctx.arc(hx,hy,5,0,Math.PI*2); ctx.fill();
+  ctx.strokeStyle=cssVar('--paper'); ctx.lineWidth=1.5; ctx.stroke();
+}
+function g3Render(){
+  $('#g3Iter').textContent = g3Iter;
+  $('#g3B0').textContent = fmt(g3B0,3);
+  $('#g3Grad').textContent = fmt(g3Grad(g3B0),3);
+  $('#g3Cost').textContent = fmt(g3Cost(g3B0),3);
+  drawG3Curve();
+}
+function g3Step(){
+  const g = g3Grad(g3B0);
+  g3B0 = g3B0 - G3_ALPHA*g;
+  g3Iter++;
+  g3AddRow(g3RowFor(g3Iter, g3B0));
+  g3Render();
+  return Math.abs(g);
+}
+onEnter['sG3'] = () => {
+  clearInterval(g3Timer);
+  g3B0 = 0; g3Iter = 0;
+  $('#g3TableBody').innerHTML = '';
+  $('#g3Done').style.display='none';
+  g3AddRow(g3RowFor(0, g3B0));
+  g3Render();
+};
+$('#g3StepBtn').addEventListener('click', () => { clearInterval(g3Timer); g3Step(); });
+$('#g3RunBtn').addEventListener('click', () => {
+  clearInterval(g3Timer);
+  g3Timer = setInterval(() => {
+    const gmag = g3Step();
+    if(gmag<0.02 || g3Iter>=40){
+      clearInterval(g3Timer);
+      $('#g3Done').style.display='flex';
+      $('#g3Done').textContent = `✅ Converged at β₀ = ${fmt(g3B0,3)} — that's the AVERAGE salary (${fmt(AGE_MEAN_SALARY,3)})! Makes sense: if you can only say ONE number for everyone, the average is the best guess.`;
+    }
+  }, 160);
+});
+$('#g3ResetBtn').addEventListener('click', () => { onEnter['sG3'](); });
+onLeave['sG3'] = () => clearInterval(g3Timer);
+
+/* --- G4: two-parameter gradient descent (β0 + β1×age) --- */
+/* Computed internally on standardized age for stable, fast convergence; always displayed in real (raw) units. */
+const G4_ALPHA = 0.1;
+const AGE_MEAN_X = mean(AGE_EMPLOYEES.map(p=>p.x));
+const AGE_STD_X = sd(AGE_EMPLOYEES.map(p=>p.x));
+const AGE_Z = AGE_EMPLOYEES.map(p => ({ z: (p.x-AGE_MEAN_X)/AGE_STD_X, y: p.y }));
+let g4B0z = 0, g4B1z = 0, g4Iter = 0, g4Timer = null;
+function g4GradB0z(b0z,b1z){ return -2*mean(AGE_Z.map(p=>p.y-(b0z+b1z*p.z))); }
+function g4GradB1z(b0z,b1z){ return -2*mean(AGE_Z.map(p=>(p.y-(b0z+b1z*p.z))*p.z)); }
+function g4RawParams(){
+  const b1 = g4B1z/AGE_STD_X;
+  const b0 = g4B0z - b1*AGE_MEAN_X;
+  return { b0, b1 };
+}
+function g4RowFor(iter){
+  const { b0, b1 } = g4RawParams();
+  return { iter, b0, b1, c: costMSE(AGE_EMPLOYEES,b0,b1) };
+}
+function g4AddRow(r){
+  const tbody = $('#g4TableBody');
+  const row = document.createElement('tr');
+  row.innerHTML = `<td>${r.iter}</td><td>${fmt(r.b0,3)}</td><td>${fmt(r.b1,4)}</td><td>${fmt(r.c,3)}</td>`;
+  tbody.appendChild(row);
+  const wrap = tbody.closest('.table-wrap'); if(wrap) wrap.scrollTop = wrap.scrollHeight;
+}
+function drawG4Line(){
+  const { b0, b1 } = g4RawParams();
+  drawScatter($('#cvG4Line'), {
+    points: AGE_EMPLOYEES, xDomain: AGE_X_DOMAIN, yDomain: AGE_Y_DOMAIN,
+    xLabel: 'age (years) →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--ink-faint'),
+    line: {b0,b1}, lineColor: cssVar('--c-descent'),
+    residualLine: {b0,b1},
+  });
+}
+function g4Render(){
+  const { b0, b1 } = g4RawParams();
+  $('#g4Iter').textContent = g4Iter;
+  $('#g4B0').textContent = fmt(b0,3);
+  $('#g4B1').textContent = fmt(b1,4);
+  $('#g4Cost').textContent = fmt(costMSE(AGE_EMPLOYEES,b0,b1),3);
+  drawG4Line();
+}
+function g4Step(){
+  const g0 = g4GradB0z(g4B0z,g4B1z), g1 = g4GradB1z(g4B0z,g4B1z);
+  g4B0z = g4B0z - G4_ALPHA*g0;
+  g4B1z = g4B1z - G4_ALPHA*g1;
+  g4Iter++;
+  g4AddRow(g4RowFor(g4Iter));
+  g4Render();
+  return Math.sqrt(g0*g0+g1*g1);
+}
+onEnter['sG4'] = () => {
+  clearInterval(g4Timer);
+  g4B0z = 0; g4B1z = 0; g4Iter = 0;
+  $('#g4TableBody').innerHTML = '';
+  $('#g4Done').style.display='none';
+  g4AddRow(g4RowFor(0));
+  g4Render();
+};
+$('#g4StepBtn').addEventListener('click', () => { clearInterval(g4Timer); g4Step(); });
+$('#g4RunBtn').addEventListener('click', () => {
+  clearInterval(g4Timer);
+  g4Timer = setInterval(() => {
+    const gmag = g4Step();
+    if(gmag<0.01 || g4Iter>=60){
+      clearInterval(g4Timer);
+      const { b0, b1 } = g4RawParams();
+      $('#g4Done').style.display='flex';
+      $('#g4Done').textContent = `✅ Converged at β₀ = ${fmt(b0,3)}, β₁ = ${fmt(b1,4)} — compare to the exact shortcut formula: β₀ = ${fmt(AGE_OLS.b0,3)}, β₁ = ${fmt(AGE_OLS.b1,4)}. Same answer, found by walking instead of computing directly.`;
+    }
+  }, 160);
+});
+$('#g4ResetBtn').addEventListener('click', () => { onEnter['sG4'](); });
+onLeave['sG4'] = () => clearInterval(g4Timer);
+
+/* --- G5: final recap numbers --- */
+onEnter['sG5'] = () => {
+  $('#g5MeanSalary').textContent = fmt(AGE_MEAN_SALARY,3);
+  $('#g5FinalB0').textContent = fmt(AGE_OLS.b0,3);
+  $('#g5FinalB1').textContent = fmt(AGE_OLS.b1,4);
+};
+
+
+/* =========================== HOUR 3 — THE ACTUAL FORMULAS =========================== */
+
+/* --- F2: nudge demo --- */
+onEnter['sF2'] = () => {
+  const b0=8, b1=0.8, h=2.5;
+  drawScatter($('#cvNudgeDemo'), {
+    points: EMPLOYEES, xDomain:EMP_X_DOMAIN, yDomain:EMP_Y_DOMAIN,
+    xLabel:'years of experience →', yLabel:'salary (₹ LPA)',
+    color: cssVar('--ink-faint'),
+    line: {b0,b1}, lineColor: cssVar('--ink-faint'),
+    line2: {b0:b0+h,b1}, line2Color: cssVar('--c-formula'), line2Dash:[5,3],
+  });
+};
+
+/* --- F4: compute real gradient numbers --- */
+function drawF4(){
+  const b0 = +$('#f4B0Slider').value;
+  const b1 = +$('#f4B1Slider').value/100;
+  $('#f4B0Label').textContent = fmt(b0,1);
+  $('#f4B1Label').textContent = fmt(b1,2);
+  const avgResid = mean(EMPLOYEES.map(p=>p.y-(b0+b1*p.x)));
+  const avgResidX = mean(EMPLOYEES.map(p=>(p.y-(b0+b1*p.x))*p.x));
+  $('#f4AvgResid').textContent = fmt(avgResid,3);
+  $('#f4AvgResidX').textContent = fmt(avgResidX,3);
+  $('#f4GradB0').textContent = fmt(-2*avgResid,3);
+  $('#f4GradB1').textContent = fmt(-2*avgResidX,3);
+  const layout = drawCostLandscape($('#cvGradientCompute'), EMPLOYEES, B0_RANGE, B1_RANGE, getLandscapeGrid());
+  drawLandscapeStar(layout.ctx, layout.toPx, OLS.b0, OLS.b1, cssVar('--ink-faint'));
+  drawUphillArrow(layout.ctx, EMPLOYEES, layout, b0, b1, cssVar('--bad'));
+  drawLandscapeMarker(layout.ctx, layout.toPx, b0, b1, cssVar('--c-formula'));
+}
+onEnter['sF4'] = drawF4;
+$('#f4B0Slider').addEventListener('input', drawF4);
+$('#f4B1Slider').addEventListener('input', drawF4);
+
+/* --- F5: take one real gradient step --- */
+let f5B0=10, f5B1=0;
+function drawF5(){
+  const layout = drawCostLandscape($('#cvOneStep'), EMPLOYEES, B0_RANGE, B1_RANGE, getLandscapeGrid());
+  drawLandscapeStar(layout.ctx, layout.toPx, OLS.b0, OLS.b1, cssVar('--ink-faint'));
+  drawLandscapeMarker(layout.ctx, layout.toPx, f5B0, f5B1, cssVar('--c-formula'));
+}
+onEnter['sF5'] = () => { f5B0=10; f5B1=0; $('#f5Worked').style.display='none'; drawF5(); };
+$('#f5StepBtn').addEventListener('click', () => {
+  const g0 = gradB0(EMPLOYEES,f5B0,f5B1), g1 = gradB1(EMPLOYEES,f5B0,f5B1);
+  const newB0 = f5B0-ALPHA_DEFAULT*g0, newB1 = f5B1-ALPHA_DEFAULT*g1;
+  $('#f5Worked').style.display='block';
+  $('#f5WorkedText').innerHTML = `
+    ∂J/∂β₀ = ${fmt(g0,3)} → β₀ ≔ ${fmt(f5B0,3)} − ${ALPHA_DEFAULT} × (${fmt(g0,3)}) = <b>${fmt(newB0,3)}</b><br/>
+    ∂J/∂β₁ = ${fmt(g1,3)} → β₁ ≔ ${fmt(f5B1,3)} − ${ALPHA_DEFAULT} × (${fmt(g1,3)}) = <b>${fmt(newB1,3)}</b><br/>
+    <span style="color:var(--ink-faint);">Notice β₁ moved ${fmt(Math.abs(newB1-f5B1),3)} while β₀ moved only ${fmt(Math.abs(newB0-f5B0),3)} this step — their gradients live on very different scales. More on this in Hour 4.</span>`;
+  f5B0=newB0; f5B1=newB1;
+  drawF5();
+});
+
+/* --- F6: run to convergence, compare to OLS --- */
+let f6Timer=null;
+function drawF6(b0,b1,path){
+  const layout = drawCostLandscape($('#cvConvergeCompare'), EMPLOYEES, B0_RANGE, B1_RANGE, getLandscapeGrid());
+  drawLandscapeStar(layout.ctx, layout.toPx, OLS.b0, OLS.b1, cssVar('--ink'));
+  if(path) drawLandscapePath(layout.ctx, layout.toPx, path, cssVar('--c-formula'));
+  drawLandscapeMarker(layout.ctx, layout.toPx, b0, b1, cssVar('--c-formula'));
+}
+onEnter['sF6'] = () => {
+  clearInterval(f6Timer);
+  $('#f6Iter').textContent='0';
+  $('#f6GdLine').textContent='—';
+  $('#f6OlsLine').textContent = `y = ${fmt(OLS.b0,2)} + ${fmt(OLS.b1,2)}x`;
+  $('#f6Done').style.display='none';
+  drawF6(10,0,null);
+};
+$('#f6RunBtn').addEventListener('click', () => {
+  clearInterval(f6Timer);
+  const fullPath = runGDPath(EMPLOYEES, 10, 0, ALPHA_DEFAULT, 1500, 0.03);
+  let idx=0;
+  f6Timer = setInterval(() => {
+    idx = Math.min(idx+20, fullPath.length-1);
+    const curPt = fullPath[idx];
+    $('#f6Iter').textContent = idx;
+    $('#f6GdLine').textContent = `y = ${fmt(curPt.b0,2)} + ${fmt(curPt.b1,2)}x`;
+    drawF6(curPt.b0, curPt.b1, fullPath.slice(0,idx+1));
+    if(idx>=fullPath.length-1){
+      clearInterval(f6Timer);
+      $('#f6Done').style.display='flex';
+      $('#f6Done').textContent = `✅ Gradient descent's line (β₀=${fmt(curPt.b0,2)}, β₁=${fmt(curPt.b1,2)}) essentially MATCHES OLS's exact answer — found the same place, just by walking instead of computing directly.`;
+    }
+  }, 30);
+});
+$('#f6ResetBtn').addEventListener('click', () => { clearInterval(f6Timer); onEnter['sF6'](); });
+onLeave['sF6'] = () => clearInterval(f6Timer);
+
+/* =========================== HOUR 4 — CONVERGENCE & PITFALLS =========================== */
+
+/* --- C1: gradient magnitude shrinking --- */
+let c1Timer=null, c1History=[];
+function drawC1(history){
+  const cv = $('#cvGradientShrink');
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const padL=44,padR=16,padT=16,padB=28;
+  const plotW=w-padL-padR, plotH=h-padT-padB;
+  const maxV = Math.max(...history, 1);
+  ctx.strokeStyle=cssVar('--c-converge'); ctx.lineWidth=2.4; ctx.beginPath();
+  history.forEach((v,i) => {
+    const px = padL + (i/Math.max(1,history.length-1))*plotW;
+    const py = padT + plotH - (v/maxV)*plotH;
+    i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+  });
+  ctx.stroke();
+  ctx.strokeStyle=cssVar('--line'); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(padL,padT+plotH); ctx.lineTo(padL+plotW,padT+plotH); ctx.stroke();
+  ctx.fillStyle=cssVar('--ink-faint'); ctx.font='10px sans-serif'; ctx.textAlign='center';
+  ctx.fillText('iteration →', padL+plotW/2, h-6);
+}
+onEnter['sC1'] = () => {
+  clearInterval(c1Timer);
+  c1History=[0];
+  $('#c1Iter').textContent='0'; $('#c1GradMag').textContent='—'; $('#c1StopBanner').style.display='none';
+  drawC1(c1History);
+};
+$('#c1RunBtn').addEventListener('click', () => {
+  clearInterval(c1Timer);
+  let b0=10,b1=0, iter=0;
+  c1History=[];
+  c1Timer = setInterval(() => {
+    for(let k=0;k<5;k++){
+      const s = gdStep(EMPLOYEES,b0,b1,ALPHA_DEFAULT);
+      b0=s.b0; b1=s.b1;
+      c1History.push(Math.sqrt(s.g0*s.g0+s.g1*s.g1));
+      iter++;
+    }
+    $('#c1Iter').textContent = iter;
+    $('#c1GradMag').textContent = fmt(c1History[c1History.length-1],3);
+    drawC1(c1History);
+    if(c1History[c1History.length-1] < 0.05 || iter>1500){
+      clearInterval(c1Timer);
+      $('#c1StopBanner').style.display='flex';
+    }
+  }, 30);
+});
+onLeave['sC1'] = () => clearInterval(c1Timer);
+
+/* --- C3: feature scaling comparison (standardized vs raw) --- */
+const empMeanX = mean(EMPLOYEES.map(p=>p.x)), empSdX = sd(EMPLOYEES.map(p=>p.x));
+const EMPLOYEES_STD = EMPLOYEES.map(p => ({x:(p.x-empMeanX)/empSdX, y:p.y}));
+const OLS_STD = olsFit(EMPLOYEES_STD);
+const STD_B0_RANGE = [OLS_STD.b0-15, OLS_STD.b0+15];
+const STD_B1_RANGE = [OLS_STD.b1-8, OLS_STD.b1+8];
+let stdGridCache = null;
+function getStdGrid(){
+  if(!stdGridCache) stdGridCache = computeCostGrid(EMPLOYEES_STD, STD_B0_RANGE, STD_B1_RANGE, 70);
+  return stdGridCache;
+}
+let scaleTimer=null;
+function drawScalePanel(canvasId, points, b0Range, b1Range, grid, b0, b1, path, color){
+  const layout = drawCostLandscape($('#'+canvasId), points, b0Range, b1Range, grid);
+  const olsPt = olsFit(points);
+  drawLandscapeStar(layout.ctx, layout.toPx, olsPt.b0, olsPt.b1, cssVar('--ink'));
+  if(path) drawLandscapePath(layout.ctx, layout.toPx, path, color);
+  drawLandscapeMarker(layout.ctx, layout.toPx, b0, b1, color, 6);
+}
+function resetScaleDemo(){
+  clearInterval(scaleTimer);
+  $('#scaleGoodSteps').textContent='—'; $('#scaleBadSteps').textContent='—';
+  drawScalePanel('cvScaleGood', EMPLOYEES_STD, STD_B0_RANGE, STD_B1_RANGE, getStdGrid(), OLS_STD.b0+8, OLS_STD.b1-4, null, cssVar('--good'));
+  drawScalePanel('cvScaleBad', EMPLOYEES, B0_RANGE, B1_RANGE, getLandscapeGrid(), 10, 0, null, cssVar('--bad'));
+}
+onEnter['sC3'] = resetScaleDemo;
+$('#scaleRunBtn').addEventListener('click', () => {
+  clearInterval(scaleTimer);
+  const alpha = 0.05;
+  const stepBudget = 50;
+  const pathGood = runGDPath(EMPLOYEES_STD, OLS_STD.b0+8, OLS_STD.b1-4, alpha, stepBudget);
+  const pathBad = runGDPath(EMPLOYEES, 10, 0, alpha, stepBudget);
+  const olsCostGood = costMSE(EMPLOYEES_STD, OLS_STD.b0, OLS_STD.b1);
+  const goodConvergedAt = pathGood.findIndex(pt => costMSE(EMPLOYEES_STD,pt.b0,pt.b1) <= olsCostGood*1.02);
+  let idx=0;
+  const animEnd = Math.min(stepBudget, Math.max(pathGood.length, pathBad.length)) - 1;
+  scaleTimer = setInterval(() => {
+    idx++;
+    const gIdx = Math.min(idx, pathGood.length-1), bIdx = Math.min(idx, pathBad.length-1);
+    drawScalePanel('cvScaleGood', EMPLOYEES_STD, STD_B0_RANGE, STD_B1_RANGE, getStdGrid(), pathGood[gIdx].b0, pathGood[gIdx].b1, pathGood.slice(0,gIdx+1), cssVar('--good'));
+    drawScalePanel('cvScaleBad', EMPLOYEES, B0_RANGE, B1_RANGE, getLandscapeGrid(), pathBad[bIdx].b0, pathBad[bIdx].b1, pathBad.slice(0,bIdx+1), cssVar('--bad'));
+    if(goodConvergedAt>=0 && idx>=goodConvergedAt) $('#scaleGoodSteps').textContent = goodConvergedAt;
+    if(idx>=animEnd){
+      clearInterval(scaleTimer);
+      if(goodConvergedAt<0) $('#scaleGoodSteps').textContent = `not yet after ${pathGood.length-1}`;
+      $('#scaleBadSteps').textContent = pathBad.diverged ? '💥 diverged!' : `not converged after ${pathBad.length-1}`;
+    }
+  }, 70);
+});
+$('#scaleResetBtn').addEventListener('click', resetScaleDemo);
+onLeave['sC3'] = () => clearInterval(scaleTimer);
+
+/* --- C4: learning rate danger zone (divergence) --- */
+let divTimer=null;
+function drawDiv(history, diverged){
+  const cv = $('#cvDivergence');
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const padL=50,padR=16,padT=16,padB=30;
+  const plotW=w-padL-padR, plotH=h-padT-padB;
+  const vals = history.map(c => Math.min(isFinite(c)?c:1e8, 1e8));
+  const maxV = Math.max(...vals, 1);
+  ctx.strokeStyle = diverged ? cssVar('--bad') : cssVar('--c-converge'); ctx.lineWidth=2.4; ctx.beginPath();
+  vals.forEach((v,i) => {
+    const px = padL + (i/Math.max(1,vals.length-1))*plotW;
+    const py = padT + plotH - (Math.sqrt(v)/Math.sqrt(maxV))*plotH;
+    i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+  });
+  ctx.stroke();
+  ctx.strokeStyle=cssVar('--line'); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(padL,padT+plotH); ctx.lineTo(padL+plotW,padT+plotH); ctx.stroke();
+  ctx.fillStyle=cssVar('--ink-faint'); ctx.font='10px sans-serif'; ctx.textAlign='center';
+  ctx.fillText('step →', padL+plotW/2, h-6);
+  ctx.save(); ctx.translate(16,padT+plotH/2); ctx.rotate(-Math.PI/2); ctx.fillText('cost (√ scale) →',0,0); ctx.restore();
+}
+function updateDivAlphaLabel(){ $('#divAlphaLabel').textContent = fmt((+$('#divAlphaSlider').value)/2000, 4); }
+$('#divAlphaSlider').addEventListener('input', updateDivAlphaLabel);
+onEnter['sC4'] = () => {
+  clearInterval(divTimer);
+  updateDivAlphaLabel();
+  $('#divStep').textContent='0'; $('#divCost').textContent = fmt(costMSE(EMPLOYEES,10,0),2);
+  $('#divBanner').style.display='none';
+  drawDiv([costMSE(EMPLOYEES,10,0)], false);
+};
+$('#divRunBtn').addEventListener('click', () => {
+  clearInterval(divTimer);
+  const alpha = (+$('#divAlphaSlider').value)/2000;
+  let b0=10,b1=0, history=[costMSE(EMPLOYEES,b0,b1)], step=0, diverged=false;
+  divTimer = setInterval(() => {
+    const s = gdStep(EMPLOYEES,b0,b1,alpha);
+    b0=s.b0; b1=s.b1; step++;
+    const c = costMSE(EMPLOYEES,b0,b1);
+    if(!isFinite(c) || c>1e8) diverged=true;
+    history.push(Math.min(isFinite(c)?c:1e8, 1e8));
+    $('#divStep').textContent = step;
+    $('#divCost').textContent = isFinite(c) ? fmt(c,2) : '∞ (exploded!)';
+    drawDiv(history, diverged);
+    if(step>=12 || diverged){
+      clearInterval(divTimer);
+      const banner = $('#divBanner');
+      banner.style.display='flex';
+      banner.textContent = diverged
+        ? `💥 Cost EXPLODED instead of shrinking — α=${fmt(alpha,4)} is past the danger threshold (~0.012 for this data). Each step overshot further than the last.`
+        : `✅ α=${fmt(alpha,4)} stayed stable over 12 steps — cost is shrinking steadily.`;
+    }
+  }, 220);
+});
+$('#divResetBtn').addEventListener('click', () => { clearInterval(divTimer); onEnter['sC4'](); });
+onLeave['sC4'] = () => clearInterval(divTimer);
+
+/* --- C5: bumpy (non-convex) landscape illustration --- */
+onEnter['sC5'] = () => {
+  const cv = $('#cvBumpyLandscape');
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const padL=20,padR=20,padT=24,padB=20;
+  const plotW=w-padL-padR, plotH=h-padT-padB;
+  const pts = [];
+  for(let px=0; px<=plotW; px+=2){
+    const t = px/plotW;
+    const broad = (t-0.7)**2*3;
+    const wiggle = 0.18*Math.sin(t*18) + 0.10*Math.sin(t*7+1);
+    pts.push(broad+wiggle);
+  }
+  const minV = Math.min(...pts), maxV = Math.max(...pts);
+  const yOf = v => padT + plotH - ((v-minV)/(maxV-minV))*plotH*0.9 - plotH*0.05;
+  ctx.strokeStyle = cssVar('--warn'); ctx.lineWidth=2.6; ctx.beginPath();
+  pts.forEach((v,i) => { const px=padL+i*2, py=yOf(v); i===0?ctx.moveTo(px,py):ctx.lineTo(px,py); });
+  ctx.stroke();
+  let gMinIdx=0; for(let i=1;i<pts.length;i++) if(pts[i]<pts[gMinIdx]) gMinIdx=i;
+  const gx=padL+gMinIdx*2, gy=yOf(pts[gMinIdx]);
+  ctx.fillStyle=cssVar('--good'); ctx.beginPath(); ctx.arc(gx,gy,6,0,Math.PI*2); ctx.fill();
+  ctx.font='10px sans-serif'; ctx.fillStyle=cssVar('--ink'); ctx.textAlign='center';
+  ctx.fillText('global minimum', gx, gy-12);
+  let lMinIdx=-1;
+  for(let i=5;i<pts.length-5;i++){
+    if(pts[i]<pts[i-3] && pts[i]<pts[i+3] && Math.abs(i-gMinIdx)>plotW*0.075){ lMinIdx=i; break; }
+  }
+  if(lMinIdx>0){
+    const lx=padL+lMinIdx*2, ly=yOf(pts[lMinIdx]);
+    ctx.fillStyle=cssVar('--bad'); ctx.beginPath(); ctx.arc(lx,ly,6,0,Math.PI*2); ctx.fill();
+    ctx.fillText('local minimum (trap!)', lx, ly-12);
+  }
+};
+
+/* =========================== init =========================== */
+buildDots();
+$('#totalNum').textContent = slideEls.length;
+const deepLinkSlide = parseInt(new URLSearchParams(location.search).get('slide'), 10);
+goTo(Number.isFinite(deepLinkSlide) ? deepLinkSlide-1 : 0);
+</script>
+</body>
+</html>
