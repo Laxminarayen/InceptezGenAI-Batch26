@@ -468,6 +468,222 @@
       </div>
     </section>
 
+    <!-- ============ G1 — THE ALGORITHM, IN FIVE LINES ============ -->
+    <section class="slide" data-section="descent" id="sG1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 2 · The Gradient Descent Algorithm</div>
+        <h1>The actual algorithm, in <span class="glow">five simple steps</span></h1>
+        <div class="rule-list">
+          <div class="rule">
+            <div class="n">1</div>
+            <div class="t">
+              <h3>Start with a guess — ANY guess</h3>
+              <p>Playing a number-guessing game, your very first guess doesn't need to be good — you could shout "zero!" and still eventually win, because you'll get to correct yourself again and again. Same here: we just pick ANY starting numbers, even β₀ = 0 and β₁ = 0, and begin.</p>
+            </div>
+          </div>
+          <div class="rule">
+            <div class="n">2</div>
+            <div class="t">
+              <h3>Feel the slope</h3>
+              <p>Stand on a hill with your eyes closed. You can't see downhill, but you CAN feel it — rock your foot side to side, and one way tips down more than the other. That feeling, turned into a number, is the <b>slope</b>. One number tells you two things at once: its <b>sign</b> (+ or −) says which way is uphill, and its <b>size</b> says how steep it is. We compute one slope number for β₀ and a separate one for β₁ — two separate "feelings," one per dial.</p>
+            </div>
+          </div>
+          <div class="rule">
+            <div class="n">3</div>
+            <div class="t">
+              <h3>Update: subtract the slope</h3>
+              <p><b>new value = old value − (learning rate) × slope.</b> Think of a thermostat: if it reads "+3" (too hot), you turn the dial DOWN. If it reads "−3" (too cold), you turn the dial UP. The slope behaves exactly the same way: a POSITIVE slope means "bigger is worse," so subtracting shrinks the number. A NEGATIVE slope means subtracting a negative — which is the SAME as adding — so the number automatically grows. One formula, both directions handled by the sign alone. The "learning rate" just decides whether we take baby steps or giant steps each time.</p>
+            </div>
+          </div>
+          <div class="rule">
+            <div class="n">4</div>
+            <div class="t">
+              <h3>Repeat</h3>
+              <p>Nobody reaches the bottom of a hill blindfolded in one giant leap — you creep down in lots of small steps, re-checking your footing after each one. So step 4 just means: go back to step 2 with your BRAND NEW numbers, and do the whole thing again. And again. And again.</p>
+            </div>
+          </div>
+          <div class="rule">
+            <div class="n">5</div>
+            <div class="t">
+              <h3>Stop when the slope is ~0</h3>
+              <p>How do you know when to stop taking steps? When the ground feels completely flat — no tilt at all, in any direction. That's a slope of (about) zero, and zero slope means "you're standing at the very bottom — there's nothing left to improve." That's your signal to stop.</p>
+            </div>
+          </div>
+        </div>
+        <div class="vocab-card" style="border-left-color:var(--c-descent);">
+          <div class="vocab-term" style="color:var(--c-descent);">THE TWO FORMULAS THAT MAKE STEP 2 WORK</div>
+          <div class="vocab-def" style="font-family:Georgia,'Times New Roman',serif; font-size:1.05rem;">slope for β₀ = −(2/n) × Σ (actual − predicted)<br/>slope for β₁ = −(2/n) × Σ (actual − predicted) × (age)</div>
+          <div class="vocab-def">Broken into plain words: "actual − predicted" is just ONE person's mistake — how far off was our guess for them? Add up EVERYONE's mistake and divide by how many people (n) — that's the <b>average mistake</b>. Multiply by −2, and that's the β₀ slope. (The 2 is just a fixed number left over from squaring each mistake back in Hour 1; the minus sign is exactly what makes step 3's subtraction always move us the right way.)</div>
+          <div class="vocab-def">Tiny worked example — 3 people, actual salaries 4, 6, 5, and we guess β₀ = 3 for everyone: mistakes are 4−3=+1, 6−3=+3, 5−3=+2 → average mistake = +2 → slope = −2 × 2 = <b>−4</b>. Negative slope → rule says INCREASE β₀. Check: we guessed 3, but the real salaries are closer to 5 — of course we should guess higher next time! The formula and the common-sense answer agree.</div>
+          <div class="vocab-def">The β₁ slope works exactly the same way, with one twist: each person's mistake gets multiplied by their <b>age</b> first, before averaging. That way, people with more years of age "count more" when deciding whether the raise-per-year dial needs to go up or down.</div>
+        </div>
+        <p class="body-text" style="text-align:center;">That's genuinely the whole algorithm. Let's see exactly where that formula comes from, then run it for real on a dataset.</p>
+      </div>
+    </section>
+
+    <!-- ============ G1B — WHERE DO THE SLOPE FORMULAS COME FROM? ============ -->
+    <section class="slide" data-section="descent" id="sG1B">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 2 · Where Do These Formulas Come From?</div>
+        <h1>Deriving the slope formulas, <span class="glow">step by step</span></h1>
+
+        <div class="vocab-card" style="border-left-color:var(--c-descent);">
+          <div class="vocab-term" style="color:var(--c-descent);">STEP 1 — SET UP THE COST FUNCTION</div>
+          <div class="vocab-def" style="font-family:Georgia,'Times New Roman',serif; font-size:1.1rem;">J(β₀, β₁) = (1/n) Σᵢ (Yᵢ − β₀ − β₁Xᵢ)²</div>
+          <div class="vocab-def" style="font-family:Georgia,'Times New Roman',serif; font-size:1.1rem;">Let eᵢ = Yᵢ − β₀ − β₁Xᵢ &nbsp;(the residual — actual minus predicted — for person i), so: &nbsp; J = (1/n) Σᵢ eᵢ²</div>
+        </div>
+
+        <div class="vocab-card" style="border-left-color:var(--c-descent);">
+          <div class="vocab-term" style="color:var(--c-descent);">STEP 2 — ∂J/∂β₀ (HOLD β₁ FIXED, DIFFERENTIATE W.R.T. β₀)</div>
+          <div class="vocab-def" style="font-family:Georgia,'Times New Roman',serif; font-size:1.05rem; line-height:2;">
+            ∂J/∂β₀ = (1/n) Σᵢ 2eᵢ · (∂eᵢ/∂β₀) &nbsp;<span style="color:var(--ink-faint); font-family:var(--font); font-size:.8rem;">[chain rule: d(eᵢ²)/dβ₀ = 2eᵢ × deᵢ/dβ₀]</span><br/>
+            ∂eᵢ/∂β₀ = ∂/∂β₀ (Yᵢ − β₀ − β₁Xᵢ) = <b>−1</b> &nbsp;<span style="color:var(--ink-faint); font-family:var(--font); font-size:.8rem;">[Yᵢ and β₁Xᵢ don't involve β₀; −β₀ differentiates to −1]</span><br/>
+            ⟹ ∂J/∂β₀ = (1/n) Σᵢ 2eᵢ(−1) = <b>−(2/n) Σᵢ (Yᵢ − β₀ − β₁Xᵢ)</b>
+          </div>
+        </div>
+
+        <div class="vocab-card" style="border-left-color:var(--c-formula);">
+          <div class="vocab-term" style="color:var(--c-formula);">STEP 3 — ∂J/∂β₁ (HOLD β₀ FIXED, DIFFERENTIATE W.R.T. β₁)</div>
+          <div class="vocab-def" style="font-family:Georgia,'Times New Roman',serif; font-size:1.05rem; line-height:2;">
+            ∂J/∂β₁ = (1/n) Σᵢ 2eᵢ · (∂eᵢ/∂β₁) &nbsp;<span style="color:var(--ink-faint); font-family:var(--font); font-size:.8rem;">[same chain rule, now w.r.t. β₁]</span><br/>
+            ∂eᵢ/∂β₁ = ∂/∂β₁ (Yᵢ − β₀ − β₁Xᵢ) = <b>−Xᵢ</b> &nbsp;<span style="color:var(--ink-faint); font-family:var(--font); font-size:.8rem;">[Yᵢ and β₀ don't involve β₁; −β₁Xᵢ differentiates to −Xᵢ]</span><br/>
+            ⟹ ∂J/∂β₁ = (1/n) Σᵢ 2eᵢ(−Xᵢ) = <b>−(2/n) Σᵢ (Yᵢ − β₀ − β₁Xᵢ)Xᵢ</b>
+          </div>
+        </div>
+
+        <div class="banner info">🧮 The ONLY calculus fact used here is the chain rule for a square: the derivative of (something)² is 2×(something)×(derivative of that something). Everything else is just "does this term contain β₀ (or β₁) or not?"</div>
+
+        <p class="body-text">Plain-English check: nudging β₀ shifts EVERY prediction by the same amount (that's the −1), so its slope is −2×the average residual. Nudging β₁ shifts each prediction by an amount proportional to that person's age (that's the −Xᵢ), so its slope carries an extra Xᵢ — −2×the average of (residual×age).</p>
+
+        <div class="visual-box" style="height:min(30vh,260px);">
+          <div class="canvas-wrap"><canvas id="cvNudgeAge"></canvas></div>
+          <p class="footnote">Solid line = current guess. Dashed line = β₀ nudged up a little. Every dashed residual shrinks by the SAME amount — that's the "−1" from Step 2, drawn.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ G1C — WHY THE TWO DIALS MUST MOVE TOGETHER ============ -->
+    <section class="slide" data-section="descent" id="sG1C">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 2 · The Two Dials Are Connected</div>
+          <h1>Why can't we just find β₀, <span class="glow">then</span> find β₁?</h1>
+          <p class="body-text">predicted salary = β₀ + β₁ × age. There's only ONE mistake per person, and BOTH dials shape it together — you can't split a mistake into "the β₀ part" and "the β₁ part." Nudge either dial and the very same mistake numbers change. That means: the best β₀ depends on what β₁ currently is, and the best β₁ depends on what β₀ currently is — like a seesaw, move one side and the balance point on the other side shifts too.</p>
+          <button class="btn btn-primary" id="g1cRevealBtn" style="align-self:flex-start;">▶️ Try finding them ONE AT A TIME instead</button>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">One-at-a-time: β₀</div><div class="value tabular" id="g1cSeparateB0">?</div></div>
+            <div class="stat-tile"><div class="label">One-at-a-time: β₁</div><div class="value tabular" id="g1cSeparateB1">?</div></div>
+            <div class="stat-tile"><div class="label">One-at-a-time: cost</div><div class="value tabular" id="g1cSeparateCost">?</div></div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile accent"><div class="label">Together: β₀</div><div class="value tabular" id="g1cJointB0">—</div></div>
+            <div class="stat-tile accent"><div class="label">Together: β₁</div><div class="value tabular" id="g1cJointB1">—</div></div>
+            <div class="stat-tile accent"><div class="label">Together: cost</div><div class="value tabular" id="g1cJointCost">—</div></div>
+          </div>
+          <div class="banner bad" id="g1cExplain" style="display:none;"></div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvCoupling"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--bad);"></span>one-at-a-time line</span><span><span class="sw" style="background:var(--c-descent);"></span>together (true best) line</span></div>
+        </div>
+      </div>
+    </section>
+    <!-- ============ G2 — MEET THE REAL DATASET ============ -->
+    <section class="slide" data-section="descent" id="sG2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 2 · A Real Dataset</div>
+          <h1>Salary vs. <span class="glow">Age</span> — 8 real people</h1>
+          <p class="body-text">Forget the 42-person cloud from before — here are just 8 people: their age, and their salary. Small enough to work through by hand, real enough to trust the numbers.</p>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Age (years)</th><th>Salary (₹ LPA)</th></tr></thead>
+              <tbody id="ageTableBody"></tbody>
+            </table>
+          </div>
+          <p class="body-text">Goal: find the ONE line, <b>salary = β₀ + β₁ × age</b>, that fits these 8 points best — using gradient descent, not a shortcut formula.</p>
+        </div>
+        <div class="visual-box" style="height:min(50vh,460px);">
+          <div class="canvas-wrap"><canvas id="cvAgeScatter"></canvas></div>
+          <p class="footnote">Each dot is one real person. We're about to fit a line through this exact cloud of points, live.</p>
+        </div>
+      </div>
+    </section>
+    <!-- ============ G3 — SINGLE PARAMETER: JUST FIND β₀ ============ -->
+    <section class="slide" data-section="descent" id="sG3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 2 · Step 1: One Parameter</div>
+          <h1>First, forget age. Just find <span class="glow">one number</span></h1>
+          <p class="body-text">Simplest possible model: ignore age completely, and guess the SAME salary — call it β₀ — for every single person. predicted salary = β₀. Only one parameter to find.</p>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="g3StepBtn">👣 Take one round</button>
+            <button class="btn btn-primary" id="g3RunBtn">▶️ Run to the bottom</button>
+            <button class="btn btn-ghost" id="g3ResetBtn">🔄 Restart from β₀ = 0</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Round</div><div class="value tabular" id="g3Iter">0</div></div>
+            <div class="stat-tile"><div class="label">β₀</div><div class="value tabular" id="g3B0">0.00</div></div>
+            <div class="stat-tile"><div class="label">Slope</div><div class="value tabular" id="g3Grad">—</div></div>
+            <div class="stat-tile accent"><div class="label">Cost (MSE)</div><div class="value tabular" id="g3Cost">—</div></div>
+          </div>
+          <div class="banner good" id="g3Done" style="display:none;"></div>
+        </div>
+        <div class="stack" style="gap:14px;">
+          <div class="visual-box" style="height:min(30vh,270px);">
+            <div class="canvas-wrap"><canvas id="cvG3Curve"></canvas></div>
+          </div>
+          <div class="table-wrap" style="max-height:230px; overflow-y:auto;">
+            <table class="data-table">
+              <thead><tr><th>Round</th><th>β₀</th><th>Slope</th><th>Cost</th></tr></thead>
+              <tbody id="g3TableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- ============ G4 — TWO PARAMETERS TOGETHER: β₀ AND β₁ ============ -->
+    <section class="slide" data-section="descent" id="sG4">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 2 · Step 2: Both Parameters</div>
+          <h1>Now bring age back: find <span class="glow">β₀ AND β₁</span> together</h1>
+          <p class="body-text">Real model: predicted salary = β₀ + β₁ × age. Every round, we compute BOTH slopes and update BOTH numbers at the same time — the exact same rule as before, just twice.</p>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="g4StepBtn">👣 Take one round</button>
+            <button class="btn btn-primary" id="g4RunBtn">▶️ Run to the bottom</button>
+            <button class="btn btn-ghost" id="g4ResetBtn">🔄 Restart from β₀=0, β₁=0</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Round</div><div class="value tabular" id="g4Iter">0</div></div>
+            <div class="stat-tile"><div class="label">β₀</div><div class="value tabular" id="g4B0">0.00</div></div>
+            <div class="stat-tile"><div class="label">β₁</div><div class="value tabular" id="g4B1">0.0000</div></div>
+            <div class="stat-tile accent"><div class="label">Cost (MSE)</div><div class="value tabular" id="g4Cost">—</div></div>
+          </div>
+          <div class="banner good" id="g4Done" style="display:none;"></div>
+        </div>
+        <div class="stack" style="gap:14px;">
+          <div class="visual-box" style="height:min(30vh,270px);">
+            <div class="canvas-wrap"><canvas id="cvG4Line"></canvas></div>
+          </div>
+          <div class="table-wrap" style="max-height:230px; overflow-y:auto;">
+            <table class="data-table">
+              <thead><tr><th>Round</th><th>β₀</th><th>β₁</th><th>Cost</th></tr></thead>
+              <tbody id="g4TableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- ============ G5 — FINAL WRAP-UP ============ -->
+    <section class="slide" data-section="descent" id="sG5">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Gradient Descent, Solved</div>
+        <h1 class="kicker-big">Same rule.<br/>Just <span class="glow">more numbers.</span></h1>
+        <p class="body-text" style="max-width:680px;">One parameter? Gradient descent slides down a simple bowl and lands exactly on the average: β₀ = <span id="g5MeanSalary">—</span>. Two parameters? The exact same update rule, applied to both β₀ and β₁ at once, lands on β₀ = <span id="g5FinalB0">—</span>, β₁ = <span id="g5FinalB1">—</span> — matching the exact shortcut formula almost to the decimal.</p>
+        <p class="body-text" style="max-width:680px; font-weight:800; color:var(--ink);">Ten parameters, a million parameters — same rule, every time: compute the slope, subtract it, repeat. That's gradient descent.</p>
+      </div>
+    </section>
     <!-- ============ D3 — WHAT IS A GRADIENT? ============ -->
     <section class="slide" data-section="descent" id="sD3">
       <div class="slide-inner stack">
@@ -555,128 +771,6 @@
       </div>
     </section>
 
-    <!-- ============ G2 — MEET THE REAL DATASET ============ -->
-    <section class="slide" data-section="descent" id="sG2">
-      <div class="slide-inner split">
-        <div class="stack">
-          <div class="eyebrow">Hour 2 · A Real Dataset</div>
-          <h1>Salary vs. <span class="glow">Age</span> — 8 real people</h1>
-          <p class="body-text">Forget the 42-person cloud from before — here are just 8 people: their age, and their salary. Small enough to work through by hand, real enough to trust the numbers.</p>
-          <div class="table-wrap">
-            <table class="data-table">
-              <thead><tr><th>Age (years)</th><th>Salary (₹ LPA)</th></tr></thead>
-              <tbody id="ageTableBody"></tbody>
-            </table>
-          </div>
-          <p class="body-text">Goal: find the ONE line, <b>salary = β₀ + β₁ × age</b>, that fits these 8 points best — using gradient descent, not a shortcut formula.</p>
-        </div>
-        <div class="visual-box" style="height:min(50vh,460px);">
-          <div class="canvas-wrap"><canvas id="cvAgeScatter"></canvas></div>
-          <p class="footnote">Each dot is one real person. We're about to fit a line through this exact cloud of points, live.</p>
-        </div>
-      </div>
-    </section>
-    <!-- ============ G1C — WHY THE TWO DIALS MUST MOVE TOGETHER ============ -->
-    <section class="slide" data-section="descent" id="sG1C">
-      <div class="slide-inner split">
-        <div class="stack">
-          <div class="eyebrow">Hour 2 · The Two Dials Are Connected</div>
-          <h1>Why can't we just find β₀, <span class="glow">then</span> find β₁?</h1>
-          <p class="body-text">predicted salary = β₀ + β₁ × age. There's only ONE mistake per person, and BOTH dials shape it together — you can't split a mistake into "the β₀ part" and "the β₁ part." Nudge either dial and the very same mistake numbers change. That means: the best β₀ depends on what β₁ currently is, and the best β₁ depends on what β₀ currently is — like a seesaw, move one side and the balance point on the other side shifts too.</p>
-          <button class="btn btn-primary" id="g1cRevealBtn" style="align-self:flex-start;">▶️ Try finding them ONE AT A TIME instead</button>
-          <div class="stat-grid">
-            <div class="stat-tile"><div class="label">One-at-a-time: β₀</div><div class="value tabular" id="g1cSeparateB0">?</div></div>
-            <div class="stat-tile"><div class="label">One-at-a-time: β₁</div><div class="value tabular" id="g1cSeparateB1">?</div></div>
-            <div class="stat-tile"><div class="label">One-at-a-time: cost</div><div class="value tabular" id="g1cSeparateCost">?</div></div>
-          </div>
-          <div class="stat-grid">
-            <div class="stat-tile accent"><div class="label">Together: β₀</div><div class="value tabular" id="g1cJointB0">—</div></div>
-            <div class="stat-tile accent"><div class="label">Together: β₁</div><div class="value tabular" id="g1cJointB1">—</div></div>
-            <div class="stat-tile accent"><div class="label">Together: cost</div><div class="value tabular" id="g1cJointCost">—</div></div>
-          </div>
-          <div class="banner bad" id="g1cExplain" style="display:none;"></div>
-        </div>
-        <div class="visual-box" style="height:min(56vh,520px);">
-          <div class="canvas-wrap"><canvas id="cvCoupling"></canvas></div>
-          <div class="legend"><span><span class="sw" style="background:var(--bad);"></span>one-at-a-time line</span><span><span class="sw" style="background:var(--c-descent);"></span>together (true best) line</span></div>
-        </div>
-      </div>
-    </section>
-    <!-- ============ G3 — SINGLE PARAMETER: JUST FIND β₀ ============ -->
-    <section class="slide" data-section="descent" id="sG3">
-      <div class="slide-inner split">
-        <div class="stack">
-          <div class="eyebrow">Hour 2 · Step 1: One Parameter</div>
-          <h1>First, forget age. Just find <span class="glow">one number</span></h1>
-          <p class="body-text">Simplest possible model: ignore age completely, and guess the SAME salary — call it β₀ — for every single person. predicted salary = β₀. Only one parameter to find.</p>
-          <div class="btn-row">
-            <button class="btn btn-primary" id="g3StepBtn">👣 Take one round</button>
-            <button class="btn btn-primary" id="g3RunBtn">▶️ Run to the bottom</button>
-            <button class="btn btn-ghost" id="g3ResetBtn">🔄 Restart from β₀ = 0</button>
-          </div>
-          <div class="stat-grid">
-            <div class="stat-tile"><div class="label">Round</div><div class="value tabular" id="g3Iter">0</div></div>
-            <div class="stat-tile"><div class="label">β₀</div><div class="value tabular" id="g3B0">0.00</div></div>
-            <div class="stat-tile"><div class="label">Slope</div><div class="value tabular" id="g3Grad">—</div></div>
-            <div class="stat-tile accent"><div class="label">Cost (MSE)</div><div class="value tabular" id="g3Cost">—</div></div>
-          </div>
-          <div class="banner good" id="g3Done" style="display:none;"></div>
-        </div>
-        <div class="stack" style="gap:14px;">
-          <div class="visual-box" style="height:min(30vh,270px);">
-            <div class="canvas-wrap"><canvas id="cvG3Curve"></canvas></div>
-          </div>
-          <div class="table-wrap" style="max-height:230px; overflow-y:auto;">
-            <table class="data-table">
-              <thead><tr><th>Round</th><th>β₀</th><th>Slope</th><th>Cost</th></tr></thead>
-              <tbody id="g3TableBody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </section>
-    <!-- ============ G4 — TWO PARAMETERS TOGETHER: β₀ AND β₁ ============ -->
-    <section class="slide" data-section="descent" id="sG4">
-      <div class="slide-inner split">
-        <div class="stack">
-          <div class="eyebrow">Hour 2 · Step 2: Both Parameters</div>
-          <h1>Now bring age back: find <span class="glow">β₀ AND β₁</span> together</h1>
-          <p class="body-text">Real model: predicted salary = β₀ + β₁ × age. Every round, we compute BOTH slopes and update BOTH numbers at the same time — the exact same rule as before, just twice.</p>
-          <div class="btn-row">
-            <button class="btn btn-primary" id="g4StepBtn">👣 Take one round</button>
-            <button class="btn btn-primary" id="g4RunBtn">▶️ Run to the bottom</button>
-            <button class="btn btn-ghost" id="g4ResetBtn">🔄 Restart from β₀=0, β₁=0</button>
-          </div>
-          <div class="stat-grid">
-            <div class="stat-tile"><div class="label">Round</div><div class="value tabular" id="g4Iter">0</div></div>
-            <div class="stat-tile"><div class="label">β₀</div><div class="value tabular" id="g4B0">0.00</div></div>
-            <div class="stat-tile"><div class="label">β₁</div><div class="value tabular" id="g4B1">0.0000</div></div>
-            <div class="stat-tile accent"><div class="label">Cost (MSE)</div><div class="value tabular" id="g4Cost">—</div></div>
-          </div>
-          <div class="banner good" id="g4Done" style="display:none;"></div>
-        </div>
-        <div class="stack" style="gap:14px;">
-          <div class="visual-box" style="height:min(30vh,270px);">
-            <div class="canvas-wrap"><canvas id="cvG4Line"></canvas></div>
-          </div>
-          <div class="table-wrap" style="max-height:230px; overflow-y:auto;">
-            <table class="data-table">
-              <thead><tr><th>Round</th><th>β₀</th><th>β₁</th><th>Cost</th></tr></thead>
-              <tbody id="g4TableBody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </section>
-    <!-- ============ G5 — FINAL WRAP-UP ============ -->
-    <section class="slide" data-section="descent" id="sG5">
-      <div class="slide-inner center-col">
-        <div class="eyebrow">Gradient Descent, Solved</div>
-        <h1 class="kicker-big">Same rule.<br/>Just <span class="glow">more numbers.</span></h1>
-        <p class="body-text" style="max-width:680px;">One parameter? Gradient descent slides down a simple bowl and lands exactly on the average: β₀ = <span id="g5MeanSalary">—</span>. Two parameters? The exact same update rule, applied to both β₀ and β₁ at once, lands on β₀ = <span id="g5FinalB0">—</span>, β₁ = <span id="g5FinalB1">—</span> — matching the exact shortcut formula almost to the decimal.</p>
-        <p class="body-text" style="max-width:680px; font-weight:800; color:var(--ink);">Ten parameters, a million parameters — same rule, every time: compute the slope, subtract it, repeat. That's gradient descent.</p>
-      </div>
-    </section>
 
     <!-- ============ D7 — CHAPTER RECAP + BRIDGE ============ -->
     <section class="slide" data-section="descent" id="sD7">
@@ -1642,157 +1736,7 @@ $('#d2RunBtn').addEventListener('click', () => {
 $('#d2ResetBtn').addEventListener('click', () => { clearInterval(d2Timer); d2B0 = rand(B0_RANGE[0]+2,B0_RANGE[1]-2); draw1DHiker(); });
 onLeave['sD2'] = () => clearInterval(d2Timer);
 
-/* --- D4: 2D gradient descent on the landscape --- */
-let d4B0=10, d4B1=0, d4Path=[], d4Timer=null;
-function drawD4(){
-  const layout = drawCostLandscape($('#cvGdPath'), EMPLOYEES, B0_RANGE, B1_RANGE, getLandscapeGrid());
-  drawLandscapeStar(layout.ctx, layout.toPx, OLS.b0, OLS.b1, cssVar('--ink-faint'));
-  drawLandscapePath(layout.ctx, layout.toPx, d4Path, cssVar('--c-descent'));
-  drawUphillArrow(layout.ctx, EMPLOYEES, layout, d4B0, d4B1, cssVar('--bad'));
-  drawLandscapeMarker(layout.ctx, layout.toPx, d4B0, d4B1, cssVar('--c-descent'));
-  $('#d4Step').textContent = d4Path.length-1;
-  $('#d4Params').textContent = `${fmt(d4B0,2)}, ${fmt(d4B1,3)}`;
-  $('#d4Cost').textContent = fmt(costMSE(EMPLOYEES,d4B0,d4B1),3);
-}
-function resetD4(){
-  clearInterval(d4Timer);
-  d4B0 = rand(12,18); d4B1 = rand(-0.5,0.3);
-  d4Path = [{b0:d4B0,b1:d4B1}];
-  drawD4();
-}
-onEnter['sD4'] = resetD4;
-$('#d4StepBtn').addEventListener('click', () => {
-  const s = gdStep(EMPLOYEES, d4B0, d4B1, ALPHA_DEFAULT);
-  d4B0=s.b0; d4B1=s.b1;
-  d4Path.push({b0:d4B0,b1:d4B1});
-  drawD4();
-});
-$('#d4RunBtn').addEventListener('click', () => {
-  clearInterval(d4Timer);
-  const fullPath = runGDPath(EMPLOYEES, d4B0, d4B1, ALPHA_DEFAULT, 1500, 0.05);
-  let idx=0;
-  d4Timer = setInterval(() => {
-    idx = Math.min(idx+20, fullPath.length-1);
-    d4Path = fullPath.slice(0, idx+1);
-    d4B0 = fullPath[idx].b0; d4B1 = fullPath[idx].b1;
-    drawD4();
-    if(idx>=fullPath.length-1) clearInterval(d4Timer);
-  }, 30);
-});
-$('#d4ResetBtn').addEventListener('click', resetD4);
-onLeave['sD4'] = () => clearInterval(d4Timer);
-
-/* --- D5: learning rate race --- */
-let lrState=null, lrTimer=null;
-function initLrState(){
-  const start = {b0: rand(12,18), b1: rand(-0.5,0.3)};
-  lrState = {
-    small: {alpha:0.002, b0:start.b0, b1:start.b1, path:[{...start}], diverged:false},
-    good:  {alpha:0.010, b0:start.b0, b1:start.b1, path:[{...start}], diverged:false},
-    big:   {alpha:0.015, b0:start.b0, b1:start.b1, path:[{...start}], diverged:false},
-  };
-}
-function drawLr(key, canvasId, color){
-  const st = lrState[key];
-  const layout = drawCostLandscape($('#'+canvasId), EMPLOYEES, B0_RANGE, B1_RANGE, getLandscapeGrid());
-  drawLandscapeStar(layout.ctx, layout.toPx, OLS.b0, OLS.b1, cssVar('--ink-faint'));
-  drawLandscapePath(layout.ctx, layout.toPx, st.path, color);
-  if(!st.diverged) drawLandscapeMarker(layout.ctx, layout.toPx, st.b0, st.b1, color, 6);
-}
-function drawAllLr(){
-  drawLr('small','cvLrSmall', cssVar('--ink-faint'));
-  drawLr('good','cvLrGood', cssVar('--good'));
-  drawLr('big','cvLrBig', cssVar('--bad'));
-}
-onEnter['sD5'] = () => { clearInterval(lrTimer); initLrState(); $('#lrStepCount').textContent='0'; drawAllLr(); };
-function stepLrOnce(){
-  ['small','good','big'].forEach(key => {
-    const st = lrState[key];
-    if(st.diverged) return;
-    const s = gdStep(EMPLOYEES, st.b0, st.b1, st.alpha);
-    if(!isFinite(s.b0) || !isFinite(s.b1) || Math.abs(s.b0)>500 || Math.abs(s.b1)>500){ st.diverged=true; return; }
-    st.b0=s.b0; st.b1=s.b1; st.path.push({b0:st.b0,b1:st.b1});
-  });
-}
-$('#lrStepBtn').addEventListener('click', () => {
-  stepLrOnce();
-  $('#lrStepCount').textContent = (+$('#lrStepCount').textContent)+1;
-  drawAllLr();
-});
-$('#lrRunBtn').addEventListener('click', () => {
-  clearInterval(lrTimer);
-  let count=0;
-  lrTimer = setInterval(() => {
-    stepLrOnce(); count++;
-    $('#lrStepCount').textContent = (+$('#lrStepCount').textContent)+1;
-    drawAllLr();
-    if(count>=40) clearInterval(lrTimer);
-  }, 90);
-});
-$('#lrResetBtn').addEventListener('click', () => { clearInterval(lrTimer); initLrState(); $('#lrStepCount').textContent='0'; drawAllLr(); });
-onLeave['sD5'] = () => clearInterval(lrTimer);
-
-/* --- D6: random search vs gradient descent race --- */
-let raceState=null, raceTimer=null;
-const olsCostVal = costMSE(EMPLOYEES, OLS.b0, OLS.b1);
-const raceTarget = olsCostVal*1.01;
-function initRace(){
-  raceState = {
-    randomB0:10, randomB1:0, randomTemp:1, randomPath:[{b0:10,b1:0}], randomDone:false, randomSteps:0,
-    gdB0:10, gdB1:0, gdPath:[{b0:10,b1:0}], gdDone:false, gdSteps:0,
-  };
-}
-function drawRace(){
-  const layout = drawCostLandscape($('#cvRace'), EMPLOYEES, B0_RANGE, B1_RANGE, getLandscapeGrid());
-  drawLandscapeStar(layout.ctx, layout.toPx, OLS.b0, OLS.b1, cssVar('--ink'));
-  drawLandscapePath(layout.ctx, layout.toPx, raceState.randomPath, cssVar('--ink-faint'));
-  drawLandscapePath(layout.ctx, layout.toPx, raceState.gdPath, cssVar('--c-descent'));
-  drawLandscapeMarker(layout.ctx, layout.toPx, raceState.randomB0, raceState.randomB1, cssVar('--ink-faint'), 6);
-  drawLandscapeMarker(layout.ctx, layout.toPx, raceState.gdB0, raceState.gdB1, cssVar('--c-descent'), 6);
-}
-onEnter['sD6'] = () => { clearInterval(raceTimer); initRace(); $('#raceRandomSteps').textContent='—'; $('#raceGdSteps').textContent='—'; $('#raceBanner').style.display='none'; drawRace(); };
-$('#raceRunBtn').addEventListener('click', () => {
-  clearInterval(raceTimer);
-  initRace();
-  raceTimer = setInterval(() => {
-    if(!raceState.randomDone){
-      let bestB0=raceState.randomB0, bestB1=raceState.randomB1, bestMse=costMSE(EMPLOYEES,raceState.randomB0,raceState.randomB1);
-      for(let t=0;t<6;t++){
-        const cb0=raceState.randomB0+rand(-8,8)*raceState.randomTemp;
-        const cb1=raceState.randomB1+rand(-0.35,0.35)*raceState.randomTemp;
-        const m=costMSE(EMPLOYEES,cb0,cb1);
-        if(m<bestMse){ bestMse=m; bestB0=cb0; bestB1=cb1; }
-      }
-      raceState.randomB0=bestB0; raceState.randomB1=bestB1; raceState.randomTemp*=0.955;
-      raceState.randomPath.push({b0:bestB0,b1:bestB1});
-      raceState.randomSteps++;
-      if(bestMse<=raceTarget) raceState.randomDone=true;
-    }
-    if(!raceState.gdDone){
-      for(let sub=0; sub<8 && !raceState.gdDone; sub++){
-        const s = gdStep(EMPLOYEES, raceState.gdB0, raceState.gdB1, ALPHA_DEFAULT);
-        raceState.gdB0=s.b0; raceState.gdB1=s.b1;
-        raceState.gdPath.push({b0:s.b0,b1:s.b1});
-        raceState.gdSteps++;
-        if(costMSE(EMPLOYEES,s.b0,s.b1)<=raceTarget) raceState.gdDone=true;
-      }
-    }
-    $('#raceRandomSteps').textContent = raceState.randomSteps + (raceState.randomDone?'':'…');
-    $('#raceGdSteps').textContent = raceState.gdSteps + (raceState.gdDone?'':'…');
-    drawRace();
-    if((raceState.randomDone && raceState.gdDone) || raceState.randomSteps>4000 || raceState.gdSteps>4000){
-      clearInterval(raceTimer);
-      const banner = $('#raceBanner');
-      banner.style.display='flex';
-      const winner = raceState.randomSteps < raceState.gdSteps ? 'Random search' : 'Gradient descent';
-      banner.textContent = `🏁 ${winner} reached the finish line first! Random search: ${raceState.randomSteps} rounds (×6 tries each ≈ ${raceState.randomSteps*6} evaluations). Gradient descent: ${raceState.gdSteps} careful steps. Surprised? On this UNSCALED landscape, cautious calculated steps don't always beat lucky big jumps — wait for Hour 4's feature-scaling reveal.`;
-    }
-  }, 30);
-});
-$('#raceResetBtn').addEventListener('click', () => { clearInterval(raceTimer); initRace(); $('#raceRandomSteps').textContent='—'; $('#raceGdSteps').textContent='—'; $('#raceBanner').style.display='none'; drawRace(); });
-onLeave['sD6'] = () => clearInterval(raceTimer);
-
-/* =========================== HOUR 2 CONTINUED — WORKED EXAMPLE (SALARY vs AGE) =========================== */
+/* =========================== HOUR 2 CONTINUED — THE FORMULAS & A WORKED EXAMPLE (SALARY vs AGE) =========================== */
 const AGE_EMPLOYEES = [
   {x:22,y:3}, {x:25,y:4}, {x:28,y:4.5}, {x:32,y:6},
   {x:35,y:7}, {x:39,y:8}, {x:43,y:9.5}, {x:47,y:11}
@@ -1801,18 +1745,18 @@ const AGE_X_DOMAIN = [18, 52], AGE_Y_DOMAIN = [0, 13];
 const AGE_OLS = olsFit(AGE_EMPLOYEES);
 const AGE_MEAN_SALARY = mean(AGE_EMPLOYEES.map(p=>p.y));
 
-/* --- G2: meet the dataset --- */
-onEnter['sG2'] = () => {
-  $('#ageTableBody').innerHTML = AGE_EMPLOYEES.map(p =>
-    `<tr><td>${p.x}</td><td>${fmt(p.y,1)}</td></tr>`
-  ).join('');
-  drawScatter($('#cvAgeScatter'), {
+/* --- G1B: nudge visualization (why the slope formula looks the way it does) --- */
+onEnter['sG1B'] = () => {
+  const b0 = 2, b1 = 0.2, h = 1.5;
+  drawScatter($('#cvNudgeAge'), {
     points: AGE_EMPLOYEES, xDomain: AGE_X_DOMAIN, yDomain: AGE_Y_DOMAIN,
     xLabel: 'age (years) →', yLabel: 'salary (₹ LPA)',
-    color: cssVar('--c-descent'), radius: 6,
+    color: cssVar('--ink-faint'),
+    line: {b0,b1}, lineColor: cssVar('--ink-faint'),
+    residualLine: {b0,b1},
+    line2: {b0:b0+h,b1}, line2Color: cssVar('--c-descent'), line2Dash:[5,3],
   });
 };
-
 
 /* --- G1C: why β0 and β1 must move together (coupling demonstration) --- */
 function g1cSeparateFit(){
@@ -1853,6 +1797,18 @@ $('#g1cRevealBtn').addEventListener('click', () => {
     line2: {b0:sep.b0, b1:sep.b1}, line2Color: cssVar('--bad'), line2Dash:[5,3],
   });
 });
+
+/* --- G2: meet the dataset --- */
+onEnter['sG2'] = () => {
+  $('#ageTableBody').innerHTML = AGE_EMPLOYEES.map(p =>
+    `<tr><td>${p.x}</td><td>${fmt(p.y,1)}</td></tr>`
+  ).join('');
+  drawScatter($('#cvAgeScatter'), {
+    points: AGE_EMPLOYEES, xDomain: AGE_X_DOMAIN, yDomain: AGE_Y_DOMAIN,
+    xLabel: 'age (years) →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--c-descent'), radius: 6,
+  });
+};
 
 /* --- G3: single-parameter gradient descent (constant model, predicted = β0) --- */
 const G3_ALPHA = 0.2;
@@ -2010,6 +1966,156 @@ onEnter['sG5'] = () => {
   $('#g5FinalB1').textContent = fmt(AGE_OLS.b1,4);
 };
 
+
+/* --- D4: 2D gradient descent on the landscape --- */
+let d4B0=10, d4B1=0, d4Path=[], d4Timer=null;
+function drawD4(){
+  const layout = drawCostLandscape($('#cvGdPath'), EMPLOYEES, B0_RANGE, B1_RANGE, getLandscapeGrid());
+  drawLandscapeStar(layout.ctx, layout.toPx, OLS.b0, OLS.b1, cssVar('--ink-faint'));
+  drawLandscapePath(layout.ctx, layout.toPx, d4Path, cssVar('--c-descent'));
+  drawUphillArrow(layout.ctx, EMPLOYEES, layout, d4B0, d4B1, cssVar('--bad'));
+  drawLandscapeMarker(layout.ctx, layout.toPx, d4B0, d4B1, cssVar('--c-descent'));
+  $('#d4Step').textContent = d4Path.length-1;
+  $('#d4Params').textContent = `${fmt(d4B0,2)}, ${fmt(d4B1,3)}`;
+  $('#d4Cost').textContent = fmt(costMSE(EMPLOYEES,d4B0,d4B1),3);
+}
+function resetD4(){
+  clearInterval(d4Timer);
+  d4B0 = rand(12,18); d4B1 = rand(-0.5,0.3);
+  d4Path = [{b0:d4B0,b1:d4B1}];
+  drawD4();
+}
+onEnter['sD4'] = resetD4;
+$('#d4StepBtn').addEventListener('click', () => {
+  const s = gdStep(EMPLOYEES, d4B0, d4B1, ALPHA_DEFAULT);
+  d4B0=s.b0; d4B1=s.b1;
+  d4Path.push({b0:d4B0,b1:d4B1});
+  drawD4();
+});
+$('#d4RunBtn').addEventListener('click', () => {
+  clearInterval(d4Timer);
+  const fullPath = runGDPath(EMPLOYEES, d4B0, d4B1, ALPHA_DEFAULT, 1500, 0.05);
+  let idx=0;
+  d4Timer = setInterval(() => {
+    idx = Math.min(idx+20, fullPath.length-1);
+    d4Path = fullPath.slice(0, idx+1);
+    d4B0 = fullPath[idx].b0; d4B1 = fullPath[idx].b1;
+    drawD4();
+    if(idx>=fullPath.length-1) clearInterval(d4Timer);
+  }, 30);
+});
+$('#d4ResetBtn').addEventListener('click', resetD4);
+onLeave['sD4'] = () => clearInterval(d4Timer);
+
+/* --- D5: learning rate race --- */
+let lrState=null, lrTimer=null;
+function initLrState(){
+  const start = {b0: rand(12,18), b1: rand(-0.5,0.3)};
+  lrState = {
+    small: {alpha:0.002, b0:start.b0, b1:start.b1, path:[{...start}], diverged:false},
+    good:  {alpha:0.010, b0:start.b0, b1:start.b1, path:[{...start}], diverged:false},
+    big:   {alpha:0.015, b0:start.b0, b1:start.b1, path:[{...start}], diverged:false},
+  };
+}
+function drawLr(key, canvasId, color){
+  const st = lrState[key];
+  const layout = drawCostLandscape($('#'+canvasId), EMPLOYEES, B0_RANGE, B1_RANGE, getLandscapeGrid());
+  drawLandscapeStar(layout.ctx, layout.toPx, OLS.b0, OLS.b1, cssVar('--ink-faint'));
+  drawLandscapePath(layout.ctx, layout.toPx, st.path, color);
+  if(!st.diverged) drawLandscapeMarker(layout.ctx, layout.toPx, st.b0, st.b1, color, 6);
+}
+function drawAllLr(){
+  drawLr('small','cvLrSmall', cssVar('--ink-faint'));
+  drawLr('good','cvLrGood', cssVar('--good'));
+  drawLr('big','cvLrBig', cssVar('--bad'));
+}
+onEnter['sD5'] = () => { clearInterval(lrTimer); initLrState(); $('#lrStepCount').textContent='0'; drawAllLr(); };
+function stepLrOnce(){
+  ['small','good','big'].forEach(key => {
+    const st = lrState[key];
+    if(st.diverged) return;
+    const s = gdStep(EMPLOYEES, st.b0, st.b1, st.alpha);
+    if(!isFinite(s.b0) || !isFinite(s.b1) || Math.abs(s.b0)>500 || Math.abs(s.b1)>500){ st.diverged=true; return; }
+    st.b0=s.b0; st.b1=s.b1; st.path.push({b0:st.b0,b1:st.b1});
+  });
+}
+$('#lrStepBtn').addEventListener('click', () => {
+  stepLrOnce();
+  $('#lrStepCount').textContent = (+$('#lrStepCount').textContent)+1;
+  drawAllLr();
+});
+$('#lrRunBtn').addEventListener('click', () => {
+  clearInterval(lrTimer);
+  let count=0;
+  lrTimer = setInterval(() => {
+    stepLrOnce(); count++;
+    $('#lrStepCount').textContent = (+$('#lrStepCount').textContent)+1;
+    drawAllLr();
+    if(count>=40) clearInterval(lrTimer);
+  }, 90);
+});
+$('#lrResetBtn').addEventListener('click', () => { clearInterval(lrTimer); initLrState(); $('#lrStepCount').textContent='0'; drawAllLr(); });
+onLeave['sD5'] = () => clearInterval(lrTimer);
+
+/* --- D6: random search vs gradient descent race --- */
+let raceState=null, raceTimer=null;
+const olsCostVal = costMSE(EMPLOYEES, OLS.b0, OLS.b1);
+const raceTarget = olsCostVal*1.01;
+function initRace(){
+  raceState = {
+    randomB0:10, randomB1:0, randomTemp:1, randomPath:[{b0:10,b1:0}], randomDone:false, randomSteps:0,
+    gdB0:10, gdB1:0, gdPath:[{b0:10,b1:0}], gdDone:false, gdSteps:0,
+  };
+}
+function drawRace(){
+  const layout = drawCostLandscape($('#cvRace'), EMPLOYEES, B0_RANGE, B1_RANGE, getLandscapeGrid());
+  drawLandscapeStar(layout.ctx, layout.toPx, OLS.b0, OLS.b1, cssVar('--ink'));
+  drawLandscapePath(layout.ctx, layout.toPx, raceState.randomPath, cssVar('--ink-faint'));
+  drawLandscapePath(layout.ctx, layout.toPx, raceState.gdPath, cssVar('--c-descent'));
+  drawLandscapeMarker(layout.ctx, layout.toPx, raceState.randomB0, raceState.randomB1, cssVar('--ink-faint'), 6);
+  drawLandscapeMarker(layout.ctx, layout.toPx, raceState.gdB0, raceState.gdB1, cssVar('--c-descent'), 6);
+}
+onEnter['sD6'] = () => { clearInterval(raceTimer); initRace(); $('#raceRandomSteps').textContent='—'; $('#raceGdSteps').textContent='—'; $('#raceBanner').style.display='none'; drawRace(); };
+$('#raceRunBtn').addEventListener('click', () => {
+  clearInterval(raceTimer);
+  initRace();
+  raceTimer = setInterval(() => {
+    if(!raceState.randomDone){
+      let bestB0=raceState.randomB0, bestB1=raceState.randomB1, bestMse=costMSE(EMPLOYEES,raceState.randomB0,raceState.randomB1);
+      for(let t=0;t<6;t++){
+        const cb0=raceState.randomB0+rand(-8,8)*raceState.randomTemp;
+        const cb1=raceState.randomB1+rand(-0.35,0.35)*raceState.randomTemp;
+        const m=costMSE(EMPLOYEES,cb0,cb1);
+        if(m<bestMse){ bestMse=m; bestB0=cb0; bestB1=cb1; }
+      }
+      raceState.randomB0=bestB0; raceState.randomB1=bestB1; raceState.randomTemp*=0.955;
+      raceState.randomPath.push({b0:bestB0,b1:bestB1});
+      raceState.randomSteps++;
+      if(bestMse<=raceTarget) raceState.randomDone=true;
+    }
+    if(!raceState.gdDone){
+      for(let sub=0; sub<8 && !raceState.gdDone; sub++){
+        const s = gdStep(EMPLOYEES, raceState.gdB0, raceState.gdB1, ALPHA_DEFAULT);
+        raceState.gdB0=s.b0; raceState.gdB1=s.b1;
+        raceState.gdPath.push({b0:s.b0,b1:s.b1});
+        raceState.gdSteps++;
+        if(costMSE(EMPLOYEES,s.b0,s.b1)<=raceTarget) raceState.gdDone=true;
+      }
+    }
+    $('#raceRandomSteps').textContent = raceState.randomSteps + (raceState.randomDone?'':'…');
+    $('#raceGdSteps').textContent = raceState.gdSteps + (raceState.gdDone?'':'…');
+    drawRace();
+    if((raceState.randomDone && raceState.gdDone) || raceState.randomSteps>4000 || raceState.gdSteps>4000){
+      clearInterval(raceTimer);
+      const banner = $('#raceBanner');
+      banner.style.display='flex';
+      const winner = raceState.randomSteps < raceState.gdSteps ? 'Random search' : 'Gradient descent';
+      banner.textContent = `🏁 ${winner} reached the finish line first! Random search: ${raceState.randomSteps} rounds (×6 tries each ≈ ${raceState.randomSteps*6} evaluations). Gradient descent: ${raceState.gdSteps} careful steps. Surprised? On this UNSCALED landscape, cautious calculated steps don't always beat lucky big jumps — wait for Hour 4's feature-scaling reveal.`;
+    }
+  }, 30);
+});
+$('#raceResetBtn').addEventListener('click', () => { clearInterval(raceTimer); initRace(); $('#raceRandomSteps').textContent='—'; $('#raceGdSteps').textContent='—'; $('#raceBanner').style.display='none'; drawRace(); });
+onLeave['sD6'] = () => clearInterval(raceTimer);
 
 /* =========================== HOUR 3 — THE ACTUAL FORMULAS =========================== */
 
