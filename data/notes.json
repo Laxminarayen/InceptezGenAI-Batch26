@@ -1,5 +1,19 @@
 [
   {
+    "id": "ms9qt4amecehnb",
+    "author": "SanjayPraveenNVR",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/169007032?v=4",
+    "title": "ML - Gradient Descent and Optimization",
+    "body": "I've summarized the **Gradient Descent and Optimization** concepts in a simpler, beginner-friendly way for better understanding. Refer to the attached images. \n![Gradient Descent and Optimization Sanjay](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/notes/ms9qstk6dggync-gradient-descent-and-optimization-sanjay.jpg)\n\n![Gradient Formula Explained Sanjay](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/notes/ms9qt0vsos4w5m-gradient-formula-explained-sanjay.jpg)",
+    "classTag": "17 · ML Foundations & Simple Linear Regression",
+    "topics": [
+      "gradient descent and opt"
+    ],
+    "createdAt": "2026-08-01T02:18:59.710Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mrtfefme33bgxf",
     "author": "Laxminarayen",
     "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
