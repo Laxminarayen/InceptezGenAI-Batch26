@@ -302,13 +302,17 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 ## 🗓️ Day 20: Revision & Exercise: Linear Regression (01-Aug-2026)
 
 ### Highlights
-- **GroupBy Revision:** Split-Apply-Combine practice on a real Alcohol Consumption dataset — a hands-on pandas `groupby` review that ties back into everything used across the Linear Regression sessions.
-- **Exercise, Then Solutions:** Work the exercise notebook first, check yourself against the solutions notebook, or use the combined exercise-with-solutions version for a guided walkthrough.
+- **End-to-End Cleaning:** Missing values, duplicate `id`s, and a real data-entry typo in `bedrooms` — fixed in the right order, before any correlation analysis or feature engineering touches the data.
+- **Feature Engineering:** Building `was_renovated`, `has_basement`, `bed_bath_ratio`, a geospatial `distance_to_downtown_km`, and `living_area_vs_neighbors` — plus the trap of *why not* to engineer `price_per_sqft` as a model input (data leakage).
+- **Three Models, Compared:** A simple one-feature baseline, a correlation-selected "Model A," and a leakage-free "Model B," fit with scikit-learn's `LinearRegression`.
+- **Multicollinearity Check:** Using VIF (Variance Inflation Factor) to formally verify Model B isn't secretly duplicating information across features.
+- **Evaluate It Yourself:** Computing SST/SSR/SSE by hand, then writing your own R², MSE, RMSE, and MAPE functions and checking them against scikit-learn's.
 
 ### Resources
-- **Exercise:** [`20. Revision & Exercise Linear Regression/Alcohol Consumption/Exercise.ipynb`](20.%20Revision%20%26%20Exercise%20Linear%20Regression/Alcohol%20Consumption/Exercise.ipynb)
-- **Exercise + Solutions:** [`20. Revision & Exercise Linear Regression/Alcohol Consumption/Exercise_with_solutions.ipynb`](20.%20Revision%20%26%20Exercise%20Linear%20Regression/Alcohol%20Consumption/Exercise_with_solutions.ipynb)
-- **Solutions:** [`20. Revision & Exercise Linear Regression/Alcohol Consumption/Solutions.ipynb`](20.%20Revision%20%26%20Exercise%20Linear%20Regression/Alcohol%20Consumption/Solutions.ipynb)
+- **Exercise:** [`20. Revision & Exercise Linear Regression/House Price Prediction/Exercise.ipynb`](20.%20Revision%20%26%20Exercise%20Linear%20Regression/House%20Price%20Prediction/Exercise.ipynb)
+- **Exercise + Solutions:** [`20. Revision & Exercise Linear Regression/House Price Prediction/Exercise_with_solutions.ipynb`](20.%20Revision%20%26%20Exercise%20Linear%20Regression/House%20Price%20Prediction/Exercise_with_solutions.ipynb)
+- **Solutions:** [`20. Revision & Exercise Linear Regression/House Price Prediction/Solutions.ipynb`](20.%20Revision%20%26%20Exercise%20Linear%20Regression/House%20Price%20Prediction/Solutions.ipynb)
+- **Dataset:** [`20. Revision & Exercise Linear Regression/House Price Prediction/kc_house_data.csv`](20.%20Revision%20%26%20Exercise%20Linear%20Regression/House%20Price%20Prediction/kc_house_data.csv)
 
 ---
 
