@@ -25,6 +25,7 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 - [Day 17: ML Foundations & Simple Linear Regression](#day-17)
 - [Day 18: Gradient Descent](#day-18)
 - [Day 19: Linear Regression Hands-on](#day-19)
+- [Day 20: Revision & Exercise: Linear Regression](#day-20)
 - [Assignments](#assignments)
 
 ---
@@ -294,6 +295,20 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 - **Classwork Notebook:** [`19. Linear Regression Hands on/Classwork_notebook.ipynb`](19.%20Linear%20Regression%20Hands%20on/Classwork_notebook.ipynb)
 - **Gradient Descent from Scratch:** [`19. Linear Regression Hands on/IT_Salary_Linear_Regression_GradientDescent.ipynb`](19.%20Linear%20Regression%20Hands%20on/IT_Salary_Linear_Regression_GradientDescent.ipynb)
 - **Dataset:** [`19. Linear Regression Hands on/IT_Salaries_Dataset.csv`](19.%20Linear%20Regression%20Hands%20on/IT_Salaries_Dataset.csv)
+
+---
+
+<a name="day-20"></a>
+## 🗓️ Day 20: Revision & Exercise: Linear Regression (01-Aug-2026)
+
+### Highlights
+- **GroupBy Revision:** Split-Apply-Combine practice on a real Alcohol Consumption dataset — a hands-on pandas `groupby` review that ties back into everything used across the Linear Regression sessions.
+- **Exercise, Then Solutions:** Work the exercise notebook first, check yourself against the solutions notebook, or use the combined exercise-with-solutions version for a guided walkthrough.
+
+### Resources
+- **Exercise:** [`20. Revision & Exercise Linear Regression/Alcohol Consumption/Exercise.ipynb`](20.%20Revision%20%26%20Exercise%20Linear%20Regression/Alcohol%20Consumption/Exercise.ipynb)
+- **Exercise + Solutions:** [`20. Revision & Exercise Linear Regression/Alcohol Consumption/Exercise_with_solutions.ipynb`](20.%20Revision%20%26%20Exercise%20Linear%20Regression/Alcohol%20Consumption/Exercise_with_solutions.ipynb)
+- **Solutions:** [`20. Revision & Exercise Linear Regression/Alcohol Consumption/Solutions.ipynb`](20.%20Revision%20%26%20Exercise%20Linear%20Regression/Alcohol%20Consumption/Solutions.ipynb)
 
 ---
 
