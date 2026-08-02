@@ -315,12 +315,20 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 - **Solutions:** [`20. Revision & Exercise Linear Regression/House Price Prediction/Solutions.ipynb`](20.%20Revision%20%26%20Exercise%20Linear%20Regression/House%20Price%20Prediction/Solutions.ipynb)
 - **Dataset:** [`20. Revision & Exercise Linear Regression/House Price Prediction/kc_house_data.csv`](20.%20Revision%20%26%20Exercise%20Linear%20Regression/House%20Price%20Prediction/kc_house_data.csv)
 
+### 🏠 Homework: Diamond Price Prediction
+A full end-to-end assignment applying the same skills to a new dataset: cleaning (missing values, exact duplicates, impossible zero-dimension rows), per-group IQR outlier detection, ordinal vs. one-hot encoding, scaling, **gradient descent written by hand** for both a simple and a multiple linear regression, and evaluating both against scikit-learn.
+
+- **Exercise:** [`20. Revision & Exercise Linear Regression/Assignments/Diamond Price Prediction/Exercise.ipynb`](20.%20Revision%20%26%20Exercise%20Linear%20Regression/Assignments/Diamond%20Price%20Prediction/Exercise.ipynb)
+- **Exercise + Solutions:** [`20. Revision & Exercise Linear Regression/Assignments/Diamond Price Prediction/Exercise_with_solutions.ipynb`](20.%20Revision%20%26%20Exercise%20Linear%20Regression/Assignments/Diamond%20Price%20Prediction/Exercise_with_solutions.ipynb)
+- **Solutions:** [`20. Revision & Exercise Linear Regression/Assignments/Diamond Price Prediction/Solutions.ipynb`](20.%20Revision%20%26%20Exercise%20Linear%20Regression/Assignments/Diamond%20Price%20Prediction/Solutions.ipynb)
+- **Dataset:** [`20. Revision & Exercise Linear Regression/Assignments/Diamond Price Prediction/diamonds.csv`](20.%20Revision%20%26%20Exercise%20Linear%20Regression/Assignments/Diamond%20Price%20Prediction/diamonds.csv)
+
 ---
 
 <a name="assignments"></a>
 ## 📝 Assignments
 
-Assignments are designed to test your understanding of the concepts covered each week. 
+Assignments are designed to test your understanding of the concepts covered each week. Where a solutions notebook exists, it's linked right below the assignment.
 
 - **Assignment 1:** Covering Day 1 to Day 2 (Data Types, Casting, Lists).
 - [Download Assignment 1 Notebook](Assignments/Inceptez_Batch26_Assignment1.ipynb)
@@ -328,13 +336,28 @@ Assignments are designed to test your understanding of the concepts covered each
 
 - **Assignment 2:** Covering Day 1 to Day 3 (Data Structures, conditional loops, for loops).
 - [Download Assignment 2 Notebook](Assignments/Inceptez_Batch26_Assignment2.ipynb)
+- [Download Assignment 2 Solutions](Assignment-Solutions/Inceptez_Batch26_Assignment2_answers.ipynb)
 
 
 - **Assignment 3:** Covering Day 1 to Day 4 (Iterative Loops, conditional loops, Functions).
 - [Download Assignment 3 Notebook](Assignments/Inceptez_Batch26_Assignment3.ipynb)
+- [Download Assignment 3 Solutions](Assignment-Solutions/Inceptez_Batch26_Assignment3.ipynb)
+
 
 - **Assignment 4:** Covering Day 5 to Day 6 (Advanced Arguments, OOP, Scoping).
 - [Download Assignment 4 Notebook](Assignments/Inceptez_Batch26_Assignment4.ipynb)
+
+
+- **Assignment 5:** Python Functions and Classes — parameter ordering, `*args`, and OOP (Day 6).
+- [Download Assignment 5 Notebook](Assignments/Inceptez_Batch26_Assignment5.ipynb)
+
+
+- **Assignment 6:** Pandas exercise — exploring the Open Food Facts dataset (Day 7/8, Pandas).
+- [Download Assignment 6 Notebook](Assignments/Inceptez_Batch26_Assignment6.ipynb)
+
+
+- **Assignment 7:** Pandas exercise — "Getting and Knowing Your Data" on a real-world users dataset (Day 7/8, Pandas).
+- [Download Assignment 7 Notebook](Assignments/Inceptez_Batch26_Assignment7.ipynb)
 
 ---
 ## ⚖️ License
