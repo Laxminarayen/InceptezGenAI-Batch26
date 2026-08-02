@@ -299,7 +299,7 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 ---
 
 <a name="day-20"></a>
-## 🗓️ Day 20: Revision & Exercise: Linear Regression (01-Aug-2026)
+## 🗓️ Day 20: Revision & Exercise: Linear Regression (01-Aug-2026 to 02-Aug-2026)
 
 ### Highlights
 - **End-to-End Cleaning:** Missing values, duplicate `id`s, and a real data-entry typo in `bedrooms` — fixed in the right order, before any correlation analysis or feature engineering touches the data.
@@ -311,6 +311,7 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 ### Resources
 - **Exercise:** [`20. Revision & Exercise Linear Regression/House Price Prediction/Exercise.ipynb`](20.%20Revision%20%26%20Exercise%20Linear%20Regression/House%20Price%20Prediction/Exercise.ipynb)
 - **Exercise + Solutions:** [`20. Revision & Exercise Linear Regression/House Price Prediction/Exercise_with_solutions.ipynb`](20.%20Revision%20%26%20Exercise%20Linear%20Regression/House%20Price%20Prediction/Exercise_with_solutions.ipynb)
+- **Classwork (Worked Through):** [`20. Revision & Exercise Linear Regression/House Price Prediction/Classwork_Exercise.ipynb`](20.%20Revision%20%26%20Exercise%20Linear%20Regression/House%20Price%20Prediction/Classwork_Exercise.ipynb)
 - **Solutions:** [`20. Revision & Exercise Linear Regression/House Price Prediction/Solutions.ipynb`](20.%20Revision%20%26%20Exercise%20Linear%20Regression/House%20Price%20Prediction/Solutions.ipynb)
 - **Dataset:** [`20. Revision & Exercise Linear Regression/House Price Prediction/kc_house_data.csv`](20.%20Revision%20%26%20Exercise%20Linear%20Regression/House%20Price%20Prediction/kc_house_data.csv)
 
