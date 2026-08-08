@@ -24,6 +24,10 @@
     "15 · Multivariate Distributions",
     "16 · Inferential Stats — Voting",
     "17 · ML Foundations & Simple Linear Regression",
+    "18 · Gradient Descent",
+    "19 · Linear Regression Hands-on",
+    "20 · Revision & Exercise: Linear Regression",
+    "21 · Polynomial Regression",
   ];
 
   function escapeHtml(str) {
