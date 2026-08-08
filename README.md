@@ -26,6 +26,7 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 - [Day 18: Gradient Descent](#day-18)
 - [Day 19: Linear Regression Hands-on](#day-19)
 - [Day 20: Revision & Exercise: Linear Regression](#day-20)
+- [Day 21: Polynomial Regression](#day-21)
 - [Assignments](#assignments)
 
 ---
@@ -322,6 +323,22 @@ A full end-to-end assignment applying the same skills to a new dataset: cleaning
 - **Exercise + Solutions:** [`20. Revision & Exercise Linear Regression/Assignments/Diamond Price Prediction/Exercise_with_solutions.ipynb`](20.%20Revision%20%26%20Exercise%20Linear%20Regression/Assignments/Diamond%20Price%20Prediction/Exercise_with_solutions.ipynb)
 - **Solutions:** [`20. Revision & Exercise Linear Regression/Assignments/Diamond Price Prediction/Solutions.ipynb`](20.%20Revision%20%26%20Exercise%20Linear%20Regression/Assignments/Diamond%20Price%20Prediction/Solutions.ipynb)
 - **Dataset:** [`20. Revision & Exercise Linear Regression/Assignments/Diamond Price Prediction/diamonds.csv`](20.%20Revision%20%26%20Exercise%20Linear%20Regression/Assignments/Diamond%20Price%20Prediction/diamonds.csv)
+
+---
+
+<a name="day-21"></a>
+## 🗓️ Day 21: Polynomial Regression (08-Aug-2026)
+
+### Highlights
+- **When Straight Lines Aren't Enough:** A 60-second recap of OLS, then a curvier salary-vs-experience story that no straight ruler can honestly fit.
+- **The One Small Trick:** Polynomial regression is secretly still linear regression — just add `x²`, `x³`, … as new columns and fit the same way.
+- **Build It By Hand:** Walking through the exact algorithm and every step, visualized, before trying it yourself.
+- **Turn the Dial:** Exploring the degree hyperparameter and the two ways to get it wrong — underfitting ("barely studied") vs. overfitting ("memorized the answer key").
+- **Why We Hide Some Data:** Train/validation/test splits as the only honest way to catch overfitting, plus the bias-variance payoff chart.
+- **Nothing Is Free:** The real tradeoffs of higher-degree polynomials — exploding feature scales and wild extrapolation — and a look ahead at what comes next.
+
+### Resources
+- **Slide Deck:** [`21. Polynomial Regression/polynomial-regression-slides.html`](21.%20Polynomial%20Regression/polynomial-regression-slides.html)
 
 ---
 

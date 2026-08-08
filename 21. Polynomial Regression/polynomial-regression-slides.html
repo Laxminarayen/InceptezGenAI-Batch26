@@ -1,0 +1,1539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Polynomial Regression · Teaching the Line to Bend</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+
+    --c-intro:#3B6E63; --c-limits:#B0670C; --c-features:#6249B0; --c-degree:#1E6FA8; --c-evaluate:#C13D68;
+
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+
+    --accent: var(--c-intro);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+      --c-intro:#79C0AE; --c-limits:#E3A238; --c-features:#A78BFA; --c-degree:#5FA8E0; --c-evaluate:#F17BA0;
+      --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+      --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+    --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+    --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+    --c-intro:#79C0AE; --c-limits:#E3A238; --c-features:#A78BFA; --c-degree:#5FA8E0; --c-evaluate:#F17BA0;
+    --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+    --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+  }
+  :root[data-theme="light"]{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+    --c-intro:#3B6E63; --c-limits:#B0670C; --c-features:#6249B0; --c-degree:#1E6FA8; --c-evaluate:#C13D68;
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    overflow:hidden; -webkit-font-smoothing:antialiased;
+  }
+  body[data-section="intro"]{--accent:var(--c-intro);}
+  body[data-section="limits"]{--accent:var(--c-limits);}
+  body[data-section="features"]{--accent:var(--c-features);}
+  body[data-section="degree"]{--accent:var(--c-degree);}
+  body[data-section="evaluate"]{--accent:var(--c-evaluate);}
+
+  h1,h2,h3,p{margin:0;}
+  h1,h2,h3{text-wrap:balance; letter-spacing:-0.01em;}
+  ::selection{background:var(--accent); color:#fff;}
+
+  .eyebrow{
+    font-size:.74rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent);
+  }
+  .slide h1{font-size:clamp(1.7rem,3.2vw,2.9rem); font-weight:800; color:var(--ink);}
+  .slide h2{font-size:clamp(1.2rem,1.8vw,1.6rem); font-weight:800; color:var(--ink);}
+  .body-text{font-size:clamp(1rem,1.25vw,1.2rem); font-weight:500; line-height:1.6; color:var(--ink-soft);}
+  .body-text b, .body-text strong{color:var(--ink); font-weight:800;}
+  .tabular{font-variant-numeric:tabular-nums;}
+
+  /* ---------- chrome ---------- */
+  .chrome-top{
+    position:fixed; top:0; left:0; right:0; height:52px; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 20px; pointer-events:none;
+  }
+  .chrome-top > *{pointer-events:auto;}
+  .hour-badge{
+    font-size:.72rem; font-weight:800; letter-spacing:.12em; color:var(--ink-faint);
+    background:var(--paper-2); border:1px solid var(--line); padding:6px 12px; border-radius:999px;
+  }
+  .chapter-chip{
+    display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:700;
+    color:var(--ink-soft); background:var(--paper-2); border:1px solid var(--line);
+    padding:6px 14px 6px 8px; border-radius:999px;
+  }
+  .chapter-chip .num{
+    display:inline-flex; align-items:center; justify-content:center; width:20px;height:20px;
+    border-radius:50%; background:var(--accent); color:#fff; font-size:.68rem; font-weight:800;
+  }
+  .icon-btn{
+    width:36px;height:36px; border-radius:50%; border:1px solid var(--line); background:var(--paper-2);
+    color:var(--ink); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .icon-btn:hover{background:var(--paper-3);}
+  .icon-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  .deck{position:absolute; inset:0; top:52px; bottom:64px;}
+  .slide{
+    position:absolute; inset:0; display:none; flex-direction:column;
+    padding:clamp(18px,3vw,40px) clamp(24px,5vw,80px);
+    overflow:auto;
+  }
+  .slide.active{display:flex;}
+  .slide-inner{display:flex; flex-direction:column; gap:clamp(12px,1.8vh,20px); max-width:1360px; width:100%; margin:0 auto; flex:1; min-height:0;}
+
+  .chrome-bottom{
+    position:fixed; left:0; right:0; bottom:0; height:64px; z-index:50;
+    display:flex; align-items:center; gap:14px; padding:0 clamp(14px,3vw,32px);
+    background:linear-gradient(0deg, var(--paper) 60%, transparent);
+  }
+  .nav-btn{
+    width:40px;height:40px;border-radius:50%; border:1px solid var(--line); background:var(--paper-2);
+    color:var(--ink); font-size:1.2rem; cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center;
+  }
+  .nav-btn:hover:not(:disabled){background:var(--accent); color:#fff; border-color:transparent;}
+  .nav-btn:disabled{opacity:.35; cursor:default;}
+  .progress{flex:1; display:flex; align-items:center; gap:5px; overflow-x:auto; scrollbar-width:none;}
+  .progress::-webkit-scrollbar{display:none;}
+  .dot{
+    width:9px;height:9px;border-radius:50%; background:var(--paper-3); border:none; cursor:pointer; flex:none;
+    transition:transform .15s ease;
+  }
+  .dot.gap{width:14px; height:2px; border-radius:1px; background:transparent; cursor:default;}
+  .dot.active{transform:scale(1.5);}
+  .slide-counter{font-size:.8rem; font-weight:700; color:var(--ink-faint); flex:none; white-space:nowrap;}
+
+  /* ---------- layout helpers ---------- */
+  .split{display:grid; grid-template-columns:1.05fr 1.35fr; gap:clamp(20px,4vw,52px); align-items:center; flex:1; min-height:0;}
+  @media (max-width:920px){ .split{grid-template-columns:1fr; overflow:auto;} }
+  .split.reverse{grid-template-columns:1.35fr 1.05fr;}
+  .split.even{grid-template-columns:1fr 1fr;}
+  .split.even3{grid-template-columns:1fr 1fr 1fr;}
+  .stack{display:flex; flex-direction:column; gap:12px; min-height:0;}
+  .center-col{display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:16px; flex:1;}
+  .visual-box{
+    background:var(--surface-canvas); border:1px solid var(--line); border-radius:24px;
+    padding:14px; box-shadow:var(--shadow); min-height:0; display:flex; flex-direction:column; gap:8px;
+  }
+  .canvas-wrap{position:relative; flex:1; min-height:160px;}
+  canvas{display:block; width:100%; height:100%;}
+  .draw-cursor{cursor:crosshair; touch-action:none;}
+
+  /* ---------- components ---------- */
+  .vocab-card{
+    border-left:5px solid var(--accent); background:var(--paper-2); border-radius:14px;
+    padding:12px 18px; display:flex; flex-direction:column; gap:4px;
+  }
+  .vocab-term{font-size:1rem; font-weight:900; letter-spacing:.04em; color:var(--accent);}
+  .vocab-def{font-size:1rem; color:var(--ink); font-weight:600; line-height:1.4;}
+
+  .console{
+    display:flex; flex-wrap:wrap; gap:14px 26px; align-items:flex-end;
+    background:var(--paper-2); border:1px solid var(--line); border-radius:20px;
+    padding:16px 20px;
+  }
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field label{font-size:.76rem; font-weight:800; color:var(--ink-soft); letter-spacing:.03em;}
+  .field .val{color:var(--accent); font-weight:900;}
+  input[type="range"]{width:180px; accent-color:var(--accent);}
+
+  .btn{
+    font:inherit; font-size:.92rem; font-weight:800; border:1px solid var(--line); border-radius:999px;
+    padding:11px 20px; cursor:pointer; background:var(--paper-3); color:var(--ink);
+    transition:transform .12s ease, box-shadow .12s ease; white-space:nowrap;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn:active{transform:translateY(0);}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .btn-primary{background:var(--accent); color:#fff; border-color:transparent; box-shadow:0 8px 18px -8px var(--accent);}
+  .btn-ghost{background:transparent;}
+  .btn.toggled{background:var(--accent); color:#fff; border-color:transparent;}
+  .btn:disabled{opacity:.5; cursor:default; transform:none;}
+  .btn-row{display:flex; flex-wrap:wrap; gap:10px;}
+
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px;}
+  .stat-tile{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:12px 14px;}
+  .stat-tile .label{font-size:.7rem; font-weight:800; color:var(--ink-faint); letter-spacing:.05em; text-transform:uppercase;}
+  .stat-tile .value{font-size:1.35rem; font-weight:900; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .stat-tile.accent .value{color:var(--accent);}
+
+  .card{background:var(--paper-2); border:1px solid var(--line); border-radius:18px; padding:18px 20px;}
+  .card-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px;}
+  .card .ico{font-size:1.8rem;}
+  .card h3{font-size:1.02rem; margin-top:8px;}
+  .card p{font-size:.92rem; color:var(--ink-soft); margin-top:4px; line-height:1.45;}
+
+  .banner{border-radius:14px; padding:12px 16px; font-weight:800; font-size:.92rem; display:flex; align-items:center; gap:10px;}
+  .banner.warn{background:color-mix(in srgb, var(--warn) 18%, var(--paper-2)); color:var(--warn);}
+  .banner.good{background:color-mix(in srgb, var(--good) 18%, var(--paper-2)); color:var(--good);}
+  .banner.bad{background:color-mix(in srgb, var(--bad) 18%, var(--paper-2)); color:var(--bad);}
+  .banner.info{background:var(--paper-3); color:var(--ink); font-weight:600; align-items:flex-start;}
+
+  .roadmap{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  .roadmap .stop{background:var(--paper-2); border-radius:18px; padding:16px 10px; text-align:center; border-top:5px solid var(--stop-color, var(--accent));}
+  .roadmap .stop .ico{font-size:2rem;}
+  .roadmap .stop .t{font-size:.8rem; font-weight:800; margin-top:6px;}
+  @media (max-width:920px){ .roadmap{grid-template-columns:repeat(2,1fr);} }
+
+  .kicker-big{font-size:clamp(2.2rem,5.6vw,3.9rem); font-weight:900; letter-spacing:-0.02em;}
+  .glow{color:var(--accent);}
+
+  .rule-list{display:flex; flex-direction:column; gap:12px;}
+  .rule{display:flex; gap:14px; align-items:flex-start; border-radius:14px; padding:6px 8px; margin:-6px -8px; transition:background .25s ease;}
+  .rule .n{width:34px;height:34px;border-radius:50%; background:var(--accent); color:#fff; font-weight:900; display:flex; align-items:center; justify-content:center; flex:none;}
+  .rule .t h3{font-size:1rem;}
+  .rule .t p{font-size:.92rem; color:var(--ink-soft); margin-top:2px;}
+  .rule.active-rule{background:color-mix(in srgb, var(--accent) 14%, transparent);}
+
+  .table-wrap{border:1px solid var(--line); border-radius:14px; overflow:hidden;}
+  .data-table{width:100%; border-collapse:collapse; font-size:.88rem;}
+  .data-table th,.data-table td{padding:9px 12px; text-align:center; font-variant-numeric:tabular-nums;}
+  .data-table thead th{background:var(--paper-3); color:var(--ink-soft); font-weight:800; font-size:.74rem; letter-spacing:.03em; text-transform:uppercase;}
+  .data-table thead th .tag{display:block; font-weight:600; text-transform:none; letter-spacing:0; font-size:.7rem; opacity:.75;}
+  .data-table tbody tr{border-top:1px solid var(--line);}
+  .data-table tbody tr.hl-row{background:color-mix(in srgb, var(--accent) 12%, transparent); font-weight:800;}
+
+  .legend{display:flex; gap:16px; font-size:.8rem; font-weight:700; color:var(--ink-soft); flex-wrap:wrap;}
+  .legend .sw{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle;}
+  .legend .sw.line{border-radius:2px; width:14px; height:3px;}
+
+  .footnote{font-size:.82rem; color:var(--ink-faint); font-weight:600;}
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+</style>
+</head>
+<body data-section="intro">
+  <div class="chrome-top">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="hour-badge" id="hourBadge">POLYNOMIAL REGRESSION</div>
+      <div class="chapter-chip" id="chapterChip" style="display:none;">
+        <span class="num" id="chapterNum">1</span>
+        <span id="chapterLabel">—</span>
+      </div>
+    </div>
+    <button class="icon-btn" id="themeToggle" title="Toggle light / dark">🌗</button>
+  </div>
+
+  <main class="deck" id="deck">
+
+    <!-- ============ S0 — INTRO / ROADMAP ============ -->
+    <section class="slide" data-section="intro" id="s0">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Salary &amp; Experience · When Straight Lines Aren't Enough</div>
+        <h1 class="kicker-big">Teaching the line<br/>to <span class="glow">bend</span></h1>
+        <p class="body-text" style="max-width:720px;">Last time, we found the exact best STRAIGHT line for salary vs. experience — the Ordinary Least Squares recipe, walked downhill by gradient descent. It worked beautifully... on data that actually forms a straight line. But what happens when real life curves? Today: four hours, four stops, on why straight lines fall short and what to do about it.</p>
+        <div class="roadmap" style="width:100%; margin-top:6px;">
+          <div class="stop" style="--stop-color:var(--c-limits);"><div class="ico">🪫</div><div class="t">The Limits of a Straight Line</div></div>
+          <div class="stop" style="--stop-color:var(--c-features);"><div class="ico">🧬</div><div class="t">Teaching It to Bend</div></div>
+          <div class="stop" style="--stop-color:var(--c-degree);"><div class="ico">🎚️</div><div class="t">How Much Is Too Much?</div></div>
+          <div class="stop" style="--stop-color:var(--c-evaluate);"><div class="ico">🎯</div><div class="t">Evaluating Honestly</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ L1 — RECAP: WHAT IS OLS, IN PLAIN WORDS ============ -->
+    <section class="slide" data-section="limits" id="sL1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 1 · A 60-Second Recap</div>
+        <h1>Quick refresher: <span class="glow">gradient descent</span>, in five steps</h1>
+        <p class="body-text">Everything today is built on the exact same optimizer from last time — no shortcuts, no new algorithm. If any of these five steps feels unfamiliar, it's worth revisiting the Linear Regression &amp; Gradient Descent deck first.</p>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card"><div class="ico">🎲</div><h3>1. Start with a guess</h3><p>Any starting numbers — even β₀ = 0, β₁ = 0 works fine.</p></div>
+          <div class="card"><div class="ico">🦶</div><h3>2. Feel the slope</h3><p>At the current guess, work out how the mistakes would change if you nudged each β.</p></div>
+          <div class="card"><div class="ico">➖</div><h3>3. Subtract it</h3><p>new β = old β − (learning rate) × slope — for every β, every round.</p></div>
+          <div class="card"><div class="ico">🔁</div><h3>4. Repeat</h3><p>Go back to step 2 with the new numbers. Over and over.</p></div>
+          <div class="card"><div class="ico">🏁</div><h3>5. Stop when flat</h3><p>Slope ≈ 0 in every direction means you're standing at the bottom.</p></div>
+          <div class="card"><div class="ico">🥣</div><h3>Why it works</h3><p>Every possible (β₀, β₁) scores a "badness" number. Plotted, those scores form one smooth bowl — walking downhill always finds its one true bottom.</p></div>
+        </div>
+        <div class="banner info">👀 predicted salary = β₀ + β₁ × experience — a straight ruler, two dials. Today we're not changing the recipe above at all. We're changing what we hand it to work with.</div>
+      </div>
+    </section>
+
+    <!-- ============ L2 — THE ASSUMPTION BAKED INTO A STRAIGHT LINE ============ -->
+    <section class="slide" data-section="limits" id="sL2">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Hour 1 · The Hidden Promise of a Ruler</div>
+        <h1 class="kicker-big">A straight ruler makes<br/>ONE unbreakable <span class="glow">promise</span></h1>
+        <p class="body-text" style="max-width:680px;">Every extra year of experience is worth the EXACT same raise — whether it's your 1st year or your 21st. That's what "one constant slope, β₁" actually means. A ruler can tilt, and it can slide up or down. That's it. It can NEVER curve, speed up, slow down, or turn around.</p>
+        <p class="body-text" style="max-width:680px;">Sometimes that promise is exactly true, and a straight line is perfect. But a lot of real life doesn't work that way — and when it doesn't, forcing a straight ruler onto it quietly produces a model that's confidently wrong. Let's go find some real-looking data where that promise breaks.</p>
+      </div>
+    </section>
+
+    <!-- ============ L3 — MEET THE CURVY SALARY DATA ============ -->
+    <section class="slide" data-section="limits" id="sL3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 1 · A New, Curvier Story</div>
+          <h1>Salary raises that <span class="glow">slow down</span> over time</h1>
+          <p class="body-text">A very common real pattern: salary climbs FAST in your early career (each year you're worth a lot more), then the raises get smaller and smaller as you get more senior — the curve flattens out. Diminishing returns. Look at the shape below before we fit anything at all.</p>
+          <div class="rule-list">
+            <div class="rule"><div class="n">1</div><div class="t"><h3>Steep at the start</h3><p>The first few years of experience come with big salary jumps.</p></div></div>
+            <div class="rule"><div class="n">2</div><div class="t"><h3>Flattening later</h3><p>By year 12–15, an extra year barely moves the number.</p></div></div>
+            <div class="rule"><div class="n">3</div><div class="t"><h3>A genuine CURVE, not a line</h3><p>No single constant slope describes both ends of this story.</p></div></div>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvCurvyScatter"></canvas></div>
+          <p class="footnote">Each dot = one real-looking employee. Notice the bend — steep, then flat.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ L4 — INTERACTIVE: FIT THE STRAIGHT LINE, WATCH RESIDUALS ============ -->
+    <section class="slide" data-section="limits" id="sL4">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 1 · Try It — Force a Ruler Onto a Curve</div>
+          <h1>OLS's <span class="glow">best</span> straight line — and its mistakes</h1>
+          <p class="body-text">This is the exact best straight line OLS can find for this data — its single lowest-badness ruler placement. Click "Show residuals" and watch each mistake (actual − predicted) plotted below. Random scatter would mean the line fits well. What do you see instead?</p>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="l4ResidBtn">📊 Show residuals</button>
+          </div>
+          <div class="banner warn" id="l4Banner" style="display:none;"></div>
+        </div>
+        <div class="stack" style="gap:14px;">
+          <div class="visual-box" style="height:min(30vh,270px);">
+            <div class="canvas-wrap"><canvas id="cvL4Fit"></canvas></div>
+          </div>
+          <div class="visual-box" style="height:min(24vh,220px);" id="l4ResidBox">
+            <div class="canvas-wrap"><canvas id="cvL4Resid"></canvas></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ L5 — DRAWBACKS OF LINEAR REGRESSION ============ -->
+    <section class="slide" data-section="limits" id="sL5">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 1 · Naming the Problem</div>
+        <h1>The real drawbacks of <span class="glow">linear regression</span></h1>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card" style="border-top:5px solid var(--bad);"><div class="ico">📏</div><h3>Only ONE constant slope</h3><p>It can tilt and slide — it physically cannot speed up, slow down, or turn.</p></div>
+          <div class="card" style="border-top:5px solid var(--bad);"><div class="ico">🌊</div><h3>Underfits curved reality</h3><p>Diminishing returns, saturation, U-shapes, S-curves — all invisible to a straight ruler.</p></div>
+          <div class="card" style="border-top:5px solid var(--bad);"><div class="ico">🚩</div><h3>Residual patterns = a red flag</h3><p>If leftover mistakes form a shape instead of random noise, the model is missing structure in the data.</p></div>
+          <div class="card" style="border-top:5px solid var(--bad);"><div class="ico">🚀</div><h3>Dangerous extrapolation</h3><p>A straight line marches on forever. Predict "salary at 50 years experience" and it just keeps climbing, unrealistically.</p></div>
+          <div class="card" style="border-top:5px solid var(--bad);"><div class="ico">⚖️</div><h3>All-or-nothing effect size</h3><p>It assumes every unit of X changes Y by the same fixed amount, everywhere — rarely true for real phenomena.</p></div>
+          <div class="card" style="border-top:5px solid var(--bad);"><div class="ico">🎯</div><h3>Outlier-sensitive</h3><p>One extreme point can noticeably tilt the entire ruler (a lesson from Hour 4 of the last course, still true here).</p></div>
+        </div>
+        <div class="banner info">🤔 None of this means linear regression is "bad" — plenty of real relationships genuinely ARE straight lines. The skill is knowing how to tell, and what to do when they're not.</div>
+      </div>
+    </section>
+
+    <!-- ============ L6 — BRIDGE TO HOUR 2 ============ -->
+    <section class="slide" data-section="limits" id="sL6">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Hour 1 → Hour 2</div>
+        <h1 class="kicker-big">So... can we teach<br/>the line to <span class="glow">bend?</span></h1>
+        <p class="body-text" style="max-width:640px;">We don't need a brand new algorithm. We don't need to throw away anything we already built — gradient descent, the cost function, all of it still works exactly the same way. Hour 2: the one small trick that lets a "straight line" method draw curves.</p>
+      </div>
+    </section>
+
+    <!-- ============ F1 — THE BIG IDEA ============ -->
+    <section class="slide" data-section="features" id="sF1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 2 · The One Small Trick</div>
+        <h1>What if we handed the model <span class="glow">one more column?</span></h1>
+        <p class="body-text">Right now our model only ever sees ONE input column: experience. What if, alongside "years of experience," we also handed it a second column: "years of experience, squared"? Same original number, just multiplied by itself — a brand new column, computed, not measured.</p>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Experience (x)</th><th>Experience² (x×x)</th><th>Salary (y)</th></tr></thead>
+            <tbody>
+              <tr><td>2</td><td>4</td><td>8.1</td></tr>
+              <tr><td>6</td><td>36</td><td>15.6</td></tr>
+              <tr><td>10</td><td>100</td><td>19.8</td></tr>
+              <tr><td>14</td><td>196</td><td>20.9</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="body-text">Now the model has TWO dials to turn instead of one: how much each plain year is worth, AND how much each "year-squared" is worth. That second dial is exactly what lets the prediction curve, instead of staying perfectly straight.</p>
+      </div>
+    </section>
+
+    <!-- ============ F2 — THE AHA: POLYNOMIAL REGRESSION IS SECRETLY LINEAR ============ -->
+    <section class="slide" data-section="features" id="sF2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 2 · The "Aha" Moment</div>
+        <h1>Polynomial regression is secretly <span class="glow">still linear regression</span></h1>
+        <div class="vocab-card" style="border-left-color:var(--c-features);">
+          <div class="vocab-term" style="color:var(--c-features);">THE FULL EQUATION</div>
+          <div class="vocab-def" style="font-family:Georgia,'Times New Roman',serif; font-size:1.15rem;">salary = β₀ + β₁·x + β₂·x² + β₃·x³ + ...</div>
+          <div class="vocab-def">Yes, the CURVE this draws is bent. But look at how each β multiplies its own column and they all just get ADDED together — no β multiplies another β, no β is squared or divided. That's the actual definition of "linear": linear in the PARAMETERS, not linear in x.</div>
+        </div>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card"><div class="ico">🧩</div><h3>x² is just another feature</h3><p>To the optimizer, "experience-squared" is no different from "age" or "company size" was in multiple regression — just one more column.</p></div>
+          <div class="card"><div class="ico">⛰️</div><h3>Same bowl, more dimensions</h3><p>More β's means more axes on the cost landscape — but it's still one smooth bowl, still one true bottom.</p></div>
+          <div class="card"><div class="ico">🐾</div><h3>Same gradient descent, unchanged</h3><p>Compute each β's slope from the same mistakes, subtract, repeat. Nothing about the algorithm changes — only the number of columns.</p></div>
+        </div>
+        <div class="banner good">✅ This is why we didn't need a new chapter of math — polynomial regression is a FEATURE ENGINEERING trick bolted onto the exact machinery you already know.</div>
+      </div>
+    </section>
+
+    <!-- ============ F2B — THE STEPS: POLYNOMIAL REGRESSION, GRADIENT-DESCENT STYLE ============ -->
+    <section class="slide" data-section="features" id="sF2B">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 2 · The Exact Algorithm</div>
+        <h1>Fitting the curve, <span class="glow">gradient-descent style</span></h1>
+        <p class="body-text">Hour 1's five steps, unchanged — we're just handing gradient descent a longer list of columns to find slopes for. No closed-form shortcut anywhere in this deck: every curve you see from here on was walked downhill into place, one small step at a time.</p>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>Build the columns</h3><p>x, x², x³, ... up to whatever degree you've chosen (Hour 2's earlier slide).</p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>Normalize every column into [0,1]</h3><p>x³ dwarfs x in raw size — normalize first, or the steps below go haywire. (Why, in detail, coming up next.)</p></div></div>
+          <div class="rule"><div class="n">3</div><div class="t"><h3>Start with a guess</h3><p>Every β — β₀, β₁, β₂, β₃, how many ever columns exist — starts at 0.</p></div></div>
+          <div class="rule"><div class="n">4</div><div class="t"><h3>Compute ONE slope per β — same mistakes, every time</h3><p>slope for β₀ = −(2/n)Σ(mistake) &nbsp;|&nbsp; slope for β₁ = −(2/n)Σ(mistake×x) &nbsp;|&nbsp; slope for β₂ = −(2/n)Σ(mistake×x²) &nbsp;|&nbsp; ...and so on, one extra term per column.</p></div></div>
+          <div class="rule"><div class="n">5</div><div class="t"><h3>Update every β together, then repeat</h3><p>new βₖ = old βₖ − (learning rate) × slope for βₖ — for k = 0, 1, 2, 3... all at once, every round, until every slope flattens to ~0.</p></div></div>
+        </div>
+        <div class="banner info">🔁 Two β's or twelve β's — the loop body doesn't change shape, it just has more numbers riding along inside it. That's the whole reason this scales to any degree without inventing anything new.</div>
+      </div>
+    </section>
+
+    <!-- ============ F2C — EVERY STEP OF GRADIENT DESCENT FOR A POLYNOMIAL, VISUALIZED ============ -->
+    <section class="slide" data-section="features" id="sF2C">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 2 · Every Step, Visualized</div>
+          <h1>Given this data, <span class="glow">what do we actually do?</span></h1>
+          <p class="body-text">Look at the scatter on the right: the relationship is curved, not straight — Hour 1 already showed a straight line misses it badly. The real-world fix is a two-part recipe, the exact shape of what a tool like scikit-learn runs under the hood: <b>Part 1 — turn x into more columns.</b> <b>Part 2 — fit a linear model on top of them.</b> No code here, just that logic, one visible step at a time.</p>
+
+          <p class="footnote">How many polynomials (what degree) are we using?</p>
+          <div class="btn-row">
+            <button class="btn btn-primary toggled" id="f2cDeg1Btn">Degree 1 → 2 columns</button>
+            <button class="btn btn-primary" id="f2cDeg2Btn">Degree 2 → 3 columns</button>
+            <button class="btn btn-primary" id="f2cDeg3Btn">Degree 3 → 4 columns</button>
+          </div>
+
+          <p class="footnote">Part 1 — build the features (steps 1–2). Part 2 — fit the model (steps 3–5):</p>
+          <div class="btn-row">
+            <button class="btn btn-ghost toggled" id="f2cStage1Btn">1. Build columns</button>
+            <button class="btn btn-ghost" id="f2cStage2Btn">2. Normalize</button>
+            <button class="btn btn-ghost" id="f2cStage3Btn">3. Initial guess</button>
+            <button class="btn btn-ghost" id="f2cStage4Btn">4. See the mistakes</button>
+            <button class="btn btn-ghost" id="f2cStage5Btn">5. Update &amp; repeat</button>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="f2cPrevBtn">◀ Back</button>
+            <button class="btn btn-primary" id="f2cNextBtn">Next step ▶</button>
+          </div>
+
+          <div class="banner info" id="f2cStageInfo">—</div>
+
+          <div id="f2cStage5Controls" style="display:none;">
+            <div class="btn-row">
+              <button class="btn btn-primary" id="f2cStepBtn">👣 Take one round</button>
+              <button class="btn btn-primary" id="f2cRunBtn">▶️ Run to the bottom</button>
+              <button class="btn btn-ghost" id="f2cResetBtn">🔄 Restart from all β = 0</button>
+            </div>
+            <div class="stat-grid">
+              <div class="stat-tile"><div class="label">Round</div><div class="value tabular" id="f2cRound">0</div></div>
+              <div class="stat-tile"><div class="label">Columns (β's)</div><div class="value tabular" id="f2cNumCols">2</div></div>
+              <div class="stat-tile accent"><div class="label">Cost (MSE)</div><div class="value tabular" id="f2cCost">—</div></div>
+            </div>
+            <div class="banner good" id="f2cDone" style="display:none;"></div>
+          </div>
+        </div>
+        <div class="stack" style="gap:14px;">
+          <div class="visual-box" style="height:min(34vh,300px);">
+            <div class="canvas-wrap"><canvas id="cvF2C"></canvas></div>
+          </div>
+          <div class="table-wrap" style="max-height:200px; overflow-y:auto;">
+            <table class="data-table">
+              <thead id="f2cTableHead"><tr><th>Round</th><th>β₀</th><th>β₁</th><th>Cost</th></tr></thead>
+              <tbody id="f2cTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ F3 — WORKED TABLE: BUILDING POLYNOMIAL FEATURES ============ -->
+    <section class="slide" data-section="features" id="sF3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 2 · Build It By Hand, Once</div>
+          <h1>From one column to <span class="glow">several</span></h1>
+          <p class="body-text">Take a handful of real employees and literally build the extra columns — x², x³ — the same way you'd build any engineered feature. Once these columns exist, "polynomial regression" and "multiple linear regression" are the exact same fitting process.</p>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="f3AddBtn">➕ Add the x³ column</button>
+            <button class="btn btn-ghost" id="f3ResetBtn">🔄 Reset</button>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(50vh,460px);">
+          <div class="table-wrap">
+            <table class="data-table" id="f3Table">
+              <thead><tr><th>x (experience)</th><th>x²</th><th id="f3CubeHead" style="display:none;">x³</th><th>y (salary)</th></tr></thead>
+              <tbody id="f3TableBody"></tbody>
+            </table>
+          </div>
+          <p class="footnote">Every column past the first is 100% computed from the ones before it — no new measurements needed.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ F4 — INTERACTIVE: WATCH THE CURVE APPEAR AS DEGREE GROWS ============ -->
+    <section class="slide" data-section="features" id="sF4">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 2 · Try It Yourself</div>
+          <h1>Add columns, watch it <span class="glow">bend</span></h1>
+          <p class="body-text">Click through degree 1, 2, and 3. Same data, same gradient descent loop from the last slide — literally the same code, just handed more columns. Only the number of feature columns changes.</p>
+          <div class="btn-row">
+            <button class="btn btn-primary toggled" id="f4Deg1Btn">Degree 1 (line)</button>
+            <button class="btn btn-primary" id="f4Deg2Btn">Degree 2 (curve)</button>
+            <button class="btn btn-primary" id="f4Deg3Btn">Degree 3 (s-bend)</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Columns the model sees</div><div class="value tabular" id="f4NumCols">1</div></div>
+            <div class="stat-tile accent"><div class="label">Cost (MSE)</div><div class="value tabular" id="f4Cost">—</div></div>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvF4Curve"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ F5 — WHY POLYNOMIAL FEATURES NEED SCALING EVEN MORE ============ -->
+    <section class="slide" data-section="features" id="sF5">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 2 · A Trap Worth Knowing About</div>
+          <h1>x² and x³ explode in <span class="glow">scale</span></h1>
+          <p class="body-text">Remember normalizing features so gradient descent takes fair-sized steps? With polynomial features it's not optional — it's urgent. Look what happens to the SAME employee's columns as we raise the power:</p>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>x</th><th>x²</th><th>x³</th></tr></thead>
+              <tbody>
+                <tr><td>2</td><td>4</td><td>8</td></tr>
+                <tr><td>8</td><td>64</td><td>512</td></tr>
+                <tr><td class="hl-row">15</td><td class="hl-row">225</td><td class="hl-row">3,375</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="banner warn">⚠️ At experience = 15, the x³ column is 3,375 — while the plain x column is just 15. Feed gradient descent raw numbers on scales that different and it lurches wildly in one direction, barely moves in another. Normalize every power into [0,1] FIRST, exactly like before, and it behaves.</div>
+        </div>
+        <div class="visual-box" style="height:min(50vh,460px);">
+          <div class="canvas-wrap"><canvas id="cvF5Scale"></canvas></div>
+          <p class="footnote">x, x², and x³ plotted on the same axis — notice how fast the higher powers rocket away from the plain line.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ F6 — BRIDGE TO HOUR 3 ============ -->
+    <section class="slide" data-section="features" id="sF6">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Hour 2 → Hour 3</div>
+        <h1 class="kicker-big">We can bend the line now.<br/>But <span class="glow">how much</span> should we bend it?</h1>
+        <p class="body-text" style="max-width:640px;">Degree 2? Degree 5? Degree 20? More columns always make the TRAINING fit look better — right up until it doesn't help anymore, and eventually actively hurts. Hour 3: finding the sweet spot, and the two failure modes on either side of it.</p>
+      </div>
+    </section>
+
+    <!-- ============ D1 — MEET THE DEGREE SLIDER ============ -->
+    <section class="slide" data-section="degree" id="sD1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 3 · Turn the Dial</div>
+          <h1>One slider, <span class="glow">wildly different</span> curves</h1>
+          <p class="body-text">Drag the degree from 1 up to 12. Watch the curve twist to chase the training dots more and more closely — and watch what that does past a certain point.</p>
+          <div class="console">
+            <div class="field"><label>Degree = <span class="val" id="d1DegLabel">1</span></label><input type="range" id="d1DegSlider" min="1" max="12" value="1" step="1"></div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Training cost (MSE)</div><div class="value tabular" id="d1TrainCost">—</div></div>
+            <div class="stat-tile accent"><div class="label">Test cost (MSE)</div><div class="value tabular" id="d1TestCost">—</div></div>
+          </div>
+          <div class="banner info" id="d1Comment">—</div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvD1Curve"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--c-degree);"></span>training points</span><span><span class="sw" style="background:var(--bad);"></span>test points (hidden from fitting)</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ D2 — UNDERFITTING VS OVERFITTING, ELI5 ============ -->
+    <section class="slide" data-section="degree" id="sD2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 3 · Two Ways to Get It Wrong</div>
+        <h1>The student who barely studied vs. the student who <span class="glow">memorized the answer key</span></h1>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card" style="border-top:5px solid var(--warn);">
+            <div class="ico">😴</div><h3>Underfitting (degree too low)</h3>
+            <p>Barely studied. Gets the general idea but misses real patterns — high mistakes on the material they studied AND on the real exam. A straight line on curvy data: it's wrong basically everywhere.</p>
+          </div>
+          <div class="card" style="border-top:5px solid var(--bad);">
+            <div class="ico">📓</div><h3>Overfitting (degree too high)</h3>
+            <p>Memorized the practice test — including its typos and random quirks. Perfect score on THAT test, but the real exam is phrased differently, and they're lost. A wiggly degree-12 curve chasing every noisy dot: perfect on training data, terrible on anything new.</p>
+          </div>
+        </div>
+        <div class="banner good">🎯 The goal isn't "as good as possible on the data we already have" — it's "as good as possible on data we HAVEN'T seen yet." That's the entire reason test sets exist.</div>
+      </div>
+    </section>
+
+    <!-- ============ D3 — TRAIN / TEST SPLIT, REPRISED ============ -->
+    <section class="slide" data-section="degree" id="sD3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 3 · Why We Hide Some Data</div>
+        <h1>The only honest way to catch <span class="glow">overfitting</span></h1>
+        <p class="body-text">A memorizing student LOOKS perfect if you only ever quiz them on the exact practice test. The only way to catch the problem is a fresh question they've never seen. That's exactly what a test set is for a model.</p>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>Split BEFORE fitting anything</h3><p>Set aside ~20% of the data. The model never sees it during training, at any degree.</p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>Fit on training data only</h3><p>Find the β's using just the 80% — same recipe as always.</p></div></div>
+          <div class="rule"><div class="n">3</div><div class="t"><h3>Score on training AND test</h3><p>Training cost tells you how well it memorized. Test cost tells you how well it actually LEARNED.</p></div></div>
+        </div>
+        <div class="banner warn">👀 A model that's great on training but bad on test isn't a good model that got unlucky — that gap IS the overfitting, measured directly.</div>
+      </div>
+    </section>
+
+    <!-- ============ D4 — INTERACTIVE: TRAIN VS TEST ERROR ACROSS DEGREES ============ -->
+    <section class="slide" data-section="degree" id="sD4">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 3 · The Payoff Chart</div>
+          <h1>Watch both curves as degree <span class="glow">climbs</span></h1>
+          <p class="body-text">This is the single most important chart in this hour. Training cost (green) keeps falling — more columns can ALWAYS fit the training data at least as well. Test cost (red) falls too... for a while.</p>
+          <button class="btn btn-primary" id="d4RunBtn" style="align-self:flex-start;">▶️ Sweep degree 1 → 12</button>
+          <div class="stat-grid">
+            <div class="stat-tile accent"><div class="label">Best degree found (lowest test cost)</div><div class="value tabular" id="d4BestDeg">—</div></div>
+          </div>
+          <div class="banner good" id="d4Result" style="display:none;"></div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvD4Sweep"></canvas></div>
+          <div class="legend"><span><span class="sw line" style="background:var(--good);"></span>training cost</span><span><span class="sw line" style="background:var(--bad);"></span>test cost</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ D5 — BIAS-VARIANCE TRADEOFF ============ -->
+    <section class="slide" data-section="degree" id="sD5">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 3 · Naming What You Just Saw</div>
+        <h1>It has a name: the <span class="glow">bias-variance</span> tradeoff</h1>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card" style="border-top:5px solid var(--warn);">
+            <div class="ico">🎯</div><h3>Bias — "consistently missing the same way"</h3>
+            <p>A too-simple model (low degree) makes the SAME kind of mistake everywhere — like a dart player who always throws a little left, no matter how many darts they throw.</p>
+          </div>
+          <div class="card" style="border-top:5px solid var(--bad);">
+            <div class="ico">🎲</div><h3>Variance — "wildly different every time"</h3>
+            <p>A too-complex model (high degree) is EXTREMELY sensitive to exactly which training points it happened to see — a slightly different sample of employees would produce a shockingly different wiggly curve.</p>
+          </div>
+        </div>
+        <p class="body-text" style="text-align:center; margin-top:4px;">Low degree → high bias, low variance. High degree → low bias, high variance. The sweet spot from Hour 3's chart is the degree where their COMBINED damage to test performance is smallest.</p>
+      </div>
+    </section>
+
+    <!-- ============ D6 — BRIDGE TO HOUR 4 ============ -->
+    <section class="slide" data-section="degree" id="sD6">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Hour 3 → Hour 4</div>
+        <h1 class="kicker-big">We found the sweet spot.<br/>Now let's <span class="glow">prove</span> it, properly</h1>
+        <p class="body-text" style="max-width:640px;">"Eyeballing a chart" isn't a rigorous answer. Hour 4: the actual numbers — R², MSE, RMSE, MAPE — comparing the honest winner against plain linear regression, plus the remaining dangers even a well-chosen polynomial model still carries.</p>
+      </div>
+    </section>
+
+    <!-- ============ E1 — FULL EVALUATION SUITE ============ -->
+    <section class="slide" data-section="evaluate" id="sE1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 4 · The Numbers, Properly</div>
+          <h1>Linear vs. the <span class="glow">best-fit</span> polynomial</h1>
+          <p class="body-text">Same formulas as always — nothing new to learn here, just applied to a curved model this time.</p>
+          <div class="vocab-card" style="border-left-color:var(--c-evaluate);">
+            <div class="vocab-term" style="color:var(--c-evaluate);">THE FORMULAS</div>
+            <div class="vocab-def" style="font-size:.92rem; line-height:1.9;">
+              SST = Σ(actual − mean)² &nbsp;|&nbsp; SSE = Σ(actual − predicted)² &nbsp;|&nbsp; SSR = SST − SSE<br/>
+              R² = 1 − SSE/SST &nbsp;|&nbsp; MSE = SSE/n &nbsp;|&nbsp; RMSE = √MSE &nbsp;|&nbsp; MAPE = mean(|actual−predicted|/|actual|)×100
+            </div>
+          </div>
+          <button class="btn btn-primary" id="e1RunBtn" style="align-self:flex-start;">📐 Compute on the TEST set</button>
+        </div>
+        <div class="visual-box" style="height:min(50vh,460px); justify-content:center;">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Metric</th><th>Linear (degree 1)</th><th>Best polynomial</th></tr></thead>
+              <tbody id="e1TableBody">
+                <tr><td>R²</td><td id="e1R2Lin">—</td><td id="e1R2Poly">—</td></tr>
+                <tr><td>MSE</td><td id="e1MseLin">—</td><td id="e1MsePoly">—</td></tr>
+                <tr><td>RMSE</td><td id="e1RmseLin">—</td><td id="e1RmsePoly">—</td></tr>
+                <tr><td>MAPE</td><td id="e1MapeLin">—</td><td id="e1MapePoly">—</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E2 — CONCRETE PREDICTION EXAMPLE ============ -->
+    <section class="slide" data-section="evaluate" id="sE2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 4 · Make It Concrete</div>
+          <h1>One employee, <span class="glow">two very different guesses</span></h1>
+          <p class="body-text">Pick a years-of-experience value and see what each model actually predicts. This is the real, human-sized version of the R²/RMSE numbers on the last slide.</p>
+          <div class="console">
+            <div class="field"><label>Years of experience = <span class="val" id="e2XLabel">9</span></label><input type="range" id="e2XSlider" min="0" max="15" value="9" step="0.5"></div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Linear model predicts</div><div class="value tabular" id="e2LinPred">—</div></div>
+            <div class="stat-tile accent"><div class="label">Polynomial model predicts</div><div class="value tabular" id="e2PolyPred">—</div></div>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvE2Predict"></canvas></div>
+          <div class="legend"><span><span class="sw line" style="background:var(--ink-faint);"></span>linear</span><span><span class="sw line" style="background:var(--c-evaluate);"></span>polynomial</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E3 — POLYNOMIAL'S OWN DRAWBACKS ============ -->
+    <section class="slide" data-section="evaluate" id="sE3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 4 · Nothing Is Free</div>
+          <h1>Polynomial regression has drawbacks <span class="glow">too</span></h1>
+          <div class="rule-list">
+            <div class="rule"><div class="n">1</div><div class="t"><h3>Extrapolation gets WORSE, not better</h3><p>A high-degree curve doesn't just keep climbing past the data's edge — it can shoot off wildly in either direction. Watch the right edge of the chart →</p></div></div>
+            <div class="rule"><div class="n">2</div><div class="t"><h3>Coefficients lose their plain meaning</h3><p>"β₁ = one more year of experience" was easy to explain. "β₃ = one more (year)³" has no everyday intuition at all.</p></div></div>
+            <div class="rule"><div class="n">3</div><div class="t"><h3>Choosing the degree is itself the hard part</h3><p>There's no shortcut formula for "the right degree" — it takes exactly the train/test discipline from Hour 3, every time.</p></div></div>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(50vh,460px);">
+          <div class="canvas-wrap"><canvas id="cvE3Extrapolate"></canvas></div>
+          <p class="footnote">The shaded region is real training data. Past it, a high-degree curve is pure, often absurd, guesswork.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E4 — REGULARIZATION TEASER ============ -->
+    <section class="slide" data-section="evaluate" id="sE4">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Hour 4 · A Look Ahead</div>
+        <h1 class="kicker-big">What if we could keep<br/>the extra columns, <span class="glow">safely?</span></h1>
+        <p class="body-text" style="max-width:680px;">Instead of choosing a strict degree cutoff, what if the model could use LOTS of polynomial columns, but be actively discouraged from leaning on any single one too hard — automatically taming the wild wiggles? That's exactly what <b>Ridge</b> and <b>Lasso</b> regression do: the same cost function, plus a penalty for large β's. Not today's topic — but now you know exactly what problem they're built to solve.</p>
+      </div>
+    </section>
+
+    <!-- ============ E5 — RECAP CARDS ============ -->
+    <section class="slide" data-section="evaluate" id="sE5">
+      <div class="slide-inner center-col" style="align-items:stretch; text-align:left;">
+        <div class="eyebrow" style="text-align:center;">Hour 4 · Recap</div>
+        <h1 style="text-align:center;">The whole journey, in six pictures</h1>
+        <div class="card-grid" style="margin-top:8px;">
+          <div class="card" style="border-top:5px solid var(--c-limits);"><div class="ico">🪫</div><h3>A ruler can only tilt</h3><p>One constant slope, everywhere — great for straight relationships, hopeless for curved ones.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-features);"><div class="ico">🧬</div><h3>Add x², x³ as new columns</h3><p>Still linear in the β's — same cost function, same gradient descent, more dials to bend with.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-features);"><div class="ico">📏</div><h3>Scale the powers</h3><p>x³ explodes in size compared to x — normalize every power before fitting.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-degree);"><div class="ico">🎚️</div><h3>Degree is a dial, not a given</h3><p>Too low underfits, too high overfits — the sweet spot is found on the TEST set, never the training set.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-degree);"><div class="ico">⚖️</div><h3>Bias vs. variance</h3><p>Simple models miss consistently; complex models memorize unreliably. The best model balances both.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-evaluate);"><div class="ico">🎯</div><h3>Evaluate honestly, watch extrapolation</h3><p>R²/RMSE/MAPE on held-out data — and remember curves can go wild just past the edge of what you've seen.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E6 — FINAL WRAP-UP ============ -->
+    <section class="slide" data-section="evaluate" id="sE6">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">The Journey, Complete</div>
+        <h1 class="kicker-big">Same optimizer.<br/><span class="glow">Smarter</span> features.</h1>
+        <p class="body-text" style="max-width:680px;">Hour 1: a straight ruler makes a promise real data often breaks. Hour 2: adding powers of x as new columns lets the exact same linear-regression machinery draw curves. Hour 3: more bend isn't automatically better — the sweet spot is a measured fact, not a guess. Hour 4: evaluate on data the model has never seen, and remember that predicting outside your data is always the riskiest move of all.</p>
+        <p class="body-text" style="max-width:680px; font-weight:800; color:var(--ink);">Every model you'll ever build — no matter how advanced — is still, underneath, this same story: pick good features, fit them honestly, test them honestly.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="chrome-bottom">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous slide">‹</button>
+    <div class="progress" id="progress"></div>
+    <div class="slide-counter"><span id="curNum" class="tabular">1</span> / <span id="totalNum" class="tabular">—</span></div>
+    <button class="nav-btn" id="nextBtn" aria-label="Next slide">›</button>
+  </nav>
+
+<script>
+"use strict";
+
+/* =========================== helpers =========================== */
+const $  = (sel, el=document) => el.querySelector(sel);
+const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+
+const rand  = (a,b) => a + Math.random()*(b-a);
+const clamp = (v,lo,hi) => Math.max(lo, Math.min(hi,v));
+const mean  = arr => arr.reduce((s,v)=>s+v,0) / arr.length;
+const fmt   = (v,d=2) => Number(v).toFixed(d);
+
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+
+function fitCanvas(cv){
+  const rect = cv.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const w = Math.max(1, Math.round(rect.width*dpr));
+  const h = Math.max(1, Math.round(rect.height*dpr));
+  if(cv.width !== w || cv.height !== h){ cv.width = w; cv.height = h; }
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return { ctx, w: rect.width, h: rect.height };
+}
+
+/* ---- generic X/Y scatter (data space); returns coordinate mapper for custom overlays ---- */
+function drawScatter(cv, opts){
+  if(!cv || cv.clientWidth === 0) return null;
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const padL=44, padR=16, padT=16, padB=32;
+  const plotW=w-padL-padR, plotH=h-padT-padB;
+  const [xmin,xmax] = opts.xDomain, [ymin,ymax] = opts.yDomain;
+  const X = x => padL + ((x-xmin)/(xmax-xmin))*plotW;
+  const Y = y => padT + plotH - ((y-ymin)/(ymax-ymin))*plotH;
+
+  ctx.strokeStyle = cssVar('--line'); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT+plotH); ctx.lineTo(padL+plotW, padT+plotH); ctx.stroke();
+  ctx.fillStyle=cssVar('--ink-faint'); ctx.font='10.5px sans-serif'; ctx.textAlign='center';
+  if(opts.xLabel) ctx.fillText(opts.xLabel, padL+plotW/2, h-6);
+  if(opts.yLabel){
+    ctx.save(); ctx.translate(11, padT+plotH/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center';
+    ctx.fillText(opts.yLabel, 0,0);
+    ctx.restore();
+  }
+
+  if(opts.line){
+    const {b0,b1} = opts.line;
+    ctx.strokeStyle = opts.lineColor || cssVar('--ink');
+    ctx.lineWidth = 2.6;
+    ctx.beginPath();
+    ctx.moveTo(X(xmin), Y(b0+b1*xmin));
+    ctx.lineTo(X(xmax), Y(b0+b1*xmax));
+    ctx.stroke();
+  }
+
+  ctx.fillStyle = opts.color || cssVar('--accent');
+  const r = opts.radius || 4.6;
+  for(const p of opts.points){
+    ctx.fillStyle = opts.colorFn ? opts.colorFn(p) : (opts.color || cssVar('--accent'));
+    ctx.beginPath(); ctx.arc(X(p.x), Y(p.y), r, 0, Math.PI*2); ctx.fill();
+  }
+  if(opts.residualLine){
+    const {b0,b1} = opts.residualLine;
+    ctx.lineWidth=1.2; ctx.setLineDash([3,2]);
+    ctx.strokeStyle = opts.residualColor || cssVar('--ink-faint');
+    for(const p of opts.points){
+      const py = b0+b1*p.x;
+      ctx.beginPath(); ctx.moveTo(X(p.x), Y(p.y)); ctx.lineTo(X(p.x), Y(py)); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+  }
+  return {ctx,X,Y,padL,padT,plotW,plotH,xmin,xmax,ymin,ymax};
+}
+
+/* draw a smooth curve y=f(x) over a layout returned by drawScatter */
+function drawCurve(ctx, layout, fn, color, lw, dash, xOverrideMin, xOverrideMax){
+  const steps = 140;
+  const x0 = xOverrideMin===undefined ? layout.xmin : xOverrideMin;
+  const x1 = xOverrideMax===undefined ? layout.xmax : xOverrideMax;
+  ctx.save();
+  ctx.strokeStyle = color; ctx.lineWidth = lw||2.8;
+  if(dash) ctx.setLineDash(dash);
+  ctx.beginPath();
+  for(let i=0;i<=steps;i++){
+    const x = x0 + (i/steps)*(x1-x0);
+    const y = fn(x);
+    const px = layout.X(x), py = layout.Y(clamp(y, layout.ymin-9999, layout.ymax+9999));
+    i===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+/* =========================== shared dataset (curvy salary vs experience) =========================== */
+/* Seeded PRNG (mulberry32) — a live class demo needs the "watch it overfit" payoff to land the
+   SAME way every time it's opened, so this dataset is deterministic, not fresh-random-per-load. */
+function mulberry32(seed){
+  return function(){
+    seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+const rng = mulberry32(11);
+const randSeeded = (a,b) => a + rng()*(b-a);
+
+function genCurvyEmployees(n){
+  return Array.from({length:n}, () => {
+    const exp = randSeeded(0, 15);
+    const noise = randSeeded(-1.8, 1.8);
+    const salary = 4 + 2.2*exp - 0.075*exp*exp + noise;
+    return { x: exp, y: clamp(salary, 1, 30) };
+  });
+}
+const ALL_EMPLOYEES = genCurvyEmployees(40);
+const EXP_X_DOMAIN = [0, 15], EXP_Y_DOMAIN = [0, 24];
+
+/* fixed 70/30 train/test split, held constant for the whole deck (same seeded rng) */
+const shuffledAll = [...ALL_EMPLOYEES];
+for(let i=shuffledAll.length-1;i>0;i--){ const j=Math.floor(rng()*(i+1)); [shuffledAll[i],shuffledAll[j]]=[shuffledAll[j],shuffledAll[i]]; }
+const SPLIT_AT = Math.round(shuffledAll.length*0.70);
+const TRAIN_EMP = shuffledAll.slice(0, SPLIT_AT);
+const TEST_EMP  = shuffledAll.slice(SPLIT_AT);
+
+function costMSE(points,b0,b1){ return mean(points.map(p=>(p.y-(b0+b1*p.x))**2)); }
+
+/* ---- polynomial regression: fit EVERY degree with gradient descent — no closed-form shortcut.
+   Same five-step recipe as plain linear regression: guess zeros, compute one slope per β from the
+   SAME mistakes, subtract, repeat, stop. Degree 1 here IS plain linear regression — same function. ---- */
+function normX(x){ return (x-EXP_X_DOMAIN[0])/(EXP_X_DOMAIN[1]-EXP_X_DOMAIN[0]); }
+const POLY_ALPHA = 0.3, POLY_ITERS = 20000;
+
+function polyFeatureRow(x, degree){
+  const nx = normX(x);
+  const row = [1];
+  for(let k=1;k<=degree;k++) row.push(row[k-1]*nx);
+  return row;
+}
+/* one slope per β, from the current mistakes — shared by the fitter below AND the
+   step-by-step "every step visualized" slide, so both show the exact same math. */
+function polyComputeSlopes(rows, y, betas){
+  const predictions = rows.map(r => r.reduce((s,v,k)=>s+v*betas[k], 0));
+  const mistakes = y.map((yy,i) => yy - predictions[i]);
+  return betas.map((_,k) =>                          // Step 2: one slope per β, same mistakes
+    -2 * mean(mistakes.map((mm,i) => mm*rows[i][k]))
+  );
+}
+function polyGradStep(rows, y, betas){
+  const slopes = polyComputeSlopes(rows, y, betas);
+  return betas.map((b,k) => b - POLY_ALPHA*slopes[k]); // Step 3: subtract, together
+}
+function polyFit(points, degree){
+  const m = degree+1;
+  const rows = points.map(p => polyFeatureRow(p.x, degree));
+  const y = points.map(p=>p.y);
+  let betas = new Array(m).fill(0);                 // Step 1: start with a guess — all zeros
+  for(let it=0; it<POLY_ITERS; it++){
+    betas = polyGradStep(rows, y, betas);
+  }
+  return betas;                                       // (repeated POLY_ITERS times = steps 4-5)
+}
+const LINEAR_BETA = polyFit(TRAIN_EMP, 1);
+function linearPredict(x){ return polyPredict(LINEAR_BETA, x); }
+function polyPredict(beta, x){
+  const nx = normX(x);
+  let acc=0, p=1;
+  for(let k=0;k<beta.length;k++){ acc += beta[k]*p; p*=nx; }
+  return acc;
+}
+function polyCost(points, beta){ return mean(points.map(p=>(p.y-polyPredict(beta,p.x))**2)); }
+
+/* =========================== deck engine =========================== */
+const slideEls = $$('.slide');
+let cur = 0;
+
+const CHAPTERS = {
+  limits:   { num:1, label:'The Limits of a Straight Line' },
+  features: { num:2, label:'Teaching It to Bend' },
+  degree:   { num:3, label:'How Much Is Too Much?' },
+  evaluate: { num:4, label:'Evaluating Honestly' },
+};
+const HOURS = { limits:1, features:2, degree:3, evaluate:4 };
+
+const onEnter = {};
+const onLeave = {};
+
+function buildDots(){
+  const wrap = $('#progress');
+  wrap.innerHTML = '';
+  let lastSection = null;
+  slideEls.forEach((s, i) => {
+    const sec = s.dataset.section;
+    if(lastSection !== null && sec !== lastSection){
+      const gap = document.createElement('span');
+      gap.className = 'dot gap';
+      wrap.appendChild(gap);
+    }
+    const b = document.createElement('button');
+    b.className = 'dot';
+    b.setAttribute('aria-label', 'Go to slide ' + (i+1));
+    b.addEventListener('click', () => goTo(i));
+    wrap.appendChild(b);
+    lastSection = sec;
+  });
+}
+
+function goTo(i){
+  i = clamp(i, 0, slideEls.length-1);
+  const leaveFn = onLeave[slideEls[cur].id];
+  if(leaveFn) leaveFn();
+  slideEls[cur].classList.remove('active');
+  cur = i;
+  const s = slideEls[cur];
+  s.classList.add('active');
+  document.body.dataset.section = s.dataset.section;
+
+  const chip = $('#chapterChip');
+  const meta = CHAPTERS[s.dataset.section];
+  if(meta){
+    chip.style.display = 'flex';
+    $('#chapterNum').textContent = meta.num;
+    $('#chapterLabel').innerHTML = meta.label;
+  } else {
+    chip.style.display = 'none';
+  }
+  const hourNum = HOURS[s.dataset.section];
+  $('#hourBadge').textContent = hourNum ? ('HOUR ' + hourNum + ' OF 4') : 'POLYNOMIAL REGRESSION';
+
+  $('#curNum').textContent = cur+1;
+  $('#prevBtn').disabled = cur === 0;
+  $('#nextBtn').disabled = cur === slideEls.length-1;
+
+  $$('.dot:not(.gap)', $('#progress')).forEach((d,idx)=> d.classList.toggle('active', idx===cur));
+
+  const fn = onEnter[s.id];
+  if(fn) requestAnimationFrame(fn);
+}
+
+function next(){ if(cur < slideEls.length-1) goTo(cur+1); }
+function prev(){ if(cur > 0) goTo(cur-1); }
+
+$('#nextBtn').addEventListener('click', next);
+$('#prevBtn').addEventListener('click', prev);
+window.addEventListener('keydown', e => {
+  if(e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+  else if(e.key === 'ArrowLeft'){ e.preventDefault(); prev(); }
+});
+
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => { const fn = onEnter[slideEls[cur].id]; if(fn) fn(); }, 120);
+});
+
+const themeBtn = $('#themeToggle');
+function applyStoredTheme(){
+  const t = localStorage.getItem('sv-theme-poly');
+  if(t) document.documentElement.setAttribute('data-theme', t);
+}
+applyStoredTheme();
+themeBtn.addEventListener('click', () => {
+  const now = document.documentElement.getAttribute('data-theme');
+  const dark = now ? now === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const nextTheme = dark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', nextTheme);
+  localStorage.setItem('sv-theme-poly', nextTheme);
+  const fn = onEnter[slideEls[cur].id]; if(fn) fn();
+});
+
+/* =========================== HOUR 1 — LIMITS OF LINEAR REGRESSION =========================== */
+onEnter['sL3'] = () => {
+  drawScatter($('#cvCurvyScatter'), {
+    points: ALL_EMPLOYEES, xDomain: EXP_X_DOMAIN, yDomain: EXP_Y_DOMAIN,
+    xLabel: 'years of experience →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--c-limits'),
+  });
+};
+
+let l4ShowResid = false;
+function drawL4(){
+  const layout = drawScatter($('#cvL4Fit'), {
+    points: TRAIN_EMP, xDomain: EXP_X_DOMAIN, yDomain: EXP_Y_DOMAIN,
+    xLabel: 'years of experience →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--ink-faint'),
+  });
+  drawCurve(layout.ctx, layout, x => linearPredict(x), cssVar('--c-limits'), 2.8);
+  if(l4ShowResid){
+    layout.ctx.save();
+    layout.ctx.strokeStyle = cssVar('--ink-faint'); layout.ctx.setLineDash([3,2]); layout.ctx.lineWidth=1.2;
+    TRAIN_EMP.forEach(p => {
+      layout.ctx.beginPath();
+      layout.ctx.moveTo(layout.X(p.x), layout.Y(p.y));
+      layout.ctx.lineTo(layout.X(p.x), layout.Y(linearPredict(p.x)));
+      layout.ctx.stroke();
+    });
+    layout.ctx.restore();
+  }
+
+  if(l4ShowResid){
+    const residPoints = TRAIN_EMP.map(p => ({ x: p.x, y: p.y - linearPredict(p.x) }));
+    const maxAbs = Math.max(...residPoints.map(p=>Math.abs(p.y))) * 1.15 || 1;
+    const rLayout = drawScatter($('#cvL4Resid'), {
+      points: residPoints, xDomain: EXP_X_DOMAIN, yDomain: [-maxAbs, maxAbs],
+      xLabel: 'years of experience →', yLabel: 'residual (actual − predicted)',
+      color: cssVar('--bad'),
+    });
+    rLayout.ctx.save();
+    rLayout.ctx.strokeStyle = cssVar('--ink-faint'); rLayout.ctx.setLineDash([4,3]); rLayout.ctx.lineWidth=1.2;
+    rLayout.ctx.beginPath(); rLayout.ctx.moveTo(rLayout.padL, rLayout.Y(0)); rLayout.ctx.lineTo(rLayout.padL+rLayout.plotW, rLayout.Y(0)); rLayout.ctx.stroke();
+    rLayout.ctx.restore();
+  }
+}
+onEnter['sL4'] = () => { l4ShowResid=false; $('#l4Banner').style.display='none'; $('#l4ResidBox').style.display='none'; drawL4(); };
+$('#l4ResidBtn').addEventListener('click', () => {
+  l4ShowResid = true;
+  $('#l4ResidBox').style.display='flex';
+  drawL4();
+  const banner = $('#l4Banner');
+  banner.style.display='flex';
+  banner.textContent = '🚩 See the shape? Mistakes start positive, dip negative in the middle, then swing positive again — a genuine curve, not random noise. That pattern is the line SHOUTING that it is missing real structure in the data.';
+});
+
+/* =========================== HOUR 2 — POLYNOMIAL FEATURES =========================== */
+
+/* --- F2C: EVERY step of gradient descent for a polynomial, one stage at a time, all on a scatter plot ---
+   Stage 1 build columns · 2 normalize · 3 initial guess (all β=0) · 4 mistakes+slopes · 5 update & repeat. */
+const F2C_ROUND_ITERS = 250, F2C_MAX_ROUNDS = 80; // 250*80 = 20000 = same total steps as POLY_ITERS elsewhere
+const F2C_BETA_LABELS = ['β₀','β₁','β₂','β₃'];
+const F2C_POWER_LABELS = ['x','x²','x³'];
+let f2cDegree = 1, f2cStage = 1, f2cRows = null, f2cY = null, f2cBetas = [], f2cRound = 0, f2cTimer = null;
+
+function f2cBetaLabels(){ return F2C_BETA_LABELS.slice(0, f2cDegree+1); }
+
+function f2cSetDegree(deg){
+  clearInterval(f2cTimer); f2cTimer = null;
+  f2cDegree = deg;
+  f2cRows = TRAIN_EMP.map(p => polyFeatureRow(p.x, deg));
+  f2cY = TRAIN_EMP.map(p => p.y);
+  f2cBetas = new Array(deg+1).fill(0);
+  f2cRound = 0;
+  $('#f2cDeg1Btn').classList.toggle('toggled', deg===1);
+  $('#f2cDeg2Btn').classList.toggle('toggled', deg===2);
+  $('#f2cDeg3Btn').classList.toggle('toggled', deg===3);
+  $('#f2cNumCols').textContent = deg+1;
+  $('#f2cDone').style.display = 'none';
+  f2cSetStage(1);
+}
+function f2cSetStage(stage){
+  f2cStage = stage;
+  for(let s=1;s<=5;s++) $('#f2cStage'+s+'Btn').classList.toggle('toggled', s===stage);
+  $('#f2cStage5Controls').style.display = stage===5 ? '' : 'none';
+  if(stage!==5){ clearInterval(f2cTimer); f2cTimer = null; }
+  if(stage===1) f2cRenderStage1();
+  else if(stage===2) f2cRenderStage2();
+  else if(stage===3) f2cRenderStage3();
+  else if(stage===4) f2cRenderStage4();
+  else f2cRenderStage5Enter();
+}
+
+/* ---- stage 1: build the columns ---- */
+function f2cRenderStage1(){
+  const extra = f2cDegree>=2 ? (f2cDegree>=3 ? ', x², x³' : ', x²') : '';
+  $('#f2cStageInfo').textContent = `Part 1 of the recipe: degree ${f2cDegree} → ${f2cDegree+1} columns get built — the constant column (always 1, gives us β₀) plus x${extra}. This is exactly what a "turn x into more columns" step does. Nothing is being fit yet.`;
+  drawScatter($('#cvF2C'), {
+    points: TRAIN_EMP, xDomain: EXP_X_DOMAIN, yDomain: EXP_Y_DOMAIN,
+    xLabel: 'years of experience →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--c-features'),
+  });
+  const labels = F2C_POWER_LABELS.slice(1, f2cDegree); // x itself is the leading column below; these are the NEW derived ones
+  $('#f2cTableHead').innerHTML = `<tr><th>x</th>${labels.map(l=>`<th>${l}</th>`).join('')}<th>y (salary)</th></tr>`;
+  $('#f2cTableBody').innerHTML = TRAIN_EMP.slice(0,6).map(p => {
+    let cols = '';
+    for(let k=2;k<=f2cDegree;k++) cols += `<td>${fmt(p.x**k,1)}</td>`;
+    return `<tr><td>${fmt(p.x,1)}</td>${cols}<td>${fmt(p.y,1)}</td></tr>`;
+  }).join('');
+}
+
+/* ---- stage 2: normalize — WHEN it happens: right after building columns, before any guess ---- */
+function f2cRenderStage2(){
+  $('#f2cStageInfo').textContent = `Right here — after the columns exist, before the very first guess. Every column gets squeezed into [0,1] using (x − min) / (max − min), so x, x², and x³ all play on the same field.`;
+  f2cDrawNormalizeBars();
+  const xmax = EXP_X_DOMAIN[1];
+  $('#f2cTableHead').innerHTML = '<tr><th>column</th><th>raw value at x=15</th><th>normalized value</th></tr>';
+  let rows = '';
+  for(let k=1;k<=f2cDegree;k++){
+    rows += `<tr><td>${F2C_POWER_LABELS[k-1]}</td><td>${fmt(xmax**k,0)}</td><td>${fmt(normX(xmax)**k,3)}</td></tr>`;
+  }
+  $('#f2cTableBody').innerHTML = rows;
+}
+function f2cDrawNormalizeBars(){
+  const cv = $('#cvF2C');
+  if(!cv || cv.clientWidth===0) return;
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const xmax = EXP_X_DOMAIN[1];
+  const rawVals = [], normVals = [];
+  for(let k=1;k<=f2cDegree;k++){ rawVals.push(xmax**k); normVals.push(normX(xmax)**k); }
+  const maxRaw = Math.max(...rawVals);
+  const panelW = (w-50)/2, gap=50;
+  const baseY = h-28, barAreaH = h-56;
+  function drawPanel(px0, vals, maxVal, title, color){
+    ctx.fillStyle = cssVar('--ink'); ctx.font='700 11px sans-serif'; ctx.textAlign='center';
+    ctx.fillText(title, px0+panelW/2, 14);
+    const bw = panelW/(vals.length*2);
+    vals.forEach((v,i) => {
+      const bh = maxVal>0 ? (v/maxVal)*barAreaH*0.85 : 0;
+      const bx = px0 + bw*0.5 + i*(bw*2);
+      ctx.fillStyle = color;
+      ctx.fillRect(bx, baseY-bh, bw, Math.max(bh,1.5));
+      ctx.fillStyle = cssVar('--ink-faint'); ctx.font='10px sans-serif';
+      ctx.fillText(F2C_POWER_LABELS[i], bx+bw/2, baseY+14);
+      ctx.fillStyle = cssVar('--ink'); ctx.font='700 10px sans-serif';
+      ctx.fillText(fmt(v, v>=100?0:2), bx+bw/2, Math.max(24,baseY-bh-4));
+    });
+  }
+  drawPanel(10, rawVals, maxRaw, 'BEFORE (raw)', cssVar('--bad'));
+  drawPanel(w-panelW-10, normVals, 1, 'AFTER (normalized)', cssVar('--good'));
+}
+
+/* ---- stage 3: initial guess — every β starts at 0, a flat line ---- */
+function f2cRenderStage3(){
+  $('#f2cStageInfo').textContent = `Before any learning happens, every β starts at zero — β₀=0${f2cDegree>=1?', β₁=0':''}${f2cDegree>=2?', β₂=0':''}${f2cDegree>=3?', β₃=0':''}. That's a perfectly flat guess: predicted salary = 0, no matter the experience.`;
+  const layout = drawScatter($('#cvF2C'), {
+    points: TRAIN_EMP, xDomain: EXP_X_DOMAIN, yDomain: EXP_Y_DOMAIN,
+    xLabel: 'years of experience →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--ink-faint'),
+  });
+  if(layout) drawCurve(layout.ctx, layout, x => 0, cssVar('--c-features'), 3);
+  $('#f2cTableHead').innerHTML = '<tr>' + f2cBetaLabels().map(l=>`<th>${l}</th>`).join('') + '</tr>';
+  $('#f2cTableBody').innerHTML = '<tr>' + f2cBetaLabels().map(()=>`<td>0</td>`).join('') + '</tr>';
+}
+
+/* ---- stage 4: see the mistakes, compute the very first slope for every β ---- */
+function f2cRenderStage4(){
+  $('#f2cStageInfo').textContent = `With every guess still zero, the "mistake" for each employee is just their actual salary — every dashed line below is a full-size mistake. Those mistakes feed directly into the slope formula for each β.`;
+  const zeroBetas = new Array(f2cDegree+1).fill(0);
+  const layout = drawScatter($('#cvF2C'), {
+    points: TRAIN_EMP, xDomain: EXP_X_DOMAIN, yDomain: EXP_Y_DOMAIN,
+    xLabel: 'years of experience →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--ink-faint'),
+  });
+  if(layout){
+    drawCurve(layout.ctx, layout, x => 0, cssVar('--c-features'), 3);
+    layout.ctx.save();
+    layout.ctx.strokeStyle = cssVar('--bad'); layout.ctx.setLineDash([3,2]); layout.ctx.lineWidth=1.2;
+    TRAIN_EMP.forEach(p => {
+      layout.ctx.beginPath();
+      layout.ctx.moveTo(layout.X(p.x), layout.Y(p.y));
+      layout.ctx.lineTo(layout.X(p.x), layout.Y(0));
+      layout.ctx.stroke();
+    });
+    layout.ctx.restore();
+  }
+  const slopes = polyComputeSlopes(f2cRows, f2cY, zeroBetas);
+  $('#f2cTableHead').innerHTML = '<tr>' + f2cBetaLabels().map(l=>`<th>slope for ${l}</th>`).join('') + '</tr>';
+  $('#f2cTableBody').innerHTML = '<tr>' + slopes.map(s=>`<td>${fmt(s,3)}</td>`).join('') + '</tr>';
+}
+
+/* ---- stage 5: update every β together, then repeat — the actual loop, animated ---- */
+function f2cRenderStage5Enter(){
+  $('#f2cStageInfo').textContent = `Part 2 of the recipe, the actual "fit": update every β together using the slopes above, then repeat, over and over, until the slopes flatten to ~0. In practice a tool like scikit-learn solves this almost instantly — we're doing the identical optimization by hand, in slow motion, so every step is visible. Use the buttons below to step through it.`;
+  $('#f2cTableHead').innerHTML = '<tr><th>Round</th>' + f2cBetaLabels().map(l=>`<th>${l}</th>`).join('') + '<th>Cost</th></tr>';
+  $('#f2cTableBody').innerHTML = '';
+  f2cAddRow();
+  f2cRenderCanvas5();
+  $('#f2cRound').textContent = f2cRound;
+  $('#f2cCost').textContent = fmt(polyCost(TRAIN_EMP, f2cBetas), 3);
+}
+function f2cAddRow(){
+  const tbody = $('#f2cTableBody');
+  const row = document.createElement('tr');
+  const betaCells = f2cBetas.map((b,k) => `<td>${fmt(b, k===0?3:4)}</td>`).join('');
+  row.innerHTML = `<td>${f2cRound}</td>${betaCells}<td>${fmt(polyCost(TRAIN_EMP,f2cBetas),3)}</td>`;
+  tbody.appendChild(row);
+  const wrap = tbody.closest('.table-wrap'); if(wrap) wrap.scrollTop = wrap.scrollHeight;
+}
+function f2cRenderCanvas5(){
+  const layout = drawScatter($('#cvF2C'), {
+    points: TRAIN_EMP, xDomain: EXP_X_DOMAIN, yDomain: EXP_Y_DOMAIN,
+    xLabel: 'years of experience →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--ink-faint'),
+  });
+  if(layout) drawCurve(layout.ctx, layout, x => polyPredict(f2cBetas,x), cssVar('--c-features'), 3);
+}
+function f2cStep(){
+  if(f2cRound >= F2C_MAX_ROUNDS) return true;
+  f2cBetas = f2cRunRounds(f2cBetas, F2C_ROUND_ITERS);
+  f2cRound++;
+  f2cAddRow();
+  $('#f2cRound').textContent = f2cRound;
+  $('#f2cCost').textContent = fmt(polyCost(TRAIN_EMP, f2cBetas), 3);
+  f2cRenderCanvas5();
+  const done = f2cRound >= F2C_MAX_ROUNDS;
+  if(done){
+    $('#f2cDone').style.display='flex';
+    $('#f2cDone').textContent = `✅ ${F2C_ROUND_ITERS*F2C_MAX_ROUNDS} total gradient steps later — this is the exact same curve you'll see for degree ${f2cDegree} everywhere else in this deck. Curious what a MUCH higher degree does to this curve? Hour 3 turns that dial all the way up to 12 — and shows exactly where it stops helping.`;
+  }
+  return done;
+}
+function f2cRunRounds(betas, rounds){
+  let b = betas;
+  for(let i=0;i<rounds;i++) b = polyGradStep(f2cRows, f2cY, b);
+  return b;
+}
+onEnter['sF2C'] = () => { f2cSetDegree(f2cDegree); };
+onLeave['sF2C'] = () => { clearInterval(f2cTimer); f2cTimer = null; };
+$('#f2cDeg1Btn').addEventListener('click', () => f2cSetDegree(1));
+$('#f2cDeg2Btn').addEventListener('click', () => f2cSetDegree(2));
+$('#f2cDeg3Btn').addEventListener('click', () => f2cSetDegree(3));
+$('#f2cStage1Btn').addEventListener('click', () => f2cSetStage(1));
+$('#f2cStage2Btn').addEventListener('click', () => f2cSetStage(2));
+$('#f2cStage3Btn').addEventListener('click', () => f2cSetStage(3));
+$('#f2cStage4Btn').addEventListener('click', () => f2cSetStage(4));
+$('#f2cStage5Btn').addEventListener('click', () => f2cSetStage(5));
+$('#f2cPrevBtn').addEventListener('click', () => { if(f2cStage>1) f2cSetStage(f2cStage-1); });
+$('#f2cNextBtn').addEventListener('click', () => { if(f2cStage<5) f2cSetStage(f2cStage+1); });
+$('#f2cStepBtn').addEventListener('click', () => { clearInterval(f2cTimer); f2cTimer=null; f2cStep(); });
+$('#f2cRunBtn').addEventListener('click', () => {
+  clearInterval(f2cTimer);
+  f2cTimer = setInterval(() => { if(f2cStep()){ clearInterval(f2cTimer); f2cTimer=null; } }, 150);
+});
+$('#f2cResetBtn').addEventListener('click', () => f2cSetStage(f2cStage===5 ? 5 : f2cStage));
+
+const F3_SAMPLE = TRAIN_EMP.slice(0,6);
+let f3ShowCube = false;
+function renderF3(){
+  $('#f3CubeHead').style.display = f3ShowCube ? '' : 'none';
+  $('#f3TableBody').innerHTML = F3_SAMPLE.map(p => {
+    const cube = f3ShowCube ? `<td>${fmt(p.x**3,1)}</td>` : '';
+    return `<tr><td>${fmt(p.x,1)}</td><td>${fmt(p.x**2,1)}</td>${cube}<td>${fmt(p.y,1)}</td></tr>`;
+  }).join('');
+}
+onEnter['sF3'] = () => { f3ShowCube=false; renderF3(); };
+$('#f3AddBtn').addEventListener('click', () => { f3ShowCube=true; renderF3(); });
+$('#f3ResetBtn').addEventListener('click', () => { f3ShowCube=false; renderF3(); });
+
+let f4Degree = 1;
+function drawF4(){
+  const beta = polyFit(TRAIN_EMP, f4Degree);
+  const layout = drawScatter($('#cvF4Curve'), {
+    points: TRAIN_EMP, xDomain: EXP_X_DOMAIN, yDomain: EXP_Y_DOMAIN,
+    xLabel: 'years of experience →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--ink-faint'),
+  });
+  drawCurve(layout.ctx, layout, x => polyPredict(beta,x), cssVar('--c-features'), 3);
+  $('#f4NumCols').textContent = f4Degree+1;
+  $('#f4Cost').textContent = fmt(polyCost(TRAIN_EMP, beta), 3);
+}
+onEnter['sF4'] = () => { f4Degree=1; setF4Toggle(); drawF4(); };
+function setF4Toggle(){
+  $('#f4Deg1Btn').classList.toggle('toggled', f4Degree===1);
+  $('#f4Deg2Btn').classList.toggle('toggled', f4Degree===2);
+  $('#f4Deg3Btn').classList.toggle('toggled', f4Degree===3);
+}
+$('#f4Deg1Btn').addEventListener('click', () => { f4Degree=1; setF4Toggle(); drawF4(); });
+$('#f4Deg2Btn').addEventListener('click', () => { f4Degree=2; setF4Toggle(); drawF4(); });
+$('#f4Deg3Btn').addEventListener('click', () => { f4Degree=3; setF4Toggle(); drawF4(); });
+
+onEnter['sF5'] = () => {
+  const cv = $('#cvF5Scale');
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const padL=48,padR=16,padT=16,padB=30;
+  const plotW=w-padL-padR, plotH=h-padT-padB;
+  const xs=[]; for(let i=0;i<=15;i+=0.2) xs.push(i);
+  const series = [
+    { fn: x=>x, color: cssVar('--ink'), label:'x' },
+    { fn: x=>x*x, color: cssVar('--c-degree'), label:'x²' },
+    { fn: x=>x*x*x, color: cssVar('--c-limits'), label:'x³' },
+  ];
+  const maxY = 15**3;
+  const X = x => padL + (x/15)*plotW;
+  const Y = y => padT + plotH - (Math.cbrt(y)/Math.cbrt(maxY))*plotH; // cube-root scale so all 3 are visible together
+  ctx.strokeStyle=cssVar('--line'); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(padL,padT); ctx.lineTo(padL,padT+plotH); ctx.lineTo(padL+plotW,padT+plotH); ctx.stroke();
+  ctx.fillStyle=cssVar('--ink-faint'); ctx.font='10px sans-serif'; ctx.textAlign='center';
+  ctx.fillText('experience (x) →', padL+plotW/2, h-8);
+  series.forEach(s => {
+    ctx.strokeStyle=s.color; ctx.lineWidth=2.6; ctx.beginPath();
+    xs.forEach((x,i)=>{ const px=X(x), py=Y(s.fn(x)); i===0?ctx.moveTo(px,py):ctx.lineTo(px,py); });
+    ctx.stroke();
+    const lastX=xs[xs.length-1];
+    ctx.fillStyle=s.color; ctx.font='700 12px sans-serif'; ctx.textAlign='left';
+    ctx.fillText(s.label, X(lastX)+4, Y(s.fn(lastX)));
+  });
+};
+
+/* =========================== HOUR 3 — DEGREE, UNDERFIT/OVERFIT =========================== */
+function drawD1(){
+  const deg = f_d1Degree;
+  const beta = polyFit(TRAIN_EMP, deg);
+  const trainCost = polyCost(TRAIN_EMP, beta);
+  const testCost = polyCost(TEST_EMP, beta);
+  const layout = drawScatter($('#cvD1Curve'), {
+    points: TRAIN_EMP, xDomain: EXP_X_DOMAIN, yDomain: EXP_Y_DOMAIN,
+    xLabel: 'years of experience →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--c-degree'),
+  });
+  TEST_EMP.forEach(p => {
+    layout.ctx.fillStyle = cssVar('--bad');
+    layout.ctx.beginPath(); layout.ctx.arc(layout.X(p.x), layout.Y(p.y), 4.6, 0, Math.PI*2); layout.ctx.fill();
+  });
+  drawCurve(layout.ctx, layout, x => polyPredict(beta,x), cssVar('--ink'), 3);
+  $('#d1DegLabel').textContent = deg;
+  $('#d1TrainCost').textContent = fmt(trainCost,3);
+  $('#d1TestCost').textContent = fmt(testCost,3);
+  const comment = $('#d1Comment');
+  if(deg<=2) comment.textContent = "Low degree: a gentle curve. Watch if it's flexible enough to follow the bend.";
+  else if(deg<=6) comment.textContent = "Middle degrees: usually the sweet spot territory — flexible, not chasing noise yet.";
+  else comment.textContent = "⚠️ High degree: watch the curve start to wiggle and chase individual dots instead of the trend.";
+}
+let f_d1Degree = 1;
+onEnter['sD1'] = () => { f_d1Degree=1; $('#d1DegSlider').value=1; drawD1(); };
+$('#d1DegSlider').addEventListener('input', e => { f_d1Degree = +e.target.value; drawD1(); });
+
+let d4Timer=null;
+function drawD4Sweep(results, upTo){
+  const cv = $('#cvD4Sweep');
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const padL=48,padR=16,padT=16,padB=30;
+  const plotW=w-padL-padR, plotH=h-padT-padB;
+  const maxCost = Math.max(...results.map(r=>Math.max(r.train,r.test))) * 1.1 || 1;
+  const X = d => padL + ((d-1)/11)*plotW;
+  const Y = c => padT + plotH - (c/maxCost)*plotH;
+  ctx.strokeStyle=cssVar('--line'); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(padL,padT); ctx.lineTo(padL,padT+plotH); ctx.lineTo(padL+plotW,padT+plotH); ctx.stroke();
+  ctx.fillStyle=cssVar('--ink-faint'); ctx.font='10px sans-serif'; ctx.textAlign='center';
+  ctx.fillText('degree →', padL+plotW/2, h-8);
+  ctx.save(); ctx.translate(14,padT+plotH/2); ctx.rotate(-Math.PI/2); ctx.fillText('cost (MSE) →',0,0); ctx.restore();
+
+  function plotSeries(key,color){
+    ctx.strokeStyle=color; ctx.lineWidth=2.6; ctx.beginPath();
+    results.slice(0,upTo).forEach((r,i)=>{ const px=X(r.degree), py=Y(r[key]); i===0?ctx.moveTo(px,py):ctx.lineTo(px,py); });
+    ctx.stroke();
+    results.slice(0,upTo).forEach(r=>{
+      ctx.fillStyle=color; ctx.beginPath(); ctx.arc(X(r.degree),Y(r[key]),3.4,0,Math.PI*2); ctx.fill();
+    });
+  }
+  plotSeries('train', cssVar('--good'));
+  plotSeries('test', cssVar('--bad'));
+}
+onEnter['sD4'] = () => {
+  clearInterval(d4Timer);
+  $('#d4Result').style.display='none';
+  $('#d4BestDeg').textContent='—';
+  drawD4Sweep([],0);
+};
+$('#d4RunBtn').addEventListener('click', () => {
+  clearInterval(d4Timer);
+  const results = [];
+  for(let d=1; d<=12; d++){
+    const beta = polyFit(TRAIN_EMP, d);
+    results.push({ degree:d, train: polyCost(TRAIN_EMP,beta), test: polyCost(TEST_EMP,beta) });
+  }
+  let i=0;
+  d4Timer = setInterval(() => {
+    i++;
+    drawD4Sweep(results, i);
+    if(i>=results.length){
+      clearInterval(d4Timer);
+      let best = results[0];
+      results.forEach(r => { if(r.test<best.test) best=r; });
+      $('#d4BestDeg').textContent = best.degree;
+      $('#d4Result').style.display='flex';
+      $('#d4Result').textContent = `🎯 Degree ${best.degree} has the lowest TEST cost (${fmt(best.test,3)}). Notice training cost kept shrinking well past this point — that gap between the green and red lines after degree ${best.degree} is overfitting, visible and measured.`;
+      window.__bestDegree = best.degree;
+    }
+  }, 220);
+});
+
+/* =========================== HOUR 4 — EVALUATION =========================== */
+function r2Score(points, predictFn){
+  const y = points.map(p=>p.y);
+  const yMean = mean(y);
+  const sst = mean(y.map(v=>(v-yMean)**2));
+  const sse = mean(points.map(p=>(p.y-predictFn(p.x))**2));
+  return 1 - sse/sst;
+}
+function evalModel(points, predictFn){
+  const sse = mean(points.map(p=>(p.y-predictFn(p.x))**2));
+  const r2 = r2Score(points, predictFn);
+  const mse = sse;
+  const rmse = Math.sqrt(mse);
+  const mape = mean(points.map(p=> Math.abs((p.y-predictFn(p.x))/p.y) )) * 100;
+  return {r2,mse,rmse,mape};
+}
+
+onEnter['sE1'] = () => {
+  ['e1R2Lin','e1MseLin','e1RmseLin','e1MapeLin','e1R2Poly','e1MsePoly','e1RmsePoly','e1MapePoly'].forEach(id => $('#'+id).textContent='—');
+};
+$('#e1RunBtn').addEventListener('click', () => {
+  const bestDeg = window.__bestDegree || 2;
+  const linPred = x => linearPredict(x);
+  const betaPoly = polyFit(TRAIN_EMP, bestDeg);
+  const polyPred = x => polyPredict(betaPoly, x);
+
+  const lin = evalModel(TEST_EMP, linPred);
+  const poly = evalModel(TEST_EMP, polyPred);
+
+  $('#e1R2Lin').textContent = fmt(lin.r2,4);
+  $('#e1MseLin').textContent = fmt(lin.mse,3);
+  $('#e1RmseLin').textContent = fmt(lin.rmse,3);
+  $('#e1MapeLin').textContent = fmt(lin.mape,2)+'%';
+
+  $('#e1R2Poly').textContent = fmt(poly.r2,4);
+  $('#e1MsePoly').textContent = fmt(poly.mse,3);
+  $('#e1RmsePoly').textContent = fmt(poly.rmse,3);
+  $('#e1MapePoly').textContent = fmt(poly.mape,2)+'%';
+});
+
+function drawE2(){
+  const bestDeg = window.__bestDegree || 2;
+  const x = +$('#e2XSlider').value;
+  const linPred = linearPredict(x);
+  const betaPoly = polyFit(TRAIN_EMP, bestDeg);
+  const polyPred = polyPredict(betaPoly, x);
+  $('#e2XLabel').textContent = fmt(x,1);
+  $('#e2LinPred').textContent = fmtLPA(linPred);
+  $('#e2PolyPred').textContent = fmtLPA(polyPred);
+
+  const layout = drawScatter($('#cvE2Predict'), {
+    points: ALL_EMPLOYEES, xDomain: EXP_X_DOMAIN, yDomain: EXP_Y_DOMAIN,
+    xLabel: 'years of experience →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--ink-faint'),
+  });
+  drawCurve(layout.ctx, layout, xx => linearPredict(xx), cssVar('--ink-faint'), 2.4, [5,3]);
+  drawCurve(layout.ctx, layout, xx => polyPredict(betaPoly,xx), cssVar('--c-evaluate'), 3);
+
+  [ {y:linPred,color:cssVar('--ink-faint')}, {y:polyPred,color:cssVar('--c-evaluate')} ].forEach(m => {
+    layout.ctx.fillStyle = m.color;
+    layout.ctx.beginPath(); layout.ctx.arc(layout.X(x), layout.Y(m.y), 6, 0, Math.PI*2); layout.ctx.fill();
+    layout.ctx.strokeStyle = cssVar('--paper'); layout.ctx.lineWidth=1.5; layout.ctx.stroke();
+  });
+}
+function fmtLPA(v){ return '₹'+fmt(v,2)+'L'; }
+onEnter['sE2'] = () => { $('#e2XSlider').value=9; drawE2(); };
+$('#e2XSlider').addEventListener('input', drawE2);
+
+onEnter['sE3'] = () => {
+  const wildDeg = 11;
+  const beta = polyFit(TRAIN_EMP, wildDeg);
+  const layout = drawScatter($('#cvE3Extrapolate'), {
+    points: TRAIN_EMP, xDomain: [-2, 19], yDomain: [-10, 40],
+    xLabel: 'years of experience →', yLabel: 'salary (₹ LPA)',
+    color: cssVar('--c-degree'),
+  });
+  layout.ctx.save();
+  layout.ctx.fillStyle = cssVar('--paper-3'); layout.ctx.globalAlpha=0.6;
+  layout.ctx.fillRect(layout.X(0), layout.padT, layout.X(15)-layout.X(0), layout.plotH);
+  layout.ctx.restore();
+  drawCurve(layout.ctx, layout, x => polyPredict(beta,x), cssVar('--bad'), 3, null, -2, 19);
+  drawCurve(layout.ctx, layout, x => polyPredict(beta,x), cssVar('--bad'), 3, null, 0, 15);
+};
+
+/* =========================== init =========================== */
+buildDots();
+$('#totalNum').textContent = slideEls.length;
+const deepLinkSlide = parseInt(new URLSearchParams(location.search).get('slide'), 10);
+goTo(Number.isFinite(deepLinkSlide) ? deepLinkSlide-1 : 0);
+</script>
+</body>
+</html>
