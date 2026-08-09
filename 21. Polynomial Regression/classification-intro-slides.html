@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>From Regression to Classification · A Preview</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+
+    --c-intro:#3B6E63; --c-limits:#B0670C; --c-features:#6249B0;
+
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+
+    --accent: var(--c-intro);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+      --c-intro:#79C0AE; --c-limits:#E3A238; --c-features:#A78BFA;
+      --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+      --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+    --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+    --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+    --c-intro:#79C0AE; --c-limits:#E3A238; --c-features:#A78BFA;
+    --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+    --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+  }
+  :root[data-theme="light"]{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+    --c-intro:#3B6E63; --c-limits:#B0670C; --c-features:#6249B0;
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    overflow:hidden; -webkit-font-smoothing:antialiased;
+  }
+  body[data-section="recap"]{--accent:var(--c-intro);}
+  body[data-section="attempt"]{--accent:var(--c-limits);}
+  body[data-section="next"]{--accent:var(--c-features);}
+
+  h1,h2,h3,p{margin:0;}
+  h1,h2,h3{text-wrap:balance; letter-spacing:-0.01em;}
+  ::selection{background:var(--accent); color:#fff;}
+
+  .eyebrow{
+    font-size:.74rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent);
+  }
+  .slide h1{font-size:clamp(1.7rem,3.2vw,2.9rem); font-weight:800; color:var(--ink);}
+  .slide h2{font-size:clamp(1.2rem,1.8vw,1.6rem); font-weight:800; color:var(--ink);}
+  .body-text{font-size:clamp(1rem,1.25vw,1.2rem); font-weight:500; line-height:1.6; color:var(--ink-soft);}
+  .body-text b, .body-text strong{color:var(--ink); font-weight:800;}
+  .tabular{font-variant-numeric:tabular-nums;}
+
+  /* ---------- chrome ---------- */
+  .chrome-top{
+    position:fixed; top:0; left:0; right:0; height:52px; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 20px; pointer-events:none;
+  }
+  .chrome-top > *{pointer-events:auto;}
+  .hour-badge{
+    font-size:.72rem; font-weight:800; letter-spacing:.12em; color:var(--ink-faint);
+    background:var(--paper-2); border:1px solid var(--line); padding:6px 12px; border-radius:999px;
+  }
+  .chapter-chip{
+    display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:700;
+    color:var(--ink-soft); background:var(--paper-2); border:1px solid var(--line);
+    padding:6px 14px 6px 8px; border-radius:999px;
+  }
+  .chapter-chip .num{
+    display:inline-flex; align-items:center; justify-content:center; width:20px;height:20px;
+    border-radius:50%; background:var(--accent); color:#fff; font-size:.68rem; font-weight:800;
+  }
+  .icon-btn{
+    width:36px;height:36px; border-radius:50%; border:1px solid var(--line); background:var(--paper-2);
+    color:var(--ink); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .icon-btn:hover{background:var(--paper-3);}
+  .icon-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  .deck{position:absolute; inset:0; top:52px; bottom:64px;}
+  .slide{
+    position:absolute; inset:0; display:none; flex-direction:column;
+    padding:clamp(18px,3vw,40px) clamp(24px,5vw,80px);
+    overflow:auto;
+  }
+  .slide.active{display:flex;}
+  .slide-inner{display:flex; flex-direction:column; gap:clamp(12px,1.8vh,20px); max-width:1360px; width:100%; margin:0 auto; flex:1; min-height:0;}
+
+  .chrome-bottom{
+    position:fixed; left:0; right:0; bottom:0; height:64px; z-index:50;
+    display:flex; align-items:center; gap:14px; padding:0 clamp(14px,3vw,32px);
+    background:linear-gradient(0deg, var(--paper) 60%, transparent);
+  }
+  .nav-btn{
+    width:40px;height:40px;border-radius:50%; border:1px solid var(--line); background:var(--paper-2);
+    color:var(--ink); font-size:1.2rem; cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center;
+  }
+  .nav-btn:hover:not(:disabled){background:var(--accent); color:#fff; border-color:transparent;}
+  .nav-btn:disabled{opacity:.35; cursor:default;}
+  .progress{flex:1; display:flex; align-items:center; gap:5px; overflow-x:auto; scrollbar-width:none;}
+  .progress::-webkit-scrollbar{display:none;}
+  .dot{
+    width:9px;height:9px;border-radius:50%; background:var(--paper-3); border:none; cursor:pointer; flex:none;
+    transition:transform .15s ease;
+  }
+  .dot.gap{width:14px; height:2px; border-radius:1px; background:transparent; cursor:default;}
+  .dot.active{transform:scale(1.5);}
+  .slide-counter{font-size:.8rem; font-weight:700; color:var(--ink-faint); flex:none; white-space:nowrap;}
+
+  /* ---------- layout helpers ---------- */
+  .split{display:grid; grid-template-columns:1.05fr 1.35fr; gap:clamp(20px,4vw,52px); align-items:center; flex:1; min-height:0;}
+  @media (max-width:920px){ .split{grid-template-columns:1fr; overflow:auto;} }
+  .split.reverse{grid-template-columns:1.35fr 1.05fr;}
+  .split.even{grid-template-columns:1fr 1fr;}
+  .stack{display:flex; flex-direction:column; gap:12px; min-height:0;}
+  .center-col{display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:16px; flex:1;}
+  .visual-box{
+    background:var(--surface-canvas); border:1px solid var(--line); border-radius:24px;
+    padding:14px; box-shadow:var(--shadow); min-height:0; display:flex; flex-direction:column; gap:8px;
+  }
+  .canvas-wrap{position:relative; flex:1; min-height:160px;}
+  canvas{display:block; width:100%; height:100%;}
+
+  /* ---------- components ---------- */
+  .console{
+    display:flex; flex-wrap:wrap; gap:14px 26px; align-items:flex-end;
+    background:var(--paper-2); border:1px solid var(--line); border-radius:20px;
+    padding:16px 20px;
+  }
+
+  .btn{
+    font:inherit; font-size:.92rem; font-weight:800; border:1px solid var(--line); border-radius:999px;
+    padding:11px 20px; cursor:pointer; background:var(--paper-3); color:var(--ink);
+    transition:transform .12s ease, box-shadow .12s ease; white-space:nowrap;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn:active{transform:translateY(0);}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .btn-primary{background:var(--accent); color:#fff; border-color:transparent; box-shadow:0 8px 18px -8px var(--accent);}
+  .btn-ghost{background:transparent;}
+  .btn.toggled{background:var(--accent); color:#fff; border-color:transparent;}
+  .btn:disabled{opacity:.5; cursor:default; transform:none;}
+  .btn-row{display:flex; flex-wrap:wrap; gap:10px;}
+
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px;}
+  .stat-tile{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:12px 14px;}
+  .stat-tile .label{font-size:.7rem; font-weight:800; color:var(--ink-faint); letter-spacing:.05em; text-transform:uppercase;}
+  .stat-tile .value{font-size:1.35rem; font-weight:900; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .stat-tile.accent .value{color:var(--accent);}
+
+  .card{background:var(--paper-2); border:1px solid var(--line); border-radius:18px; padding:18px 20px;}
+  .card-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px;}
+  .card .ico{font-size:1.8rem;}
+  .card h3{font-size:1.02rem; margin-top:8px;}
+  .card p{font-size:.92rem; color:var(--ink-soft); margin-top:4px; line-height:1.45;}
+
+  .banner{border-radius:14px; padding:12px 16px; font-weight:800; font-size:.92rem; display:flex; align-items:center; gap:10px;}
+  .banner.warn{background:color-mix(in srgb, var(--warn) 18%, var(--paper-2)); color:var(--warn);}
+  .banner.good{background:color-mix(in srgb, var(--good) 18%, var(--paper-2)); color:var(--good);}
+  .banner.bad{background:color-mix(in srgb, var(--bad) 18%, var(--paper-2)); color:var(--bad);}
+  .banner.info{background:var(--paper-3); color:var(--ink); font-weight:600; align-items:flex-start;}
+
+  .roadmap{display:grid; grid-template-columns:repeat(3,1fr); gap:14px;}
+  .roadmap .stop{background:var(--paper-2); border-radius:18px; padding:16px 10px; text-align:center; border-top:5px solid var(--stop-color, var(--accent));}
+  .roadmap .stop .ico{font-size:2rem;}
+  .roadmap .stop .t{font-size:.8rem; font-weight:800; margin-top:6px;}
+  @media (max-width:920px){ .roadmap{grid-template-columns:1fr;} }
+
+  .kicker-big{font-size:clamp(2.2rem,5.6vw,3.9rem); font-weight:900; letter-spacing:-0.02em;}
+  .glow{color:var(--accent);}
+
+  .legend{display:flex; gap:16px; font-size:.8rem; font-weight:700; color:var(--ink-soft); flex-wrap:wrap;}
+  .legend .sw{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle;}
+  .legend .sw.line{border-radius:2px; width:14px; height:3px;}
+
+  .footnote{font-size:.82rem; color:var(--ink-faint); font-weight:600;}
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+</style>
+</head>
+<body data-section="recap">
+  <div class="chrome-top">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="hour-badge">CLASSIFICATION · PREVIEW</div>
+      <div class="chapter-chip" id="chapterChip" style="display:none;">
+        <span class="num" id="chapterNum">1</span>
+        <span id="chapterLabel">—</span>
+      </div>
+    </div>
+    <button class="icon-btn" id="themeToggle" title="Toggle light / dark">🌗</button>
+  </div>
+
+  <main class="deck" id="deck">
+
+    <!-- ============ S0 — TITLE / ROADMAP ============ -->
+    <section class="slide" data-section="recap" id="s0">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Regression → Classification · A Short Preview</div>
+        <h1 class="kicker-big">What if the answer<br/>isn't a <span class="glow">number</span>?</h1>
+        <p class="body-text" style="max-width:720px;">We've spent two sessions predicting NUMBERS — salary from experience, price from features. Today, in one short session: meet the other half of machine learning — predicting a CATEGORY. We'll try to reuse everything we already know, watch it break in a genuinely interesting way, and set up exactly what next week's Logistic Regression session will fix.</p>
+        <div class="roadmap" style="width:100%; margin-top:6px;">
+          <div class="stop" style="--stop-color:var(--c-intro);"><div class="ico">🔢</div><div class="t">From Numbers to Yes/No</div></div>
+          <div class="stop" style="--stop-color:var(--c-limits);"><div class="ico">💥</div><div class="t">Breaking Linear Regression, On Purpose</div></div>
+          <div class="stop" style="--stop-color:var(--c-features);"><div class="ico">🌀</div><div class="t">Meet Next Week's Star: the S-Curve</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ R1 — RECAP: WHAT REGRESSION HAS DONE SO FAR ============ -->
+    <section class="slide" data-section="recap" id="sR1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">A 30-Second Recap</div>
+        <h1>So far, every answer has been a <span class="glow">NUMBER</span></h1>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card"><div class="ico">📏</div><h3>Linear Regression</h3><p>predicted salary = β₀ + β₁ × experience — one straight ruler, two dials, found by gradient descent.</p></div>
+          <div class="card"><div class="ico">🧬</div><h3>Polynomial Regression</h3><p>Same idea, handed extra columns (x², x³...) so the ruler could bend into a curve.</p></div>
+          <div class="card"><div class="ico">🔁</div><h3>The pattern, every time</h3><p>Build features → guess β's → gradient descent → evaluate honestly on a test set. Same recipe, every model so far.</p></div>
+        </div>
+        <div class="banner info">👀 Today's question breaks the pattern in one specific way: what if y isn't a number at all?</div>
+      </div>
+    </section>
+
+    <!-- ============ R2 — CLASSIFICATION EXAMPLES ============ -->
+    <section class="slide" data-section="recap" id="sR2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">A New Kind of Question</div>
+        <h1>Some questions don't have a <span class="glow">number</span> answer</h1>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card"><div class="ico">📧</div><h3>Spam or not spam?</h3><p>Every email your inbox sorts, all day, every day.</p></div>
+          <div class="card"><div class="ico">🎓</div><h3>Pass or fail?</h3><p>Will a student clear the exam, based on how they prepared?</p></div>
+          <div class="card"><div class="ico">💳</div><h3>Approve the loan or not?</h3><p>Banks decide this thousands of times a day.</p></div>
+          <div class="card"><div class="ico">🏥</div><h3>Disease present or not?</h3><p>A diagnostic test result, boiled down to a decision.</p></div>
+          <div class="card"><div class="ico">🔁</div><h3>Will this customer churn?</h3><p>Cancel the subscription, or stay another month?</p></div>
+          <div class="card"><div class="ico">🌱</div><h3>...and hundreds more</h3><p>Any "will X happen" question, at its core, is exactly this.</p></div>
+        </div>
+        <div class="banner good">🎯 Notice the pattern: every answer is one of exactly two buckets. That's called <b>binary classification</b> — where we start.</div>
+      </div>
+    </section>
+
+    <!-- ============ R3 — THE RUNNING EXAMPLE ============ -->
+    <section class="slide" data-section="recap" id="sR3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Today's Example</div>
+          <h1>Will a student pass, based on <span class="glow">hours studied</span>?</h1>
+          <p class="body-text">20 students. For each one: how many hours they studied (x), and whether they passed the exam (y = 1) or failed (y = 0). Notice the y-axis only ever has two values — never 0.3, never 7. That's the whole difference from every dataset we've used so far.</p>
+          <div class="banner info">A number for x, a BUCKET for y. Let's see if the tool we already know — linear regression — can handle that.</div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvR3"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--bad);"></span>failed (y=0)</span><span><span class="sw" style="background:var(--good);"></span>passed (y=1)</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ A1 — TRY LINEAR REGRESSION ============ -->
+    <section class="slide" data-section="attempt" id="sA1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Let's Try What We Already Know</div>
+          <h1>Can we just... use <span class="glow">linear regression</span>?</h1>
+          <p class="body-text">Treat "passed" as the number 1 and "failed" as the number 0, then fit a straight line exactly the way we always have. To turn the line's output into a decision, add one rule: <b>predict PASS if the line's output is ≥ 0.5, otherwise predict FAIL.</b></p>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Fitted line</div><div class="value tabular" id="a1Line" style="font-size:1rem;">—</div></div>
+            <div class="stat-tile accent"><div class="label">Decision boundary</div><div class="value tabular" id="a1Boundary">—</div></div>
+            <div class="stat-tile"><div class="label">Accuracy on these 20</div><div class="value tabular" id="a1Accuracy">—</div></div>
+          </div>
+          <div class="banner good">✅ 100% accuracy on our 20 students. Looks like it works... or does it?</div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvA1"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--bad);"></span>failed</span><span><span class="sw" style="background:var(--good);"></span>passed</span><span><span class="sw line" style="background:var(--ink);"></span>fitted line</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ A2 — INTERACTIVE: THE OUTLIER THAT BREAKS EVERYTHING ============ -->
+    <section class="slide" data-section="attempt" id="sA2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Watch It Break — Live</div>
+          <h1>Add ONE student. Watch what <span class="glow">happens</span>.</h1>
+          <p class="body-text">Meet a student who studied a LOT — 15 hours — but still failed. Life happens: burnout, a bad exam day, unclear material. One honest, real data point. Add them and watch the fitted line react.</p>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="a2AddBtn">➕ Add the 15-hour student who failed</button>
+            <button class="btn btn-ghost" id="a2ResetBtn">🔄 Remove them</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Decision boundary</div><div class="value tabular" id="a2Boundary">—</div></div>
+            <div class="stat-tile accent"><div class="label">Accuracy on original 20</div><div class="value tabular" id="a2Accuracy">—</div></div>
+          </div>
+          <div class="banner bad" id="a2Banner" style="display:none;"></div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvA2"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--bad);"></span>failed</span><span><span class="sw" style="background:var(--good);"></span>passed</span><span><span class="sw" style="background:var(--warn);"></span>the new outlier</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ A3 — IMPOSSIBLE PROBABILITIES ============ -->
+    <section class="slide" data-section="attempt" id="sA3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">A Second, Deeper Problem</div>
+          <h1>It doesn't even stay between <span class="glow">0 and 1</span></h1>
+          <p class="body-text">Even with the original, well-behaved 20 students — no outlier — look what the SAME fitted line predicts once you step slightly outside the middle of the data. A "124% chance of passing" or a "−22% chance of passing" isn't just unusual — it's meaningless. A straight line has no idea it's supposed to stay inside a valid range. It just keeps going.</p>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Predicted "chance" at 9 hours</div><div class="value tabular" id="a3High">—</div></div>
+            <div class="stat-tile"><div class="label">Predicted "chance" at 1 hour</div><div class="value tabular" id="a3Low">—</div></div>
+          </div>
+          <div class="banner bad">🚩 Whatever function we actually use for classification, "always outputs a valid probability" has to be a hard rule — not an accident of where the data happened to sit.</div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvA3"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--bad);"></span>invalid zone</span><span><span class="sw line" style="background:var(--ink);"></span>fitted line</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ N1 — THE WISHLIST ============ -->
+    <section class="slide" data-section="next" id="sN1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Time to Design Something Better</div>
+        <h1>So what would we actually <span class="glow">need</span>?</h1>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card"><div class="ico">🔒</div><h3>Always between 0 and 1</h3><p>Every output is a legitimate probability — no exceptions, no matter how extreme x gets.</p></div>
+          <div class="card"><div class="ico">🛡️</div><h3>Resistant to outliers</h3><p>One weird, far-away point shouldn't be able to swing the whole decision for everyone else.</p></div>
+          <div class="card"><div class="ico">🌊</div><h3>Still smooth &amp; trainable</h3><p>Needs a shape gradient descent can still walk downhill on — same optimizer, new terrain.</p></div>
+        </div>
+        <div class="banner info">Three requirements. One famous curve satisfies all three at once. Let's meet it.</div>
+      </div>
+    </section>
+
+    <!-- ============ N2 — MEET THE S-CURVE ============ -->
+    <section class="slide" data-section="next" id="sN2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Next Week's Star, Previewed</div>
+          <h1>Meet the shape that solves all three: the <span class="glow">S-curve</span></h1>
+          <p class="body-text">Same data. Same outlier toggle from before. This time, watch a second curve — an S-shape — sitting alongside the straight line. No formula yet, no fitting algorithm yet — that's next week. For now, just notice what it does differently.</p>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="n2AddBtn">➕ Add the 15-hour student who failed</button>
+            <button class="btn btn-ghost" id="n2ResetBtn">🔄 Remove them</button>
+          </div>
+          <div class="banner good">Notice: the straight line swings wildly when the outlier appears. The S-curve barely reacts, and never leaves the valid 0–1 range either way.</div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvN2"></canvas></div>
+          <div class="legend"><span><span class="sw line" style="background:var(--bad);"></span>straight line (unstable)</span><span><span class="sw line" style="background:var(--c-features);"></span>S-curve (stable)</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ N3 — BRIDGE TO NEXT WEEK ============ -->
+    <section class="slide" data-section="next" id="sN3">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">See You Next Week</div>
+        <h1 class="kicker-big">Next week:<br/><span class="glow">Logistic Regression</span></h1>
+        <p class="body-text" style="max-width:680px;">The actual formula behind that S-curve (it's called the <b>sigmoid function</b>). How a probability turns into a hard decision boundary. Why squared-error cost breaks down for classification, and the new cost function that replaces it. And yes — the exact same five-step gradient descent recipe, just walking downhill on new terrain.</p>
+        <p class="body-text" style="max-width:680px; font-weight:800; color:var(--ink);">Same optimizer. New shape. New cost function. See you next week.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="chrome-bottom">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous slide">‹</button>
+    <div class="progress" id="progress"></div>
+    <div class="slide-counter"><span id="curNum" class="tabular">1</span> / <span id="totalNum" class="tabular">—</span></div>
+    <button class="nav-btn" id="nextBtn" aria-label="Next slide">›</button>
+  </nav>
+
+<script>
+"use strict";
+
+/* =========================== helpers =========================== */
+const $  = (sel, el=document) => el.querySelector(sel);
+const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+
+const clamp = (v,lo,hi) => Math.max(lo, Math.min(hi,v));
+const mean  = arr => arr.reduce((s,v)=>s+v,0) / arr.length;
+const fmt   = (v,d=2) => Number(v).toFixed(d);
+
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+
+function fitCanvas(cv){
+  const rect = cv.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const w = Math.max(1, Math.round(rect.width*dpr));
+  const h = Math.max(1, Math.round(rect.height*dpr));
+  if(cv.width !== w || cv.height !== h){ cv.width = w; cv.height = h; }
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return { ctx, w: rect.width, h: rect.height };
+}
+
+/* ---- generic X/Y scatter (data space); returns coordinate mapper for custom overlays ---- */
+function drawScatter(cv, opts){
+  if(!cv || cv.clientWidth === 0) return null;
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const padL=44, padR=16, padT=16, padB=32;
+  const plotW=w-padL-padR, plotH=h-padT-padB;
+  const [xmin,xmax] = opts.xDomain, [ymin,ymax] = opts.yDomain;
+  const X = x => padL + ((x-xmin)/(xmax-xmin))*plotW;
+  const Y = y => padT + plotH - ((y-ymin)/(ymax-ymin))*plotH;
+
+  if(opts.invalidZones){
+    ctx.save(); ctx.fillStyle = cssVar('--bad'); ctx.globalAlpha = 0.10;
+    if(ymax > 1) ctx.fillRect(padL, Y(ymax), plotW, Y(1)-Y(ymax));
+    if(ymin < 0) ctx.fillRect(padL, Y(0), plotW, Y(ymin)-Y(0));
+    ctx.restore();
+  }
+
+  ctx.strokeStyle = cssVar('--line'); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT+plotH); ctx.lineTo(padL+plotW, padT+plotH); ctx.stroke();
+  ctx.fillStyle=cssVar('--ink-faint'); ctx.font='10.5px sans-serif'; ctx.textAlign='center';
+  if(opts.xLabel) ctx.fillText(opts.xLabel, padL+plotW/2, h-6);
+  if(opts.yLabel){
+    ctx.save(); ctx.translate(11, padT+plotH/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center';
+    ctx.fillText(opts.yLabel, 0,0);
+    ctx.restore();
+  }
+
+  if(opts.hLines){
+    ctx.save(); ctx.strokeStyle = cssVar('--ink-faint'); ctx.setLineDash([3,3]); ctx.lineWidth=1;
+    opts.hLines.forEach(v => {
+      ctx.beginPath(); ctx.moveTo(padL, Y(v)); ctx.lineTo(padL+plotW, Y(v)); ctx.stroke();
+    });
+    ctx.restore();
+  }
+
+  ctx.fillStyle = opts.color || cssVar('--accent');
+  const r = opts.radius || 5.2;
+  for(const p of opts.points){
+    ctx.fillStyle = opts.colorFn ? opts.colorFn(p) : (opts.color || cssVar('--accent'));
+    ctx.beginPath(); ctx.arc(X(p.x), Y(p.y), r, 0, Math.PI*2); ctx.fill();
+  }
+  return {ctx,X,Y,padL,padT,plotW,plotH,xmin,xmax,ymin,ymax};
+}
+
+/* draw a smooth curve y=f(x) over a layout returned by drawScatter */
+function drawCurve(ctx, layout, fn, color, lw, dash, xOverrideMin, xOverrideMax){
+  const steps = 160;
+  const x0 = xOverrideMin===undefined ? layout.xmin : xOverrideMin;
+  const x1 = xOverrideMax===undefined ? layout.xmax : xOverrideMax;
+  ctx.save();
+  ctx.strokeStyle = color; ctx.lineWidth = lw||2.8;
+  if(dash) ctx.setLineDash(dash);
+  ctx.beginPath();
+  for(let i=0;i<=steps;i++){
+    const x = x0 + (i/steps)*(x1-x0);
+    const y = fn(x);
+    const px = layout.X(x), py = layout.Y(clamp(y, layout.ymin-9999, layout.ymax+9999));
+    i===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+/* =========================== shared dataset (hours studied vs pass/fail) =========================== */
+const BASE_STUDENTS = [
+  {x:1,y:0},{x:1.5,y:0},{x:2,y:0},{x:2.5,y:0},{x:3,y:0},{x:3.2,y:0},{x:3.8,y:0},{x:4,y:0},{x:4.5,y:0},{x:4.8,y:0},
+  {x:5,y:1},{x:5.3,y:1},{x:5.8,y:1},{x:6,y:1},{x:6.5,y:1},{x:7,y:1},{x:7.5,y:1},{x:8,y:1},{x:8.5,y:1},{x:9,y:1},
+];
+const OUTLIER = {x:15, y:0};
+const CLASS_X_DOMAIN = [0, 17];
+const CLASS_Y_DOMAIN_TIGHT = [-0.15, 1.15];
+const CLASS_Y_DOMAIN_WIDE  = [-0.6, 1.6];
+
+function classColor(p){ return p.y === 1 ? cssVar('--good') : cssVar('--bad'); }
+
+/* simple closed-form 1D least squares -- same "straight ruler" fit as every other deck */
+function fitLine(points){
+  const n = points.length;
+  const mx = mean(points.map(p=>p.x)), my = mean(points.map(p=>p.y));
+  const mxy = mean(points.map(p=>p.x*p.y)), mxx = mean(points.map(p=>p.x*p.x));
+  const b1 = (mxy - mx*my) / (mxx - mx*mx);
+  const b0 = my - b1*mx;
+  return {b0,b1};
+}
+function boundaryX(b0,b1){ return (0.5-b0)/b1; }
+
+/* purely illustrative S-shape for the teaser slide -- NOT fit via any algorithm.
+   Next week's session derives and fits this properly; here it's just a preview of the shape. */
+function sigmoidTeaser(x){
+  const k = 0.85, x0 = 5.2;
+  return 1/(1+Math.exp(-k*(x-x0)));
+}
+
+/* =========================== deck engine =========================== */
+const slideEls = $$('.slide');
+let cur = 0;
+
+const CHAPTERS = {
+  recap:   { num:1, label:'From Numbers to Yes/No' },
+  attempt: { num:2, label:'Breaking Linear Regression, On Purpose' },
+  next:    { num:3, label:'Meet the S-Curve' },
+};
+
+const onEnter = {};
+const onLeave = {};
+
+function buildDots(){
+  const wrap = $('#progress');
+  wrap.innerHTML = '';
+  let lastSection = null;
+  slideEls.forEach((s, i) => {
+    const sec = s.dataset.section;
+    if(lastSection !== null && sec !== lastSection){
+      const gap = document.createElement('span');
+      gap.className = 'dot gap';
+      wrap.appendChild(gap);
+    }
+    const b = document.createElement('button');
+    b.className = 'dot';
+    b.setAttribute('aria-label', 'Go to slide ' + (i+1));
+    b.addEventListener('click', () => goTo(i));
+    wrap.appendChild(b);
+    lastSection = sec;
+  });
+}
+
+function goTo(i){
+  i = clamp(i, 0, slideEls.length-1);
+  const leaveFn = onLeave[slideEls[cur].id];
+  if(leaveFn) leaveFn();
+  slideEls[cur].classList.remove('active');
+  cur = i;
+  const s = slideEls[cur];
+  s.classList.add('active');
+  document.body.dataset.section = s.dataset.section;
+
+  const chip = $('#chapterChip');
+  const meta = CHAPTERS[s.dataset.section];
+  if(meta){
+    chip.style.display = 'flex';
+    $('#chapterNum').textContent = meta.num;
+    $('#chapterLabel').innerHTML = meta.label;
+  } else {
+    chip.style.display = 'none';
+  }
+
+  $('#curNum').textContent = cur+1;
+  $('#prevBtn').disabled = cur === 0;
+  $('#nextBtn').disabled = cur === slideEls.length-1;
+
+  $$('.dot:not(.gap)', $('#progress')).forEach((d,idx)=> d.classList.toggle('active', idx===cur));
+
+  const fn = onEnter[s.id];
+  if(fn) requestAnimationFrame(fn);
+}
+
+function next(){ if(cur < slideEls.length-1) goTo(cur+1); }
+function prev(){ if(cur > 0) goTo(cur-1); }
+
+$('#nextBtn').addEventListener('click', next);
+$('#prevBtn').addEventListener('click', prev);
+window.addEventListener('keydown', e => {
+  if(e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+  else if(e.key === 'ArrowLeft'){ e.preventDefault(); prev(); }
+});
+
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => { const fn = onEnter[slideEls[cur].id]; if(fn) fn(); }, 120);
+});
+
+const themeBtn = $('#themeToggle');
+function applyStoredTheme(){
+  const t = localStorage.getItem('sv-theme-classification');
+  if(t) document.documentElement.setAttribute('data-theme', t);
+}
+applyStoredTheme();
+themeBtn.addEventListener('click', () => {
+  const now = document.documentElement.getAttribute('data-theme');
+  const dark = now ? now === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const nextTheme = dark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', nextTheme);
+  localStorage.setItem('sv-theme-classification', nextTheme);
+  const fn = onEnter[slideEls[cur].id]; if(fn) fn();
+});
+
+/* =========================== R3 — the running example ========================= */
+onEnter['sR3'] = () => {
+  drawScatter($('#cvR3'), {
+    points: BASE_STUDENTS, xDomain: CLASS_X_DOMAIN, yDomain: CLASS_Y_DOMAIN_TIGHT,
+    xLabel: 'hours studied →', yLabel: 'passed? (0 or 1)',
+    colorFn: classColor,
+  });
+};
+
+/* =========================== A1 — try linear regression ========================= */
+onEnter['sA1'] = () => {
+  const {b0,b1} = fitLine(BASE_STUDENTS);
+  const bx = boundaryX(b0,b1);
+  const preds = BASE_STUDENTS.map(p => (b0+b1*p.x) >= 0.5 ? 1 : 0);
+  const acc = mean(preds.map((pr,i)=> pr===BASE_STUDENTS[i].y ? 1 : 0));
+
+  $('#a1Line').textContent = `y = ${fmt(b0,3)} + ${fmt(b1,3)}·x`;
+  $('#a1Boundary').textContent = fmt(bx,2) + ' hrs';
+  $('#a1Accuracy').textContent = fmt(acc*100,0) + '%';
+
+  const layout = drawScatter($('#cvA1'), {
+    points: BASE_STUDENTS, xDomain: CLASS_X_DOMAIN, yDomain: CLASS_Y_DOMAIN_TIGHT,
+    xLabel: 'hours studied →', yLabel: 'passed? (0 or 1)',
+    colorFn: classColor, hLines:[0.5],
+  });
+  if(layout){
+    drawCurve(layout.ctx, layout, x => b0+b1*x, cssVar('--ink'), 2.8);
+    layout.ctx.save();
+    layout.ctx.strokeStyle = cssVar('--accent'); layout.ctx.setLineDash([4,3]); layout.ctx.lineWidth=1.6;
+    layout.ctx.beginPath(); layout.ctx.moveTo(layout.X(bx), layout.padT); layout.ctx.lineTo(layout.X(bx), layout.padT+layout.plotH); layout.ctx.stroke();
+    layout.ctx.restore();
+  }
+};
+
+/* =========================== A2 — interactive outlier demo ========================= */
+let a2OutlierOn = false;
+function a2Points(){ return a2OutlierOn ? [...BASE_STUDENTS, OUTLIER] : BASE_STUDENTS; }
+function a2Render(){
+  const pts = a2Points();
+  const {b0,b1} = fitLine(pts);
+  const bx = boundaryX(b0,b1);
+  const preds = BASE_STUDENTS.map(p => (b0+b1*p.x) >= 0.5 ? 1 : 0);
+  const acc = mean(preds.map((pr,i)=> pr===BASE_STUDENTS[i].y ? 1 : 0));
+  const flipped = BASE_STUDENTS.filter((p,i)=> preds[i]!==p.y);
+
+  $('#a2Boundary').textContent = fmt(bx,2) + ' hrs';
+  $('#a2Accuracy').textContent = fmt(acc*100,0) + '%';
+
+  const banner = $('#a2Banner');
+  if(a2OutlierOn && flipped.length){
+    banner.style.display = 'flex';
+    const names = flipped.map(p => `${fmt(p.x,1)} hrs`).join(', ');
+    banner.textContent = `🚩 Students who studied ${names} and PASSED are now predicted to FAIL — and nothing about THEM changed. One unrelated data point on the far right dragged the whole boundary.`;
+  } else {
+    banner.style.display = 'none';
+  }
+
+  const layout = drawScatter($('#cvA2'), {
+    points: pts, xDomain: CLASS_X_DOMAIN, yDomain: CLASS_Y_DOMAIN_TIGHT,
+    xLabel: 'hours studied →', yLabel: 'passed? (0 or 1)',
+    colorFn: p => p===OUTLIER ? cssVar('--warn') : classColor(p), hLines:[0.5],
+  });
+  if(layout){
+    drawCurve(layout.ctx, layout, x => b0+b1*x, cssVar('--ink'), 2.8);
+    layout.ctx.save();
+    layout.ctx.strokeStyle = cssVar('--accent'); layout.ctx.setLineDash([4,3]); layout.ctx.lineWidth=1.6;
+    layout.ctx.beginPath(); layout.ctx.moveTo(layout.X(bx), layout.padT); layout.ctx.lineTo(layout.X(bx), layout.padT+layout.plotH); layout.ctx.stroke();
+    layout.ctx.restore();
+  }
+}
+onEnter['sA2'] = () => { a2OutlierOn = false; a2Render(); };
+$('#a2AddBtn').addEventListener('click', () => { a2OutlierOn = true; a2Render(); });
+$('#a2ResetBtn').addEventListener('click', () => { a2OutlierOn = false; a2Render(); });
+
+/* =========================== A3 — impossible probabilities ========================= */
+onEnter['sA3'] = () => {
+  const {b0,b1} = fitLine(BASE_STUDENTS);
+  $('#a3High').textContent = fmt((b0+b1*9)*100,0) + '%';
+  $('#a3Low').textContent = fmt((b0+b1*1)*100,0) + '%';
+
+  const layout = drawScatter($('#cvA3'), {
+    points: BASE_STUDENTS, xDomain: CLASS_X_DOMAIN, yDomain: CLASS_Y_DOMAIN_WIDE,
+    xLabel: 'hours studied →', yLabel: 'predicted "chance of passing"',
+    colorFn: classColor, hLines:[0,1], invalidZones:true,
+  });
+  if(layout) drawCurve(layout.ctx, layout, x => b0+b1*x, cssVar('--ink'), 2.8, null, 0, 17);
+};
+
+/* =========================== N2 — sigmoid teaser ========================= */
+let n2OutlierOn = false;
+function n2Render(){
+  const pts = n2OutlierOn ? [...BASE_STUDENTS, OUTLIER] : BASE_STUDENTS;
+  const {b0,b1} = fitLine(pts);
+
+  const layout = drawScatter($('#cvN2'), {
+    points: pts, xDomain: CLASS_X_DOMAIN, yDomain: CLASS_Y_DOMAIN_WIDE,
+    xLabel: 'hours studied →', yLabel: 'passed? (0 or 1)',
+    colorFn: p => p===OUTLIER ? cssVar('--warn') : classColor(p), hLines:[0,0.5,1],
+  });
+  if(layout){
+    drawCurve(layout.ctx, layout, x => b0+b1*x, cssVar('--bad'), 2.6);
+    drawCurve(layout.ctx, layout, sigmoidTeaser, cssVar('--c-features'), 3.2);
+  }
+}
+onEnter['sN2'] = () => { n2OutlierOn = false; n2Render(); };
+$('#n2AddBtn').addEventListener('click', () => { n2OutlierOn = true; n2Render(); });
+$('#n2ResetBtn').addEventListener('click', () => { n2OutlierOn = false; n2Render(); });
+
+/* =========================== init =========================== */
+buildDots();
+$('#totalNum').textContent = slideEls.length;
+const deepLinkSlide = parseInt(new URLSearchParams(location.search).get('slide'), 10);
+goTo(Number.isFinite(deepLinkSlide) ? deepLinkSlide-1 : 0);
+</script>
+</body>
+</html>
