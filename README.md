@@ -327,7 +327,7 @@ A full end-to-end assignment applying the same skills to a new dataset: cleaning
 ---
 
 <a name="day-21"></a>
-## 🗓️ Day 21: Polynomial Regression (08-Aug-2026)
+## 🗓️ Day 21: Polynomial Regression (08-Aug-2026 to 09-Aug-2026)
 
 ### Highlights
 - **When Straight Lines Aren't Enough:** A 60-second recap of OLS, then a curvier salary-vs-experience story that no straight ruler can honestly fit.
@@ -336,9 +336,14 @@ A full end-to-end assignment applying the same skills to a new dataset: cleaning
 - **Turn the Dial:** Exploring the degree hyperparameter and the two ways to get it wrong — underfitting ("barely studied") vs. overfitting ("memorized the answer key").
 - **Why We Hide Some Data:** Train/validation/test splits as the only honest way to catch overfitting, plus the bias-variance payoff chart.
 - **Nothing Is Free:** The real tradeoffs of higher-degree polynomials — exploding feature scales and wild extrapolation — and a look ahead at what comes next.
+- **Hands-on:** Fitting a baseline linear model on a salary/experience dataset, engineering polynomial features, scaling with `MinMaxScaler`, then sweeping the polynomial degree with a `build_model(ndegree)` helper to see under/overfitting show up in real numbers and plots.
+- **A Look Ahead:** A short preview bridging into next week's topic — regression vs. classification, and where a straight/curved line stops being the right tool.
 
 ### Resources
 - **Slide Deck:** [`21. Polynomial Regression/polynomial-regression-slides.html`](21.%20Polynomial%20Regression/polynomial-regression-slides.html)
+- **Classwork Notebook:** [`21. Polynomial Regression/Classwork_poly.ipynb`](21.%20Polynomial%20Regression/Classwork_poly.ipynb)
+- **Dataset:** [`21. Polynomial Regression/handson/Salary_Experience_Dataset.csv`](21.%20Polynomial%20Regression/handson/Salary_Experience_Dataset.csv)
+- **Preview — Regression → Classification:** [`21. Polynomial Regression/classification-intro-slides.html`](21.%20Polynomial%20Regression/classification-intro-slides.html)
 
 ---
 
