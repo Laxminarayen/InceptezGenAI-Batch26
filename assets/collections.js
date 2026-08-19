@@ -28,6 +28,7 @@
     "19 · Linear Regression Hands-on",
     "20 · Revision & Exercise: Linear Regression",
     "21 · Polynomial Regression",
+    "22 · Logistic Regression",
   ];
 
   function escapeHtml(str) {

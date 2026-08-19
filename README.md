@@ -27,6 +27,7 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 - [Day 19: Linear Regression Hands-on](#day-19)
 - [Day 20: Revision & Exercise: Linear Regression](#day-20)
 - [Day 21: Polynomial Regression](#day-21)
+- [Day 22: Logistic Regression](#day-22)
 - [Assignments](#assignments)
 
 ---
@@ -344,6 +345,22 @@ A full end-to-end assignment applying the same skills to a new dataset: cleaning
 - **Classwork Notebook:** [`21. Polynomial Regression/Classwork_poly.ipynb`](21.%20Polynomial%20Regression/Classwork_poly.ipynb)
 - **Dataset:** [`21. Polynomial Regression/handson/Salary_Experience_Dataset.csv`](21.%20Polynomial%20Regression/handson/Salary_Experience_Dataset.csv)
 - **Preview — Regression → Classification:** [`21. Polynomial Regression/classification-intro-slides.html`](21.%20Polynomial%20Regression/classification-intro-slides.html)
+
+---
+
+<a name="day-22"></a>
+## 🗓️ Day 22: Logistic Regression (16-Aug-2026)
+
+### Highlights
+- **Binary Classification, End to End:** A running loan-approval example carried through the whole session — from raw idea to a working, evaluated model.
+- **The Sigmoid Hypothesis:** Giving the S-curve a formula, turning a linear score into a probability, and turning that probability into an approve/reject decision.
+- **Why Not Just Reuse MSE?** Designing logistic regression's cost function from intuition, and the elegant guarantee that makes it "one smooth bowl" gradient descent can always solve.
+- **Watch It Learn:** Gradient descent for logistic regression, one round at a time, with the same convergence warnings from linear regression reprised.
+- **Beyond Accuracy:** Confusion matrices, why 95% accuracy can mean nothing on imbalanced data, precision vs. recall, F1 score, and why the 0.5 decision threshold was never a law of nature.
+- **A Real Loan File, Cleaned Start to Finish:** Exact duplicates, inconsistent text, "error vs. genuinely unusual" outliers, missing values, encoding text for `z = β₀+β₁x+...`, and the scaling warning made real on an actual dataset.
+
+### Resources
+- **Slide Deck:** [`22. Logistic Regression/logistic-regression-slides.html`](22.%20Logistic%20Regression/logistic-regression-slides.html)
 
 ---
 
