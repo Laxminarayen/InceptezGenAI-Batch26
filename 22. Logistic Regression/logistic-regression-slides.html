@@ -1,0 +1,1620 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Logistic Regression · Loan Approval, Start to Finish</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+
+    --c-intro:#3B6E63; --c-hyp:#B0670C; --c-train:#6249B0; --c-eval:#C13D68; --c-clean:#1E6FA8;
+
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+
+    --accent: var(--c-intro);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+      --c-intro:#79C0AE; --c-hyp:#E3A238; --c-train:#A78BFA; --c-eval:#F17BA0; --c-clean:#5FA8E0;
+      --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+      --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+    --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+    --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+    --c-intro:#79C0AE; --c-hyp:#E3A238; --c-train:#A78BFA; --c-eval:#F17BA0; --c-clean:#5FA8E0;
+    --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+    --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+  }
+  :root[data-theme="light"]{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+    --c-intro:#3B6E63; --c-hyp:#B0670C; --c-train:#6249B0; --c-eval:#C13D68; --c-clean:#1E6FA8;
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    overflow:hidden; -webkit-font-smoothing:antialiased;
+  }
+  body[data-section="intro"]{--accent:var(--c-intro);}
+  body[data-section="hyp"]{--accent:var(--c-hyp);}
+  body[data-section="train"]{--accent:var(--c-train);}
+  body[data-section="eval"]{--accent:var(--c-eval);}
+  body[data-section="clean"]{--accent:var(--c-clean);}
+
+  h1,h2,h3,p{margin:0;}
+  h1,h2,h3{text-wrap:balance; letter-spacing:-0.01em;}
+  ::selection{background:var(--accent); color:#fff;}
+
+  .eyebrow{
+    font-size:.74rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent);
+  }
+  .slide h1{font-size:clamp(1.7rem,3.2vw,2.9rem); font-weight:800; color:var(--ink);}
+  .slide h2{font-size:clamp(1.2rem,1.8vw,1.6rem); font-weight:800; color:var(--ink);}
+  .body-text{font-size:clamp(1rem,1.25vw,1.2rem); font-weight:500; line-height:1.6; color:var(--ink-soft);}
+  .body-text b, .body-text strong{color:var(--ink); font-weight:800;}
+  .tabular{font-variant-numeric:tabular-nums;}
+
+  /* ---------- chrome ---------- */
+  .chrome-top{
+    position:fixed; top:0; left:0; right:0; height:52px; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 20px; pointer-events:none;
+  }
+  .chrome-top > *{pointer-events:auto;}
+  .hour-badge{
+    font-size:.72rem; font-weight:800; letter-spacing:.12em; color:var(--ink-faint);
+    background:var(--paper-2); border:1px solid var(--line); padding:6px 12px; border-radius:999px;
+  }
+  .chapter-chip{
+    display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:700;
+    color:var(--ink-soft); background:var(--paper-2); border:1px solid var(--line);
+    padding:6px 14px 6px 8px; border-radius:999px;
+  }
+  .chapter-chip .num{
+    display:inline-flex; align-items:center; justify-content:center; width:20px;height:20px;
+    border-radius:50%; background:var(--accent); color:#fff; font-size:.68rem; font-weight:800;
+  }
+  .icon-btn{
+    width:36px;height:36px; border-radius:50%; border:1px solid var(--line); background:var(--paper-2);
+    color:var(--ink); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .icon-btn:hover{background:var(--paper-3);}
+  .icon-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  .deck{position:absolute; inset:0; top:52px; bottom:64px;}
+  .slide{
+    position:absolute; inset:0; display:none; flex-direction:column;
+    padding:clamp(18px,3vw,40px) clamp(24px,5vw,80px);
+    overflow:auto;
+  }
+  .slide.active{display:flex;}
+  .slide-inner{display:flex; flex-direction:column; gap:clamp(12px,1.8vh,20px); max-width:1360px; width:100%; margin:0 auto; flex:1; min-height:0;}
+
+  .chrome-bottom{
+    position:fixed; left:0; right:0; bottom:0; height:64px; z-index:50;
+    display:flex; align-items:center; gap:14px; padding:0 clamp(14px,3vw,32px);
+    background:linear-gradient(0deg, var(--paper) 60%, transparent);
+  }
+  .nav-btn{
+    width:40px;height:40px;border-radius:50%; border:1px solid var(--line); background:var(--paper-2);
+    color:var(--ink); font-size:1.2rem; cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center;
+  }
+  .nav-btn:hover:not(:disabled){background:var(--accent); color:#fff; border-color:transparent;}
+  .nav-btn:disabled{opacity:.35; cursor:default;}
+  .progress{flex:1; display:flex; align-items:center; gap:5px; overflow-x:auto; scrollbar-width:none;}
+  .progress::-webkit-scrollbar{display:none;}
+  .dot{
+    width:9px;height:9px;border-radius:50%; background:var(--paper-3); border:none; cursor:pointer; flex:none;
+    transition:transform .15s ease;
+  }
+  .dot.gap{width:14px; height:2px; border-radius:1px; background:transparent; cursor:default;}
+  .dot.active{transform:scale(1.5);}
+  .slide-counter{font-size:.8rem; font-weight:700; color:var(--ink-faint); flex:none; white-space:nowrap;}
+
+  /* ---------- layout helpers ---------- */
+  .split{display:grid; grid-template-columns:1.05fr 1.35fr; gap:clamp(20px,4vw,52px); align-items:center; flex:1; min-height:0;}
+  @media (max-width:920px){ .split{grid-template-columns:1fr; overflow:auto;} }
+  .split.reverse{grid-template-columns:1.35fr 1.05fr;}
+  .split.even{grid-template-columns:1fr 1fr;}
+  .stack{display:flex; flex-direction:column; gap:12px; min-height:0;}
+  .center-col{display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:16px; flex:1;}
+  .visual-box{
+    background:var(--surface-canvas); border:1px solid var(--line); border-radius:24px;
+    padding:14px; box-shadow:var(--shadow); min-height:0; display:flex; flex-direction:column; gap:8px;
+  }
+  .canvas-wrap{position:relative; flex:1; min-height:160px;}
+  canvas{display:block; width:100%; height:100%;}
+
+  /* ---------- components ---------- */
+  .vocab-card{
+    border-left:5px solid var(--accent); background:var(--paper-2); border-radius:14px;
+    padding:12px 18px; display:flex; flex-direction:column; gap:4px;
+  }
+  .vocab-term{font-size:1rem; font-weight:900; letter-spacing:.04em; color:var(--accent);}
+  .vocab-def{font-size:1rem; color:var(--ink); font-weight:600; line-height:1.4;}
+
+  .console{
+    display:flex; flex-wrap:wrap; gap:14px 26px; align-items:flex-end;
+    background:var(--paper-2); border:1px solid var(--line); border-radius:20px;
+    padding:16px 20px;
+  }
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field label{font-size:.76rem; font-weight:800; color:var(--ink-soft); letter-spacing:.03em;}
+  .field .val{color:var(--accent); font-weight:900;}
+  input[type="range"]{width:180px; accent-color:var(--accent);}
+
+  .btn{
+    font:inherit; font-size:.92rem; font-weight:800; border:1px solid var(--line); border-radius:999px;
+    padding:11px 20px; cursor:pointer; background:var(--paper-3); color:var(--ink);
+    transition:transform .12s ease, box-shadow .12s ease; white-space:nowrap;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn:active{transform:translateY(0);}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .btn-primary{background:var(--accent); color:#fff; border-color:transparent; box-shadow:0 8px 18px -8px var(--accent);}
+  .btn-ghost{background:transparent;}
+  .btn.toggled{background:var(--accent); color:#fff; border-color:transparent;}
+  .btn:disabled{opacity:.5; cursor:default; transform:none;}
+  .btn-row{display:flex; flex-wrap:wrap; gap:10px;}
+
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px;}
+  .stat-tile{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:12px 14px;}
+  .stat-tile .label{font-size:.7rem; font-weight:800; color:var(--ink-faint); letter-spacing:.05em; text-transform:uppercase;}
+  .stat-tile .value{font-size:1.35rem; font-weight:900; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .stat-tile.accent .value{color:var(--accent);}
+
+  .card{background:var(--paper-2); border:1px solid var(--line); border-radius:18px; padding:18px 20px;}
+  .card-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px;}
+  .card .ico{font-size:1.8rem;}
+  .card h3{font-size:1.02rem; margin-top:8px;}
+  .card p{font-size:.92rem; color:var(--ink-soft); margin-top:4px; line-height:1.45;}
+
+  .banner{border-radius:14px; padding:12px 16px; font-weight:800; font-size:.92rem; display:flex; align-items:center; gap:10px;}
+  .banner.warn{background:color-mix(in srgb, var(--warn) 18%, var(--paper-2)); color:var(--warn);}
+  .banner.good{background:color-mix(in srgb, var(--good) 18%, var(--paper-2)); color:var(--good);}
+  .banner.bad{background:color-mix(in srgb, var(--bad) 18%, var(--paper-2)); color:var(--bad);}
+  .banner.info{background:var(--paper-3); color:var(--ink); font-weight:600; align-items:flex-start;}
+
+  .roadmap{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  .roadmap .stop{background:var(--paper-2); border-radius:18px; padding:16px 10px; text-align:center; border-top:5px solid var(--stop-color, var(--accent));}
+  .roadmap .stop .ico{font-size:2rem;}
+  .roadmap .stop .t{font-size:.8rem; font-weight:800; margin-top:6px;}
+  @media (max-width:920px){ .roadmap{grid-template-columns:repeat(2,1fr);} }
+
+  .kicker-big{font-size:clamp(2.2rem,5.6vw,3.9rem); font-weight:900; letter-spacing:-0.02em;}
+  .glow{color:var(--accent);}
+
+  .rule-list{display:flex; flex-direction:column; gap:12px;}
+  .rule{display:flex; gap:14px; align-items:flex-start; border-radius:14px; padding:6px 8px; margin:-6px -8px; transition:background .25s ease;}
+  .rule .n{width:34px;height:34px;border-radius:50%; background:var(--accent); color:#fff; font-weight:900; display:flex; align-items:center; justify-content:center; flex:none;}
+  .rule .t h3{font-size:1rem;}
+  .rule .t p{font-size:.92rem; color:var(--ink-soft); margin-top:2px;}
+  .rule.active-rule{background:color-mix(in srgb, var(--accent) 14%, transparent);}
+
+  .table-wrap{border:1px solid var(--line); border-radius:14px; overflow:hidden;}
+  .data-table{width:100%; border-collapse:collapse; font-size:.88rem;}
+  .data-table th,.data-table td{padding:9px 12px; text-align:center; font-variant-numeric:tabular-nums;}
+  .data-table thead th{background:var(--paper-3); color:var(--ink-soft); font-weight:800; font-size:.74rem; letter-spacing:.03em; text-transform:uppercase;}
+  .data-table thead th .tag{display:block; font-weight:600; text-transform:none; letter-spacing:0; font-size:.7rem; opacity:.75;}
+  .data-table tbody tr{border-top:1px solid var(--line);}
+  .data-table tbody tr.hl-row{background:color-mix(in srgb, var(--accent) 12%, transparent); font-weight:800;}
+  .data-table tbody tr.miss-row{background:color-mix(in srgb, var(--bad) 12%, transparent);}
+  .data-table tbody tr.keep-row{background:color-mix(in srgb, var(--good) 12%, transparent);}
+  .data-table td.issue{font-size:.78rem; color:var(--ink-faint); font-weight:700; text-align:left;}
+
+  .legend{display:flex; gap:16px; font-size:.8rem; font-weight:700; color:var(--ink-soft); flex-wrap:wrap;}
+  .legend .sw{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle;}
+  .legend .sw.line{border-radius:2px; width:14px; height:3px;}
+
+  .footnote{font-size:.82rem; color:var(--ink-faint); font-weight:600;}
+
+  .optional-badge{
+    display:inline-flex; align-self:flex-start; align-items:center; gap:6px;
+    font-size:.7rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--c-train); background:color-mix(in srgb, var(--c-train) 14%, var(--paper-2));
+    border:1px dashed var(--c-train); padding:5px 12px; border-radius:999px;
+  }
+
+  /* ---------- confusion matrix ---------- */
+  .cm-wrap{display:grid; grid-template-columns:auto 1fr 1fr; gap:3px; background:var(--line); border:1px solid var(--line); border-radius:16px; overflow:hidden;}
+  .cm-cell{background:var(--paper-2); padding:16px 10px; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;}
+  .cm-cell.head{background:var(--paper-3); font-weight:800; font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft);}
+  .cm-cell.corner{background:var(--paper-3);}
+  .cm-cell .n{font-size:1.7rem; font-weight:900; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .cm-cell .l{font-size:.72rem; font-weight:700; color:var(--ink-faint);}
+  .cm-cell.tp{background:color-mix(in srgb, var(--good) 26%, var(--paper-2));}
+  .cm-cell.tn{background:color-mix(in srgb, var(--good) 14%, var(--paper-2));}
+  .cm-cell.fp{background:color-mix(in srgb, var(--bad) 24%, var(--paper-2));}
+  .cm-cell.fn{background:color-mix(in srgb, var(--warn) 24%, var(--paper-2));}
+
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+</style>
+</head>
+<body data-section="intro">
+  <div class="chrome-top">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="hour-badge" id="hourBadge">LOGISTIC REGRESSION</div>
+      <div class="chapter-chip" id="chapterChip" style="display:none;">
+        <span class="num" id="chapterNum">1</span>
+        <span id="chapterLabel">—</span>
+      </div>
+    </div>
+    <button class="icon-btn" id="themeToggle" title="Toggle light / dark">🌗</button>
+  </div>
+
+  <main class="deck" id="deck">
+
+    <!-- ============ S0 — TITLE / ROADMAP ============ -->
+    <section class="slide" data-section="intro" id="s0">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Binary Classification, End to End · Loan Approval</div>
+        <h1 class="kicker-big">Teaching a line<br/>to say <span class="glow">"probably"</span></h1>
+        <p class="body-text" style="max-width:760px;">Banks make this exact decision thousands of times a day: approve the loan, or reject it? A plain straight line makes a surprisingly bad loan officer — it swings wildly at one unusual application, and it happily predicts a "124% chance of approval." Today: build the model that actually works, train it properly, evaluate it honestly, and then face the mess a real loan file actually arrives in.</p>
+        <div class="roadmap" style="width:100%; margin-top:6px;">
+          <div class="stop" style="--stop-color:var(--c-hyp);"><div class="ico">🌀</div><div class="t">Hour 1 · The Sigmoid Hypothesis</div></div>
+          <div class="stop" style="--stop-color:var(--c-train);"><div class="ico">🏔️</div><div class="t">Hour 2 · Training: Cost &amp; Gradient Descent</div></div>
+          <div class="stop" style="--stop-color:var(--c-eval);"><div class="ico">🎯</div><div class="t">Hour 3 · Evaluating a Classifier Honestly</div></div>
+          <div class="stop" style="--stop-color:var(--c-clean);"><div class="ico">🧹</div><div class="t">Hour 4 · Real-World Data &amp; the Full Pipeline</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- HOUR 1 — THE SIGMOID HYPOTHESIS                                    -->
+    <!-- ================================================================= -->
+
+    <!-- ============ H1 — SETTING UP THE PROBLEM ============ -->
+    <section class="slide" data-section="hyp" id="sH1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 1 · Setting Up the Problem</div>
+        <h1>A loan gets approved... or it <span class="glow">doesn't</span></h1>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card"><div class="ico">🔢</div><h3>y isn't a number here</h3><p>Loan applications: approved (1) or rejected (0). Never 0.3, never 7 — only two possible outcomes.</p></div>
+          <div class="card"><div class="ico">📏</div><h3>Try linear regression anyway</h3><p>Fit a straight ruler to 0/1 outcomes, predict APPROVE if the line ≥ 0.5. Tempting — it's the only tool we've built so far.</p></div>
+          <div class="card" style="border-top:5px solid var(--bad);"><div class="ico">💥</div><h3>Two real failures</h3><p>One unusual application drags the whole boundary. And the line happily predicts things like −22% or 124% approval chance — meaningless outside 0–1.</p></div>
+          <div class="card"><div class="ico">🌀</div><h3>What we actually need</h3><p>A curve that always stays inside 0–1, and doesn't overreact to one odd applicant. That's today's target.</p></div>
+        </div>
+        <div class="banner info">👀 By the end of this hour, that curve has a name, a formula, and a decision rule. Let's build it.</div>
+      </div>
+    </section>
+
+    <!-- ============ H2 — THE DATASET WE'LL USE ALL DAY ============ -->
+    <section class="slide" data-section="hyp" id="sH2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 1 · Our Running Example</div>
+          <h1>20 loan applicants, one question: <span class="glow">approve or reject?</span></h1>
+          <p class="body-text">x = Credit Score Index, on a friendly 1–10 scale (a simplified stand-in for a real 300–850 credit score — we'll work with the raw scale directly in Hour 4). y = 1 if the loan was approved, 0 if rejected. We'll hand-compute real numbers from this exact table all morning.</p>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Applicant</th><th>Credit Index</th><th>Approved?</th></tr></thead>
+              <tbody>
+                <tr><td>#1</td><td>1</td><td>0</td></tr>
+                <tr><td>#4</td><td>2.5</td><td>0</td></tr>
+                <tr><td>#9</td><td>4.5</td><td>0</td></tr>
+                <tr><td>#10</td><td>4.8</td><td>0</td></tr>
+                <tr class="hl-row"><td>#11</td><td>5.0</td><td>1</td></tr>
+                <tr><td>#14</td><td>6.0</td><td>1</td></tr>
+                <tr><td>#20</td><td>9.0</td><td>1</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="footnote">7 of the 20 rows shown. Notice the natural split: everyone under credit index 5 was rejected, everyone at 5+ was approved — for now.</p>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvH2"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--bad);"></span>rejected (y=0)</span><span><span class="sw" style="background:var(--good);"></span>approved (y=1)</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ H3 — MEET THE SIGMOID FUNCTION ============ -->
+    <section class="slide" data-section="hyp" id="sH3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 1 · Giving the S-Curve a Formula</div>
+          <h1>Meet the <span class="glow">sigmoid function</span></h1>
+          <div class="vocab-card">
+            <div class="vocab-term">σ(z) = 1 / (1 + e^−z)</div>
+            <div class="vocab-def">Feed it ANY real number z — negative, zero, huge, tiny — and it always hands back a number strictly between 0 and 1. That's the whole trick.</div>
+          </div>
+          <div class="console">
+            <div class="field"><label>z = <span class="val" id="h3ZLabel">0.00</span></label><input type="range" id="h3ZSlider" min="-8" max="8" value="0" step="0.1"></div>
+          </div>
+          <p class="footnote">Watch z get passed through the formula, one arithmetic step at a time:</p>
+          <div class="rule-list">
+            <div class="rule"><div class="n">1</div><div class="t"><h3>Start with z</h3><p>z = <b id="h3StepZ" class="tabular">0.00</b></p></div></div>
+            <div class="rule"><div class="n">2</div><div class="t"><h3>Flip its sign, put it in the exponent</h3><p>e^−z = e^<span id="h3StepNegZ" class="tabular">0.00</span> = <b id="h3StepE" class="tabular">1.000</b></p></div></div>
+            <div class="rule"><div class="n">3</div><div class="t"><h3>Add 1, then take the reciprocal</h3><p>σ(z) = 1 / (1 + <span id="h3StepE2" class="tabular">1.000</span>) = <b id="h3StepSigma" class="tabular">0.500</b></p></div></div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile accent"><div class="label">σ(z) — the final probability</div><div class="value tabular" id="h3Sigma">0.500</div></div>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvH3"></canvas></div>
+          <p class="footnote">Drag the slider — watch the dot slide along the curve. It can NEVER leave the 0–1 band, no matter how far you push z (try dragging to ±8).</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ H4 — FROM LINE TO PROBABILITY ============ -->
+    <section class="slide" data-section="hyp" id="sH4">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 1 · The Logistic Regression Hypothesis</div>
+        <h1>Same ruler as always, <span class="glow">wrapped in σ</span></h1>
+        <p class="body-text">Don't throw away the straight line — reuse it. Compute z EXACTLY the way linear regression always has, then pass that single number through the sigmoid to squash it into a valid probability.</p>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>Step 1 — the familiar part</h3><p>z = β₀ + β₁·x &nbsp;(any real number, same as every linear model this whole course)</p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>Step 2 — the new part</h3><p>p = σ(z) = 1 / (1 + e^−z) &nbsp;— now p is guaranteed to sit between 0 and 1, always.</p></div></div>
+          <div class="rule"><div class="n">3</div><div class="t"><h3>Worked example — an applicant at credit index x = 6</h3><p>Say fitting gave us β₀ = −4, β₁ = 0.8. Then z = −4 + 0.8×6 = <b>0.8</b>, and p = σ(0.8) = 1/(1+e^−0.8) ≈ <b>0.690</b> — a 69% predicted chance of approval.</p></div></div>
+        </div>
+        <div class="banner good">🎯 That's the entire hypothesis function: hₚ(x) = σ(β₀ + β₁x). One extra step bolted onto everything you already know.</div>
+      </div>
+    </section>
+
+    <!-- ============ H5 — DECISION BOUNDARY ============ -->
+    <section class="slide" data-section="hyp" id="sH5">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 1 · Turning a Probability Into a Decision</div>
+          <h1>Where does p cross <span class="glow">50%?</span></h1>
+          <p class="body-text">A probability alone isn't a decision — you still need a rule. The standard one: predict APPROVE if p ≥ 0.5, else REJECT. Because σ(z) = 0.5 exactly when z = 0, that rule collapses to something wonderfully simple.</p>
+          <div class="vocab-card" style="border-left-color:var(--c-hyp);">
+            <div class="vocab-term" style="color:var(--c-hyp);">DECISION BOUNDARY</div>
+            <div class="vocab-def">p ≥ 0.5 &nbsp;⟺&nbsp; z ≥ 0 &nbsp;⟺&nbsp; β₀ + β₁x ≥ 0. With β₀=−4, β₁=0.8: boundary at x = 4/0.8 = <b>5.0 credit-index points</b> — exactly where our data naturally splits.</div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">σ(z) at the boundary</div><div class="value tabular">0.500</div></div>
+            <div class="stat-tile accent"><div class="label">Boundary in x</div><div class="value tabular">5.0</div></div>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvH5"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--bad);"></span>predict reject</span><span><span class="sw" style="background:var(--good);"></span>predict approve</span><span><span class="sw line" style="background:var(--c-hyp);"></span>σ(z) curve</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ H6 — ODDS AND LOG-ODDS ============ -->
+    <section class="slide" data-section="hyp" id="sH6">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 1 · Where σ(z) Actually Comes From</div>
+          <h1>A real number, turned into <span class="glow">odds</span>, turned into <span class="glow">p</span></h1>
+          <p class="body-text">z isn't just "a number we feed the formula" — z IS the <b>log-odds</b>, by definition. Drag it and watch it travel: undo the log to get odds, then convert odds into a probability. This pipeline, done in one line, is the sigmoid formula.</p>
+          <div class="console">
+            <div class="field"><label>z (log-odds) = <span class="val" id="h6ZLabel">0.00</span></label><input type="range" id="h6ZSlider" min="-4" max="4" value="0" step="0.1"></div>
+          </div>
+          <div class="rule-list">
+            <div class="rule"><div class="n">1</div><div class="t"><h3>z is the log-odds — any real number</h3><p>z = <b id="h6StepZ" class="tabular">0.00</b> &nbsp;(negative, zero, positive — all valid)</p></div></div>
+            <div class="rule"><div class="n">2</div><div class="t"><h3>Undo the log: odds = e^z</h3><p>odds = e^<span id="h6StepZ2" class="tabular">0.00</span> = <b id="h6StepOdds" class="tabular">1.000</b> &nbsp;(always positive — that's what makes odds "odds")</p></div></div>
+            <div class="rule"><div class="n">3</div><div class="t"><h3>Odds → probability: p = odds/(1+odds)</h3><p>p = <span id="h6StepOdds2" class="tabular">1.000</span> / (1 + <span id="h6StepOdds3" class="tabular">1.000</span>) = <b id="h6StepP" class="tabular">0.500</b></p></div></div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">p via the odds pipeline</div><div class="value tabular" id="h6PPipeline">0.500</div></div>
+            <div class="stat-tile accent"><div class="label">σ(z), computed directly</div><div class="value tabular" id="h6PDirect">0.500</div></div>
+          </div>
+          <div class="banner good">✨ Same number, every time: odds/(1+odds) = e^z/(1+e^z) = 1/(1+e^−z) = σ(z). Sigmoid isn't an arbitrary curve — it's "log-odds → odds → probability," collapsed into one formula. That's also why β₁ has a clean reading: "each extra point of credit index adds 0.8 to the log-odds of approval."</div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvH6"></canvas></div>
+          <p class="footnote">The exact same S-curve from the last slide — now traced out by the odds pipeline instead of the raw formula.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ H7 — MULTIPLE LOGISTIC REGRESSION ============ -->
+    <section class="slide" data-section="hyp" id="sH7">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 1 · More Than One Feature</div>
+          <h1>Add a second feature: <span class="glow">applicant age</span></h1>
+          <p class="body-text">Nothing about the recipe changes — z just grows an extra term per feature. The decision boundary stops being a single point on a number line and becomes a full line (soon: a plane, a hyperplane) cutting through feature space.</p>
+          <div class="vocab-card" style="border-left-color:var(--c-hyp);">
+            <div class="vocab-term" style="color:var(--c-hyp);">z = β₀ + β₁·creditIndex + β₂·age</div>
+            <div class="vocab-def">p = σ(z). One β per feature, plus the intercept — exactly like multiple linear regression.</div>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Credit Index</th><th>Age</th><th>Approved?</th></tr></thead>
+              <tbody>
+                <tr><td>2</td><td>25</td><td>0</td></tr>
+                <tr><td>4</td><td>30</td><td>0</td></tr>
+                <tr class="hl-row"><td>4.5</td><td>58</td><td>1</td></tr>
+                <tr><td>6</td><td>35</td><td>1</td></tr>
+                <tr><td>3</td><td>62</td><td>1</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="footnote">Row 3: only credit index 4.5, but age 58 — a long, stable credit history compensates. One feature alone no longer tells the whole story.</p>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvH7"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--bad);"></span>rejected</span><span><span class="sw" style="background:var(--good);"></span>approved</span><span><span class="sw line" style="background:var(--c-hyp);"></span>boundary LINE (in 2 features)</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ H8 — INTERACTIVE: PLAY WITH BETA ============ -->
+    <section class="slide" data-section="hyp" id="sH8">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 1 · Get a Feel For It</div>
+          <h1>Drag β₀ and β₁ — <span class="glow">watch accuracy react</span></h1>
+          <p class="body-text">Back to the single-feature (credit-index-only) dataset. Move the sliders by hand and try to find values that classify all 20 applicants correctly. Watch TWO curves at once: the raw straight line z = β₀+β₁x (dashed), and the sigmoid curve σ(z) built from it. Notice the line can wander anywhere — including outside the shaded "impossible probability" zones — while the sigmoid never does. This is exactly the search gradient descent will automate for us in Hour 2.</p>
+          <div class="console">
+            <div class="field"><label>β₀ = <span class="val" id="h8B0Label">0.0</span></label><input type="range" id="h8B0Slider" min="-10" max="4" value="0" step="0.2"></div>
+            <div class="field"><label>β₁ = <span class="val" id="h8B1Label">0.0</span></label><input type="range" id="h8B1Slider" min="-1" max="2" value="0" step="0.05"></div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Boundary</div><div class="value tabular" id="h8Boundary">—</div></div>
+            <div class="stat-tile accent"><div class="label">Accuracy on 20 applicants</div><div class="value tabular" id="h8Accuracy">—</div></div>
+          </div>
+          <div class="banner good" id="h8Banner" style="display:none;">🎉 100% accuracy! You just hand-fit a logistic regression model.</div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvH8"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--bad);"></span>rejected</span><span><span class="sw" style="background:var(--good);"></span>approved</span><span><span class="sw line" style="background:var(--ink-faint);"></span>raw line β₀+β₁x</span><span><span class="sw line" style="background:var(--c-hyp);"></span>σ(z)</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ H9 — BRIDGE TO HOUR 2 ============ -->
+    <section class="slide" data-section="hyp" id="sH9">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Hour 1 → Hour 2</div>
+        <h1 class="kicker-big">Fun to drag sliders once.<br/>Now let's <span class="glow">automate</span> it</h1>
+        <p class="body-text" style="max-width:640px;">Gradient descent found the best β's for a straight line by walking downhill on a cost function. Can we reuse the exact same optimizer here? Almost — but the cost function itself needs to change first, and there's a very good reason why.</p>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- HOUR 2 — TRAINING: COST & GRADIENT DESCENT                        -->
+    <!-- ================================================================= -->
+
+    <!-- ============ G1 — GRADIENT DESCENT RECAP ============ -->
+    <section class="slide" data-section="train" id="sG1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 2 · A 60-Second Recap</div>
+        <h1>The five steps, <span class="glow">still true here</span></h1>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card"><div class="ico">🎲</div><h3>1. Start with a guess</h3><p>Every β starts at 0 (or any starting point).</p></div>
+          <div class="card"><div class="ico">🦶</div><h3>2. Feel the slope</h3><p>Work out how the cost would change if you nudged each β.</p></div>
+          <div class="card"><div class="ico">➖</div><h3>3. Subtract it</h3><p>new β = old β − (learning rate) × slope, for every β.</p></div>
+          <div class="card"><div class="ico">🔁</div><h3>4. Repeat</h3><p>Go back to step 2 with the new numbers, over and over.</p></div>
+          <div class="card"><div class="ico">🏁</div><h3>5. Stop when flat</h3><p>Slope ≈ 0 in every direction means you've reached the bottom.</p></div>
+          <div class="card"><div class="ico">❓</div><h3>The missing piece</h3><p>"The bottom" of WHAT bowl? We never actually said what "cost" means for a classifier. That's today's real question.</p></div>
+        </div>
+        <div class="banner info">👀 Obvious guess: reuse Mean Squared Error, the same cost linear regression always used. Let's try it — and watch it go wrong.</div>
+      </div>
+    </section>
+
+    <!-- ============ G2 — WHY NOT MSE ============ -->
+    <section class="slide" data-section="train" id="sG2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 2 · A Tempting Mistake</div>
+        <h1>Squared error + sigmoid = <span class="glow">a bumpy bowl</span></h1>
+        <p class="body-text">Gradient descent only works reliably when the cost surface is one smooth bowl with a single bottom. Plug σ(z) into the familiar MSE formula and the bowl stops being smooth — it grows extra dips and ridges because sigmoid is itself curvy. Gradient descent can get trapped in a fake "bottom" that isn't the real best answer.</p>
+        <div class="vocab-card">
+          <div class="vocab-term" style="font-size:.9rem;">Log loss: J(β) = −(1/n) Σ [ y·log(p) + (1−y)·log(1−p) ]</div>
+          <div class="vocab-def">The formula Hour 2 will adopt instead of MSE. Full derivation and a worked example are two slides away — for now, just watch what it does to the SHAPE of the surface below.</div>
+        </div>
+        <p class="footnote">How the curve below actually gets drawn, one β₁ at a time:</p>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>Pick a candidate β₁</h3><p>Hold β₀ fixed at −4. Try one specific value for β₁, say −0.5.</p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>Compute every applicant's p</h3><p>For all 20 applicants: z = β₀+β₁x, then p = σ(z) — 20 predicted probabilities.</p></div></div>
+          <div class="rule"><div class="n">3</div><div class="t"><h3>Score each one, then average</h3><p>Run each (p, actual y) pair through the cost formula (MSE or log loss), average all 20 → ONE height on the surface.</p></div></div>
+          <div class="rule"><div class="n">4</div><div class="t"><h3>Nudge β₁, repeat</h3><p>Try −0.4, then −0.3, then −0.2... Each value produces one more height. Plot height vs. β₁ and the curve appears.</p></div></div>
+          <div class="rule"><div class="n">5</div><div class="t"><h3>Why the shapes differ</h3><p>MSE squares an already-curvy sigmoid output, and that extra curviness leaks straight into the surface as bumps. Log loss's logarithm exactly cancels sigmoid's curviness in the math — leaving one smooth bowl, guaranteed, for ANY dataset.</p></div></div>
+        </div>
+        <div class="btn-row">
+          <button class="btn btn-primary" id="g2ToggleBtn">🔀 Switch to Log Loss's cost curve</button>
+        </div>
+        <div class="banner warn" id="g2Banner">⚠️ MSE + sigmoid (non-convex): notice the bumps — multiple valleys, and gradient descent could easily stop in the wrong one.</div>
+        <div class="visual-box" style="height:min(26vh,210px);">
+          <div class="canvas-wrap"><canvas id="cvG2"></canvas></div>
+          <p class="footnote">Cost plotted against β₁ (β₀ held fixed) for our 20 applicants' data — this is the actual terrain gradient descent has to walk.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ G2B — OPTIONAL: WHY LOG LOSS IS CONVEX ============ -->
+    <section class="slide" data-section="train" id="sG2B">
+      <div class="slide-inner stack">
+        <div class="optional-badge">🎓 Optional · Going Deeper</div>
+        <div class="eyebrow">Hour 2 · The Actual Guarantee Behind "One Smooth Bowl"</div>
+        <h1>Why is log loss <span class="glow">guaranteed</span> convex?</h1>
+        <p class="body-text">The last slide claimed the log "exactly cancels" sigmoid's curviness. Here's the real derivation — not required going forward, but this is the actual math behind "one smooth bowl, always," for any dataset, any features.</p>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>You don't need σ(z) itself to be convex</h3><p>z = β₀+β₁x is <b>affine</b> (linear) in β. Precomposing ANY convex function with an affine map stays convex — so sigmoid's own S-shape (convex then concave, bending twice) is irrelevant. The only question that matters: is −log(p(z)) convex in z, as a single variable?</p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>Rewrite −log(p) algebraically</h3><p>p = 1/(1+e^−z), so −log(p) = log(1+e^−z) — the "softplus" function. The log's whole job here is to cancel the exponential sitting inside sigmoid, turning a ratio into a clean sum.</p></div></div>
+          <div class="rule"><div class="n">3</div><div class="t"><h3>Differentiate once</h3><p>f(z) = log(1+e^−z) &nbsp;→&nbsp; f'(z) = σ(z) − 1 &nbsp;(chain rule, using sigmoid's own derivative identity)</p></div></div>
+          <div class="rule"><div class="n">4</div><div class="t"><h3>Differentiate again</h3><p>f''(z) = σ(z)(1−σ(z)) = <b>p(1−p)</b> — the exact same sigmoid-derivative fact that built Hour 2's gradient in the last hour, showing up again here.</p></div></div>
+          <div class="rule"><div class="n">5</div><div class="t"><h3>p(1−p) is never negative</h3><p>p always sits strictly between 0 and 1, so p(1−p) &gt; 0 everywhere — peaking at 0.25 when p=0.5, shrinking toward 0 only as z→±∞. Second derivative never negative, anywhere → convex, guaranteed. (The mirror case, y=0, gives −log(1−p)=log(1+eᶻ) — same proof.)</p></div></div>
+          <div class="rule"><div class="n">6</div><div class="t"><h3>Why MSE doesn't get this for free</h3><p>(p−y)² is bounded between 0 and 1. A cost that's bounded but still rising as z moves toward "wrong" HAS to flatten out eventually — it can't climb past 1. That flattening is a reversal of curvature, and that reversal is exactly where the last slide's bumps came from. Log loss's cost is unbounded — it climbs to infinity, never plateaus, never bends back.</p></div></div>
+        </div>
+        <div class="banner info">🎓 Optional takeaway: convexity in β never required sigmoid to be convex — only −log(p(z)) needed to be convex in z, and its second derivative p(1−p) is provably never negative. That single fact is the whole guarantee.</div>
+        <div class="visual-box" style="height:min(28vh,220px);">
+          <div class="canvas-wrap"><canvas id="cvG2B"></canvas></div>
+          <div class="legend"><span><span class="sw line" style="background:var(--c-train);"></span>f''(z) = p(1−p) — the cost's own curvature</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ G3 — LOG LOSS INTUITION ============ -->
+    <section class="slide" data-section="train" id="sG3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 2 · Designing a Better Cost, From Intuition</div>
+        <h1>What SHOULD a good cost <span class="glow">punish?</span></h1>
+        <p class="body-text">Think about what "badly wrong" should mean for one applicant. If the loan actually got approved (y=1), being confidently wrong (p near 0) should hurt A LOT. Being confidently right (p near 1) should cost almost nothing. Two matching rules, one per true label:</p>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card" style="border-top:5px solid var(--good);">
+            <div class="ico">✅</div><h3>If y = 1: cost = −log(p)</h3>
+            <p>p→1 (confident &amp; correct) → cost→0. p→0 (confident &amp; WRONG) → cost→∞. Exactly the punishment we wanted.</p>
+          </div>
+          <div class="card" style="border-top:5px solid var(--bad);">
+            <div class="ico">❌</div><h3>If y = 0: cost = −log(1−p)</h3>
+            <p>The mirror image. p→0 (confident &amp; correct) → cost→0. p→1 (confident &amp; WRONG) → cost→∞.</p>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(30vh,240px);">
+          <div class="canvas-wrap"><canvas id="cvG3"></canvas></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ G4 — THE FULL COST FUNCTION, WORKED ============ -->
+    <section class="slide" data-section="train" id="sG4">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 2 · One Formula, Both Cases at Once</div>
+          <h1>Cross-entropy (a.k.a. <span class="glow">log loss</span>)</h1>
+          <div class="vocab-card">
+            <div class="vocab-term" style="font-size:.95rem;">J(β) = −(1/n) Σ [ y·log(p) + (1−y)·log(1−p) ]</div>
+            <div class="vocab-def">A clever trick: since y is always exactly 0 or 1, one of the two terms always vanishes — leaving just the rule that applies. Average that penalty over all n applicants.</div>
+          </div>
+          <p class="body-text">Worked, with β₀=−4, β₁=0.8 from Hour 1, on 5 sample applicants:</p>
+        </div>
+        <div class="visual-box" style="height:min(50vh,460px);">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Credit Index</th><th>y</th><th>z</th><th>p</th><th>cost</th></tr></thead>
+              <tbody>
+                <tr><td>2</td><td>0</td><td>−2.40</td><td>0.083</td><td>0.087</td></tr>
+                <tr><td>4.5</td><td>0</td><td>−0.40</td><td>0.401</td><td>0.513</td></tr>
+                <tr class="hl-row"><td>5</td><td>1</td><td>0.00</td><td>0.500</td><td>0.693</td></tr>
+                <tr><td>7</td><td>1</td><td>1.60</td><td>0.832</td><td>0.184</td></tr>
+                <tr><td>9</td><td>1</td><td>3.20</td><td>0.961</td><td>0.040</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="footnote">Average of these 5 costs ≈ <b>0.303</b>. Notice credit index 5's cost is the highest — it's the one prediction sitting right at the uncertain 50/50 line.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ G5 — THE GRADIENT: AN ELEGANT SURPRISE ============ -->
+    <section class="slide" data-section="train" id="sG5">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 2 · The Calculus Simplifies Beautifully</div>
+        <h1>The gradient looks... <span class="glow">exactly familiar</span></h1>
+        <p class="body-text">Work through the derivative of log loss (the sigmoid's own derivative cancels perfectly against the log's) and you land on the SAME "mistake × x" shape as linear regression's gradient — just with p (a sigmoid output) standing in for a straight-line prediction.</p>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>Compute the mistake per applicant</h3><p>error = p − y &nbsp;(predicted probability minus actual 0/1 label)</p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>Slope for β₀</h3><p>∂J/∂β₀ = (1/n) Σ (p − y)</p></div></div>
+          <div class="rule"><div class="n">3</div><div class="t"><h3>Slope for β₁ (and every other β)</h3><p>∂J/∂βₖ = (1/n) Σ (p − y) × xₖ &nbsp;— one extra term per feature, same as always.</p></div></div>
+          <div class="rule"><div class="n">4</div><div class="t"><h3>Update every β together</h3><p>new βₖ = old βₖ − (learning rate) × slope for βₖ</p></div></div>
+          <div class="rule"><div class="n">5</div><div class="t"><h3>Repeat until the slopes flatten</h3><p>The exact same five steps as every gradient descent loop this course has used — nothing new in the loop itself.</p></div></div>
+        </div>
+        <div class="banner good">✨ This is why logistic regression is taught right after linear regression: different hypothesis, different cost, IDENTICAL training loop.</div>
+      </div>
+    </section>
+
+    <!-- ============ G6 — INTERACTIVE: TRAIN IT LIVE ============ -->
+    <section class="slide" data-section="train" id="sG6">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 2 · Watch It Learn, One Round at a Time</div>
+          <h1>Real gradient descent, <span class="glow">running live</span></h1>
+          <p class="body-text">Starting from β₀ = β₁ = 0 (a flat 50/50 guess for everyone), take single rounds or run all the way to convergence. Watch TWO things move together: the raw straight line z = β₀+β₁x (dashed) and the sigmoid curve σ(z) it feeds into. The line tilts and slides freely — the S-curve it produces stays locked inside 0–1 the whole time, and the cost falls every single round.</p>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="g6StepBtn">👣 Take one round</button>
+            <button class="btn btn-primary" id="g6RunBtn">▶️ Run to convergence</button>
+            <button class="btn btn-ghost" id="g6ResetBtn">🔄 Restart from β = 0</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Round</div><div class="value tabular" id="g6Round">0</div></div>
+            <div class="stat-tile"><div class="label">β₀ , β₁</div><div class="value tabular" id="g6Betas">0.00, 0.00</div></div>
+            <div class="stat-tile accent"><div class="label">Cost (log loss)</div><div class="value tabular" id="g6Cost">0.693</div></div>
+            <div class="stat-tile"><div class="label">Accuracy</div><div class="value tabular" id="g6Acc">—</div></div>
+          </div>
+        </div>
+        <div class="stack" style="gap:14px;">
+          <div class="visual-box" style="height:min(36vh,320px);">
+            <div class="canvas-wrap"><canvas id="cvG6"></canvas></div>
+            <div class="legend"><span><span class="sw" style="background:var(--bad);"></span>rejected</span><span><span class="sw" style="background:var(--good);"></span>approved</span><span><span class="sw line" style="background:var(--ink-faint);"></span>raw line β₀+β₁x</span><span><span class="sw line" style="background:var(--c-train);"></span>σ(z)</span></div>
+          </div>
+          <div class="table-wrap" style="max-height:170px; overflow-y:auto;">
+            <table class="data-table">
+              <thead><tr><th>Round</th><th>β₀</th><th>β₁</th><th>Cost</th></tr></thead>
+              <tbody id="g6TableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ G7 — SCALING REMINDER ============ -->
+    <section class="slide" data-section="train" id="sG7">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Hour 2 · A Familiar Warning, Reprised</div>
+        <h1 class="kicker-big">Multiple features on wildly<br/>different scales? <span class="glow">Normalize first.</span></h1>
+        <p class="body-text" style="max-width:680px;">Applicant age (18–70) and requested loan amount ($5,000–$500,000) would make gradient descent lurch wildly on one axis and crawl on the other — exactly the same problem polynomial features caused. The fix is identical: scale every feature into a comparable range before training. Hour 4 makes this concrete with real numbers — for now, just don't forget to do it.</p>
+      </div>
+    </section>
+
+    <!-- ============ G9 — BRIDGE TO HOUR 3 ============ -->
+    <section class="slide" data-section="train" id="sG9">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Hour 2 → Hour 3</div>
+        <h1 class="kicker-big">We can train it now.<br/>But is <span class="glow">"100% accuracy"</span> ever the whole story?</h1>
+        <p class="body-text" style="max-width:640px;">Accuracy alone can lie — badly, in ways that matter most exactly when it matters most (fraud, default risk, rare events). Hour 3: confusion matrices, precision, recall, and the real question underneath all of them — wrong HOW, and wrong for WHOM?</p>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- HOUR 3 — EVALUATING A CLASSIFIER HONESTLY                         -->
+    <!-- ================================================================= -->
+
+    <!-- ============ C1 — THRESHOLD, MADE INTERACTIVE ============ -->
+    <section class="slide" data-section="eval" id="sC1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 3 · A New, Trickier Dataset</div>
+          <h1>Two honest oddities, <span class="glow">on purpose</span></h1>
+          <p class="body-text">Back to our original 20, plus two real-world wrinkles: an applicant with an excellent credit index (9.0) who still got REJECTED — the requested loan dwarfed their income — and one with a weak credit index (2.2) who still got APPROVED, backed by strong collateral. Trained on all 22, the model can no longer be perfect — which is exactly what makes it useful for this hour.</p>
+          <div class="console">
+            <div class="field"><label>Decision threshold = <span class="val" id="c1ThreshLabel">0.50</span></label><input type="range" id="c1ThreshSlider" min="0.05" max="0.95" value="0.5" step="0.01"></div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile accent"><div class="label">Accuracy</div><div class="value tabular" id="c1Acc">—</div></div>
+            <div class="stat-tile"><div class="label">Mistakes</div><div class="value tabular" id="c1Mistakes">—</div></div>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvC1"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--bad);"></span>rejected</span><span><span class="sw" style="background:var(--good);"></span>approved</span><span><span class="sw" style="background:var(--warn);"></span>the two oddities</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ C2 — CONFUSION MATRIX ============ -->
+    <section class="slide" data-section="eval" id="sC2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 3 · Naming Every Kind of Mistake</div>
+          <h1>The <span class="glow">confusion matrix</span></h1>
+          <p class="body-text">At the default 0.5 threshold, here's exactly how our 22 predictions broke down. Four buckets, not one "accuracy" number — this is the foundation everything else in this hour is built from.</p>
+          <div class="vocab-card">
+            <div class="vocab-term">ACCURACY, IN PLAIN ENGLISH</div>
+            <div class="vocab-def">"Out of every application we looked at, what fraction did we get right — whether that meant correctly approving a good applicant OR correctly rejecting a risky one?" It treats a bad loan that slipped through and a good customer we turned away as EXACTLY the same size of mistake. That blind spot is what the rest of this hour fixes.</div>
+          </div>
+          <div class="card-grid" style="margin-top:6px;">
+            <div class="card"><div class="ico">✅</div><h3>True Positive (TP)</h3><p>We said YES, and they truly deserved it — a good loan, correctly approved.</p></div>
+            <div class="card"><div class="ico">✅</div><h3>True Negative (TN)</h3><p>We said NO, and they truly weren't a safe bet — a risky application, correctly rejected.</p></div>
+            <div class="card" style="border-top:5px solid var(--bad);"><div class="ico">🚩</div><h3>False Positive (FP)</h3><p>We said YES, but shouldn't have — a bad loan just slipped through. ("Type I error")</p></div>
+            <div class="card" style="border-top:5px solid var(--warn);"><div class="ico">🚩</div><h3>False Negative (FN)</h3><p>We said NO, but they actually deserved it — a good customer turned away. ("Type II error")</p></div>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(50vh,440px); justify-content:center;">
+          <div class="cm-wrap" id="c2Grid">
+            <div class="cm-cell corner"></div>
+            <div class="cm-cell head">Actual: Approved</div>
+            <div class="cm-cell head">Actual: Rejected</div>
+            <div class="cm-cell head">Pred: Approved</div>
+            <div class="cm-cell tp"><div class="n" id="c2TP">10</div><div class="l">True Positive</div></div>
+            <div class="cm-cell fp"><div class="n" id="c2FP">1</div><div class="l">False Positive</div></div>
+            <div class="cm-cell head">Pred: Rejected</div>
+            <div class="cm-cell fn"><div class="n" id="c2FN">1</div><div class="l">False Negative</div></div>
+            <div class="cm-cell tn"><div class="n" id="c2TN">10</div><div class="l">True Negative</div></div>
+          </div>
+          <p class="footnote" style="text-align:center;">22 applicants total. Accuracy = (10+10)/22 ≈ <b>90.9%</b> — but that single number hides WHICH kinds of mistakes happened.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ C3 — THE ACCURACY PARADOX ============ -->
+    <section class="slide" data-section="eval" id="sC3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 3 · When 95% Accuracy Means Nothing</div>
+          <h1>The <span class="glow">accuracy paradox</span></h1>
+          <p class="body-text">Imagine a loan-fraud detector: 100 applications, 95 legitimate, 5 fraudulent. A "classifier" that just predicts "legitimate" for EVERYONE, never even looking at the data, scores:</p>
+          <div class="stat-grid">
+            <div class="stat-tile accent"><div class="label">Accuracy</div><div class="value tabular">95%</div></div>
+            <div class="stat-tile"><div class="label">Fraudulent applications caught</div><div class="value tabular">0 of 5</div></div>
+          </div>
+          <div class="banner bad">🚩 95% accuracy, and it has NEVER once caught the fraud it exists to catch. Every one of the 5 fraud cases is a False Negative. This is exactly why accuracy alone is dangerous on imbalanced data.</div>
+        </div>
+        <div class="visual-box" style="height:min(50vh,440px); justify-content:center;">
+          <div class="cm-wrap">
+            <div class="cm-cell corner"></div>
+            <div class="cm-cell head">Actual: Fraud</div>
+            <div class="cm-cell head">Actual: Legit</div>
+            <div class="cm-cell head">Pred: Fraud</div>
+            <div class="cm-cell tp"><div class="n">0</div><div class="l">True Positive</div></div>
+            <div class="cm-cell fp"><div class="n">0</div><div class="l">False Positive</div></div>
+            <div class="cm-cell head">Pred: Legit</div>
+            <div class="cm-cell fn"><div class="n">5</div><div class="l">False Negative</div></div>
+            <div class="cm-cell tn"><div class="n">95</div><div class="l">True Negative</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ C4 — PRECISION & RECALL ============ -->
+    <section class="slide" data-section="eval" id="sC4">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 3 · Two Numbers That Can't Be Faked At Once</div>
+        <h1><span class="glow">Precision</span> and <span class="glow">recall</span></h1>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card">
+            <div class="ico">🎯</div><h3>Precision = TP / (TP + FP)</h3>
+            <p><b>In one line: "When we say yes, how often are we actually right?"</b> Of everyone I predicted APPROVE, how many actually deserved it? Our model: 10/(10+1) = <b>90.9%</b>. High precision = few bad loans wrongly approved.</p>
+          </div>
+          <div class="card">
+            <div class="ico">🕸️</div><h3>Recall = TP / (TP + FN)</h3>
+            <p><b>In one line: "Of everyone who deserved a yes, how many did we actually catch?"</b> Of everyone who deserved approval, how many did I catch? Our model: 10/(10+1) = <b>90.9%</b>. High recall = few good applicants wrongly rejected.</p>
+          </div>
+        </div>
+        <div class="banner warn">⚖️ They trade off against each other. The fraud detector from the last slide had precision "undefined" (never predicted fraud) and recall = 0% — a perfect illustration of how one number alone hides the real story.</div>
+      </div>
+    </section>
+
+    <!-- ============ C5 — F1 SCORE AND THE TRADEOFF ============ -->
+    <section class="slide" data-section="eval" id="sC5">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 3 · Combining Them Into One Number</div>
+        <h1>F1 score: the <span class="glow">harmonic mean</span></h1>
+        <div class="vocab-card">
+          <div class="vocab-term">F1 = 2 × (precision × recall) / (precision + recall)</div>
+          <div class="vocab-def">Our model: 2×(0.909×0.909)/(0.909+0.909) ≈ <b>0.909</b>. Punishes a lopsided precision/recall pair more harshly than a plain average would. <b>In one line: F1 refuses to let a great precision hide a terrible recall (or vice versa) — you need to be reasonably good at BOTH to score well.</b></div>
+        </div>
+        <p class="body-text">Which one matters more depends entirely on what a mistake COSTS in the real world:</p>
+        <div class="card-grid" style="margin-top:4px;">
+          <div class="card" style="border-top:5px solid var(--bad);"><div class="ico">🏦</div><h3>Fraud detection → prioritize RECALL</h3><p>Missing a fraudulent application (FN) costs far more than a false alarm that gets manually reviewed (FP).</p></div>
+          <div class="card" style="border-top:5px solid var(--warn);"><div class="ico">🏠</div><h3>Good-customer approval → prioritize PRECISION</h3><p>Wrongly approving a loan that later defaults (FP) is often costlier than asking a good applicant to reapply (FN).</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ C7 — CHOOSING A THRESHOLD FOR YOUR PROBLEM ============ -->
+    <section class="slide" data-section="eval" id="sC7">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 3 · 0.5 Was Never a Law of Nature</div>
+        <h1>Pick the threshold that fits the <span class="glow">cost of being wrong</span></h1>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>Lower the threshold → approve more applicants</h3><p>Recall goes up, precision typically goes down. Use when rejecting good customers is expensive — for business growth, or when a missed good applicant is costly.</p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>Raise the threshold → fewer risky approvals</h3><p>Precision goes up, recall typically goes down. Use when a bad loan (default) is expensive — exactly the tension every real credit-risk team lives with.</p></div></div>
+          <div class="rule"><div class="n">3</div><div class="t"><h3>0.5 is just the "no opinion" default</h3><p>It's only correct when both kinds of mistakes cost the same — rarely true in practice.</p></div></div>
+        </div>
+        <div class="banner good">🎯 Go back to slide C1 and drag that threshold — watch precision, recall, and the mistakes it makes trade off in real time.</div>
+      </div>
+    </section>
+
+    <!-- ============ C8 — BRIDGE TO HOUR 4 ============ -->
+    <section class="slide" data-section="eval" id="sC8">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Hour 3 → Hour 4</div>
+        <h1 class="kicker-big">Everything today assumed<br/>a spotless <span class="glow">spreadsheet</span></h1>
+        <p class="body-text" style="max-width:660px;">Every number we touched so far arrived clean, complete, and correctly typed. Real loan files don't. Hour 4: what a raw application file actually looks like — missing fields, duplicate rows, impossible values, inconsistent text — and the full cleaning pipeline that has to run before any of today's math even applies.</p>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- HOUR 4 — REAL-WORLD DATA & THE FULL PIPELINE                       -->
+    <!-- ================================================================= -->
+
+    <!-- ============ P1 — THE RAW FILE ============ -->
+    <section class="slide" data-section="clean" id="sP1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 4 · What a Real Loan File Looks Like</div>
+        <h1>12 applications, straight from the <span class="glow">database</span></h1>
+        <p class="body-text">Not the clean 20-row table from this morning — this is what actually lands in your inbox. Scan it for anything that looks wrong before we fix a single thing.</p>
+        <div class="btn-row">
+          <button class="btn btn-primary toggled" id="p1RawBtn">🗂️ Raw file (12 rows)</button>
+          <button class="btn btn-ghost" id="p1CleanBtn">✨ Cleaned file (11 rows)</button>
+        </div>
+        <div class="table-wrap" style="max-height:min(44vh,380px); overflow-y:auto;">
+          <table class="data-table">
+            <thead id="p1Head"><tr><th>#</th><th>Age</th><th>Salary</th><th>Credit</th><th>Loan Amt</th><th>Employment</th><th>Approved?</th><th style="text-align:left;">Issue</th></tr></thead>
+            <tbody id="p1TableBody"></tbody>
+          </table>
+        </div>
+        <div class="banner bad" id="p1Banner">🚩 Six distinct problems hiding in twelve rows: a missing value, a duplicate, wrong data types, inconsistent text casing, and two impossible values. This hour: catch and fix every one of them, in the right order.</div>
+      </div>
+    </section>
+
+    <!-- ============ P2 — DUPLICATES ============ -->
+    <section class="slide" data-section="clean" id="sP2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 4 · Step 1 — Exact Duplicates</div>
+          <h1>Rows 3 and 4 are the <span class="glow">same application</span>, twice</h1>
+          <p class="body-text">A common cause: a form re-submitted after a slow page load, or two systems exporting into the same file. Left unfixed, this applicant silently gets DOUBLE the weight in training — their pattern gets learned twice as hard as everyone else's.</p>
+          <div class="rule-list">
+            <div class="rule"><div class="n">1</div><div class="t"><h3>Detect</h3><p>Flag rows that are identical across every single column.</p></div></div>
+            <div class="rule"><div class="n">2</div><div class="t"><h3>Decide</h3><p>Keep one copy, drop the rest.</p></div></div>
+            <div class="rule"><div class="n">3</div><div class="t"><h3>Recount</h3><p>12 rows → 11 rows.</p></div></div>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(40vh,340px); justify-content:center;">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>#</th><th>Age</th><th>Salary</th><th>Credit</th><th>Loan Amt</th><th>Employment</th><th>Approved?</th></tr></thead>
+              <tbody>
+                <tr><td>3</td><td>45</td><td>76,000</td><td>720</td><td>20,000</td><td>Salaried</td><td>1</td></tr>
+                <tr class="miss-row"><td>4</td><td>45</td><td>76,000</td><td>720</td><td>20,000</td><td>Salaried</td><td>1</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Rows before</div><div class="value tabular">12</div></div>
+            <div class="stat-tile accent"><div class="label">Rows after</div><div class="value tabular">11</div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ P3 — TYPES & TEXT ============ -->
+    <section class="slide" data-section="clean" id="sP3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 4 · Step 2 — Types &amp; Inconsistent Text</div>
+        <h1>"29" is not the same thing as <span class="glow">29</span></h1>
+        <p class="body-text">Two cheap, easy-to-miss bugs: a number stored as text (breaks arithmetic silently, or crashes it), and the same category spelled two different ways (a model treats "Salaried" and "salaried" as two totally unrelated categories).</p>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>Row 5 — Age arrived as text</h3><p>The string "29" → the number 29.</p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>Rows 5 &amp; 10 — inconsistent casing</h3><p>Employment arrived as "salaried" (lowercase) → standardize to "Salaried," matching every other row.</p></div></div>
+          <div class="rule"><div class="n">3</div><div class="t"><h3>Why it matters</h3><p>Grouping, encoding, and every arithmetic step downstream silently misbehaves otherwise — no error message, just wrong answers.</p></div></div>
+        </div>
+        <div class="banner info">🕵️ This step is unglamorous and easy to skip — it's also where most real pipelines quietly break.</div>
+      </div>
+    </section>
+
+    <!-- ============ P4 — IMPOSSIBLE VALUES VS GENUINE OUTLIERS ============ -->
+    <section class="slide" data-section="clean" id="sP4">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 4 · Step 3 — The Trap: Error, or Just Unusual?</div>
+        <h1>A credit score of 910 is impossible.<br/>A $48,000 loan on a $54,000 salary <span class="glow">isn't.</span></h1>
+        <p class="body-text">Not every extreme number is a mistake — and not every mistake looks extreme. The skill is telling them apart, using a real constraint on the data, not just a gut feeling.</p>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card" style="border-top:5px solid var(--bad);"><div class="ico">🚫</div><h3>Row 6 — Credit Score = 910</h3><p>Real credit scores top out at 850. This is a data-entry error, no exceptions. Convert to missing — don't guess a nearby valid number.</p></div>
+          <div class="card" style="border-top:5px solid var(--bad);"><div class="ico">🚫</div><h3>Row 9 — Age = −3</h3><p>A negative age isn't unusual, it's impossible. Same fix: convert to missing.</p></div>
+          <div class="card" style="border-top:5px solid var(--good);"><div class="ico">✅</div><h3>Row 7 — $48,000 loan, $54,000 salary, REJECTED</h3><p>Unusual, but entirely possible — and it's genuine signal about risk, not noise. Keep it. Deleting "weird-looking but real" rows is how models end up blind to exactly the cases that matter most.</p></div>
+        </div>
+        <div class="banner warn">📏 Rule of thumb: check against a real-world VALID RANGE (Age 18–100, Credit Score 300–850) — not against "does this look normal to me."</div>
+      </div>
+    </section>
+
+    <!-- ============ P5 — MISSING VALUES ============ -->
+    <section class="slide" data-section="clean" id="sP5">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 4 · Step 4 — Filling In What's Missing</div>
+          <h1>Four gaps left — <span class="glow">drop them, or fill them?</span></h1>
+          <p class="body-text">After Step 3, we now have 4 missing values across 3 columns: Age (rows 2 and 9), Salary (row 8), and Credit Score (row 6 — reclassified as missing last slide, not deleted). With only 11 rows total, dropping them would throw away over a third of the data.</p>
+          <div class="rule-list">
+            <div class="rule"><div class="n">1</div><div class="t"><h3>Drop the row entirely</h3><p>Simplest, but wasteful on a small dataset — and can bias the data if missingness isn't random.</p></div></div>
+            <div class="rule"><div class="n">2</div><div class="t"><h3>Impute with the MEAN</h3><p>Simple, but easily dragged off-center by outliers — like row 7's loan amount.</p></div></div>
+            <div class="rule"><div class="n">3</div><div class="t"><h3>Impute with the MEDIAN — our choice</h3><p>Robust to outliers, just as easy to compute. The safer default.</p></div></div>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(44vh,380px); justify-content:center;">
+          <div class="stat-grid">
+            <div class="stat-tile accent"><div class="label">Median Age</div><div class="value tabular">41</div></div>
+            <div class="stat-tile accent"><div class="label">Median Salary</div><div class="value tabular">$57,000</div></div>
+            <div class="stat-tile accent"><div class="label">Median Credit Score</div><div class="value tabular">665</div></div>
+          </div>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Row</th><th>Column</th><th>Was</th><th>Now</th></tr></thead>
+              <tbody>
+                <tr><td>2</td><td>Age</td><td>missing</td><td class="hl-row">41</td></tr>
+                <tr><td>9</td><td>Age</td><td>−3 → missing</td><td class="hl-row">41</td></tr>
+                <tr><td>8</td><td>Salary</td><td>missing</td><td class="hl-row">57,000</td></tr>
+                <tr><td>6</td><td>Credit Score</td><td>910 → missing</td><td class="hl-row">665</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ P6 — ENCODING CATEGORICAL VARIABLES ============ -->
+    <section class="slide" data-section="clean" id="sP6">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 4 · Step 5 — Text Can't Go Into z = β₀+β₁x+...</div>
+          <h1>Turning <span class="glow">"Salaried"</span> into numbers</h1>
+          <p class="body-text">z is arithmetic — it has no idea what to do with the word "Retired." One-hot encoding solves this: one new binary (0/1) column per category, exactly one of them lit up per row.</p>
+          <p class="footnote">3 categories in our data (Salaried ×5, Self-Employed ×5, Retired ×1) → 3 new columns. A model with K categories always needs this many-column expansion — the text itself never enters the formula.</p>
+          <div class="banner info">⚠️ Employment type has no natural order, so one-hot is the right call. Never encode it as 1, 2, 3 directly — that invents a false ranking the model would happily "learn" from.</div>
+        </div>
+        <div class="visual-box" style="height:min(46vh,400px); justify-content:center;">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Employment</th><th>Is_Salaried</th><th>Is_SelfEmployed</th><th>Is_Retired</th></tr></thead>
+              <tbody>
+                <tr><td>Salaried</td><td class="hl-row">1</td><td>0</td><td>0</td></tr>
+                <tr><td>Self-Employed</td><td>0</td><td class="hl-row">1</td><td>0</td></tr>
+                <tr><td>Retired</td><td>0</td><td>0</td><td class="hl-row">1</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ P7 — FEATURE SCALING ============ -->
+    <section class="slide" data-section="clean" id="sP7">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 4 · Step 6 — Same Warning From Hour 2, Now It's Real</div>
+          <h1>Age tops out near 100. Loan amount tops out near <span class="glow">$500,000.</span></h1>
+          <p class="body-text">Exactly the scale mismatch Hour 2 warned about — except now it's not hypothetical. Standardize every numeric column: subtract the mean, divide by the standard deviation. Each feature becomes "how many standard deviations from average," all on the same footing.</p>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Age</div><div class="value tabular">μ=42.0, σ=10.4</div></div>
+            <div class="stat-tile"><div class="label">Salary</div><div class="value tabular">μ=59.6k, σ=19.1k</div></div>
+            <div class="stat-tile"><div class="label">Credit Score</div><div class="value tabular">μ=659.5, σ=75.0</div></div>
+            <div class="stat-tile"><div class="label">Loan Amount</div><div class="value tabular">μ=19.1k, σ=11.3k</div></div>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(46vh,400px); justify-content:center;">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Row</th><th>z(Age)</th><th>z(Salary)</th><th>z(Credit)</th><th>z(Loan Amt)</th></tr></thead>
+              <tbody>
+                <tr><td>1</td><td>−0.77</td><td>−0.40</td><td>0.27</td><td>−0.36</td></tr>
+                <tr class="hl-row"><td>7 (the outlier)</td><td>1.83</td><td>−0.30</td><td>−1.33</td><td>+2.55</td></tr>
+                <tr><td>11</td><td>−1.64</td><td>−1.45</td><td>−1.59</td><td>−1.07</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="footnote">Row 7's loan amount: +2.55 standard deviations above average — large, but now on the SAME scale as every other feature, so it can't silently dominate the gradient the way a raw $48,000 would.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ P8 — FULL PIPELINE RECAP ============ -->
+    <section class="slide" data-section="clean" id="sP8">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 4 · Putting It All Together</div>
+        <h1>The full <span class="glow">preprocessing stack</span>, in order</h1>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>Remove exact duplicates</h3><p>12 rows → 11 rows.</p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>Fix types &amp; inconsistent text</h3><p>"29" → 29. "salaried" → "Salaried."</p></div></div>
+          <div class="rule"><div class="n">3</div><div class="t"><h3>Validate ranges; convert impossible values to missing</h3><p>Credit score 910, age −3 — flagged, not guessed at.</p></div></div>
+          <div class="rule"><div class="n">4</div><div class="t"><h3>Impute remaining missing values</h3><p>Median: Age=41, Salary=$57,000, Credit Score=665.</p></div></div>
+          <div class="rule"><div class="n">5</div><div class="t"><h3>One-hot encode categorical features</h3><p>Employment → 3 binary columns.</p></div></div>
+          <div class="rule"><div class="n">6</div><div class="t"><h3>Standardize every numeric feature</h3><p>z-score every column onto the same footing.</p></div></div>
+          <div class="rule"><div class="n">7</div><div class="t"><h3>Train/test split</h3><p>Same 80/20 discipline as every model this course.</p></div></div>
+          <div class="rule"><div class="n">8</div><div class="t"><h3>Fit logistic regression</h3><p>The EXACT hypothesis, cost function, and gradient descent from Hours 1–2 — unchanged.</p></div></div>
+        </div>
+        <div class="banner good">✅ Garbage in, garbage out. Every clean number Hours 1–3 used already assumed steps 1–6 had happened. Now you know how to actually make that true.</div>
+      </div>
+    </section>
+
+    <!-- ============ P9 — FULL RECAP & WRAP-UP ============ -->
+    <section class="slide" data-section="clean" id="sP9">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Head to Toe — Everything In One Place</div>
+        <h1>The complete <span class="glow">logistic regression</span> pipeline</h1>
+        <div class="card-grid" style="margin-top:4px;">
+          <div class="card" style="border-top:5px solid var(--c-hyp);"><div class="ico">🌀</div><h3>Hypothesis</h3><p>z = β₀+β₁x+... → p = σ(z). Always a valid probability.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-hyp);"><div class="ico">🚧</div><h3>Decision boundary</h3><p>p ≥ threshold → predict positive. Linear in the log-odds.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-train);"><div class="ico">📉</div><h3>Cost function</h3><p>Cross-entropy / log loss — convex, punishes confident wrongness hard.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-train);"><div class="ico">🏔️</div><h3>Training</h3><p>Gradient descent, "mistake × x" gradient — identical loop to linear regression.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-eval);"><div class="ico">🎯</div><h3>Evaluation</h3><p>Confusion matrix → accuracy, precision, recall, F1 — in plain, loan-officer terms. Accuracy alone can lie.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-clean);"><div class="ico">🧹</div><h3>Preprocessing</h3><p>One raw file → deduplicated, typed, validated, imputed, encoded, scaled — ready for the model above.</p></div>
+        </div>
+        <div class="banner good">✅ Every formula today traced back to two ideas: squash a line through σ, and walk downhill on cross-entropy — fed by data that EARNED the right to be called clean. That's the whole model, head to toe.</div>
+      </div>
+    </section>
+
+    <!-- ============ P10 — CLOSING ============ -->
+    <section class="slide" data-section="clean" id="sP10">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Session Complete</div>
+        <h1 class="kicker-big">From a spotless demo<br/>to a <span class="glow">real, messy loan file</span></h1>
+        <p class="body-text" style="max-width:680px;">Sigmoid and the decision boundary. Log loss and gradient descent's elegant "mistake × x" gradient. Confusion matrices, accuracy, precision, recall, and F1 — each one translated into plain, loan-officer language. And the full preprocessing stack a real dataset actually demands: dedup, type fixes, outlier judgment calls, imputation, encoding, scaling. That's logistic regression, start to finish — the workhorse behind more real-world credit, fraud, and risk models than almost any other single algorithm.</p>
+        <p class="body-text" style="max-width:680px; font-weight:800; color:var(--ink);">Same optimizer. Same five steps. Now you can run it on data as messy as the real world actually is.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="chrome-bottom">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous slide">‹</button>
+    <div class="progress" id="progress"></div>
+    <div class="slide-counter"><span id="curNum" class="tabular">1</span> / <span id="totalNum" class="tabular">—</span></div>
+    <button class="nav-btn" id="nextBtn" aria-label="Next slide">›</button>
+  </nav>
+
+<script>
+"use strict";
+
+/* =========================== helpers =========================== */
+const $  = (sel, el=document) => el.querySelector(sel);
+const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+
+const clamp = (v,lo,hi) => Math.max(lo, Math.min(hi,v));
+const mean  = arr => arr.reduce((s,v)=>s+v,0) / arr.length;
+const fmt   = (v,d=2) => Number(v).toFixed(d);
+const sigmoid = z => 1/(1+Math.exp(-clamp(z,-35,35)));
+
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+
+function fitCanvas(cv){
+  const rect = cv.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const w = Math.max(1, Math.round(rect.width*dpr));
+  const h = Math.max(1, Math.round(rect.height*dpr));
+  if(cv.width !== w || cv.height !== h){ cv.width = w; cv.height = h; }
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return { ctx, w: rect.width, h: rect.height };
+}
+
+/* ---- generic X/Y scatter (data space); returns coordinate mapper for custom overlays ---- */
+function drawScatter(cv, opts){
+  if(!cv || cv.clientWidth === 0) return null;
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const padL=44, padR=16, padT=16, padB=32;
+  const plotW=w-padL-padR, plotH=h-padT-padB;
+  const [xmin,xmax] = opts.xDomain, [ymin,ymax] = opts.yDomain;
+  const X = x => padL + ((x-xmin)/(xmax-xmin))*plotW;
+  const Y = y => padT + plotH - ((y-ymin)/(ymax-ymin))*plotH;
+
+  if(opts.bands){
+    ctx.save();
+    opts.bands.forEach(b => {
+      ctx.fillStyle = b.color; ctx.globalAlpha = b.alpha===undefined?0.10:b.alpha;
+      const y0 = clamp(b.y0,ymin,ymax), y1 = clamp(b.y1,ymin,ymax);
+      ctx.fillRect(padL, Y(y1), plotW, Y(y0)-Y(y1));
+    });
+    ctx.restore();
+  }
+
+  ctx.strokeStyle = cssVar('--line'); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT+plotH); ctx.lineTo(padL+plotW, padT+plotH); ctx.stroke();
+  ctx.fillStyle=cssVar('--ink-faint'); ctx.font='10.5px sans-serif'; ctx.textAlign='center';
+  if(opts.xLabel) ctx.fillText(opts.xLabel, padL+plotW/2, h-6);
+  if(opts.yLabel){
+    ctx.save(); ctx.translate(11, padT+plotH/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center';
+    ctx.fillText(opts.yLabel, 0,0);
+    ctx.restore();
+  }
+
+  if(opts.hLines){
+    ctx.save(); ctx.strokeStyle = cssVar('--ink-faint'); ctx.setLineDash([3,3]); ctx.lineWidth=1;
+    opts.hLines.forEach(v => {
+      ctx.beginPath(); ctx.moveTo(padL, Y(v)); ctx.lineTo(padL+plotW, Y(v)); ctx.stroke();
+    });
+    ctx.restore();
+  }
+  if(opts.vLines){
+    ctx.save(); ctx.strokeStyle = opts.vLineColor || cssVar('--ink-faint'); ctx.setLineDash([4,3]); ctx.lineWidth=1.6;
+    opts.vLines.forEach(v => {
+      ctx.beginPath(); ctx.moveTo(X(v), padT); ctx.lineTo(X(v), padT+plotH); ctx.stroke();
+    });
+    ctx.restore();
+  }
+
+  const layout = {ctx,X,Y,padL,padT,plotW,plotH,xmin,xmax,ymin,ymax};
+
+  if(opts.points){
+    const r = opts.radius || 5.2;
+    for(const p of opts.points){
+      ctx.fillStyle = opts.colorFn ? opts.colorFn(p) : (opts.color || cssVar('--accent'));
+      ctx.beginPath(); ctx.arc(X(p.x), Y(p.y), r, 0, Math.PI*2); ctx.fill();
+    }
+  }
+  return layout;
+}
+
+/* draw a smooth curve y=f(x) over a layout returned by drawScatter */
+function drawCurve(ctx, layout, fn, color, lw, dash, xOverrideMin, xOverrideMax){
+  const steps = 160;
+  const x0 = xOverrideMin===undefined ? layout.xmin : xOverrideMin;
+  const x1 = xOverrideMax===undefined ? layout.xmax : xOverrideMax;
+  ctx.save();
+  ctx.strokeStyle = color; ctx.lineWidth = lw||2.8;
+  if(dash) ctx.setLineDash(dash);
+  ctx.beginPath();
+  for(let i=0;i<=steps;i++){
+    const x = x0 + (i/steps)*(x1-x0);
+    const y = fn(x);
+    const px = layout.X(x), py = layout.Y(clamp(y, layout.ymin-9999, layout.ymax+9999));
+    i===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawPointMarker(ctx, layout, x, y, color, r){
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.arc(layout.X(x), layout.Y(clamp(y,layout.ymin,layout.ymax)), r||7, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = cssVar('--paper'); ctx.lineWidth=2; ctx.stroke();
+  ctx.restore();
+}
+
+/* =========================== shared datasets =========================== */
+const BASE_APPLICANTS = [
+  {x:1,y:0},{x:1.5,y:0},{x:2,y:0},{x:2.5,y:0},{x:3,y:0},{x:3.2,y:0},{x:3.8,y:0},{x:4,y:0},{x:4.5,y:0},{x:4.8,y:0},
+  {x:5,y:1},{x:5.3,y:1},{x:5.8,y:1},{x:6,y:1},{x:6.5,y:1},{x:7,y:1},{x:7.5,y:1},{x:8,y:1},{x:8.5,y:1},{x:9,y:1},
+];
+const ODDITIES = [{x:9.0,y:0},{x:2.2,y:1}];
+const EVAL_APPLICANTS = [...BASE_APPLICANTS, ...ODDITIES];
+
+const X_DOMAIN = [0, 10];
+const Y_TIGHT = [-0.15, 1.15];
+const Y_WIDE = [-0.6, 1.6];
+
+function classColor(p){ return p.y === 1 ? cssVar('--good') : cssVar('--bad'); }
+function isOddity(p){ return ODDITIES.some(o => o.x===p.x && o.y===p.y); }
+
+/* logistic regression gradient descent (single feature) */
+function logRegCost(points, b0, b1){
+  const n = points.length;
+  let s = 0;
+  for(const p of points){
+    const prob = clamp(sigmoid(b0+b1*p.x), 1e-9, 1-1e-9);
+    s += p.y*Math.log(prob) + (1-p.y)*Math.log(1-prob);
+  }
+  return -s/n;
+}
+function logRegStep(points, b0, b1, lr){
+  const n = points.length;
+  let g0=0, g1=0;
+  for(const p of points){
+    const prob = sigmoid(b0+b1*p.x);
+    const err = prob - p.y;
+    g0 += err; g1 += err*p.x;
+  }
+  g0/=n; g1/=n;
+  return { b0: b0 - lr*g0, b1: b1 - lr*g1 };
+}
+function boundaryX(b0,b1){ return -b0/b1; }
+function accuracyAt(points, b0, b1, thresh){
+  thresh = thresh===undefined ? 0.5 : thresh;
+  const preds = points.map(p => sigmoid(b0+b1*p.x) >= thresh ? 1 : 0);
+  return mean(preds.map((pr,i)=> pr===points[i].y ? 1 : 0));
+}
+function confusionAt(points, b0, b1, thresh){
+  thresh = thresh===undefined ? 0.5 : thresh;
+  let TP=0,TN=0,FP=0,FN=0;
+  for(const p of points){
+    const prob = sigmoid(b0+b1*p.x);
+    const pred = prob >= thresh ? 1 : 0;
+    if(pred===1 && p.y===1) TP++;
+    else if(pred===0 && p.y===0) TN++;
+    else if(pred===1 && p.y===0) FP++;
+    else FN++;
+  }
+  return {TP,TN,FP,FN};
+}
+
+/* pre-train once on the eval dataset (22 points) for Hour 3 slides */
+function trainFinal(points, lr, iters){
+  let b0=0, b1=0;
+  for(let i=0;i<iters;i++){ ({b0,b1} = logRegStep(points, b0, b1, lr)); }
+  return {b0,b1};
+}
+const EVAL_BETA = trainFinal(EVAL_APPLICANTS, 0.05, 4000);
+
+/* =========================== deck engine =========================== */
+const slideEls = $$('.slide');
+let cur = 0;
+
+const CHAPTERS = {
+  hyp:   { num:1, label:'The Sigmoid Hypothesis' },
+  train: { num:2, label:'Training: Cost &amp; Gradient Descent' },
+  eval:  { num:3, label:'Evaluating a Classifier Honestly' },
+  clean: { num:4, label:'Real-World Data &amp; the Full Pipeline' },
+};
+
+const onEnter = {};
+const onLeave = {};
+
+function buildDots(){
+  const wrap = $('#progress');
+  wrap.innerHTML = '';
+  let lastSection = null;
+  slideEls.forEach((s, i) => {
+    const sec = s.dataset.section;
+    if(lastSection !== null && sec !== lastSection){
+      const gap = document.createElement('span');
+      gap.className = 'dot gap';
+      wrap.appendChild(gap);
+    }
+    const b = document.createElement('button');
+    b.className = 'dot';
+    b.setAttribute('aria-label', 'Go to slide ' + (i+1));
+    b.addEventListener('click', () => goTo(i));
+    wrap.appendChild(b);
+    lastSection = sec;
+  });
+}
+
+function goTo(i){
+  i = clamp(i, 0, slideEls.length-1);
+  const leaveFn = onLeave[slideEls[cur].id];
+  if(leaveFn) leaveFn();
+  slideEls[cur].classList.remove('active');
+  cur = i;
+  const s = slideEls[cur];
+  s.classList.add('active');
+  document.body.dataset.section = s.dataset.section;
+
+  const chip = $('#chapterChip');
+  const meta = CHAPTERS[s.dataset.section];
+  if(meta){
+    chip.style.display = 'flex';
+    $('#chapterNum').textContent = meta.num;
+    $('#chapterLabel').innerHTML = meta.label;
+  } else {
+    chip.style.display = 'none';
+  }
+
+  $('#curNum').textContent = cur+1;
+  $('#prevBtn').disabled = cur === 0;
+  $('#nextBtn').disabled = cur === slideEls.length-1;
+
+  $$('.dot:not(.gap)', $('#progress')).forEach((d,idx)=> d.classList.toggle('active', idx===cur));
+
+  const fn = onEnter[s.id];
+  if(fn) requestAnimationFrame(fn);
+}
+
+function next(){ if(cur < slideEls.length-1) goTo(cur+1); }
+function prev(){ if(cur > 0) goTo(cur-1); }
+
+$('#nextBtn').addEventListener('click', next);
+$('#prevBtn').addEventListener('click', prev);
+window.addEventListener('keydown', e => {
+  if(e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+  else if(e.key === 'ArrowLeft'){ e.preventDefault(); prev(); }
+});
+
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => { const fn = onEnter[slideEls[cur].id]; if(fn) fn(); }, 120);
+});
+
+const themeBtn = $('#themeToggle');
+function applyStoredTheme(){
+  const t = localStorage.getItem('sv-theme-logistic');
+  if(t) document.documentElement.setAttribute('data-theme', t);
+}
+applyStoredTheme();
+themeBtn.addEventListener('click', () => {
+  const now = document.documentElement.getAttribute('data-theme');
+  const dark = now ? now === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const nextTheme = dark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', nextTheme);
+  localStorage.setItem('sv-theme-logistic', nextTheme);
+  const fn = onEnter[slideEls[cur].id]; if(fn) fn();
+});
+
+/* =========================== H2 — dataset scatter =========================== */
+onEnter['sH2'] = () => {
+  drawScatter($('#cvH2'), {
+    points: BASE_APPLICANTS, xDomain: X_DOMAIN, yDomain: Y_TIGHT,
+    xLabel: 'credit score index →', yLabel: 'approved? (0 or 1)',
+    colorFn: classColor,
+  });
+};
+
+/* =========================== H3 — sigmoid explorer =========================== */
+function h3Render(){
+  const z = parseFloat($('#h3ZSlider').value);
+  $('#h3ZLabel').textContent = fmt(z,2);
+  const eNegZ = Math.exp(-z);
+  const onePlusE = 1 + eNegZ;
+  const s = 1/onePlusE;
+  $('#h3StepZ').textContent = fmt(z,2);
+  $('#h3StepNegZ').textContent = fmt(-z,2);
+  $('#h3StepE').textContent = fmt(eNegZ,3);
+  $('#h3StepE2').textContent = fmt(eNegZ,3);
+  $('#h3StepSigma').textContent = fmt(s,3);
+  $('#h3Sigma').textContent = fmt(s,3);
+  const layout = drawScatter($('#cvH3'), {
+    points: [], xDomain: [-8,8], yDomain: [-0.05,1.05],
+    xLabel: 'z →', yLabel: 'σ(z)', hLines:[0,0.5,1],
+  });
+  if(layout){
+    drawCurve(layout.ctx, layout, sigmoid, cssVar('--c-hyp'), 3);
+    drawPointMarker(layout.ctx, layout, z, s, cssVar('--ink'));
+  }
+}
+onEnter['sH3'] = h3Render;
+$('#h3ZSlider').addEventListener('input', h3Render);
+
+/* =========================== H6 — odds / log-odds pipeline =========================== */
+function h6Render(){
+  const z = parseFloat($('#h6ZSlider').value);
+  $('#h6ZLabel').textContent = fmt(z,2);
+  const odds = Math.exp(z);
+  const pPipeline = odds/(1+odds);
+  const pDirect = sigmoid(z);
+  $('#h6StepZ').textContent = fmt(z,2);
+  $('#h6StepZ2').textContent = fmt(z,2);
+  $('#h6StepOdds').textContent = fmt(odds,3);
+  $('#h6StepOdds2').textContent = fmt(odds,3);
+  $('#h6StepOdds3').textContent = fmt(odds,3);
+  $('#h6StepP').textContent = fmt(pPipeline,3);
+  $('#h6PPipeline').textContent = fmt(pPipeline,3);
+  $('#h6PDirect').textContent = fmt(pDirect,3);
+  const layout = drawScatter($('#cvH6'), {
+    points: [], xDomain: [-4,4], yDomain: [-0.05,1.05],
+    xLabel: 'z (log-odds) →', yLabel: 'p →', hLines:[0,0.5,1],
+  });
+  if(layout){
+    drawCurve(layout.ctx, layout, sigmoid, cssVar('--c-hyp'), 3);
+    drawPointMarker(layout.ctx, layout, z, pPipeline, cssVar('--ink'));
+  }
+}
+onEnter['sH6'] = h6Render;
+$('#h6ZSlider').addEventListener('input', h6Render);
+
+/* =========================== H5 — decision boundary =========================== */
+onEnter['sH5'] = () => {
+  const b0=-4, b1=0.8;
+  const bx = boundaryX(b0,b1);
+  const layout = drawScatter($('#cvH5'), {
+    points: BASE_APPLICANTS, xDomain: X_DOMAIN, yDomain: Y_TIGHT,
+    xLabel: 'credit score index →', yLabel: 'p = σ(z)',
+    colorFn: classColor, hLines:[0.5], vLines:[bx], vLineColor: cssVar('--c-hyp'),
+    bands: [{y0:-1,y1:0.5,color:cssVar('--bad'),alpha:0.06},{y0:0.5,y1:2,color:cssVar('--good'),alpha:0.06}],
+  });
+  if(layout) drawCurve(layout.ctx, layout, x => sigmoid(b0+b1*x), cssVar('--c-hyp'), 3);
+};
+
+/* =========================== H7 — 2-feature boundary (illustrative) =========================== */
+onEnter['sH7'] = () => {
+  const pts2 = [
+    {x:2,age:25,cls:0},{x:4,age:30,cls:0},{x:4.5,age:58,cls:1},{x:6,age:35,cls:1},{x:3,age:62,cls:1},
+  ];
+  const layout = drawScatter($('#cvH7'), {
+    points: pts2.map(p=>({x:p.x,y:p.age,cls:p.cls})), xDomain:[0,10], yDomain:[18,68],
+    xLabel: 'credit score index →', yLabel: 'age →',
+    colorFn: p => p.cls===1 ? cssVar('--good') : cssVar('--bad'),
+  });
+  if(layout){
+    // illustrative boundary line: age = 65 - 6*creditIndex (just for visual separation)
+    drawCurve(layout.ctx, layout, x => 65 - 6*x, cssVar('--c-hyp'), 2.6, [5,4]);
+  }
+};
+
+/* =========================== H8 — interactive beta sliders =========================== */
+function h8Render(){
+  const b0 = parseFloat($('#h8B0Slider').value);
+  const b1 = parseFloat($('#h8B1Slider').value);
+  $('#h8B0Label').textContent = fmt(b0,2);
+  $('#h8B1Label').textContent = fmt(b1,2);
+  const bx = Math.abs(b1) > 1e-6 ? boundaryX(b0,b1) : NaN;
+  $('#h8Boundary').textContent = Number.isFinite(bx) ? fmt(bx,2) : '—';
+  const acc = accuracyAt(BASE_APPLICANTS, b0, b1);
+  $('#h8Accuracy').textContent = fmt(acc*100,0)+'%';
+  $('#h8Banner').style.display = acc>=0.999 ? 'flex' : 'none';
+
+  const layout = drawScatter($('#cvH8'), {
+    points: BASE_APPLICANTS, xDomain: X_DOMAIN, yDomain: Y_WIDE,
+    xLabel: 'credit score index →', yLabel: 'value',
+    colorFn: classColor, hLines:[0,0.5,1],
+    bands: [{y0:-1,y1:0,color:cssVar('--bad'),alpha:0.08},{y0:1,y1:2,color:cssVar('--bad'),alpha:0.08}],
+  });
+  if(layout){
+    drawCurve(layout.ctx, layout, x => b0+b1*x, cssVar('--ink-faint'), 2.4, [5,4]);
+    drawCurve(layout.ctx, layout, x => sigmoid(b0+b1*x), cssVar('--c-hyp'), 3);
+  }
+}
+onEnter['sH8'] = h8Render;
+$('#h8B0Slider').addEventListener('input', h8Render);
+$('#h8B1Slider').addEventListener('input', h8Render);
+
+/* =========================== G2 — MSE vs Log Loss cost surface =========================== */
+let g2ShowLogLoss = false;
+function mseAt(points, b0, b1){
+  let s=0;
+  for(const p of points){ const d = sigmoid(b0+b1*p.x) - p.y; s += d*d; }
+  return s/points.length;
+}
+function g2Render(){
+  const b0Fixed = -4;
+  const layout = drawScatter($('#cvG2'), {
+    points: [], xDomain: [-1,3], yDomain: g2ShowLogLoss ? [0,1.4] : [0,0.5],
+    xLabel: 'β₁ (β₀ fixed at −4) →', yLabel: g2ShowLogLoss ? 'log loss' : 'MSE cost',
+  });
+  if(layout){
+    const fn = g2ShowLogLoss
+      ? (b1 => logRegCost(BASE_APPLICANTS, b0Fixed, b1))
+      : (b1 => mseAt(BASE_APPLICANTS, b0Fixed, b1));
+    drawCurve(layout.ctx, layout, fn, g2ShowLogLoss ? cssVar('--good') : cssVar('--bad'), 3);
+  }
+  $('#g2Banner').className = 'banner ' + (g2ShowLogLoss ? 'good' : 'warn');
+  $('#g2Banner').textContent = g2ShowLogLoss
+    ? '✅ Log loss: one smooth bowl, one bottom. Gradient descent can never get trapped in the wrong valley.'
+    : '⚠️ MSE + sigmoid (non-convex): notice the bumps — multiple valleys, and gradient descent could easily stop in the wrong one.';
+  $('#g2ToggleBtn').textContent = g2ShowLogLoss ? '🔀 Switch back to MSE' : '🔀 Switch to Log Loss\'s cost curve';
+}
+onEnter['sG2'] = () => { g2ShowLogLoss = false; g2Render(); };
+$('#g2ToggleBtn').addEventListener('click', () => { g2ShowLogLoss = !g2ShowLogLoss; g2Render(); });
+
+/* =========================== G2B — optional: convexity proof (curvature never negative) =========================== */
+onEnter['sG2B'] = () => {
+  const layout = drawScatter($('#cvG2B'), {
+    points: [], xDomain: [-8,8], yDomain: [-0.05,0.3],
+    xLabel: 'z →', yLabel: "f''(z) = p(1−p)", hLines:[0],
+  });
+  if(layout) drawCurve(layout.ctx, layout, z => { const p = sigmoid(z); return p*(1-p); }, cssVar('--c-train'), 3);
+};
+
+/* =========================== G3 — -log(p) / -log(1-p) =========================== */
+onEnter['sG3'] = () => {
+  const layout = drawScatter($('#cvG3'), {
+    points: [], xDomain: [0.01,0.99], yDomain: [0,4],
+    xLabel: 'predicted probability p →', yLabel: 'cost',
+  });
+  if(layout){
+    drawCurve(layout.ctx, layout, p => -Math.log(clamp(p,1e-6,1)), cssVar('--good'), 2.8);
+    drawCurve(layout.ctx, layout, p => -Math.log(clamp(1-p,1e-6,1)), cssVar('--bad'), 2.8);
+  }
+};
+
+/* =========================== G6 — live training demo =========================== */
+let g6b0=0, g6b1=0, g6round=0;
+function g6Log(){
+  const tbody = $('#g6TableBody');
+  const row = document.createElement('tr');
+  row.innerHTML = `<td>${g6round}</td><td>${fmt(g6b0,3)}</td><td>${fmt(g6b1,3)}</td><td>${fmt(logRegCost(BASE_APPLICANTS,g6b0,g6b1),4)}</td>`;
+  tbody.prepend(row);
+  while(tbody.children.length > 12) tbody.removeChild(tbody.lastChild);
+}
+function g6Render(){
+  $('#g6Round').textContent = g6round;
+  $('#g6Betas').textContent = fmt(g6b0,2)+', '+fmt(g6b1,2);
+  $('#g6Cost').textContent = fmt(logRegCost(BASE_APPLICANTS,g6b0,g6b1),4);
+  $('#g6Acc').textContent = fmt(accuracyAt(BASE_APPLICANTS,g6b0,g6b1)*100,0)+'%';
+  const layout = drawScatter($('#cvG6'), {
+    points: BASE_APPLICANTS, xDomain: X_DOMAIN, yDomain: Y_WIDE,
+    xLabel: 'credit score index →', yLabel: 'value',
+    colorFn: classColor, hLines:[0,0.5,1],
+  });
+  if(layout){
+    drawCurve(layout.ctx, layout, x => g6b0+g6b1*x, cssVar('--ink-faint'), 2.2, [5,4]);
+    drawCurve(layout.ctx, layout, x => sigmoid(g6b0+g6b1*x), cssVar('--c-train'), 3);
+  }
+}
+function g6Reset(){
+  g6b0=0; g6b1=0; g6round=0;
+  $('#g6TableBody').innerHTML = '';
+  g6Log();
+  g6Render();
+}
+onEnter['sG6'] = g6Reset;
+$('#g6StepBtn').addEventListener('click', () => {
+  const {b0,b1} = logRegStep(BASE_APPLICANTS, g6b0, g6b1, 0.3);
+  g6b0=b0; g6b1=b1; g6round++;
+  g6Log(); g6Render();
+});
+$('#g6RunBtn').addEventListener('click', () => {
+  for(let i=0;i<400;i++){ const {b0,b1} = logRegStep(BASE_APPLICANTS, g6b0, g6b1, 0.3); g6b0=b0; g6b1=b1; g6round++; }
+  g6Log(); g6Render();
+});
+$('#g6ResetBtn').addEventListener('click', g6Reset);
+
+/* =========================== C1 — threshold explorer =========================== */
+function c1Render(){
+  const t = parseFloat($('#c1ThreshSlider').value);
+  $('#c1ThreshLabel').textContent = fmt(t,2);
+  const {b0,b1} = EVAL_BETA;
+  const acc = accuracyAt(EVAL_APPLICANTS, b0, b1, t);
+  $('#c1Acc').textContent = fmt(acc*100,1)+'%';
+  const mistakes = EVAL_APPLICANTS.filter(p => (sigmoid(b0+b1*p.x)>=t?1:0) !== p.y).length;
+  $('#c1Mistakes').textContent = mistakes + ' of ' + EVAL_APPLICANTS.length;
+
+  const layout = drawScatter($('#cvC1'), {
+    points: EVAL_APPLICANTS, xDomain: X_DOMAIN, yDomain: Y_TIGHT,
+    xLabel: 'credit score index →', yLabel: 'p = σ(z)',
+    colorFn: p => isOddity(p) ? cssVar('--warn') : classColor(p), hLines:[t],
+  });
+  if(layout) drawCurve(layout.ctx, layout, x => sigmoid(b0+b1*x), cssVar('--c-eval'), 3);
+}
+onEnter['sC1'] = c1Render;
+$('#c1ThreshSlider').addEventListener('input', c1Render);
+
+/* =========================== C2 — confusion matrix at 0.5 =========================== */
+onEnter['sC2'] = () => {
+  const {b0,b1} = EVAL_BETA;
+  const {TP,TN,FP,FN} = confusionAt(EVAL_APPLICANTS, b0, b1, 0.5);
+  $('#c2TP').textContent = TP; $('#c2TN').textContent = TN;
+  $('#c2FP').textContent = FP; $('#c2FN').textContent = FN;
+};
+
+/* =========================== P1 — raw vs. cleaned loan file =========================== */
+const RAW_ROWS = [
+  {n:1,  age:'34', sal:'52,000', cs:'680', loan:'15,000', emp:'Salaried',      appr:1, issue:'—',                              cls:''},
+  {n:2,  age:'—',  sal:'41,000', cs:'610', loan:'8,000',  emp:'Self-Employed', appr:0, issue:'missing age',                     cls:'miss-row'},
+  {n:3,  age:'45', sal:'76,000', cs:'720', loan:'20,000', emp:'Salaried',      appr:1, issue:'—',                              cls:''},
+  {n:4,  age:'45', sal:'76,000', cs:'720', loan:'20,000', emp:'Salaried',      appr:1, issue:'duplicate of #3',                 cls:'miss-row'},
+  {n:5,  age:'"29"',sal:'38,000',cs:'590', loan:'12,000', emp:'salaried',      appr:0, issue:'age is text; casing typo',        cls:'miss-row'},
+  {n:6,  age:'52', sal:'63,000', cs:'910', loan:'17,000', emp:'Self-Employed', appr:1, issue:'credit score >850 (impossible)',  cls:'miss-row'},
+  {n:7,  age:'61', sal:'54,000', cs:'560', loan:'48,000', emp:'Retired',       appr:0, issue:'loan ≈ salary — real, not an error', cls:'keep-row'},
+  {n:8,  age:'38', sal:'—',      cs:'700', loan:'18,000', emp:'Salaried',      appr:1, issue:'missing salary',                  cls:'miss-row'},
+  {n:9,  age:'−3', sal:'60,000', cs:'650', loan:'10,000', emp:'Self-Employed', appr:1, issue:'negative age (impossible)',       cls:'miss-row'},
+  {n:10, age:'41', sal:'88,000', cs:'760', loan:'25,000', emp:'salaried',      appr:1, issue:'casing typo',                     cls:'miss-row'},
+  {n:11, age:'25', sal:'32,000', cs:'540', loan:'7,000',  emp:'Self-Employed', appr:0, issue:'—',                              cls:''},
+  {n:12, age:'55', sal:'95,000', cs:'780', loan:'30,000', emp:'Self-Employed', appr:1, issue:'—',                              cls:''},
+];
+const CLEAN_ROWS = [
+  {n:1,  age:'34', sal:'52,000', cs:'680', loan:'15,000', emp:'Salaried',      appr:1},
+  {n:2,  age:'41', sal:'41,000', cs:'610', loan:'8,000',  emp:'Self-Employed', appr:0},
+  {n:3,  age:'45', sal:'76,000', cs:'720', loan:'20,000', emp:'Salaried',      appr:1},
+  {n:5,  age:'29', sal:'38,000', cs:'590', loan:'12,000', emp:'Salaried',      appr:0},
+  {n:6,  age:'52', sal:'63,000', cs:'665', loan:'17,000', emp:'Self-Employed', appr:1},
+  {n:7,  age:'61', sal:'54,000', cs:'560', loan:'48,000', emp:'Retired',       appr:0},
+  {n:8,  age:'38', sal:'57,000', cs:'700', loan:'18,000', emp:'Salaried',      appr:1},
+  {n:9,  age:'41', sal:'60,000', cs:'650', loan:'10,000', emp:'Self-Employed', appr:1},
+  {n:10, age:'41', sal:'88,000', cs:'760', loan:'25,000', emp:'Salaried',      appr:1},
+  {n:11, age:'25', sal:'32,000', cs:'540', loan:'7,000',  emp:'Self-Employed', appr:0},
+  {n:12, age:'55', sal:'95,000', cs:'780', loan:'30,000', emp:'Self-Employed', appr:1},
+];
+function p1Render(showClean){
+  const rows = showClean ? CLEAN_ROWS : RAW_ROWS;
+  $('#p1Head').innerHTML = showClean
+    ? '<tr><th>#</th><th>Age</th><th>Salary</th><th>Credit</th><th>Loan Amt</th><th>Employment</th><th>Approved?</th></tr>'
+    : '<tr><th>#</th><th>Age</th><th>Salary</th><th>Credit</th><th>Loan Amt</th><th>Employment</th><th>Approved?</th><th style="text-align:left;">Issue</th></tr>';
+  $('#p1TableBody').innerHTML = rows.map(r => {
+    const cls = showClean ? '' : (r.cls ? ` class="${r.cls}"` : '');
+    const issueCell = showClean ? '' : `<td class="issue">${r.issue}</td>`;
+    return `<tr${cls}><td>${r.n}</td><td>${r.age}</td><td>${r.sal}</td><td>${r.cs}</td><td>${r.loan}</td><td>${r.emp}</td><td>${r.appr}</td>${issueCell}</tr>`;
+  }).join('');
+  $('#p1Banner').style.display = showClean ? 'none' : 'flex';
+  $('#p1RawBtn').classList.toggle('toggled', !showClean);
+  $('#p1CleanBtn').classList.toggle('toggled', showClean);
+}
+onEnter['sP1'] = () => p1Render(false);
+$('#p1RawBtn').addEventListener('click', () => p1Render(false));
+$('#p1CleanBtn').addEventListener('click', () => p1Render(true));
+
+/* =========================== init =========================== */
+buildDots();
+$('#totalNum').textContent = slideEls.length;
+const deepLinkSlide = parseInt(new URLSearchParams(location.search).get('slide'), 10);
+goTo(Number.isFinite(deepLinkSlide) ? deepLinkSlide-1 : 0);
+</script>
+</body>
+</html>
