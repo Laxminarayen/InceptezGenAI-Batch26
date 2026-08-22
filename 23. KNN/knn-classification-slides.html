@@ -1,0 +1,1275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>K-Nearest Neighbors · Loan Approval, By Analogy</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+
+    --c-intro:#3B6E63; --c-dist:#B0670C; --c-algo:#6249B0; --c-eval:#C13D68; --c-real:#1E6FA8;
+
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B; --third:#6249B0;
+
+    --accent: var(--c-intro);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+      --c-intro:#79C0AE; --c-dist:#E3A238; --c-algo:#A78BFA; --c-eval:#F17BA0; --c-real:#5FA8E0;
+      --good:#3FBB7C; --warn:#E3A238; --bad:#E36868; --third:#A78BFA;
+      --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+    --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+    --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+    --c-intro:#79C0AE; --c-dist:#E3A238; --c-algo:#A78BFA; --c-eval:#F17BA0; --c-real:#5FA8E0;
+    --good:#3FBB7C; --warn:#E3A238; --bad:#E36868; --third:#A78BFA;
+    --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+  }
+  :root[data-theme="light"]{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+    --c-intro:#3B6E63; --c-dist:#B0670C; --c-algo:#6249B0; --c-eval:#C13D68; --c-real:#1E6FA8;
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B; --third:#6249B0;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    overflow:hidden; -webkit-font-smoothing:antialiased;
+  }
+  body[data-section="intro"]{--accent:var(--c-intro);}
+  body[data-section="dist"]{--accent:var(--c-dist);}
+  body[data-section="algo"]{--accent:var(--c-algo);}
+  body[data-section="eval"]{--accent:var(--c-eval);}
+  body[data-section="real"]{--accent:var(--c-real);}
+
+  h1,h2,h3,p{margin:0;}
+  h1,h2,h3{text-wrap:balance; letter-spacing:-0.01em;}
+  ::selection{background:var(--accent); color:#fff;}
+
+  .eyebrow{
+    font-size:.74rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent);
+  }
+  .slide h1{font-size:clamp(1.7rem,3.2vw,2.9rem); font-weight:800; color:var(--ink);}
+  .slide h2{font-size:clamp(1.2rem,1.8vw,1.6rem); font-weight:800; color:var(--ink);}
+  .body-text{font-size:clamp(1rem,1.25vw,1.2rem); font-weight:500; line-height:1.6; color:var(--ink-soft);}
+  .body-text b, .body-text strong{color:var(--ink); font-weight:800;}
+  .tabular{font-variant-numeric:tabular-nums;}
+
+  /* ---------- chrome ---------- */
+  .chrome-top{
+    position:fixed; top:0; left:0; right:0; height:52px; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 20px; pointer-events:none;
+  }
+  .chrome-top > *{pointer-events:auto;}
+  .hour-badge{
+    font-size:.72rem; font-weight:800; letter-spacing:.12em; color:var(--ink-faint);
+    background:var(--paper-2); border:1px solid var(--line); padding:6px 12px; border-radius:999px;
+  }
+  .chapter-chip{
+    display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:700;
+    color:var(--ink-soft); background:var(--paper-2); border:1px solid var(--line);
+    padding:6px 14px 6px 8px; border-radius:999px;
+  }
+  .chapter-chip .num{
+    display:inline-flex; align-items:center; justify-content:center; width:20px;height:20px;
+    border-radius:50%; background:var(--accent); color:#fff; font-size:.68rem; font-weight:800;
+  }
+  .icon-btn{
+    width:36px;height:36px; border-radius:50%; border:1px solid var(--line); background:var(--paper-2);
+    color:var(--ink); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .icon-btn:hover{background:var(--paper-3);}
+  .icon-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  .deck{position:absolute; inset:0; top:52px; bottom:64px;}
+  .slide{
+    position:absolute; inset:0; display:none; flex-direction:column;
+    padding:clamp(18px,3vw,40px) clamp(24px,5vw,80px);
+    overflow:auto;
+  }
+  .slide.active{display:flex;}
+  .slide-inner{display:flex; flex-direction:column; gap:clamp(12px,1.8vh,20px); max-width:1360px; width:100%; margin:0 auto; flex:1; min-height:0;}
+
+  .chrome-bottom{
+    position:fixed; left:0; right:0; bottom:0; height:64px; z-index:50;
+    display:flex; align-items:center; gap:14px; padding:0 clamp(14px,3vw,32px);
+    background:linear-gradient(0deg, var(--paper) 60%, transparent);
+  }
+  .nav-btn{
+    width:40px;height:40px;border-radius:50%; border:1px solid var(--line); background:var(--paper-2);
+    color:var(--ink); font-size:1.2rem; cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center;
+  }
+  .nav-btn:hover:not(:disabled){background:var(--accent); color:#fff; border-color:transparent;}
+  .nav-btn:disabled{opacity:.35; cursor:default;}
+  .progress{flex:1; display:flex; align-items:center; gap:5px; overflow-x:auto; scrollbar-width:none;}
+  .progress::-webkit-scrollbar{display:none;}
+  .dot{
+    width:9px;height:9px;border-radius:50%; background:var(--paper-3); border:none; cursor:pointer; flex:none;
+    transition:transform .15s ease;
+  }
+  .dot.gap{width:14px; height:2px; border-radius:1px; background:transparent; cursor:default;}
+  .dot.active{transform:scale(1.5);}
+  .slide-counter{font-size:.8rem; font-weight:700; color:var(--ink-faint); flex:none; white-space:nowrap;}
+
+  /* ---------- layout helpers ---------- */
+  .split{display:grid; grid-template-columns:1.05fr 1.35fr; gap:clamp(20px,4vw,52px); align-items:center; flex:1; min-height:0;}
+  @media (max-width:920px){ .split{grid-template-columns:1fr; overflow:auto;} }
+  .split.reverse{grid-template-columns:1.35fr 1.05fr;}
+  .split.even{grid-template-columns:1fr 1fr;}
+  .stack{display:flex; flex-direction:column; gap:12px; min-height:0;}
+  .center-col{display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:16px; flex:1;}
+  .visual-box{
+    background:var(--surface-canvas); border:1px solid var(--line); border-radius:24px;
+    padding:14px; box-shadow:var(--shadow); min-height:0; display:flex; flex-direction:column; gap:8px;
+  }
+  .canvas-wrap{position:relative; flex:1; min-height:160px;}
+  canvas{display:block; width:100%; height:100%;}
+
+  /* ---------- components ---------- */
+  .vocab-card{
+    border-left:5px solid var(--accent); background:var(--paper-2); border-radius:14px;
+    padding:12px 18px; display:flex; flex-direction:column; gap:4px;
+  }
+  .vocab-term{font-size:1rem; font-weight:900; letter-spacing:.04em; color:var(--accent);}
+  .vocab-def{font-size:1rem; color:var(--ink); font-weight:600; line-height:1.4;}
+
+  .console{
+    display:flex; flex-wrap:wrap; gap:14px 26px; align-items:flex-end;
+    background:var(--paper-2); border:1px solid var(--line); border-radius:20px;
+    padding:16px 20px;
+  }
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field label{font-size:.76rem; font-weight:800; color:var(--ink-soft); letter-spacing:.03em;}
+  .field .val{color:var(--accent); font-weight:900;}
+  input[type="range"]{width:180px; accent-color:var(--accent);}
+
+  .btn{
+    font:inherit; font-size:.92rem; font-weight:800; border:1px solid var(--line); border-radius:999px;
+    padding:11px 20px; cursor:pointer; background:var(--paper-3); color:var(--ink);
+    transition:transform .12s ease, box-shadow .12s ease; white-space:nowrap;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn:active{transform:translateY(0);}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .btn-primary{background:var(--accent); color:#fff; border-color:transparent; box-shadow:0 8px 18px -8px var(--accent);}
+  .btn-ghost{background:transparent;}
+  .btn.toggled{background:var(--accent); color:#fff; border-color:transparent;}
+  .btn:disabled{opacity:.5; cursor:default; transform:none;}
+  .btn-row{display:flex; flex-wrap:wrap; gap:10px;}
+
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px;}
+  .stat-tile{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:12px 14px;}
+  .stat-tile .label{font-size:.7rem; font-weight:800; color:var(--ink-faint); letter-spacing:.05em; text-transform:uppercase;}
+  .stat-tile .value{font-size:1.35rem; font-weight:900; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .stat-tile.accent .value{color:var(--accent);}
+
+  .card{background:var(--paper-2); border:1px solid var(--line); border-radius:18px; padding:18px 20px;}
+  .card-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px;}
+  .card .ico{font-size:1.8rem;}
+  .card h3{font-size:1.02rem; margin-top:8px;}
+  .card p{font-size:.92rem; color:var(--ink-soft); margin-top:4px; line-height:1.45;}
+
+  .banner{border-radius:14px; padding:12px 16px; font-weight:800; font-size:.92rem; display:flex; align-items:center; gap:10px;}
+  .banner.warn{background:color-mix(in srgb, var(--warn) 18%, var(--paper-2)); color:var(--warn);}
+  .banner.good{background:color-mix(in srgb, var(--good) 18%, var(--paper-2)); color:var(--good);}
+  .banner.bad{background:color-mix(in srgb, var(--bad) 18%, var(--paper-2)); color:var(--bad);}
+  .banner.info{background:var(--paper-3); color:var(--ink); font-weight:600; align-items:flex-start;}
+
+  .roadmap{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  .roadmap .stop{background:var(--paper-2); border-radius:18px; padding:16px 10px; text-align:center; border-top:5px solid var(--stop-color, var(--accent));}
+  .roadmap .stop .ico{font-size:2rem;}
+  .roadmap .stop .t{font-size:.8rem; font-weight:800; margin-top:6px;}
+  @media (max-width:920px){ .roadmap{grid-template-columns:repeat(2,1fr);} }
+
+  .kicker-big{font-size:clamp(2.2rem,5.6vw,3.9rem); font-weight:900; letter-spacing:-0.02em;}
+  .glow{color:var(--accent);}
+
+  .rule-list{display:flex; flex-direction:column; gap:12px;}
+  .rule{display:flex; gap:14px; align-items:flex-start; border-radius:14px; padding:6px 8px; margin:-6px -8px; transition:background .25s ease;}
+  .rule .n{width:34px;height:34px;border-radius:50%; background:var(--accent); color:#fff; font-weight:900; display:flex; align-items:center; justify-content:center; flex:none;}
+  .rule .t h3{font-size:1rem;}
+  .rule .t p{font-size:.92rem; color:var(--ink-soft); margin-top:2px;}
+  .rule.active-rule{background:color-mix(in srgb, var(--accent) 14%, transparent);}
+
+  .table-wrap{border:1px solid var(--line); border-radius:14px; overflow:hidden;}
+  .data-table{width:100%; border-collapse:collapse; font-size:.88rem;}
+  .data-table th,.data-table td{padding:9px 12px; text-align:center; font-variant-numeric:tabular-nums;}
+  .data-table thead th{background:var(--paper-3); color:var(--ink-soft); font-weight:800; font-size:.74rem; letter-spacing:.03em; text-transform:uppercase;}
+  .data-table thead th .tag{display:block; font-weight:600; text-transform:none; letter-spacing:0; font-size:.7rem; opacity:.75;}
+  .data-table tbody tr{border-top:1px solid var(--line);}
+  .data-table tbody tr.hl-row{background:color-mix(in srgb, var(--accent) 12%, transparent); font-weight:800;}
+  .data-table tbody tr.miss-row{background:color-mix(in srgb, var(--bad) 12%, transparent);}
+  .data-table tbody tr.keep-row{background:color-mix(in srgb, var(--good) 12%, transparent);}
+  .data-table td.issue{font-size:.78rem; color:var(--ink-faint); font-weight:700; text-align:left;}
+
+  .legend{display:flex; gap:16px; font-size:.8rem; font-weight:700; color:var(--ink-soft); flex-wrap:wrap;}
+  .legend .sw{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle;}
+  .legend .sw.line{border-radius:2px; width:14px; height:3px;}
+  .legend .sw.ring{background:transparent; border:2px solid; width:8px; height:8px;}
+
+  .footnote{font-size:.82rem; color:var(--ink-faint); font-weight:600;}
+
+  /* ---------- confusion matrix ---------- */
+  .cm-wrap{display:grid; grid-template-columns:auto 1fr 1fr; gap:3px; background:var(--line); border:1px solid var(--line); border-radius:16px; overflow:hidden;}
+  .cm-cell{background:var(--paper-2); padding:16px 10px; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;}
+  .cm-cell.head{background:var(--paper-3); font-weight:800; font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft);}
+  .cm-cell.corner{background:var(--paper-3);}
+  .cm-cell .n{font-size:1.7rem; font-weight:900; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .cm-cell .l{font-size:.72rem; font-weight:700; color:var(--ink-faint);}
+  .cm-cell.tp{background:color-mix(in srgb, var(--good) 26%, var(--paper-2));}
+  .cm-cell.tn{background:color-mix(in srgb, var(--good) 14%, var(--paper-2));}
+  .cm-cell.fp{background:color-mix(in srgb, var(--bad) 24%, var(--paper-2));}
+  .cm-cell.fn{background:color-mix(in srgb, var(--warn) 24%, var(--paper-2));}
+
+  .optional-badge{
+    display:inline-flex; align-self:flex-start; align-items:center; gap:6px;
+    font-size:.7rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--c-algo); background:color-mix(in srgb, var(--c-algo) 14%, var(--paper-2));
+    border:1px dashed var(--c-algo); padding:5px 12px; border-radius:999px;
+  }
+
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+</style>
+</head>
+<body data-section="intro">
+  <div class="chrome-top">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="hour-badge" id="hourBadge">K-NEAREST NEIGHBORS</div>
+      <div class="chapter-chip" id="chapterChip" style="display:none;">
+        <span class="num" id="chapterNum">1</span>
+        <span id="chapterLabel">—</span>
+      </div>
+    </div>
+    <button class="icon-btn" id="themeToggle" title="Toggle light / dark">🌗</button>
+  </div>
+
+  <main class="deck" id="deck">
+
+    <!-- ============ S0 — TITLE / ROADMAP ============ -->
+    <section class="slide" data-section="intro" id="s0">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Instance-Based Learning, End to End · Loan Approval, Revisited</div>
+        <h1 class="kicker-big">What if you never<br/>trained a <span class="glow">model</span> at all?</h1>
+        <p class="body-text" style="max-width:780px;">Every algorithm this course has built — Linear Regression, Logistic Regression — learned a fixed set of coefficients by minimizing a cost function with gradient descent. Today: an algorithm with no coefficients, no cost function, and technically no training phase at all. It just remembers every applicant it has ever seen, and when someone new applies, asks one question: "who are the K people most like you, and what happened to them?" Same loan-approval story as before — a completely different way of thinking about prediction.</p>
+        <div class="roadmap" style="width:100%; margin-top:6px;">
+          <div class="stop" style="--stop-color:var(--c-dist);"><div class="ico">📍</div><div class="t">Hour 1 · Distance &amp; the Core Idea</div></div>
+          <div class="stop" style="--stop-color:var(--c-algo);"><div class="ico">🎚️</div><div class="t">Hour 2 · The Full Algorithm &amp; Choosing K</div></div>
+          <div class="stop" style="--stop-color:var(--c-eval);"><div class="ico">🎯</div><div class="t">Hour 3 · Evaluating &amp; Comparing</div></div>
+          <div class="stop" style="--stop-color:var(--c-real);"><div class="ico">🌐</div><div class="t">Hour 4 · Real-World KNN &amp; Multiclass</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- HOUR 1 — DISTANCE & THE CORE IDEA                                  -->
+    <!-- ================================================================= -->
+
+    <!-- ============ D1 — LEAD-IN FROM LINEAR / LOGISTIC REGRESSION ============ -->
+    <section class="slide" data-section="dist" id="sD1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 1 · A Completely Different Family</div>
+        <h1>Parametric models learn a <span class="glow">formula</span>. KNN doesn't.</h1>
+        <p class="body-text">Look back at the last two algorithms you built, and notice what they have in common — then meet the family that breaks the pattern entirely.</p>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card"><div class="ico">📏</div><h3>Linear Regression</h3><p>ŷ = β₀+β₁x. Fit by minimizing MSE with gradient descent. A fixed formula, forever, once trained.</p></div>
+          <div class="card"><div class="ico">🌀</div><h3>Logistic Regression</h3><p>p = σ(β₀+β₁x). Fit by minimizing log loss with gradient descent. Same idea, different formula.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-dist);"><div class="ico">📍</div><h3>K-Nearest Neighbors</h3><p>No formula. No β's. No cost function. No gradient descent. It just remembers the data, and compares.</p></div>
+        </div>
+        <div class="banner info">🧠 This family is called <b>lazy learning</b> (or instance-based learning) — nothing gets "learned" ahead of time. All the real work happens the moment a new applicant shows up, not before.</div>
+      </div>
+    </section>
+
+    <!-- ============ D2 — THE CORE IDEA ============ -->
+    <section class="slide" data-section="dist" id="sD2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 1 · One Sentence, No Math Yet</div>
+        <h1>"You are the <span class="glow">average</span> of the K people most like you"</h1>
+        <p class="body-text">This idea shows up everywhere once you notice it — KNN just makes it mathematically precise.</p>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card"><div class="ico">🏠</div><h3>Real-estate "comps"</h3><p>An appraiser prices YOUR house by looking at the few most similar recently-sold houses nearby.</p></div>
+          <div class="card"><div class="ico">🩺</div><h3>Medical diagnosis</h3><p>"Patients with a similar age, symptoms, and history responded well to this treatment."</p></div>
+          <div class="card"><div class="ico">🎬</div><h3>"Because you watched..."</h3><p>Recommend what similar viewers enjoyed — no formula for "taste," just nearest neighbors in preference-space.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-dist);"><div class="ico">🏦</div><h3>Today: loan approval</h3><p>Approve this applicant based on what happened to the K most similar past applicants. That's the entire algorithm.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ D3 — THE DATASET ============ -->
+    <section class="slide" data-section="dist" id="sD3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 1 · Our Running Example</div>
+          <h1>26 loan applicants, <span class="glow">two features</span> this time</h1>
+          <p class="body-text">Same loan-approval story as the Logistic Regression session — remember the small "Credit Index + Age" table from that deck? Today we build a full classifier out of exactly that idea. x = Credit Index (1–10), y = Age (18–70), label = Approved (1) or Rejected (0).</p>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Applicant</th><th>Credit Index</th><th>Age</th><th>Approved?</th></tr></thead>
+              <tbody>
+                <tr><td>#1</td><td>2.0</td><td>25</td><td>0</td></tr>
+                <tr><td>#9</td><td>4.5</td><td>40</td><td>0</td></tr>
+                <tr><td>#12</td><td>8.0</td><td>24</td><td>1</td></tr>
+                <tr class="hl-row"><td>#16</td><td>5.0</td><td>55</td><td>1</td></tr>
+                <tr><td>#26</td><td>7.0</td><td>55</td><td>0</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="footnote">5 of the 26 rows shown. Notice applicant #26 — good credit, older, but REJECTED. Keep an eye on that one; it causes trouble later in this hour.</p>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvD3"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--bad);"></span>rejected</span><span><span class="sw" style="background:var(--good);"></span>approved</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ D4 — WHAT IS DISTANCE? ============ -->
+    <section class="slide" data-section="dist" id="sD4">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 1 · The One Formula KNN Actually Needs</div>
+        <h1>"Similar" means <span class="glow">close</span> — but close in what sense?</h1>
+        <p class="body-text">Two applicants are "similar" if the straight-line distance between their feature values is small — the same distance formula from geometry class, just applied to data.</p>
+        <div class="vocab-card">
+          <div class="vocab-term">Euclidean distance: d(A,B) = √[(x_A−x_B)² + (y_A−y_B)²]</div>
+          <div class="vocab-def">Pythagoras' theorem, reused. With more than 2 features, just keep adding squared differences under the root — same formula, any number of dimensions.</div>
+        </div>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>Worked example</h3><p>Applicant A: credit=2, age=25. New applicant: credit=5, age=29.</p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>Take the differences</h3><p>Δcredit = 5−2 = 3. &nbsp; Δage = 29−25 = 4.</p></div></div>
+          <div class="rule"><div class="n">3</div><div class="t"><h3>Square, sum, root</h3><p>d = √(3² + 4²) = √(9+16) = √25 = <b>5</b>. A perfect 3-4-5 triangle — distance = 5.</p></div></div>
+        </div>
+        <div class="banner good">📐 That's it. That's the only formula in the entire algorithm — everything else is bookkeeping around this one calculation.</div>
+      </div>
+    </section>
+
+    <!-- ============ D5 — INTERACTIVE: NEAREST NEIGHBOR & VOTE ============ -->
+    <section class="slide" data-section="dist" id="sD5">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 1 · Try It — Drag a New Applicant In</div>
+          <h1>Place a query point, <span class="glow">watch it vote</span></h1>
+          <p class="body-text">Move the sliders to place a brand-new applicant anywhere on the map. Dashed lines connect it to its K nearest neighbors — the highlighted points. The prediction is just whichever label wins the most votes among them.</p>
+          <div class="console">
+            <div class="field"><label>Credit Index = <span class="val" id="d5CreditLabel">6.0</span></label><input type="range" id="d5CreditSlider" min="1" max="10" value="6" step="0.1"></div>
+            <div class="field"><label>Age = <span class="val" id="d5AgeLabel">40</span></label><input type="range" id="d5AgeSlider" min="18" max="70" value="40" step="1"></div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary toggled" id="d5K1Btn">K = 1</button>
+            <button class="btn btn-primary" id="d5K3Btn">K = 3</button>
+            <button class="btn btn-primary" id="d5K5Btn">K = 5</button>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Neighbor votes</div><div class="value tabular" id="d5Votes">—</div></div>
+            <div class="stat-tile accent"><div class="label">Prediction</div><div class="value tabular" id="d5Pred">—</div></div>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvD5"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--bad);"></span>rejected</span><span><span class="sw" style="background:var(--good);"></span>approved</span><span><span class="sw" style="background:var(--c-dist);"></span>your new applicant</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ D6 — WHAT IF THE NEAREST NEIGHBOR IS A FLUKE? ============ -->
+    <section class="slide" data-section="dist" id="sD6">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 1 · The Problem With K = 1</div>
+        <h1>One neighbor can be a <span class="glow">fluke</span></h1>
+        <p class="body-text">Go back to the last slide, place your applicant right next to #26 — credit 7, age 55, REJECTED — even though every OTHER nearby point in that region got approved. With K=1, that single unusual point can hijack the entire prediction.</p>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card" style="border-top:5px solid var(--bad);"><div class="ico">🎲</div><h3>K=1: trust one opinion</h3><p>Whatever that single closest applicant's outcome was, copy it exactly — noisy, easily fooled by one odd data point.</p></div>
+          <div class="card" style="border-top:5px solid var(--good);"><div class="ico">🗳️</div><h3>K&gt;1: take a vote</h3><p>Ask several nearby applicants and go with the majority — one weird outlier gets outvoted by its more typical neighbors.</p></div>
+        </div>
+        <div class="banner warn">⚠️ This is the central tension of the whole hour: bigger K is more stable against noise, but (as Hour 2 will show) too big starts ignoring real local patterns too. There's no free lunch — just a dial to tune.</div>
+      </div>
+    </section>
+
+    <!-- ============ D7 — DECISION BOUNDARY, PREVIEWED ============ -->
+    <section class="slide" data-section="dist" id="sD7">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 1 · A Shape You Haven't Seen Yet</div>
+        <h1>Logistic regression draws a <span class="glow">line</span>. KNN draws... whatever it takes.</h1>
+        <p class="body-text">A logistic regression boundary is always one straight line (or plane), because it comes from one linear formula. A KNN boundary has no formula constraining its shape at all — it can bend, split into islands, wrap around outliers, anything the data actually looks like.</p>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card"><div class="ico">📏</div><h3>Logistic regression</h3><p>One straight decision line, everywhere. Simple, smooth, but can only ever be a line.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-dist);"><div class="ico">🧩</div><h3>KNN</h3><p>A boundary shaped entirely by nearby data — jagged with small K, smoother with large K, never forced to be straight.</p></div>
+        </div>
+        <div class="banner info">👀 Hour 2 builds this boundary for real and lets you watch its shape change live as K changes.</div>
+      </div>
+    </section>
+
+    <!-- ============ D8 — BRIDGE TO HOUR 2 ============ -->
+    <section class="slide" data-section="dist" id="sD8">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Hour 1 → Hour 2</div>
+        <h1 class="kicker-big">One distance formula.<br/>Now let's build the <span class="glow">whole algorithm.</span></h1>
+        <p class="body-text" style="max-width:640px;">Hour 2: the exact step-by-step recipe, a worked example by hand, the single most important rule in all of KNN (it's not what you think), and the real answer to "how do I pick K?"</p>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- HOUR 2 — THE FULL ALGORITHM & CHOOSING K                          -->
+    <!-- ================================================================= -->
+
+    <!-- ============ A1 — THE ALGORITHM, STEP BY STEP ============ -->
+    <section class="slide" data-section="algo" id="sA1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 2 · The Entire Algorithm</div>
+        <h1>Five steps — and step 1 is the <span class="glow">whole "training" phase</span></h1>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>"Train" the model</h3><p>Store every training point, exactly as-is. That's it — no iteration, no optimization, no convergence to wait for.</p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>A new applicant arrives</h3><p>Compute the distance from this new point to EVERY single stored training point.</p></div></div>
+          <div class="rule"><div class="n">3</div><div class="t"><h3>Sort by distance</h3><p>Rank every training point from closest to farthest.</p></div></div>
+          <div class="rule"><div class="n">4</div><div class="t"><h3>Take the closest K</h3><p>Keep only the K nearest — discard the rest.</p></div></div>
+          <div class="rule"><div class="n">5</div><div class="t"><h3>Majority vote</h3><p>Whichever label appears most often among those K wins. That's the prediction.</p></div></div>
+        </div>
+        <div class="banner good">✨ Compare this to gradient descent's five steps from Linear/Logistic Regression — guess, feel the slope, subtract, repeat, stop when flat. KNN has no equivalent of ANY of those. It's a genuinely different kind of algorithm, not a variation on the old one.</div>
+      </div>
+    </section>
+
+    <!-- ============ A2 — WORKED BY HAND ============ -->
+    <section class="slide" data-section="algo" id="sA2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 2 · By Hand, Once</div>
+          <h1>A new applicant: <span class="glow">credit 2.5, age 60</span></h1>
+          <p class="body-text">Compute the distance from this query to every training point, keep the closest few. Here are the 5 nearest, sorted:</p>
+        </div>
+        <div class="visual-box" style="height:min(46vh,400px);">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Rank</th><th>Credit</th><th>Age</th><th>Label</th><th>Distance</th></tr></thead>
+              <tbody>
+                <tr class="hl-row"><td>1</td><td>2.8</td><td>60</td><td>Reject</td><td>0.30</td></tr>
+                <tr><td>2</td><td>5.5</td><td>60</td><td>Approve</td><td>3.00</td></tr>
+                <tr><td>3</td><td>5.2</td><td>58</td><td>Approve</td><td>3.36</td></tr>
+                <tr><td>4</td><td>6.8</td><td>62</td><td>Approve</td><td>4.74</td></tr>
+                <tr><td>5</td><td>2.0</td><td>55</td><td>Reject</td><td>5.02</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="footnote">K=1: nearest is Reject → predict REJECT. K=3: {Reject, Approve, Approve} → 2-to-1 → predict APPROVE. K=5: {Reject,Approve,Approve,Approve,Reject} → 3-to-2 → predict APPROVE.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ A3 — THE CRITICAL RULE: SCALE YOUR FEATURES ============ -->
+    <section class="slide" data-section="algo" id="sA3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 2 · The Single Most Important Rule In KNN</div>
+        <h1>That answer from the last slide is <span class="glow">wrong</span></h1>
+        <p class="body-text">Age ranges 18–70 (a span of 52). Credit index ranges 1–10 (a span of 9). In raw Euclidean distance, a 1-year age gap and a 1-point credit gap are NOT remotely comparable — age quietly dominates every distance calculation. Standardize both features (z-score) first, and the answer flips.</p>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Rank</th><th>Credit</th><th>Age</th><th>Label</th><th>Scaled distance</th></tr></thead>
+            <tbody>
+              <tr class="hl-row"><td>1</td><td>2.8</td><td>60</td><td>Reject</td><td>0.15</td></tr>
+              <tr><td>2</td><td>2.0</td><td>55</td><td>Reject</td><td>0.45</td></tr>
+              <tr><td>3</td><td>4.0</td><td>50</td><td>Reject</td><td>1.06</td></tr>
+              <tr><td>4</td><td>3.0</td><td>45</td><td>Reject</td><td>1.13</td></tr>
+              <tr><td>5</td><td>4.8</td><td>65</td><td>Approve</td><td>1.22</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="stat-grid">
+          <div class="stat-tile"><div class="label">Unscaled prediction (K=3 or K=5)</div><div class="value" style="color:var(--bad);">APPROVE — wrong</div></div>
+          <div class="stat-tile accent"><div class="label">Scaled prediction (K=3 or K=5)</div><div class="value" style="color:var(--good);">REJECT — correct</div></div>
+        </div>
+        <div class="banner bad">🚩 For Logistic Regression, skipping scaling just made gradient descent slower. For KNN, skipping scaling gives you an ACTIVELY WRONG neighbor set and an actively wrong prediction. This is not optional — it's a hard requirement, every time, no exceptions.</div>
+      </div>
+    </section>
+
+    <!-- ============ A4 — DISTANCE METRICS BEYOND EUCLIDEAN ============ -->
+    <section class="slide" data-section="algo" id="sA4">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 2 · "Distance" Has More Than One Definition</div>
+        <h1>Euclidean isn't the <span class="glow">only</span> option</h1>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card"><div class="ico">📐</div><h3>Euclidean (L2)</h3><p>√Σ(xᵢ−yᵢ)² — straight-line "as the crow flies" distance. The default, used all session.</p></div>
+          <div class="card"><div class="ico">🏙️</div><h3>Manhattan (L1)</h3><p>Σ|xᵢ−yᵢ| — distance walking a city grid, block by block. Less sensitive to any single huge feature gap.</p></div>
+          <div class="card"><div class="ico">🔧</div><h3>Minkowski</h3><p>(Σ|xᵢ−yᵢ|ᵖ)^(1/p) — a dial: p=1 gives Manhattan, p=2 gives Euclidean. scikit-learn's default metric.</p></div>
+        </div>
+        <div class="banner info">🧭 Which one to use rarely matters as much as scaling correctly does — but it's worth knowing this choice exists, and that "distance" is a design decision, not a law of nature.</div>
+      </div>
+    </section>
+
+    <!-- ============ A5 — INTERACTIVE: THE K SLIDER & THE BOUNDARY ============ -->
+    <section class="slide" data-section="algo" id="sA5">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 2 · The Flagship Demo</div>
+          <h1>Drag K — watch the boundary <span class="glow">breathe</span></h1>
+          <p class="body-text">Every pixel is colored by asking "if a new applicant appeared right here, what would KNN predict?" Small K chases every individual point, even noisy ones. Large K smooths everything into a simple, oversimplified region.</p>
+          <div class="console">
+            <div class="field"><label>K = <span class="val" id="a5KLabel">1</span></label><input type="range" id="a5KSlider" min="1" max="25" value="1" step="1"></div>
+          </div>
+          <div class="banner" id="a5Banner">—</div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvA5"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--bad);"></span>rejected</span><span><span class="sw" style="background:var(--good);"></span>approved</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ A6 — THE NOISY POINT, REVEALED ============ -->
+    <section class="slide" data-section="algo" id="sA6">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 2 · Follow One Point Through The K Slider</div>
+        <h1>Applicant #26 <span class="glow">again</span> — the point causing that pocket</h1>
+        <p class="body-text">Go back to the boundary above and set K=1 or K=3: notice a small "reject" pocket near credit≈7, age≈55. That's applicant #26 — credit 7, age 55, REJECTED, sitting right in the middle of an otherwise "approve" neighborhood. A nearby query at (6.9, 54) shows exactly how much that one point matters:</p>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>K</th><th>Nearest neighbors include #26?</th><th>Prediction</th></tr></thead>
+            <tbody>
+              <tr class="hl-row"><td>1</td><td>Yes — it IS the nearest neighbor</td><td>REJECT</td></tr>
+              <tr><td>3</td><td>Yes, but outvoted 2-to-1</td><td>APPROVE</td></tr>
+              <tr><td>9</td><td>Yes, but outvoted 7-to-2</td><td>APPROVE</td></tr>
+              <tr><td>15</td><td>Diluted among many neighbors</td><td>APPROVE</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="banner warn">🎯 At K=1, one unusual applicant can single-handedly flip a neighboring prediction. At K≥3, the surrounding majority corrects for it. This is the bias-variance tradeoff, made completely concrete.</div>
+      </div>
+    </section>
+
+    <!-- ============ A7 — HOW TO ACTUALLY PICK K ============ -->
+    <section class="slide" data-section="algo" id="sA7">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 2 · Not a Guess — a Measurement</div>
+          <h1>Sweep K, measure accuracy, pick the <span class="glow">best</span></h1>
+          <p class="body-text">Same discipline as choosing polynomial degree: split into train/test once, try every reasonable K, fit on training only, and score honestly on the held-out test applicants. Watch both curves as K grows.</p>
+          <div class="rule-list">
+            <div class="rule"><div class="n">1</div><div class="t"><h3>K=1: perfect training accuracy</h3><p>Trivial and expected — a point's own nearest neighbor is always itself. Tells you nothing about how it does on NEW applicants.</p></div></div>
+            <div class="rule"><div class="n">2</div><div class="t"><h3>K=5: the sweet spot</h3><p>Training accuracy has settled, test accuracy is high (85.7%) — and, as the last slide showed, no longer fooled by any single outlier like Applicant #26.</p></div></div>
+            <div class="rule"><div class="n">3</div><div class="t"><h3>Very large K</h3><p>Both curves sag — with K in the teens out of only 19 training points, "majority vote" barely means anything local anymore.</p></div></div>
+          </div>
+          <p class="footnote">🔢 Rule of thumb: start near √n (here, √26≈5), prefer odd K for binary problems to avoid ties, then confirm with a real train/test sweep like the one on the right.</p>
+        </div>
+        <div class="visual-box" style="height:min(50vh,440px);">
+          <div class="canvas-wrap"><canvas id="cvA7"></canvas></div>
+          <div class="legend"><span><span class="sw line" style="background:var(--good);"></span>training accuracy</span><span><span class="sw line" style="background:var(--bad);"></span>test accuracy</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ A8 — TIES & WEIGHTED VOTING ============ -->
+    <section class="slide" data-section="algo" id="sA8">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 2 · Two Practical Refinements</div>
+        <h1>What about <span class="glow">ties</span>? What about <span class="glow">distance</span>?</h1>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card"><div class="ico">⚖️</div><h3>Even K can tie</h3><p>K=4 with a 2-2 split has no majority. Fixes: prefer odd K for 2-class problems, fall back to the single nearest neighbor, or pick randomly.</p></div>
+          <div class="card"><div class="ico">🎚️</div><h3>Distance-weighted voting</h3><p>Instead of every neighbor getting one equal vote, weight each vote by 1/distance — a neighbor right next door counts more than one at the edge of the K-circle.</p></div>
+          <div class="card"><div class="ico">⚙️</div><h3>scikit-learn's default</h3><p>KNeighborsClassifier(weights='uniform') by default — pass weights='distance' to turn on distance-weighting.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ A9 — THE COST OF "NO TRAINING" ============ -->
+    <section class="slide" data-section="algo" id="sA9">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Hour 2 · Nothing Is Actually Free</div>
+        <h1 class="kicker-big">"No training phase" just means<br/>the cost moved to <span class="glow">prediction time</span></h1>
+        <p class="body-text" style="max-width:700px;">Every single prediction requires computing the distance to EVERY stored training point — for n applicants, that's n distance calculations per prediction, every time, forever. Linear/Logistic Regression pay a training cost once and predict instantly after. KNN pays nothing upfront and a little every single time it's asked. (In production, structures like KD-Trees or Ball Trees speed this up — a detail for later, not required today.)</p>
+      </div>
+    </section>
+
+    <!-- ============ A10 — BRIDGE TO HOUR 3 ============ -->
+    <section class="slide" data-section="algo" id="sA10">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Hour 2 → Hour 3</div>
+        <h1 class="kicker-big">We can predict now.<br/>Is it actually <span class="glow">any good?</span></h1>
+        <p class="body-text" style="max-width:640px;">Hour 3: the exact same confusion-matrix, accuracy, precision, recall, F1 toolkit from Logistic Regression — in the same plain, loan-officer language — plus a real, honest, head-to-head comparison against the model you already know.</p>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- HOUR 3 — EVALUATING & COMPARING                                    -->
+    <!-- ================================================================= -->
+
+    <!-- ============ E1 — TRAIN/TEST, REPRISED ============ -->
+    <section class="slide" data-section="eval" id="sE1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 3 · Same Discipline, Same Reason</div>
+        <h1>Honest evaluation still means <span class="glow">held-out data</span></h1>
+        <p class="body-text">KNN has no training phase to overfit DURING — but it can still "memorize" in a different sense: a tiny K essentially memorizes each training point's own label. The fix is identical to every other model this course: score it on applicants it never got to peek at.</p>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>Split before doing anything</h3><p>Set aside a portion of applicants the model never touches while choosing K.</p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>Scale using ONLY the training data's mean/std</h3><p>A subtle trap: computing the scaler from the full dataset lets test information leak backward into training.</p></div></div>
+          <div class="rule"><div class="n">3</div><div class="t"><h3>Score honestly on the held-out set</h3><p>That score — not the training score — is what you report and trust.</p></div></div>
+        </div>
+        <div class="banner info">📊 With only 26 applicants, a 7-applicant test set is small — one single mistake swings accuracy by about 14 percentage points. Worth remembering on the next slide before reading too much into any one number.</div>
+      </div>
+    </section>
+
+    <!-- ============ E2 — CONFUSION MATRIX, IN PLAIN ENGLISH ============ -->
+    <section class="slide" data-section="eval" id="sE2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 3 · Naming Every Kind of Mistake</div>
+          <h1>The <span class="glow">confusion matrix</span>, at K=5</h1>
+          <p class="body-text">Same four buckets as Logistic Regression, same plain-English reading — scored honestly on 7 applicants held out from training, never touched while fitting or choosing K.</p>
+          <div class="card-grid" style="margin-top:6px;">
+            <div class="card"><div class="ico">✅</div><h3>True Positive (TP)</h3><p>We said YES, and they truly deserved it.</p></div>
+            <div class="card"><div class="ico">✅</div><h3>True Negative (TN)</h3><p>We said NO, and they truly weren't a safe bet.</p></div>
+            <div class="card" style="border-top:5px solid var(--bad);"><div class="ico">🚩</div><h3>False Positive (FP)</h3><p>We said YES, but shouldn't have.</p></div>
+            <div class="card" style="border-top:5px solid var(--warn);"><div class="ico">🚩</div><h3>False Negative (FN)</h3><p>We said NO, but they actually deserved it.</p></div>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(50vh,440px); justify-content:center;">
+          <div class="cm-wrap">
+            <div class="cm-cell corner"></div>
+            <div class="cm-cell head">Actual: Approved</div>
+            <div class="cm-cell head">Actual: Rejected</div>
+            <div class="cm-cell head">Pred: Approved</div>
+            <div class="cm-cell tp"><div class="n">2</div><div class="l">True Positive</div></div>
+            <div class="cm-cell fp"><div class="n">0</div><div class="l">False Positive</div></div>
+            <div class="cm-cell head">Pred: Rejected</div>
+            <div class="cm-cell fn"><div class="n">1</div><div class="l">False Negative</div></div>
+            <div class="cm-cell tn"><div class="n">4</div><div class="l">True Negative</div></div>
+          </div>
+          <p class="footnote" style="text-align:center;">7 held-out applicants. Accuracy = (2+4)/7 ≈ <b>85.7%</b>. Precision = 2/2 = <b>100%</b>. Recall = 2/3 ≈ <b>66.7%</b>. F1 ≈ <b>80.0%</b>.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E3 — THE MISTAKES, NAMED ============ -->
+    <section class="slide" data-section="eval" id="sE3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 3 · Not an Abstract Number — a Specific Applicant</div>
+        <h1>The one mistake above has a <span class="glow">name and a reason</span></h1>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card" style="border-top:5px solid var(--warn);"><div class="ico">🚩</div><h3>FN — credit 7, age 45</h3><p>Genuinely approved, but predicted REJECT. Its 5 nearest neighbors in the training set happen to skew reject — this applicant sits right at the seam between the reject cluster and the approved group, exactly where mistakes are most likely.</p></div>
+          <div class="card"><div class="ico">👀</div><h3>Worth remembering: Applicant #26</h3><p>Credit 7, age 55, genuinely rejected but surrounded by approved neighbors — it's in the TRAINING set here, so it doesn't show up as a confusion-matrix mistake itself, but it's exactly the kind of point that creates the boundary "pocket" from Hour 2.</p></div>
+        </div>
+        <div class="banner good">🎯 This is the payoff of a confusion matrix over a single accuracy number: you don't just know something is wrong, you know exactly WHO and WHY — and can decide if that's an acceptable cost.</div>
+      </div>
+    </section>
+
+    <!-- ============ E4 — KNN VS LOGISTIC REGRESSION ============ -->
+    <section class="slide" data-section="eval" id="sE4">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 3 · Head to Head</div>
+        <h1>KNN vs. <span class="glow">Logistic Regression</span></h1>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th style="text-align:left;">Property</th><th>Logistic Regression</th><th>KNN</th></tr></thead>
+            <tbody>
+              <tr><td class="issue">Boundary shape</td><td>Always one straight line/plane</td><td>Any shape the data needs</td></tr>
+              <tr><td class="issue">"Training"</td><td>Gradient descent, iterative</td><td>Just store the data — instant</td></tr>
+              <tr><td class="issue">Prediction cost</td><td>Instant (one dot product)</td><td>Compare to every stored point</td></tr>
+              <tr><td class="issue">Interpretability</td><td>Coefficients have a clean meaning</td><td>"Because these K neighbors" — no formula to inspect</td></tr>
+              <tr><td class="issue">Feature scaling</td><td>Recommended (for training speed)</td><td>MANDATORY (or predictions are wrong)</td></tr>
+              <tr><td class="issue">Multiclass</td><td>Needs One-vs-Rest or Softmax</td><td>Free — just count votes among more labels</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E5 — WHEN DOES KNN ACTUALLY WIN? ============ -->
+    <section class="slide" data-section="eval" id="sE5">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 3 · A Real, Verified Comparison</div>
+          <h1>On THIS data, KNN genuinely <span class="glow">wins</span></h1>
+          <p class="body-text">Both models trained on the same 19 applicants, scored honestly on the same 7 held-out test applicants:</p>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Logistic Regression test accuracy</div><div class="value tabular">71.4%</div></div>
+            <div class="stat-tile accent"><div class="label">KNN (K=5) test accuracy</div><div class="value tabular">85.7%</div></div>
+          </div>
+          <p class="body-text">Logistic regression's single straight line can't bend around Applicant #26 AND correctly separate the two very different "approve" groups (young/high-credit and older/moderate-credit) at the same time. KNN, with no straight-line constraint, handles both. (Boundary shapes below are trained on the full 26 for a clean, complete picture.)</p>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvE5"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--bad);"></span>rejected</span><span><span class="sw" style="background:var(--good);"></span>approved</span><span><span class="sw line" style="background:var(--ink-faint);"></span>logistic regression boundary</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ E6 — THE CURSE OF DIMENSIONALITY ============ -->
+    <section class="slide" data-section="eval" id="sE6">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 3 · A Warning Worth Knowing</div>
+        <h1>KNN's weakness: <span class="glow">too many features</span></h1>
+        <p class="body-text">With 2 features, "nearest" is intuitive — points cluster naturally. Keep adding features (age, salary, credit score, loan amount, employment type, zip code...) and something strange happens: in very high dimensions, EVERY point ends up roughly equally far from every other point. "Nearest neighbor" stops meaning much.</p>
+        <div class="banner warn">📉 This is called the <b>curse of dimensionality</b>. It's the main reason KNN is usually applied to a modest, carefully-chosen set of features rather than thrown at hundreds of raw columns — a consideration Logistic Regression is comparatively less sensitive to.</div>
+      </div>
+    </section>
+
+    <!-- ============ E7 — BRIDGE TO HOUR 4 ============ -->
+    <section class="slide" data-section="eval" id="sE7">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Hour 3 → Hour 4</div>
+        <h1 class="kicker-big">Everything today assumed<br/>a clean, two-feature <span class="glow">toy dataset</span></h1>
+        <p class="body-text" style="max-width:660px;">Real applications have missing values, mixed data types, and more than two outcomes. Hour 4: what breaks first for a distance-based model when data gets messy, and the one thing KNN gets for free that Logistic Regression had to work hard for.</p>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- HOUR 4 — REAL-WORLD KNN & MULTICLASS                               -->
+    <!-- ================================================================= -->
+
+    <!-- ============ R1 — MISSING VALUES ARE WORSE FOR KNN ============ -->
+    <section class="slide" data-section="real" id="sR1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 4 · A Missing Value Hits KNN Differently</div>
+        <h1>You can't compute distance to a <span class="glow">blank</span></h1>
+        <p class="body-text">A missing credit score isn't just an inconvenience for KNN — the distance FORMULA itself is undefined the moment one coordinate is missing. Every one of the six raw-data problems from the Logistic Regression session (missing values, duplicates, wrong types, casing typos, impossible values) still applies here — but two of them are especially dangerous for a distance-based model.</p>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card" style="border-top:5px solid var(--bad);"><div class="ico">🕳️</div><h3>Missing values</h3><p>d = √((x−NaN)²+...) is meaningless. Must impute BEFORE computing any distance — there's no "skip this feature" option mid-calculation.</p></div>
+          <div class="card" style="border-top:5px solid var(--bad);"><div class="ico">📏</div><h3>Unscaled features</h3><p>As Hour 2 showed concretely: an un-normalized column doesn't just slow anything down — it silently dominates every distance and corrupts every prediction.</p></div>
+        </div>
+        <div class="banner info">🧹 Same cleaning pipeline as before — median imputation, one-hot encoding, standardization — but now presented as a genuine PREREQUISITE for the math to even run, not just good practice.</div>
+      </div>
+    </section>
+
+    <!-- ============ R2 — ENCODING CATEGORICAL FEATURES FOR DISTANCE ============ -->
+    <section class="slide" data-section="real" id="sR2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 4 · What Does "Distance" Mean Between Categories?</div>
+        <h1>"Salaried" minus "Retired" = <span class="glow">?</span></h1>
+        <p class="body-text">Euclidean distance needs numbers. One-hot encode Employment into Is_Salaried / Is_SelfEmployed / Is_Retired — same fix as Logistic Regression — and something new falls out: the distance between two DIFFERENT one-hot categories is always exactly √2, and between the SAME category is always 0. Distance now has a clean, sensible meaning for categorical data too.</p>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Employment</th><th>Is_Salaried</th><th>Is_SelfEmployed</th><th>Is_Retired</th></tr></thead>
+            <tbody>
+              <tr><td>Salaried</td><td class="hl-row">1</td><td>0</td><td>0</td></tr>
+              <tr><td>Self-Employed</td><td>0</td><td class="hl-row">1</td><td>0</td></tr>
+              <tr><td>Retired</td><td>0</td><td>0</td><td class="hl-row">1</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="banner warn">⚠️ Never encode categories as raw 1, 2, 3 for KNN — that would claim "Retired" is numerically closer to "Self-Employed" than to "Salaried," an invented ranking the data never justified.</div>
+      </div>
+    </section>
+
+    <!-- ============ R3 — FULL PIPELINE, KNN EDITION ============ -->
+    <section class="slide" data-section="real" id="sR3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 4 · Putting It Together</div>
+        <h1>The preprocessing stack, <span class="glow">now mandatory end to end</span></h1>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>Remove exact duplicates</h3><p>A duplicated applicant becomes their own nearest neighbor — an easy, silent way to inflate accuracy.</p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>Fix types &amp; inconsistent text</h3><p>"29" → 29. "salaried" → "Salaried."</p></div></div>
+          <div class="rule"><div class="n">3</div><div class="t"><h3>Validate ranges; flag impossible values as missing</h3><p>A credit score of 910 doesn't just look wrong — it silently drags any distance calculation involving it far off.</p></div></div>
+          <div class="rule"><div class="n">4</div><div class="t"><h3>Impute remaining missing values</h3><p>Median, for the same outlier-robustness reason as before — required here, since distance to a blank is undefined.</p></div></div>
+          <div class="rule"><div class="n">5</div><div class="t"><h3>One-hot encode categorical features</h3><p>Gives every category a well-defined, equal-footing distance.</p></div></div>
+          <div class="rule"><div class="n">6</div><div class="t"><h3>Standardize every numeric feature</h3><p>Not a recommendation — a requirement for distance to mean anything at all.</p></div></div>
+          <div class="rule"><div class="n">7</div><div class="t"><h3>Train/test split</h3><p>Same discipline as every model this course.</p></div></div>
+          <div class="rule"><div class="n">8</div><div class="t"><h3>Fit KNN</h3><p>"Fit" here just means: store the cleaned, scaled training set. Prediction does the rest.</p></div></div>
+        </div>
+        <div class="banner good">✅ Steps 1–6 are IDENTICAL to the Logistic Regression pipeline — the exact same raw loan file would go through the exact same cleaning. Only what happens in step 8 is different.</div>
+      </div>
+    </section>
+
+    <!-- ============ R4 — MULTICLASS, FOR FREE ============ -->
+    <section class="slide" data-section="real" id="sR4">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Hour 4 · The Thing KNN Doesn't Need Extra Machinery For</div>
+        <h1>Multiclass isn't a special case — it's the <span class="glow">same algorithm</span></h1>
+        <p class="body-text">Logistic Regression needed One-vs-Rest or Softmax — genuinely new machinery — to go from 2 classes to K classes. KNN's algorithm never mentioned "2" anywhere. Majority vote among neighbors works identically whether there are 2 labels or 20.</p>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>Same 26 applicants, finer-grained outcome</h3><p>Reject (14) stays the same. The old "Approve" (12) splits into Standard Approval (8, older/moderate-credit) and Premium Approval (4, young/high-credit).</p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>Nothing else changes</h3><p>Same distance formula, same "closest K," same vote — just tally 3 labels instead of 2.</p></div></div>
+        </div>
+        <div class="banner good">🎯 This is one of KNN's most underrated strengths: whatever works for binary classification already works for multiclass, with zero modification.</div>
+      </div>
+    </section>
+
+    <!-- ============ R5 — MULTICLASS WORKED EXAMPLE ============ -->
+    <section class="slide" data-section="real" id="sR5">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Hour 4 · By Hand, Once More</div>
+          <h1>A new applicant: <span class="glow">credit 7, age 35</span></h1>
+          <p class="body-text">Same recipe as Hour 2's worked example — just tallying three labels this time.</p>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Rank</th><th>Credit</th><th>Age</th><th>Label</th><th>Distance</th></tr></thead>
+              <tbody>
+                <tr class="hl-row"><td>1</td><td>6.5</td><td>35</td><td>Reject</td><td>0.25</td></tr>
+                <tr><td>2</td><td>6.8</td><td>42</td><td>Standard</td><td>0.53</td></tr>
+                <tr><td>3</td><td>6.0</td><td>38</td><td>Reject</td><td>0.55</td></tr>
+                <tr><td>4</td><td>7.5</td><td>28</td><td>Premium</td><td>0.57</td></tr>
+                <tr class="hl-row"><td>5</td><td>6.0</td><td>30</td><td>Reject</td><td>0.63</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="footnote">K=5 tally: Reject×3, Standard×1, Premium×1 → REJECT wins outright, 60% of the vote.</p>
+        </div>
+        <div class="visual-box" style="height:min(50vh,440px);">
+          <div class="canvas-wrap"><canvas id="cvR5"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--bad);"></span>reject</span><span><span class="sw" style="background:var(--warn);"></span>standard approval</span><span><span class="sw" style="background:var(--good);"></span>premium approval</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ R6 — KNN FOR REGRESSION (BRIEF ASIDE) ============ -->
+    <section class="slide" data-section="real" id="sR6">
+      <div class="slide-inner center-col">
+        <div class="optional-badge">🎓 Aside</div>
+        <div class="eyebrow">Hour 4 · Not Just For Classification</div>
+        <h1 class="kicker-big">Swap the vote for an <span class="glow">average</span>,<br/>and it predicts numbers instead</h1>
+        <p class="body-text" style="max-width:680px;">KNN Regression uses the exact same five steps — find the K nearest neighbors — but instead of a majority vote, it AVERAGES their numeric target values. "Predict this house's price as the average of the 5 most similar recently-sold houses" is literally KNN Regression, plain English. Same algorithm, same distance formula, same K, one word changed: vote → average.</p>
+      </div>
+    </section>
+
+    <!-- ============ R7 — FULL RECAP ============ -->
+    <section class="slide" data-section="real" id="sR7">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Head to Toe — Everything In One Place</div>
+        <h1>The complete <span class="glow">KNN</span> pipeline</h1>
+        <div class="card-grid" style="margin-top:4px;">
+          <div class="card" style="border-top:5px solid var(--c-dist);"><div class="ico">📍</div><h3>Distance</h3><p>Euclidean distance between two applicants — the one formula the whole algorithm rests on.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-dist);"><div class="ico">🧠</div><h3>Lazy learning</h3><p>No training phase — "fit" just means storing the data. All the cost moves to prediction time.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-algo);"><div class="ico">🎚️</div><h3>Choosing K</h3><p>Bias-variance tradeoff, tuned honestly via cross-validation — not a guess.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-algo);"><div class="ico">📏</div><h3>Scaling</h3><p>Mandatory, not optional — an unscaled feature silently corrupts every distance and every prediction.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-eval);"><div class="ico">🎯</div><h3>Evaluation</h3><p>Confusion matrix → accuracy, precision, recall, F1, in the same plain loan-officer language.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-real);"><div class="ico">🌐</div><h3>Multiclass</h3><p>Free — the identical algorithm, more labels to count votes among.</p></div>
+        </div>
+        <div class="banner good">✅ No formula was ever fit. No cost function was ever minimized. Every prediction, all session, came from one idea: find who's most similar, and ask what happened to them.</div>
+      </div>
+    </section>
+
+    <!-- ============ R8 — CLOSING ============ -->
+    <section class="slide" data-section="real" id="sR8">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Session Complete</div>
+        <h1 class="kicker-big">From fitting a <span class="glow">formula</span><br/>to trusting your <span class="glow">neighbors</span></h1>
+        <p class="body-text" style="max-width:680px;">Euclidean distance and the five-step lazy-learning algorithm. Why scaling is mandatory, not a suggestion. Choosing K honestly via cross-validation instead of guessing. Confusion matrices in plain language. A real, verified win over Logistic Regression on data with a non-linear boundary. And multiclass classification that needed no new machinery at all. That's K-Nearest Neighbors, start to finish — proof that "learn a formula" was never the only way to predict.</p>
+        <p class="body-text" style="max-width:680px; font-weight:800; color:var(--ink);">No parameters. No gradient descent. Just distance, a vote, and honest evaluation.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="chrome-bottom">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous slide">‹</button>
+    <div class="progress" id="progress"></div>
+    <div class="slide-counter"><span id="curNum" class="tabular">1</span> / <span id="totalNum" class="tabular">—</span></div>
+    <button class="nav-btn" id="nextBtn" aria-label="Next slide">›</button>
+  </nav>
+
+<script>
+"use strict";
+
+/* =========================== helpers =========================== */
+const $  = (sel, el=document) => el.querySelector(sel);
+const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+
+const clamp = (v,lo,hi) => Math.max(lo, Math.min(hi,v));
+const mean  = arr => arr.reduce((s,v)=>s+v,0) / arr.length;
+const fmt   = (v,d=2) => Number(v).toFixed(d);
+
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+
+function fitCanvas(cv){
+  const rect = cv.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const w = Math.max(1, Math.round(rect.width*dpr));
+  const h = Math.max(1, Math.round(rect.height*dpr));
+  if(cv.width !== w || cv.height !== h){ cv.width = w; cv.height = h; }
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return { ctx, w: rect.width, h: rect.height };
+}
+
+function drawScatter(cv, opts){
+  if(!cv || cv.clientWidth === 0) return null;
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const padL=44, padR=16, padT=16, padB=32;
+  const plotW=w-padL-padR, plotH=h-padT-padB;
+  const [xmin,xmax] = opts.xDomain, [ymin,ymax] = opts.yDomain;
+  const X = x => padL + ((x-xmin)/(xmax-xmin))*plotW;
+  const Y = y => padT + plotH - ((y-ymin)/(ymax-ymin))*plotH;
+
+  ctx.strokeStyle = cssVar('--line'); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT+plotH); ctx.lineTo(padL+plotW, padT+plotH); ctx.stroke();
+  ctx.fillStyle=cssVar('--ink-faint'); ctx.font='10.5px sans-serif'; ctx.textAlign='center';
+  if(opts.xLabel) ctx.fillText(opts.xLabel, padL+plotW/2, h-6);
+  if(opts.yLabel){
+    ctx.save(); ctx.translate(11, padT+plotH/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center';
+    ctx.fillText(opts.yLabel, 0,0);
+    ctx.restore();
+  }
+
+  const layout = {ctx,X,Y,padL,padT,plotW,plotH,xmin,xmax,ymin,ymax};
+
+  if(opts.points){
+    const r = opts.radius || 5.2;
+    for(const p of opts.points){
+      ctx.fillStyle = opts.colorFn ? opts.colorFn(p) : (opts.color || cssVar('--accent'));
+      ctx.beginPath(); ctx.arc(X(p.x), Y(p.y), r, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = cssVar('--paper'); ctx.lineWidth = 1.4; ctx.stroke();
+    }
+  }
+  return layout;
+}
+
+function drawCurve(ctx, layout, fn, color, lw, dash, xOverrideMin, xOverrideMax){
+  const steps = 160;
+  const x0 = xOverrideMin===undefined ? layout.xmin : xOverrideMin;
+  const x1 = xOverrideMax===undefined ? layout.xmax : xOverrideMax;
+  ctx.save();
+  ctx.strokeStyle = color; ctx.lineWidth = lw||2.8;
+  if(dash) ctx.setLineDash(dash);
+  ctx.beginPath();
+  for(let i=0;i<=steps;i++){
+    const x = x0 + (i/steps)*(x1-x0);
+    const y = fn(x);
+    const px = layout.X(x), py = layout.Y(clamp(y, layout.ymin-9999, layout.ymax+9999));
+    i===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawPointMarker(ctx, layout, x, y, color, r){
+  ctx.save();
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.arc(layout.X(x), layout.Y(clamp(y,layout.ymin,layout.ymax)), r||7, 0, Math.PI*2); ctx.fill();
+  ctx.strokeStyle = cssVar('--paper'); ctx.lineWidth=2; ctx.stroke();
+  ctx.restore();
+}
+
+function drawRing(ctx, layout, x, y, color, r){
+  ctx.save();
+  ctx.strokeStyle = color; ctx.lineWidth = 2.6;
+  ctx.beginPath(); ctx.arc(layout.X(x), layout.Y(y), r||10, 0, Math.PI*2); ctx.stroke();
+  ctx.restore();
+}
+
+/* =========================== KNN dataset =========================== */
+// label: 0=reject, 1=approve (binary).  cls3: 0=reject, 1=standard approval, 2=premium approval (multiclass)
+const KNN_APPLICANTS = [
+  {x:2,y:25,label:0,cls3:0}, {x:2.5,y:35,label:0,cls3:0}, {x:3,y:45,label:0,cls3:0}, {x:2,y:55,label:0,cls3:0},
+  {x:3.5,y:30,label:0,cls3:0}, {x:2.8,y:60,label:0,cls3:0}, {x:3.2,y:22,label:0,cls3:0}, {x:4,y:50,label:0,cls3:0},
+  {x:4.5,y:40,label:0,cls3:0}, {x:5,y:33,label:0,cls3:0}, {x:6,y:30,label:0,cls3:0},
+  {x:8,y:24,label:1,cls3:2}, {x:8.5,y:26,label:1,cls3:2}, {x:9,y:23,label:1,cls3:2}, {x:7.5,y:28,label:1,cls3:2},
+  {x:5,y:55,label:1,cls3:1}, {x:5.5,y:60,label:1,cls3:1}, {x:6,y:50,label:1,cls3:1}, {x:4.8,y:65,label:1,cls3:1},
+  {x:5.2,y:58,label:1,cls3:1}, {x:6.8,y:62,label:1,cls3:1},
+  {x:6.5,y:35,label:0,cls3:0}, {x:6,y:38,label:0,cls3:0},
+  {x:7,y:45,label:1,cls3:1}, {x:6.8,y:42,label:1,cls3:1},
+  {x:7,y:55,label:0,cls3:0},
+];
+const KNN_X_DOMAIN = [0,10];
+const KNN_Y_DOMAIN = [15,72];
+
+function classColor(p){ return p.label===1 ? cssVar('--good') : cssVar('--bad'); }
+function class3Color(label){ return label===2 ? cssVar('--good') : (label===1 ? cssVar('--warn') : cssVar('--bad')); }
+
+function euclidean(a,b){ return Math.sqrt((a.x-b.x)**2 + (a.y-b.y)**2); }
+
+function featureStats(points){
+  const mx=mean(points.map(p=>p.x)), my=mean(points.map(p=>p.y));
+  const sx=Math.sqrt(mean(points.map(p=>(p.x-mx)**2)));
+  const sy=Math.sqrt(mean(points.map(p=>(p.y-my)**2)));
+  return {mx,my,sx,sy};
+}
+const KNN_STATS = featureStats(KNN_APPLICANTS);
+function scalePoint(p, stats){ return {x:(p.x-stats.mx)/stats.sx, y:(p.y-stats.my)/stats.sy, label:p.label, cls3:p.cls3}; }
+const KNN_SCALED = KNN_APPLICANTS.map(p=>scalePoint(p,KNN_STATS));
+
+function knnPredict(trainPts, query, K, labelKey){
+  labelKey = labelKey || 'label';
+  const withDist = trainPts.map(p => ({p, d: euclidean(p, query)}));
+  withDist.sort((a,b)=>a.d-b.d);
+  const neigh = withDist.slice(0, K);
+  const counts = {};
+  neigh.forEach(n => { const l = n.p[labelKey]; counts[l] = (counts[l]||0)+1; });
+  let best=null, bestC=-1;
+  Object.keys(counts).forEach(k => { if(counts[k] > bestC){ bestC = counts[k]; best = k; } });
+  return { pred: Number(best), neigh, counts };
+}
+
+function drawKnnBoundary(layout, trainPts, K, stats, colorFn, labelKey, resSteps){
+  const stepsX = resSteps || 44;
+  const stepsY = Math.round(stepsX * (layout.plotH/layout.plotW)) || 32;
+  const cellW = layout.plotW/stepsX, cellH = layout.plotH/stepsY;
+  layout.ctx.save();
+  layout.ctx.globalAlpha = 0.16;
+  for(let i=0;i<stepsX;i++){
+    const x = layout.xmin + (i+0.5)/stepsX*(layout.xmax-layout.xmin);
+    for(let j=0;j<stepsY;j++){
+      const y = layout.ymin + (j+0.5)/stepsY*(layout.ymax-layout.ymin);
+      const q = stats ? {x:(x-stats.mx)/stats.sx, y:(y-stats.my)/stats.sy} : {x,y};
+      const {pred} = knnPredict(trainPts, q, K, labelKey);
+      layout.ctx.fillStyle = colorFn(pred);
+      layout.ctx.fillRect(layout.X(x)-cellW/2, layout.Y(y)-cellH/2, cellW+0.6, cellH+0.6);
+    }
+  }
+  layout.ctx.restore();
+}
+
+/* =========================== deck engine =========================== */
+const slideEls = $$('.slide');
+let cur = 0;
+
+const CHAPTERS = {
+  dist: { num:1, label:'Distance &amp; the Core Idea' },
+  algo: { num:2, label:'The Full Algorithm &amp; Choosing K' },
+  eval: { num:3, label:'Evaluating &amp; Comparing' },
+  real: { num:4, label:'Real-World KNN &amp; Multiclass' },
+};
+
+const onEnter = {};
+const onLeave = {};
+
+function buildDots(){
+  const wrap = $('#progress');
+  wrap.innerHTML = '';
+  let lastSection = null;
+  slideEls.forEach((s, i) => {
+    const sec = s.dataset.section;
+    if(lastSection !== null && sec !== lastSection){
+      const gap = document.createElement('span');
+      gap.className = 'dot gap';
+      wrap.appendChild(gap);
+    }
+    const b = document.createElement('button');
+    b.className = 'dot';
+    b.setAttribute('aria-label', 'Go to slide ' + (i+1));
+    b.addEventListener('click', () => goTo(i));
+    wrap.appendChild(b);
+    lastSection = sec;
+  });
+}
+
+function goTo(i){
+  i = clamp(i, 0, slideEls.length-1);
+  const leaveFn = onLeave[slideEls[cur].id];
+  if(leaveFn) leaveFn();
+  slideEls[cur].classList.remove('active');
+  cur = i;
+  const s = slideEls[cur];
+  s.classList.add('active');
+  document.body.dataset.section = s.dataset.section;
+
+  const chip = $('#chapterChip');
+  const meta = CHAPTERS[s.dataset.section];
+  if(meta){
+    chip.style.display = 'flex';
+    $('#chapterNum').textContent = meta.num;
+    $('#chapterLabel').innerHTML = meta.label;
+  } else {
+    chip.style.display = 'none';
+  }
+
+  $('#curNum').textContent = cur+1;
+  $('#prevBtn').disabled = cur === 0;
+  $('#nextBtn').disabled = cur === slideEls.length-1;
+
+  $$('.dot:not(.gap)', $('#progress')).forEach((d,idx)=> d.classList.toggle('active', idx===cur));
+
+  const fn = onEnter[s.id];
+  if(fn) requestAnimationFrame(fn);
+}
+
+function next(){ if(cur < slideEls.length-1) goTo(cur+1); }
+function prev(){ if(cur > 0) goTo(cur-1); }
+
+$('#nextBtn').addEventListener('click', next);
+$('#prevBtn').addEventListener('click', prev);
+window.addEventListener('keydown', e => {
+  if(e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+  else if(e.key === 'ArrowLeft'){ e.preventDefault(); prev(); }
+});
+
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => { const fn = onEnter[slideEls[cur].id]; if(fn) fn(); }, 120);
+});
+
+const themeBtn = $('#themeToggle');
+function applyStoredTheme(){
+  const t = localStorage.getItem('sv-theme-knn');
+  if(t) document.documentElement.setAttribute('data-theme', t);
+}
+applyStoredTheme();
+themeBtn.addEventListener('click', () => {
+  const now = document.documentElement.getAttribute('data-theme');
+  const dark = now ? now === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const nextTheme = dark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', nextTheme);
+  localStorage.setItem('sv-theme-knn', nextTheme);
+  const fn = onEnter[slideEls[cur].id]; if(fn) fn();
+});
+
+/* =========================== D3 — dataset scatter =========================== */
+onEnter['sD3'] = () => {
+  drawScatter($('#cvD3'), {
+    points: KNN_APPLICANTS, xDomain: KNN_X_DOMAIN, yDomain: KNN_Y_DOMAIN,
+    xLabel: 'credit score index →', yLabel: 'age →',
+    colorFn: classColor,
+  });
+};
+
+/* =========================== D5 — interactive nearest-neighbor vote =========================== */
+let d5K = 1;
+function d5Render(){
+  const cx = parseFloat($('#d5CreditSlider').value);
+  const ax = parseFloat($('#d5AgeSlider').value);
+  $('#d5CreditLabel').textContent = fmt(cx,1);
+  $('#d5AgeLabel').textContent = Math.round(ax);
+  const query = {x:cx, y:ax};
+  const {pred, neigh, counts} = knnPredict(KNN_APPLICANTS, query, d5K);
+  const rej = counts[0]||0, apr = counts[1]||0;
+  $('#d5Votes').textContent = `${apr} approve, ${rej} reject`;
+  $('#d5Pred').textContent = pred===1 ? 'APPROVE' : 'REJECT';
+
+  const layout = drawScatter($('#cvD5'), {
+    points: KNN_APPLICANTS, xDomain: KNN_X_DOMAIN, yDomain: KNN_Y_DOMAIN,
+    xLabel: 'credit score index →', yLabel: 'age →',
+    colorFn: classColor,
+  });
+  if(layout){
+    layout.ctx.save();
+    layout.ctx.strokeStyle = cssVar('--ink-faint'); layout.ctx.lineWidth = 1.3; layout.ctx.setLineDash([3,3]);
+    neigh.forEach(n => {
+      layout.ctx.beginPath();
+      layout.ctx.moveTo(layout.X(query.x), layout.Y(query.y));
+      layout.ctx.lineTo(layout.X(n.p.x), layout.Y(n.p.y));
+      layout.ctx.stroke();
+    });
+    layout.ctx.restore();
+    neigh.forEach(n => drawRing(layout.ctx, layout, n.p.x, n.p.y, cssVar('--c-dist'), 9));
+    drawPointMarker(layout.ctx, layout, query.x, query.y, cssVar('--c-dist'), 7.5);
+  }
+}
+function d5SetK(K, btnId){
+  d5K = K;
+  ['d5K1Btn','d5K3Btn','d5K5Btn'].forEach(id => $('#'+id).classList.toggle('toggled', id===btnId));
+  d5Render();
+}
+onEnter['sD5'] = () => d5Render();
+$('#d5CreditSlider').addEventListener('input', d5Render);
+$('#d5AgeSlider').addEventListener('input', d5Render);
+$('#d5K1Btn').addEventListener('click', () => d5SetK(1,'d5K1Btn'));
+$('#d5K3Btn').addEventListener('click', () => d5SetK(3,'d5K3Btn'));
+$('#d5K5Btn').addEventListener('click', () => d5SetK(5,'d5K5Btn'));
+
+/* =========================== A5 — K slider, boundary heatmap =========================== */
+function a5Render(){
+  const K = parseInt($('#a5KSlider').value);
+  $('#a5KLabel').textContent = K;
+  const layout = drawScatter($('#cvA5'), {
+    points: [], xDomain: KNN_X_DOMAIN, yDomain: KNN_Y_DOMAIN,
+    xLabel: 'credit score index →', yLabel: 'age →',
+  });
+  if(layout){
+    drawKnnBoundary(layout, KNN_SCALED, K, KNN_STATS, l => l===1 ? cssVar('--good') : cssVar('--bad'));
+    KNN_APPLICANTS.forEach(p => {
+      layout.ctx.fillStyle = classColor(p);
+      layout.ctx.beginPath(); layout.ctx.arc(layout.X(p.x), layout.Y(p.y), 5.2, 0, Math.PI*2); layout.ctx.fill();
+      layout.ctx.strokeStyle = cssVar('--paper'); layout.ctx.lineWidth = 1.4; layout.ctx.stroke();
+    });
+  }
+  const banner = $('#a5Banner');
+  if(K<=2){ banner.className='banner warn'; banner.textContent = '⚠️ K='+K+': jagged, noisy boundary — chasing individual points, including outliers like Applicant #26.'; }
+  else if(K<=9){ banner.className='banner good'; banner.textContent = '✅ K='+K+': locally sensitive, but no longer fooled by any single odd point.'; }
+  else { banner.className='banner bad'; banner.textContent = '🚩 K='+K+': oversmoothed — large chunks of very different applicants get blended into one prediction.'; }
+}
+onEnter['sA5'] = a5Render;
+$('#a5KSlider').addEventListener('input', a5Render);
+
+/* =========================== A7 — train vs test accuracy vs K (precomputed, one fixed 19/7 split) =========================== */
+// [K, train_accuracy, test_accuracy] -- 19 training applicants, 7 held-out test applicants, scaler fit on train only
+const TRAIN_TEST_BY_K = [
+  [1,1.000,1.000],[2,0.842,1.000],[3,0.895,1.000],[4,0.895,0.857],[5,0.895,0.857],
+  [6,0.895,0.857],[7,0.895,0.857],[8,0.842,0.571],[9,0.737,0.714],[10,0.632,0.571],
+  [11,0.684,0.714],[12,0.737,0.571],[13,0.737,0.714],[14,0.684,0.714],[15,0.632,0.714],
+];
+onEnter['sA7'] = () => {
+  const layout = drawScatter($('#cvA7'), {
+    points: [], xDomain: [0.5,15.5], yDomain: [0.4,1.05],
+    xLabel: 'K →', yLabel: 'accuracy →', hLines:[0.5,0.75,1.0],
+  });
+  if(layout){
+    const drawLine = (idx, color) => {
+      layout.ctx.save();
+      layout.ctx.strokeStyle = color; layout.ctx.lineWidth = 2.6;
+      layout.ctx.beginPath();
+      TRAIN_TEST_BY_K.forEach((row,i) => {
+        const px = layout.X(row[0]), py = layout.Y(row[idx]);
+        i===0 ? layout.ctx.moveTo(px,py) : layout.ctx.lineTo(px,py);
+      });
+      layout.ctx.stroke();
+      layout.ctx.restore();
+      TRAIN_TEST_BY_K.forEach(row => {
+        const isFive = row[0]===5;
+        layout.ctx.fillStyle = color;
+        layout.ctx.beginPath(); layout.ctx.arc(layout.X(row[0]), layout.Y(row[idx]), isFive?6:3.2, 0, Math.PI*2); layout.ctx.fill();
+      });
+    };
+    drawLine(1, cssVar('--good'));
+    drawLine(2, cssVar('--bad'));
+  }
+};
+
+/* =========================== E5 — KNN boundary vs logistic regression line =========================== */
+// logistic regression fit (scaled space) on the same 26 applicants, verified via scikit-learn
+const LR_B0 = -0.384, LR_B1 = 1.631, LR_B2 = 0.806;
+function lrBoundaryY(x){
+  const sx = (x - KNN_STATS.mx) / KNN_STATS.sx;
+  const sy = -(LR_B0 + LR_B1*sx) / LR_B2;
+  return KNN_STATS.my + sy*KNN_STATS.sy;
+}
+onEnter['sE5'] = () => {
+  const layout = drawScatter($('#cvE5'), {
+    points: [], xDomain: KNN_X_DOMAIN, yDomain: KNN_Y_DOMAIN,
+    xLabel: 'credit score index →', yLabel: 'age →',
+  });
+  if(layout){
+    drawKnnBoundary(layout, KNN_SCALED, 5, KNN_STATS, l => l===1 ? cssVar('--good') : cssVar('--bad'));
+    KNN_APPLICANTS.forEach(p => {
+      layout.ctx.fillStyle = classColor(p);
+      layout.ctx.beginPath(); layout.ctx.arc(layout.X(p.x), layout.Y(p.y), 5.2, 0, Math.PI*2); layout.ctx.fill();
+      layout.ctx.strokeStyle = cssVar('--paper'); layout.ctx.lineWidth = 1.4; layout.ctx.stroke();
+    });
+    drawCurve(layout.ctx, layout, lrBoundaryY, cssVar('--ink-faint'), 2.8);
+  }
+};
+
+/* =========================== R5 — multiclass worked-example scatter =========================== */
+onEnter['sR5'] = () => {
+  const layout = drawScatter($('#cvR5'), {
+    points: KNN_APPLICANTS, xDomain: KNN_X_DOMAIN, yDomain: KNN_Y_DOMAIN,
+    xLabel: 'credit score index →', yLabel: 'age →',
+    colorFn: p => class3Color(p.cls3),
+  });
+  if(layout){
+    drawRing(layout.ctx, layout, 7, 35, cssVar('--c-real'), 9);
+    drawPointMarker(layout.ctx, layout, 7, 35, cssVar('--c-real'), 7);
+  }
+};
+
+/* =========================== init =========================== */
+buildDots();
+$('#totalNum').textContent = slideEls.length;
+const deepLinkSlide = parseInt(new URLSearchParams(location.search).get('slide'), 10);
+goTo(Number.isFinite(deepLinkSlide) ? deepLinkSlide-1 : 0);
+</script>
+</body>
+</html>

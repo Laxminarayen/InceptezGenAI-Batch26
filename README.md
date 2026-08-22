@@ -28,6 +28,7 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 - [Day 20: Revision & Exercise: Linear Regression](#day-20)
 - [Day 21: Polynomial Regression](#day-21)
 - [Day 22: Logistic Regression](#day-22)
+- [Day 23: K-Nearest Neighbors (KNN)](#day-23)
 - [Assignments](#assignments)
 
 ---
@@ -361,6 +362,25 @@ A full end-to-end assignment applying the same skills to a new dataset: cleaning
 
 ### Resources
 - **Slide Deck:** [`22. Logistic Regression/logistic-regression-slides.html`](22.%20Logistic%20Regression/logistic-regression-slides.html)
+
+---
+
+<a name="day-23"></a>
+## 🗓️ Day 23: K-Nearest Neighbors (KNN) (22-Aug-2026)
+
+### Highlights
+- **A Completely Different Family:** Moving from parametric, formula-fitting models to instance-based, "lazy" learning — no training step, just memorized data and a distance calculation at prediction time.
+- **The Running Loan-Approval Example, Revisited:** Same dataset as logistic regression, now classified by asking "who are my nearest neighbors?" instead of fitting a decision boundary.
+- **The One Formula KNN Actually Needs:** Euclidean distance (and other metrics), with an interactive demo to drag a new applicant in and watch its K nearest neighbors get found live.
+- **The Problem With K = 1:** Overfitting to noise, and how the decision boundary shape changes completely as K grows.
+- **The Single Most Important Rule in KNN:** Feature scaling — since distance-based methods are dominated by whichever feature has the largest raw range.
+- **Multiple Distance Metrics, a K-Slider Demo, and Choosing K:** Comparing distance definitions, watching predictions shift live as K changes, and picking K via validation rather than guesswork.
+- **Nothing Is Actually Free:** The computational cost of lazy learning — no training cost, but every prediction re-scans the stored data.
+- **Same Evaluation Discipline as Logistic Regression:** Confusion matrix, a specific-applicant walkthrough, and a real, verified head-to-head comparison against Day 22's logistic regression model — plus a warning about the curse of dimensionality.
+- **Putting It All Together:** Handling missing values and categorical distance in KNN, why it needs no explicit training/cost-function machinery, and a reminder that KNN works for regression too, not just classification.
+
+### Resources
+- **Slide Deck:** [`23. KNN/knn-classification-slides.html`](23.%20KNN/knn-classification-slides.html)
 
 ---
 
