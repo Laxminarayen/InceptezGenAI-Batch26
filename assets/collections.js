@@ -29,6 +29,7 @@
     "20 · Revision & Exercise: Linear Regression",
     "21 · Polynomial Regression",
     "22 · Logistic Regression",
+    "23 · K-Nearest Neighbors (KNN)",
   ];
 
   function escapeHtml(str) {
