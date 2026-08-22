@@ -381,6 +381,8 @@ A full end-to-end assignment applying the same skills to a new dataset: cleaning
 
 ### Resources
 - **Slide Deck:** [`23. KNN/knn-classification-slides.html`](23.%20KNN/knn-classification-slides.html)
+- **Classwork Notebook:** [`23. KNN/LogisticRegression&KNN.ipynb`](23.%20KNN/LogisticRegression%26KNN.ipynb) — logistic regression vs. KNN, head to head, on the loan-approval dataset
+- **Dataset:** [`23. KNN/loan_data.csv`](23.%20KNN/loan_data.csv)
 
 ---
 
