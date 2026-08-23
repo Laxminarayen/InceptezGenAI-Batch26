@@ -30,6 +30,7 @@
     "21 · Polynomial Regression",
     "22 · Logistic Regression",
     "23 · K-Nearest Neighbors (KNN)",
+    "24 · KNN Regression & Decision Trees",
   ];
 
   function escapeHtml(str) {
