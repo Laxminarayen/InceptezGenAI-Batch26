@@ -11,11 +11,12 @@
       "sigmoid function",
       "log loss",
       "accuracy v/s f1-score",
-      "the confusion."
+      "the confusion matrix."
     ],
     "createdAt": "2026-08-23T15:23:29.234Z",
     "likes": [],
-    "comments": []
+    "comments": [],
+    "editedAt": "2026-08-23T15:24:36.697Z"
   },
   {
     "id": "ms5zngyfl49pn9",
