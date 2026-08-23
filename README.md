@@ -29,6 +29,7 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 - [Day 21: Polynomial Regression](#day-21)
 - [Day 22: Logistic Regression](#day-22)
 - [Day 23: K-Nearest Neighbors (KNN)](#day-23)
+- [Day 24: KNN Regression & Decision Trees](#day-24)
 - [Assignments](#assignments)
 
 ---
@@ -380,9 +381,25 @@ A full end-to-end assignment applying the same skills to a new dataset: cleaning
 - **Putting It All Together:** Handling missing values and categorical distance in KNN, why it needs no explicit training/cost-function machinery, and a reminder that KNN works for regression too, not just classification.
 
 ### Resources
-- **Slide Deck:** [`23. KNN/knn-classification-slides.html`](23.%20KNN/knn-classification-slides.html)
-- **Classwork Notebook:** [`23. KNN/LogisticRegression&KNN.ipynb`](23.%20KNN/LogisticRegression%26KNN.ipynb) — logistic regression vs. KNN, head to head, on the loan-approval dataset
-- **Dataset:** [`23. KNN/loan_data.csv`](23.%20KNN/loan_data.csv)
+- **Slide Deck:** [`23. KNN-Classification/knn-classification-slides.html`](23.%20KNN-Classification/knn-classification-slides.html)
+- **Classwork Notebook:** [`23. KNN-Classification/LogisticRegression&KNN.ipynb`](23.%20KNN-Classification/LogisticRegression%26KNN.ipynb) — logistic regression vs. KNN, head to head, on the loan-approval dataset
+- **Dataset:** [`23. KNN-Classification/loan_data.csv`](23.%20KNN-Classification/loan_data.csv)
+
+---
+
+<a name="day-24"></a>
+## 🗓️ Day 24: KNN Regression & Decision Trees (23-Aug-2026)
+
+### Highlights
+- **A 10-Second Recap, Then a New Question:** Extending KNN from classification into regression — instead of a majority vote among neighbors, averaging their values.
+- **By Hand, Once, Then an Interactive Demo:** A running example computed by hand, then a "drag a new house in" demo to watch KNN regression predict a price live, with the same K tension seen in Day 23 and a real error measurement to judge it by.
+- **Same Data, Three Classifiers Side by Side:** Logistic Regression, KNN, and Decision Trees compared head-to-head on one dataset, with an interactive playground to see how each one draws its boundary differently.
+- **Decision Trees, Built From Scratch:** Turning "how mixed is this bag?" into entropy, and entropy into information gain — the single number that decides which column a tree splits on first.
+- **A Real Dataset, Split Column by Column:** Testing every column as a candidate "stump," picking the winner, filtering the data, and repeating the process to grow the tree level by level until it's finished.
+- **What Information Gain Really Means:** Watching the finished tree resolve the original class confusion, and tying decision trees back to the same classifier-comparison story from earlier in the session.
+
+### Resources
+- **Slide Deck:** [`24. KNN-Regression & Decision Tree/knn-regression-decision-trees-slides.html`](24.%20KNN-Regression%20%26%20Decision%20Tree/knn-regression-decision-trees-slides.html)
 
 ---
 
