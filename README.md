@@ -30,6 +30,7 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 - [Day 22: Logistic Regression](#day-22)
 - [Day 23: K-Nearest Neighbors (KNN)](#day-23)
 - [Day 24: KNN Regression & Decision Trees](#day-24)
+- [Day 25: Decision Trees Part 2 & Hands-on](#day-25)
 - [Assignments](#assignments)
 
 ---
@@ -400,6 +401,23 @@ A full end-to-end assignment applying the same skills to a new dataset: cleaning
 
 ### Resources
 - **Slide Deck:** [`24. KNN-Regression & Decision Tree/knn-regression-decision-trees-slides.html`](24.%20KNN-Regression%20%26%20Decision%20Tree/knn-regression-decision-trees-slides.html)
+
+---
+
+<a name="day-25"></a>
+## 🗓️ Day 25: Decision Trees Part 2 & Hands-on (29-Aug-2026)
+
+### Highlights
+- **Numeric Splits, The Thing We Skipped:** Extending decision trees from categorical columns to a real numeric Kaggle column — inventing the threshold ("the blank") to split on, and comparing candidate thresholds honestly.
+- **The Gini Index, A Different Ruler:** Same idea as entropy — "how mixed is this bag?" — measured a different way, tested against all five columns and plotted side by side against entropy's picks.
+- **Regression Trees, One Small Change:** Swapping the classification question for "what number should I predict?", worked by hand once, then explored live in a flagship demo.
+- **Depth Is This Tree's "K":** The regression-tree analogue of KNN's K — how tree depth trades off underfitting against memorizing noise.
+- **Hands-on Exercise — Fix the Impurities, Don't Drop Them:** A guided notebook on `loan_prediction_dataset.csv` that resists the lazy `dropna()` fix — measuring what dropping rows actually costs, then properly imputing missing values and normalizing inconsistent text casing before training a decision tree classifier.
+
+### Resources
+- **Slide Deck:** [`25. Decision Tree Handson - Regression/decision-trees-part2-numeric-gini-regression-slides.html`](25.%20Decision%20Tree%20Handson%20-%20Regression/decision-trees-part2-numeric-gini-regression-slides.html)
+- **Exercise Notebook:** [`25. Decision Tree Handson - Regression/Exercise.ipynb`](25.%20Decision%20Tree%20Handson%20-%20Regression/Exercise.ipynb)
+- **Dataset:** [`25. Decision Tree Handson - Regression/loan_prediction_dataset.csv`](25.%20Decision%20Tree%20Handson%20-%20Regression/loan_prediction_dataset.csv)
 
 ---
 

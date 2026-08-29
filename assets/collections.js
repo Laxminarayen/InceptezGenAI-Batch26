@@ -31,6 +31,7 @@
     "22 · Logistic Regression",
     "23 · K-Nearest Neighbors (KNN)",
     "24 · KNN Regression & Decision Trees",
+    "25 · Decision Trees Part 2 & Hands-on",
   ];
 
   function escapeHtml(str) {
