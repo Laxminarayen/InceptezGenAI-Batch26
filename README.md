@@ -418,6 +418,7 @@ A full end-to-end assignment applying the same skills to a new dataset: cleaning
 - **Slide Deck:** [`25. Decision Tree Handson - Regression/decision-trees-part2-numeric-gini-regression-slides.html`](25.%20Decision%20Tree%20Handson%20-%20Regression/decision-trees-part2-numeric-gini-regression-slides.html)
 - **Exercise Notebook:** [`25. Decision Tree Handson - Regression/Exercise.ipynb`](25.%20Decision%20Tree%20Handson%20-%20Regression/Exercise.ipynb)
 - **Dataset:** [`25. Decision Tree Handson - Regression/loan_prediction_dataset.csv`](25.%20Decision%20Tree%20Handson%20-%20Regression/loan_prediction_dataset.csv)
+- **Exercise Solution Notebook:** [`25. Decision Tree Handson - Regression/DecsionTreeClassification.ipynb`](25.%20Decision%20Tree%20Handson%20-%20Regression/DecsionTreeClassification.ipynb) — worked solution: imputation, encoding, and a trained decision tree comparing fixed vs. dropped data
 
 ---
 
