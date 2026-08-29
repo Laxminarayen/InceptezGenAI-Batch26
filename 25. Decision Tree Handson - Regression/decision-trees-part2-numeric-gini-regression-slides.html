@@ -1,0 +1,1089 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Decision Trees Part 2 · Numbers, Gini &amp; Predicting a Number</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+
+    --c-intro:#3B6E63; --c-num:#B0670C; --c-gini:#C13D68; --c-reg:#1E6FA8;
+
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B; --third:#6249B0;
+
+    --accent: var(--c-intro);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+      --c-intro:#79C0AE; --c-num:#E3A238; --c-gini:#F17BA0; --c-reg:#5FA8E0;
+      --good:#3FBB7C; --warn:#E3A238; --bad:#E36868; --third:#A78BFA;
+      --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+    --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+    --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+    --c-intro:#79C0AE; --c-num:#E3A238; --c-gini:#F17BA0; --c-reg:#5FA8E0;
+    --good:#3FBB7C; --warn:#E3A238; --bad:#E36868; --third:#A78BFA;
+    --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+  }
+  :root[data-theme="light"]{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+    --c-intro:#3B6E63; --c-num:#B0670C; --c-gini:#C13D68; --c-reg:#1E6FA8;
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B; --third:#6249B0;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    overflow:hidden; -webkit-font-smoothing:antialiased;
+  }
+  body[data-section="intro"]{--accent:var(--c-intro);}
+  body[data-section="numeric"]{--accent:var(--c-num);}
+  body[data-section="gini"]{--accent:var(--c-gini);}
+  body[data-section="reg"]{--accent:var(--c-reg);}
+
+  h1,h2,h3,p{margin:0;}
+  h1,h2,h3{text-wrap:balance; letter-spacing:-0.01em;}
+  ::selection{background:var(--accent); color:#fff;}
+
+  .eyebrow{
+    font-size:.74rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent);
+  }
+  .slide h1{font-size:clamp(1.7rem,3.2vw,2.9rem); font-weight:800; color:var(--ink);}
+  .slide h2{font-size:clamp(1.2rem,1.8vw,1.6rem); font-weight:800; color:var(--ink);}
+  .body-text{font-size:clamp(1rem,1.25vw,1.2rem); font-weight:500; line-height:1.6; color:var(--ink-soft);}
+  .body-text b, .body-text strong{color:var(--ink); font-weight:800;}
+  .tabular{font-variant-numeric:tabular-nums;}
+
+  .chrome-top{
+    position:fixed; top:0; left:0; right:0; height:52px; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 20px; pointer-events:none;
+  }
+  .chrome-top > *{pointer-events:auto;}
+  .hour-badge{
+    font-size:.72rem; font-weight:800; letter-spacing:.12em; color:var(--ink-faint);
+    background:var(--paper-2); border:1px solid var(--line); padding:6px 12px; border-radius:999px;
+  }
+  .chapter-chip{
+    display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:700;
+    color:var(--ink-soft); background:var(--paper-2); border:1px solid var(--line);
+    padding:6px 14px 6px 8px; border-radius:999px;
+  }
+  .chapter-chip .num{
+    display:inline-flex; align-items:center; justify-content:center; width:20px;height:20px;
+    border-radius:50%; background:var(--accent); color:#fff; font-size:.68rem; font-weight:800;
+  }
+  .icon-btn{
+    width:36px;height:36px; border-radius:50%; border:1px solid var(--line); background:var(--paper-2);
+    color:var(--ink); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .icon-btn:hover{background:var(--paper-3);}
+  .icon-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  .deck{position:absolute; inset:0; top:52px; bottom:64px;}
+  .slide{
+    position:absolute; inset:0; display:none; flex-direction:column;
+    padding:clamp(18px,3vw,40px) clamp(24px,5vw,80px);
+    overflow:auto;
+  }
+  .slide.active{display:flex;}
+  .slide-inner{display:flex; flex-direction:column; gap:clamp(12px,1.8vh,20px); max-width:1360px; width:100%; margin:0 auto; flex:1; min-height:0;}
+
+  .chrome-bottom{
+    position:fixed; left:0; right:0; bottom:0; height:64px; z-index:50;
+    display:flex; align-items:center; gap:14px; padding:0 clamp(14px,3vw,32px);
+    background:linear-gradient(0deg, var(--paper) 60%, transparent);
+  }
+  .nav-btn{
+    width:40px;height:40px;border-radius:50%; border:1px solid var(--line); background:var(--paper-2);
+    color:var(--ink); font-size:1.2rem; cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center;
+  }
+  .nav-btn:hover:not(:disabled){background:var(--accent); color:#fff; border-color:transparent;}
+  .nav-btn:disabled{opacity:.35; cursor:default;}
+  .progress{flex:1; display:flex; align-items:center; gap:5px; overflow-x:auto; scrollbar-width:none;}
+  .progress::-webkit-scrollbar{display:none;}
+  .dot{
+    width:9px;height:9px;border-radius:50%; background:var(--paper-3); border:none; cursor:pointer; flex:none;
+    transition:transform .15s ease;
+  }
+  .dot.gap{width:14px; height:2px; border-radius:1px; background:transparent; cursor:default;}
+  .dot.active{transform:scale(1.5);}
+  .slide-counter{font-size:.8rem; font-weight:700; color:var(--ink-faint); flex:none; white-space:nowrap;}
+
+  .split{display:grid; grid-template-columns:1.05fr 1.35fr; gap:clamp(20px,4vw,52px); align-items:center; flex:1; min-height:0;}
+  @media (max-width:920px){ .split{grid-template-columns:1fr; overflow:auto;} }
+  .split.reverse{grid-template-columns:1.35fr 1.05fr;}
+  .stack{display:flex; flex-direction:column; gap:12px; min-height:0;}
+  .center-col{display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:16px; flex:1;}
+  .visual-box{
+    background:var(--surface-canvas); border:1px solid var(--line); border-radius:24px;
+    padding:14px; box-shadow:var(--shadow); min-height:0; display:flex; flex-direction:column; gap:8px;
+  }
+  .canvas-wrap{position:relative; flex:1; min-height:160px;}
+  canvas{display:block; width:100%; height:100%;}
+
+  .vocab-card{
+    border-left:5px solid var(--accent); background:var(--paper-2); border-radius:14px;
+    padding:12px 18px; display:flex; flex-direction:column; gap:4px;
+  }
+  .vocab-term{font-size:1rem; font-weight:900; letter-spacing:.04em; color:var(--accent);}
+  .vocab-def{font-size:1rem; color:var(--ink); font-weight:600; line-height:1.4;}
+
+  .console{
+    display:flex; flex-wrap:wrap; gap:14px 26px; align-items:flex-end;
+    background:var(--paper-2); border:1px solid var(--line); border-radius:20px;
+    padding:16px 20px;
+  }
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field label{font-size:.76rem; font-weight:800; color:var(--ink-soft); letter-spacing:.03em;}
+  .field .val{color:var(--accent); font-weight:900;}
+  input[type="range"]{width:180px; accent-color:var(--accent);}
+
+  .btn{
+    font:inherit; font-size:.92rem; font-weight:800; border:1px solid var(--line); border-radius:999px;
+    padding:11px 20px; cursor:pointer; background:var(--paper-3); color:var(--ink);
+    transition:transform .12s ease, box-shadow .12s ease; white-space:nowrap;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn:active{transform:translateY(0);}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .btn-primary{background:var(--accent); color:#fff; border-color:transparent; box-shadow:0 8px 18px -8px var(--accent);}
+  .btn-ghost{background:transparent;}
+  .btn.toggled{background:var(--accent); color:#fff; border-color:transparent;}
+  .btn:disabled{opacity:.5; cursor:default; transform:none;}
+  .btn-row{display:flex; flex-wrap:wrap; gap:10px;}
+
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px;}
+  .stat-tile{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:12px 14px;}
+  .stat-tile .label{font-size:.7rem; font-weight:800; color:var(--ink-faint); letter-spacing:.05em; text-transform:uppercase;}
+  .stat-tile .value{font-size:1.35rem; font-weight:900; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .stat-tile.accent .value{color:var(--accent);}
+
+  .card{background:var(--paper-2); border:1px solid var(--line); border-radius:18px; padding:18px 20px;}
+  .card-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px;}
+  .card .ico{font-size:1.8rem;}
+  .card h3{font-size:1.02rem; margin-top:8px;}
+  .card p{font-size:.92rem; color:var(--ink-soft); margin-top:4px; line-height:1.45;}
+
+  .banner{border-radius:14px; padding:12px 16px; font-weight:800; font-size:.92rem; display:flex; align-items:center; gap:10px;}
+  .banner.warn{background:color-mix(in srgb, var(--warn) 18%, var(--paper-2)); color:var(--warn);}
+  .banner.good{background:color-mix(in srgb, var(--good) 18%, var(--paper-2)); color:var(--good);}
+  .banner.bad{background:color-mix(in srgb, var(--bad) 18%, var(--paper-2)); color:var(--bad);}
+  .banner.info{background:var(--paper-3); color:var(--ink); font-weight:600; align-items:flex-start;}
+
+  .roadmap{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  .roadmap .stop{background:var(--paper-2); border-radius:18px; padding:16px 10px; text-align:center; border-top:5px solid var(--stop-color, var(--accent));}
+  .roadmap .stop .ico{font-size:2rem;}
+  .roadmap .stop .t{font-size:.8rem; font-weight:800; margin-top:6px;}
+  .roadmap .stop.done{opacity:.55;}
+  .roadmap .stop.done .t{text-decoration:line-through;}
+  @media (max-width:920px){ .roadmap{grid-template-columns:repeat(2,1fr);} }
+
+  .kicker-big{font-size:clamp(2.2rem,5.6vw,3.9rem); font-weight:900; letter-spacing:-0.02em;}
+  .glow{color:var(--accent);}
+
+  .rule-list{display:flex; flex-direction:column; gap:12px;}
+  .rule{display:flex; gap:14px; align-items:flex-start; border-radius:14px; padding:6px 8px; margin:-6px -8px;}
+  .rule .n{width:34px;height:34px;border-radius:50%; background:var(--accent); color:#fff; font-weight:900; display:flex; align-items:center; justify-content:center; flex:none;}
+  .rule .t h3{font-size:1rem;}
+  .rule .t p{font-size:.92rem; color:var(--ink-soft); margin-top:2px;}
+
+  .table-wrap{border:1px solid var(--line); border-radius:14px; overflow:hidden; overflow-x:auto;}
+  .data-table{width:100%; border-collapse:collapse; font-size:.86rem;}
+  .data-table th,.data-table td{padding:8px 11px; text-align:center; font-variant-numeric:tabular-nums; white-space:nowrap;}
+  .data-table thead th{background:var(--paper-3); color:var(--ink-soft); font-weight:800; font-size:.72rem; letter-spacing:.03em; text-transform:uppercase;}
+  .data-table tbody tr{border-top:1px solid var(--line);}
+  .data-table tbody tr.hl-row{background:color-mix(in srgb, var(--accent) 12%, transparent); font-weight:800;}
+  .data-table tbody tr.keep-row{background:color-mix(in srgb, var(--good) 12%, transparent);}
+  .data-table td.issue{font-size:.78rem; color:var(--ink-faint); font-weight:700; text-align:left;}
+
+  .legend{display:flex; gap:16px; font-size:.8rem; font-weight:700; color:var(--ink-soft); flex-wrap:wrap;}
+  .legend .sw{display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:6px; vertical-align:middle;}
+  .legend .sw.line{border-radius:2px; width:14px; height:3px;}
+
+  .footnote{font-size:.82rem; color:var(--ink-faint); font-weight:600;}
+
+  .code-block{
+    background:var(--paper-3); border:1px solid var(--line); border-radius:14px;
+    padding:16px 20px; font-family:"SF Mono", Menlo, Consolas, monospace;
+    font-size:.86rem; line-height:1.65; color:var(--ink); overflow-x:auto; white-space:pre;
+  }
+  .code-block .kw{color:var(--accent); font-weight:800;}
+  .code-block .cm{color:var(--ink-faint); font-style:italic;}
+
+  .tree-node{
+    position:absolute; border-radius:12px; border:1.5px solid var(--line);
+    background:var(--paper-2); color:var(--ink); box-shadow:0 6px 14px -8px rgba(0,0,0,.3);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; font-size:.72rem; font-weight:800; line-height:1.3; padding:4px 6px;
+  }
+  .tree-node .tn-sub{font-size:.64rem; font-weight:700; opacity:.72; margin-top:2px;}
+  .tree-node.internal{background:color-mix(in srgb, var(--c-gini) 14%, var(--paper-2)); border-color:var(--c-gini); color:var(--c-gini);}
+  .tree-node.leaf.approve{background:color-mix(in srgb, var(--good) 22%, var(--paper-2)); border-color:var(--good); color:var(--good);}
+  .tree-node.leaf.reject{background:color-mix(in srgb, var(--bad) 22%, var(--paper-2)); border-color:var(--bad); color:var(--bad);}
+  .tree-node.leaf.mixed{background:color-mix(in srgb, var(--warn) 20%, var(--paper-2)); border-color:var(--warn); color:var(--warn);}
+
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+</style>
+</head>
+<body data-section="intro">
+  <div class="chrome-top">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="hour-badge" id="hourBadge">DECISION TREES · PART 2</div>
+      <div class="chapter-chip" id="chapterChip" style="display:none;">
+        <span class="num" id="chapterNum">1</span>
+        <span id="chapterLabel">—</span>
+      </div>
+    </div>
+    <button class="icon-btn" id="themeToggle" title="Toggle light / dark">🌗</button>
+  </div>
+
+  <main class="deck" id="deck">
+
+    <!-- ============ S0 — TITLE / ROADMAP ============ -->
+    <section class="slide" data-section="intro" id="s0">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Picking Up Exactly Where We Left Off</div>
+        <h1 class="kicker-big">Categories are <span class="glow">done</span>.<br/>Numbers, a cheaper ruler, and a whole new goal.</h1>
+        <p class="body-text" style="max-width:780px;">Last class we built a complete Decision Tree by hand — Credit_History as root, Property_Area next, Married finishing the last two applicants — using only categorical columns. Today: the three things we deliberately parked. What a tree does with a NUMBER column. The Gini Index, entropy's cheaper cousin. And Decision Tree REGRESSION — the same tree, aimed at predicting a number instead of a category.</p>
+        <div class="roadmap" style="width:100%; margin-top:6px;">
+          <div class="stop done" style="--stop-color:var(--c-num);"><div class="ico">🌳</div><div class="t">Categorical Trees</div></div>
+          <div class="stop" style="--stop-color:var(--c-num);"><div class="ico">🔢</div><div class="t">Numeric Column Splits</div></div>
+          <div class="stop" style="--stop-color:var(--c-gini);"><div class="ico">🍬</div><div class="t">The Gini Index</div></div>
+          <div class="stop" style="--stop-color:var(--c-reg);"><div class="ico">📈</div><div class="t">Decision Tree Regression</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ RECAP1 — THE TREE WE FINISHED ============ -->
+    <section class="slide" data-section="intro" id="sRecap1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Quick Recap Before We Continue</div>
+          <h1>The tree we <span class="glow">finished by hand</span></h1>
+          <p class="body-text">16 Kaggle-style loan applicants. Five categorical columns. One recursive rule: try every column, keep the lowest entropy, filter, repeat.</p>
+          <div class="rule-list">
+            <div class="rule"><div class="n">1</div><div class="t"><h3>Root: Credit_History</h3><p>IG = 0.717 — by far the strongest single question.</p></div></div>
+            <div class="rule"><div class="n">2</div><div class="t"><h3>Then: Property_Area</h3><p>On the filtered "Credit_History=1" group, IG = 0.281.</p></div></div>
+            <div class="rule"><div class="n">3</div><div class="t"><h3>Then: Married</h3><p>Closed out the last 2 applicants (Rural branch), IG = 1.000 — perfect.</p></div></div>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap" id="recapTreeWrap" style="position:relative;">
+            <svg id="recapTreeSvg" style="position:absolute; inset:0; width:100%; height:100%; pointer-events:none;"></svg>
+            <div id="recapTreeNodes" style="position:absolute; inset:0;"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 1 — NUMERIC COLUMN SPLITS                                  -->
+    <!-- ================================================================= -->
+
+    <!-- ============ N1 — BRIDGE ============ -->
+    <section class="slide" data-section="numeric" id="sN1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Numeric Splits · The Thing We Skipped On Purpose</div>
+        <h1>Categorical was the <span class="glow">easy</span> case</h1>
+        <p class="body-text">Married is Yes/No. Property_Area is Urban/Semiurban/Rural. Every categorical column arrives PRE-GROUPED — a tree just uses the groups that already exist. A column like ApplicantIncome has no such luck: it's just numbers, no ready-made buckets anywhere.</p>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card"><div class="ico">🏷️</div><h3>Categorical column</h3><p>"Property_Area = Urban?" — the question writes itself. Groups already exist.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-num);"><div class="ico">🔢</div><h3>Numeric column</h3><p>"ApplicantIncome &lt; ___?" — the tree has to invent the blank itself. That's the whole new problem today.</p></div>
+        </div>
+        <div class="banner info">🧠 Good news: the ENTROPY math doesn't change at all. Only one new step gets bolted on — searching for the threshold.</div>
+      </div>
+    </section>
+
+    <!-- ============ N2 — ADD THE NUMERIC COLUMN ============ -->
+    <section class="slide" data-section="numeric" id="sN2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Numeric Splits · A Real Kaggle Column</div>
+        <h1>Add <span class="glow">ApplicantIncome</span> to our 16 applicants</h1>
+        <p class="body-text">Another genuine column from the Kaggle Loan Prediction dataset — monthly-ish applicant income, in $ thousands. Sorted here by income to make the next step easier to see.</p>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>ID</th><th>ApplicantIncome ($k)</th><th>Loan_Status</th></tr></thead>
+            <tbody id="incomeTableBody"></tbody>
+          </table>
+        </div>
+        <p class="footnote">Same 16 applicants, same Loan_Status labels — one new numeric column, sorted low to high.</p>
+      </div>
+    </section>
+
+    <!-- ============ N3 — HOW A TREE SEARCHES FOR A THRESHOLD ============ -->
+    <section class="slide" data-section="numeric" id="sN3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Numeric Splits · Inventing The Blank</div>
+        <h1>Sort it, then try every <span class="glow">midpoint</span></h1>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>Sort by the column</h3><p>All 16 incomes, low to high — already done on the last slide.</p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>Take every gap between neighbors</h3><p>Between two consecutive sorted values, the midpoint is a candidate threshold. 16 sorted values → 15 candidate gaps.</p></div></div>
+          <div class="rule"><div class="n">3</div><div class="t"><h3>Score every candidate exactly like before</h3><p>Split into "&lt; threshold" / "≥ threshold," compute weighted entropy, compute Information Gain. Keep the highest.</p></div></div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Candidate threshold</th><th>Left n</th><th>Right n</th><th>Weighted entropy</th><th>Information Gain</th></tr></thead>
+            <tbody>
+              <tr><td>&lt; 30.5</td><td>1</td><td>15</td><td>0.935</td><td>0.065</td></tr>
+              <tr><td>&lt; 51.0</td><td>8</td><td>8</td><td>0.954</td><td>0.046</td></tr>
+              <tr><td>&lt; 56.5</td><td>9</td><td>7</td><td>0.894</td><td>0.106</td></tr>
+              <tr><td>&lt; 58.0</td><td>11</td><td>5</td><td>0.876</td><td>0.124</td></tr>
+              <tr class="keep-row"><td><b>&lt; 61.5</b></td><td>13</td><td>3</td><td><b>0.781</b></td><td><b>0.219</b> ← best</td></tr>
+              <tr><td>&lt; 64.0</td><td>14</td><td>2</td><td>0.862</td><td>0.138</td></tr>
+              <tr><td>&lt; 67.0</td><td>15</td><td>1</td><td>0.935</td><td>0.065</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="footnote">7 of the 15 candidates shown. Every single one gets tried — a computer just does it instantly.</p>
+      </div>
+    </section>
+
+    <!-- ============ N4 — INTERACTIVE: DRAG THE INCOME THRESHOLD ============ -->
+    <section class="slide" data-section="numeric" id="sN4">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Numeric Splits · Try It Yourself</div>
+          <h1>Drag the threshold, <span class="glow">watch the gain change</span></h1>
+          <p class="body-text">Same interaction as last class, new column. Find the highest Information Gain you can — then compare it to the computer's answer: 61.5.</p>
+          <div class="console">
+            <div class="field"><label>ApplicantIncome threshold = <span class="val" id="n4ThreshLabel">55.0</span></label><input type="range" id="n4ThreshSlider" min="20" max="95" value="55" step="0.5"></div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Left group</div><div class="value tabular" id="n4Left">—</div></div>
+            <div class="stat-tile"><div class="label">Right group</div><div class="value tabular" id="n4Right">—</div></div>
+            <div class="stat-tile accent"><div class="label">Information Gain</div><div class="value tabular" id="n4Gain">—</div></div>
+          </div>
+          <div class="banner" id="n4Banner">—</div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvN4"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--bad);"></span>rejected</span><span><span class="sw" style="background:var(--good);"></span>approved</span><span><span class="sw line" style="background:var(--c-num);"></span>your threshold</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ N5 — HONEST COMPARISON TO CREDIT_HISTORY ============ -->
+    <section class="slide" data-section="numeric" id="sN5">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Numeric Splits · An Honest Comparison</div>
+        <h1>Did the numeric column <span class="glow">win?</span></h1>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th style="text-align:left;">Column</th><th>Type</th><th>Best Information Gain</th></tr></thead>
+            <tbody>
+              <tr class="keep-row"><td class="issue">Credit_History</td><td>categorical</td><td><b>0.717</b> ← still the root</td></tr>
+              <tr><td class="issue">ApplicantIncome</td><td>numeric</td><td>0.219 (at threshold 61.5)</td></tr>
+              <tr><td class="issue">Married</td><td>categorical</td><td>0.106</td></tr>
+              <tr><td class="issue">Property_Area</td><td>categorical</td><td>0.063</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="banner good">✅ Honest answer: NO. Credit_History still wins the root, even with income added to the competition. But ApplicantIncome (0.219) beats Married and Property_Area — it would have earned second place, right where Property_Area currently sits.</div>
+        <div class="banner info">👉 The point isn't who wins — it's that a tree treats a numeric column as JUST ANOTHER CANDIDATE in the exact same contest, once it does the extra threshold-search step.</div>
+      </div>
+    </section>
+
+    <!-- ============ N6 — BRIDGE TO GINI ============ -->
+    <section class="slide" data-section="numeric" id="sN6">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Numeric Splits → The Gini Index</div>
+        <h1 class="kicker-big">Entropy needs a <span class="glow">logarithm</span>.<br/>Is there a cheaper way to measure "mixed up"?</h1>
+        <p class="body-text" style="max-width:640px;">Yes — and it's the DEFAULT setting in almost every tree-building library you'll ever use.</p>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 2 — THE GINI INDEX                                         -->
+    <!-- ================================================================= -->
+
+    <!-- ============ G1 — SAME JOB, CHEAPER TOOL ============ -->
+    <section class="slide" data-section="gini" id="sG1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Gini · A Different Ruler, Same Thing Being Measured</div>
+        <h1>Gini asks the same question, <span class="glow">skips the logarithm</span></h1>
+        <p class="body-text">Remember the candy-bag intuition from last class — 0 means "totally sorted," highest means "a 50/50 mix"? The Gini Index measures that exact same feeling, with plain multiplication instead of logarithms.</p>
+        <div class="vocab-card">
+          <div class="vocab-term">Gini(S) = 1 − Σ pᵢ²</div>
+          <div class="vocab-def">Square each label's fraction, add the squares up, subtract from 1. A pure group (p=1) gives Gini = 1 − 1² = 0. A 50/50 group gives Gini = 1 − (0.5²+0.5²) = 0.5 — its own "maximum confusion," just on a different scale than entropy's 1.0.</div>
+        </div>
+        <div class="banner info">🧮 No log₂ anywhere — just squaring and subtracting. That's the entire practical difference. Cheaper for a computer, especially across millions of rows.</div>
+      </div>
+    </section>
+
+    <!-- ============ G2 — RECOMPUTE ON OUR OWN DATA ============ -->
+    <section class="slide" data-section="gini" id="sG2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Gini · Same Root Split, New Ruler</div>
+        <h1>Re-score Credit_History with <span class="glow">Gini</span></h1>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Credit_History</th><th>n</th><th>Y</th><th>N</th><th>Gini</th></tr></thead>
+            <tbody>
+              <tr><td class="issue">Root (all 16)</td><td>16</td><td>8</td><td>8</td><td>0.500</td></tr>
+              <tr class="keep-row"><td>0</td><td>7</td><td>0</td><td>7</td><td>0.000 — pure!</td></tr>
+              <tr class="keep-row"><td>1</td><td>9</td><td>8</td><td>1</td><td>0.198</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>Weighted Gini</h3><p>(7/16)(0.000) + (9/16)(0.198) = <b>0.111</b></p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>Gini Gain</h3><p>0.500 − 0.111 = <b>0.389</b></p></div></div>
+        </div>
+        <div class="banner good">✅ Different scale, same story — Credit_History massively reduces Gini too.</div>
+      </div>
+    </section>
+
+    <!-- ============ G3 — DO THEY AGREE ACROSS ALL COLUMNS? ============ -->
+    <section class="slide" data-section="gini" id="sG3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Gini · Put To The Test, All Five Columns</div>
+        <h1>Entropy vs. Gini — <span class="glow">same ranking</span></h1>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th style="text-align:left;">Column</th><th>Information Gain (entropy)</th><th>Gini Gain</th></tr></thead>
+            <tbody>
+              <tr class="keep-row"><td class="issue">Credit_History</td><td><b>0.717</b> ← #1</td><td><b>0.389</b> ← #1</td></tr>
+              <tr><td class="issue">Married</td><td>0.106 — #2</td><td>0.071 — #2</td></tr>
+              <tr><td class="issue">Property_Area</td><td>0.063 — #3</td><td>0.042 — #3</td></tr>
+              <tr><td class="issue">Education</td><td>0.000 — tied last</td><td>0.000 — tied last</td></tr>
+              <tr><td class="issue">Self_Employed</td><td>0.000 — tied last</td><td>0.000 — tied last</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="banner good">🎯 Identical ranking, top to bottom, on every single column. Different numbers, same decisions — this is the normal case, not a coincidence.</div>
+      </div>
+    </section>
+
+    <!-- ============ G4 — CURVES SIDE BY SIDE ============ -->
+    <section class="slide" data-section="gini" id="sG4">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Gini · Plotted Together</div>
+          <h1>Different formulas, <span class="glow">nearly the same curve</span></h1>
+          <p class="body-text">Both measures hit 0 at the edges (a pure group) and peak in the middle (a 50/50 group). Entropy peaks at 1.0; Gini peaks at 0.5 — a different scale, but the SHAPE — and which splits look "good" — barely differs.</p>
+        </div>
+        <div class="visual-box" style="height:min(50vh,440px);">
+          <div class="canvas-wrap"><canvas id="cvG4"></canvas></div>
+          <div class="legend"><span><span class="sw line" style="background:var(--c-num);"></span>entropy</span><span><span class="sw line" style="background:var(--c-gini);"></span>gini</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ G5 — PRACTICAL NOTE, BRIDGE TO REGRESSION ============ -->
+    <section class="slide" data-section="gini" id="sG5">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Gini · The Practical Answer</div>
+        <h1>scikit-learn's default is <span class="glow">Gini</span> — and that's fine</h1>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card"><div class="ico">⚙️</div><h3>DecisionTreeClassifier()</h3><p>criterion='gini' by default — cheaper to compute, picks essentially the same tree as entropy would.</p></div>
+          <div class="card"><div class="ico">🔧</div><h3>criterion='entropy'</h3><p>One keyword away if you want it — "information gain" is just the more common textbook term.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-gini);"><div class="ico">🤷</div><h3>Which should YOU pick?</h3><p>Honestly, either. Spend your tuning effort on tree depth instead — it matters far more.</p></div>
+        </div>
+        <div class="banner info">👀 Categorical columns: done. Numeric columns: done. Gini: done. One thing left — what if the ANSWER we want is a number too?</div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 3 — DECISION TREE REGRESSION                               -->
+    <!-- ================================================================= -->
+
+    <!-- ============ R1 — SAME TREE, NEW GOAL ============ -->
+    <section class="slide" data-section="reg" id="sR1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Regression Trees · One Small Change, Again</div>
+        <h1>Same tree, same recursion, <span class="glow">new scoreboard</span></h1>
+        <p class="body-text">Remember Hour 1's one-word change to KNN — vote became average? The identical thing happens to Decision Trees. Instead of "which question un-mixes the CLASSES the most?", ask "which question makes the NUMBERS inside each group most similar to each other?"</p>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card" style="border-top:5px solid var(--c-gini);"><div class="ico">❓</div><h3>Classification tree</h3><p>Splits to reduce ENTROPY or GINI. Every leaf votes a category.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-reg);"><div class="ico">📈</div><h3>Regression tree</h3><p>Splits to reduce VARIANCE. Every leaf predicts the MEAN of whoever lands there.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ R2 — NEW DATASET ============ -->
+    <section class="slide" data-section="reg" id="sR2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Regression Trees · A Natural Next Question</div>
+          <h1>Not "approve or reject" — <span class="glow">how much to lend</span></h1>
+          <p class="body-text">Same Kaggle-style world, a different real column: LoanAmount ($ thousands), predicted from ApplicantIncome. 32 applicants — higher income tends to mean a bigger loan, with real-world scatter.</p>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>ApplicantIncome ($k)</th><th>LoanAmount ($k)</th></tr></thead>
+              <tbody>
+                <tr><td>20.4</td><td>97</td></tr>
+                <tr><td>36.1</td><td>114</td></tr>
+                <tr><td>55.0</td><td>185</td></tr>
+                <tr><td>66.9</td><td>216</td></tr>
+                <tr><td>88.8</td><td>276</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="footnote">5 of 32 shown. Mean LoanAmount = $193.3k, variance = 3838.2 — that variance is our new "root entropy."</p>
+        </div>
+        <div class="visual-box" style="height:min(50vh,440px);">
+          <div class="canvas-wrap"><canvas id="cvR2"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--c-num);"></span>applicant</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ R3 — VARIANCE, WORKED EXAMPLE ============ -->
+    <section class="slide" data-section="reg" id="sR3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Regression Trees · By Hand, Once</div>
+        <h1>Try: "is income <span class="glow">under 55</span>?"</h1>
+        <p class="body-text">"Spread out" gets measured as <b>variance</b> — how far each LoanAmount sits from its group's own mean, squared, averaged. A good split should make each new group's amounts land much closer together.</p>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Group</th><th>n</th><th>Mean LoanAmount</th><th>Variance</th></tr></thead>
+            <tbody>
+              <tr><td class="issue">Start (all 32)</td><td>32</td><td>$193.3k</td><td>3838.2</td></tr>
+              <tr class="keep-row"><td class="issue">Income &lt; 55</td><td>12</td><td>$128.1k</td><td><b>831.1</b></td></tr>
+              <tr class="keep-row"><td class="issue">Income ≥ 55</td><td>20</td><td>$232.4k</td><td><b>1561.7</b></td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="footnote">Weighted variance after split ≈ 1287.7 — down from 3838.2. One question cut the spread by two-thirds, just by separating "lower income, smaller loans" from "higher income, bigger loans."</p>
+      </div>
+    </section>
+
+    <!-- ============ R4 — INTERACTIVE STAIRCASE ============ -->
+    <section class="slide" data-section="reg" id="sR4">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Regression Trees · The Flagship Demo</div>
+          <h1>Drag depth — watch the <span class="glow">staircase</span> form</h1>
+          <p class="body-text">Every leaf is one flat, constant prediction (its group's mean) — so a regression tree's prediction is always a STAIRCASE, never a smooth curve. More depth = more, narrower steps.</p>
+          <div class="console">
+            <div class="field"><label>Max depth = <span class="val" id="r4DepthLabel">1</span></label><input type="range" id="r4DepthSlider" min="1" max="8" value="1" step="1"></div>
+          </div>
+          <div class="banner" id="r4Banner">—</div>
+        </div>
+        <div class="visual-box" style="height:min(56vh,520px);">
+          <div class="canvas-wrap"><canvas id="cvR4"></canvas></div>
+          <div class="legend"><span><span class="sw" style="background:var(--c-num);"></span>applicants</span><span><span class="sw line" style="background:var(--c-reg);"></span>tree prediction (staircase)</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ R5 — CHOOSING DEPTH ============ -->
+    <section class="slide" data-section="reg" id="sR5">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Regression Trees · Depth Is This Tree's "K"</div>
+          <h1>Sweep depth the <span class="glow">same honest way</span></h1>
+          <div class="rule-list">
+            <div class="rule"><div class="n">1</div><div class="t"><h3>Depth 1: barely asks anything</h3><p>One split for the whole dataset — high error on train AND test. Underfit.</p></div></div>
+            <div class="rule"><div class="n">2</div><div class="t"><h3>Depth ≈ 2: the sweet spot</h3><p>Test error bottoms out — enough questions to track the real trend, not enough to chase noise.</p></div></div>
+            <div class="rule"><div class="n">3</div><div class="t"><h3>Deep trees: memorize, don't generalize</h3><p>Training error → 0 as depth grows, while test error climbs back up. Classic overfitting.</p></div></div>
+          </div>
+        </div>
+        <div class="visual-box" style="height:min(50vh,440px);">
+          <div class="canvas-wrap"><canvas id="cvR5"></canvas></div>
+          <div class="legend"><span><span class="sw line" style="background:var(--good);"></span>train error (MSE)</span><span><span class="sw line" style="background:var(--bad);"></span>test error (MSE)</span></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ R6 — RECAP OF REGRESSION TREES ============ -->
+    <section class="slide" data-section="reg" id="sR6">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Regression Trees · In One Place</div>
+        <h1>Everything that <span class="glow">changed</span>, everything that didn't</h1>
+        <div class="card-grid" style="margin-top:4px;">
+          <div class="card"><div class="ico">🔁</div><h3>Same</h3><p>Recursive splitting, try every column/threshold, keep the best, repeat until a stopping rule.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-reg);"><div class="ico">📏</div><h3>Different: the score</h3><p>Variance instead of entropy/Gini — "how spread out are the numbers," not "how mixed are the classes."</p></div>
+          <div class="card" style="border-top:5px solid var(--c-reg);"><div class="ico">🍃</div><h3>Different: the leaf</h3><p>Predicts the MEAN of its group, not a majority vote — a number, not a label.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- CLOSING                                                            -->
+    <!-- ================================================================= -->
+
+    <!-- ============ CLOSE1 — FULL RECAP, BOTH SESSIONS ============ -->
+    <section class="slide" data-section="intro" id="sClose1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Head To Toe — Two Sessions, One Page</div>
+        <h1>Everything, <span class="glow">start to finish</span></h1>
+        <div class="card-grid" style="margin-top:4px;">
+          <div class="card"><div class="ico">🏠</div><h3>KNN Regression</h3><p>Average the K nearest neighbors' targets — same distance idea as classification, one word changed.</p></div>
+          <div class="card"><div class="ico">❓</div><h3>Decision Trees — Categorical</h3><p>Try every column, keep the lowest entropy, filter, recurse. Built a complete tree by hand.</p></div>
+          <div class="card"><div class="ico">🔢</div><h3>Decision Trees — Numeric</h3><p>Same entropy math, one extra step: sort the column, try every midpoint as a threshold.</p></div>
+          <div class="card"><div class="ico">🍬</div><h3>The Gini Index</h3><p>Entropy's cheaper cousin — no logarithms, same rankings, sklearn's default.</p></div>
+          <div class="card"><div class="ico">📈</div><h3>Decision Tree Regression</h3><p>Same recursive splitting, aimed at variance instead of entropy, predicting a mean instead of a vote.</p></div>
+        </div>
+        <div class="banner good">✅ No formula was ever fit by a tree. No distance was ever measured. Just good questions, asked in the best order, over and over — for categories, for numbers, for splits that already exist, and splits a tree has to invent.</div>
+      </div>
+    </section>
+
+    <!-- ============ CLOSE2 — CLOSING ============ -->
+    <section class="slide" data-section="intro" id="sClose2">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Session Complete</div>
+        <h1 class="kicker-big">From <span class="glow">good questions</span><br/>to <span class="glow">good predictions</span></h1>
+        <p class="body-text" style="max-width:680px;">Two classes, one algorithm family, fully built by hand before ever touching code: entropy and Information Gain, the Gini Index, categorical AND numeric splits, and Decision Trees for both classification and regression. Next up — the same ideas, in real code, on a real dataset, with a tree you can actually see.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="chrome-bottom">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous slide">‹</button>
+    <div class="progress" id="progress"></div>
+    <div class="slide-counter"><span id="curNum" class="tabular">1</span> / <span id="totalNum" class="tabular">—</span></div>
+    <button class="nav-btn" id="nextBtn" aria-label="Next slide">›</button>
+  </nav>
+
+<script>
+"use strict";
+
+const $  = (sel, el=document) => el.querySelector(sel);
+const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+const clamp = (v,lo,hi) => Math.max(lo, Math.min(hi,v));
+const mean  = arr => arr.reduce((s,v)=>s+v,0) / arr.length;
+const fmt   = (v,d=2) => Number(v).toFixed(d);
+function cssVar(name){ return getComputedStyle(document.body).getPropertyValue(name).trim(); }
+
+function fitCanvas(cv){
+  const rect = cv.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  const w = Math.max(1, Math.round(rect.width*dpr));
+  const h = Math.max(1, Math.round(rect.height*dpr));
+  if(cv.width !== w || cv.height !== h){ cv.width = w; cv.height = h; }
+  const ctx = cv.getContext('2d');
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return { ctx, w: rect.width, h: rect.height };
+}
+
+function drawScatter(cv, opts){
+  if(!cv || cv.clientWidth === 0) return null;
+  const { ctx, w, h } = fitCanvas(cv);
+  ctx.clearRect(0,0,w,h);
+  const padL=44, padR=16, padT=16, padB=32;
+  const plotW=w-padL-padR, plotH=h-padT-padB;
+  const [xmin,xmax] = opts.xDomain, [ymin,ymax] = opts.yDomain;
+  const X = x => padL + ((x-xmin)/(xmax-xmin))*plotW;
+  const Y = y => padT + plotH - ((y-ymin)/(ymax-ymin))*plotH;
+
+  ctx.strokeStyle = cssVar('--line'); ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, padT+plotH); ctx.lineTo(padL+plotW, padT+plotH); ctx.stroke();
+  ctx.fillStyle=cssVar('--ink-faint'); ctx.font='10.5px sans-serif'; ctx.textAlign='center';
+  if(opts.xLabel) ctx.fillText(opts.xLabel, padL+plotW/2, h-6);
+  if(opts.yLabel){
+    ctx.save(); ctx.translate(11, padT+plotH/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center';
+    ctx.fillText(opts.yLabel, 0,0);
+    ctx.restore();
+  }
+  const layout = {ctx,X,Y,padL,padT,plotW,plotH,xmin,xmax,ymin,ymax};
+  if(opts.points){
+    const r = opts.radius || 5.2;
+    for(const p of opts.points){
+      ctx.fillStyle = opts.colorFn ? opts.colorFn(p) : (opts.color || cssVar('--accent'));
+      ctx.beginPath(); ctx.arc(X(p.x), Y(p.y), r, 0, Math.PI*2); ctx.fill();
+      ctx.strokeStyle = cssVar('--paper'); ctx.lineWidth = 1.4; ctx.stroke();
+    }
+  }
+  return layout;
+}
+
+function drawCurve(ctx, layout, fn, color, lw, dash, xOverrideMin, xOverrideMax){
+  const steps = 220;
+  const x0 = xOverrideMin===undefined ? layout.xmin : xOverrideMin;
+  const x1 = xOverrideMax===undefined ? layout.xmax : xOverrideMax;
+  ctx.save();
+  ctx.strokeStyle = color; ctx.lineWidth = lw||2.8;
+  if(dash) ctx.setLineDash(dash);
+  ctx.beginPath();
+  for(let i=0;i<=steps;i++){
+    const x = x0 + (i/steps)*(x1-x0);
+    const y = fn(x);
+    const px = layout.X(x), py = layout.Y(clamp(y, layout.ymin-9999, layout.ymax+9999));
+    i===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
+  }
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawStaircase(ctx, layout, leaves, color){
+  const sorted = [...leaves].sort((a,b)=>a.xMin-b.xMin);
+  ctx.save();
+  ctx.strokeStyle = color; ctx.lineWidth = 2.8;
+  ctx.beginPath();
+  sorted.forEach((leaf,i) => {
+    const y = layout.Y(leaf.mean);
+    const x0 = layout.X(leaf.xMin), x1 = layout.X(leaf.xMax);
+    if(i===0) ctx.moveTo(x0,y); else ctx.lineTo(x0,y);
+    ctx.lineTo(x1,y);
+  });
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawVLine(ctx, layout, x, color, dash){
+  ctx.save();
+  ctx.strokeStyle = color; ctx.lineWidth = 2.4;
+  if(dash) ctx.setLineDash(dash);
+  ctx.beginPath();
+  ctx.moveTo(layout.X(x), layout.Y(layout.ymin));
+  ctx.lineTo(layout.X(x), layout.Y(layout.ymax));
+  ctx.stroke();
+  ctx.restore();
+}
+
+function drawTrainTestSweep(cv, rows, xDomain, yDomain, xLabel, highlightVal){
+  const layout = drawScatter(cv, { points: [], xDomain, yDomain, xLabel, yLabel: 'error (MSE) →' });
+  if(!layout) return;
+  const drawLine = (idx, color) => {
+    layout.ctx.save();
+    layout.ctx.strokeStyle = color; layout.ctx.lineWidth = 2.6;
+    layout.ctx.beginPath();
+    rows.forEach((row,i) => {
+      const px = layout.X(row[0]), py = layout.Y(row[idx]);
+      i===0 ? layout.ctx.moveTo(px,py) : layout.ctx.lineTo(px,py);
+    });
+    layout.ctx.stroke();
+    layout.ctx.restore();
+    rows.forEach(row => {
+      const isHi = row[0]===highlightVal;
+      layout.ctx.fillStyle = color;
+      layout.ctx.beginPath(); layout.ctx.arc(layout.X(row[0]), layout.Y(row[idx]), isHi?6:3.2, 0, Math.PI*2); layout.ctx.fill();
+    });
+  };
+  drawLine(1, cssVar('--good'));
+  drawLine(2, cssVar('--bad'));
+}
+
+/* =========================== entropy / tree-diagram engine =========================== */
+function entropyOf(labels){
+  const n = labels.length; if(n===0) return 0;
+  const p1 = labels.filter(l=>l===1).length/n, p0 = 1-p1;
+  let e = 0;
+  [p0,p1].forEach(p => { if(p>0) e -= p*Math.log2(p); });
+  return e;
+}
+function treeKids(node){ return node.children ? node.children : [node.left, node.right].filter(c=>c); }
+function layoutClassTree(root){
+  let leafCounter = 0;
+  function assign(node, depth){
+    node.depth = depth;
+    if(node.leaf){ node.xSlot = leafCounter; leafCounter += 1; return node.xSlot; }
+    const xs = treeKids(node).map(k => assign(k, depth+1));
+    node.xSlot = xs.reduce((a,b)=>a+b,0) / xs.length;
+    return node.xSlot;
+  }
+  assign(root, 0);
+  let maxDepth = 0;
+  (function walk(n){ maxDepth = Math.max(maxDepth, n.depth); if(!n.leaf){ treeKids(n).forEach(walk); } })(root);
+  return { leafCount: leafCounter, maxDepth };
+}
+function renderClassTreeDiagram(wrapEl, svgEl, nodesEl, root, opts){
+  opts = opts || {};
+  const rect = wrapEl.getBoundingClientRect();
+  const W = Math.max(rect.width, 1), H = Math.max(rect.height, 1);
+  svgEl.setAttribute('viewBox', `0 0 ${W} ${H}`);
+  svgEl.innerHTML = ''; nodesEl.innerHTML = '';
+  const {leafCount, maxDepth} = layoutClassTree(root);
+  const nodeW = opts.nodeW || 122, nodeH = opts.nodeH || 50;
+  const padX = 68, padY = 8;
+  const levelGap = maxDepth>0 ? (H - padY*2 - nodeH) / maxDepth : 0;
+  function px(node){ return leafCount<=1 ? W/2 : padX + (node.xSlot/(leafCount-1)) * (W - 2*padX); }
+  function py(node){ return padY + node.depth*levelGap; }
+  const svgNS = 'http://www.w3.org/2000/svg';
+  function walk(node, parent){
+    const x = px(node), y = py(node);
+    if(parent){
+      const x0 = px(parent), y0 = py(parent) + nodeH;
+      const line = document.createElementNS(svgNS, 'line');
+      line.setAttribute('x1', x0); line.setAttribute('y1', y0);
+      line.setAttribute('x2', x);  line.setAttribute('y2', y);
+      line.setAttribute('stroke', cssVar('--ink-faint'));
+      line.setAttribute('stroke-width', '1.6');
+      svgEl.appendChild(line);
+    }
+    const div = document.createElement('div');
+    if(node.leaf){
+      div.className = 'tree-node leaf ' + (node.tone || (node.label===1 ? 'approve' : 'reject'));
+      div.innerHTML = node.leafLines
+        ? node.leafLines.map((l,i)=> i===0 ? `<div>${l}</div>` : `<div class="tn-sub">${l}</div>`).join('')
+        : `<div>${node.label===1 ? 'APPROVE' : 'REJECT'}</div><div class="tn-sub">n=${node.n}</div>`;
+    } else {
+      div.className = 'tree-node internal';
+      div.innerHTML = `<div>${node.text}</div>` + (node.sub ? `<div class="tn-sub">${node.sub}</div>` : '');
+    }
+    div.style.left = (x - nodeW/2) + 'px';
+    div.style.top = y + 'px';
+    div.style.width = nodeW + 'px';
+    div.style.height = nodeH + 'px';
+    nodesEl.appendChild(div);
+    if(!node.leaf){ treeKids(node).forEach(k => walk(k, node)); }
+  }
+  walk(root, null);
+}
+
+/* =========================== 16-applicant loan dataset =========================== */
+const LOAN16 = {
+  1:{married:"Yes",edu:"Graduate",selfEmp:"No",credit:1,area:"Urban",status:"Y",income:59},
+  2:{married:"Yes",edu:"Graduate",selfEmp:"No",credit:1,area:"Semiurban",status:"Y",income:40},
+  3:{married:"No",edu:"Graduate",selfEmp:"No",credit:1,area:"Urban",status:"Y",income:66},
+  4:{married:"Yes",edu:"Not Graduate",selfEmp:"No",credit:1,area:"Rural",status:"Y",income:68},
+  5:{married:"No",edu:"Graduate",selfEmp:"Yes",credit:1,area:"Urban",status:"Y",income:28},
+  6:{married:"Yes",edu:"Graduate",selfEmp:"No",credit:1,area:"Semiurban",status:"Y",income:37},
+  7:{married:"Yes",edu:"Not Graduate",selfEmp:"No",credit:1,area:"Semiurban",status:"Y",income:57},
+  8:{married:"No",edu:"Not Graduate",selfEmp:"No",credit:1,area:"Rural",status:"N",income:41},
+  9:{married:"Yes",edu:"Graduate",selfEmp:"Yes",credit:0,area:"Urban",status:"N",income:45},
+  10:{married:"No",edu:"Graduate",selfEmp:"No",credit:0,area:"Rural",status:"N",income:33},
+  11:{married:"Yes",edu:"Not Graduate",selfEmp:"No",credit:0,area:"Semiurban",status:"N",income:57},
+  12:{married:"No",edu:"Not Graduate",selfEmp:"Yes",credit:0,area:"Urban",status:"N",income:56},
+  13:{married:"Yes",edu:"Graduate",selfEmp:"No",credit:0,area:"Rural",status:"N",income:46},
+  14:{married:"No",edu:"Graduate",selfEmp:"No",credit:0,area:"Semiurban",status:"N",income:61},
+  15:{married:"Yes",edu:"Not Graduate",selfEmp:"Yes",credit:1,area:"Urban",status:"Y",income:62},
+  16:{married:"No",edu:"Graduate",selfEmp:"No",credit:0,area:"Urban",status:"N",income:33},
+};
+const LOAN_ROOT_H = entropyOf(Object.values(LOAN16).map(a => a.status==='Y'?1:0));
+
+/* =========================== deck engine =========================== */
+const slideEls = $$('.slide');
+let cur = 0;
+const CHAPTERS = {
+  numeric: { num:1, label:'Numeric Column Splits' },
+  gini:    { num:2, label:'The Gini Index' },
+  reg:     { num:3, label:'Decision Tree Regression' },
+};
+const onEnter = {};
+function buildDots(){
+  const wrap = $('#progress');
+  wrap.innerHTML = '';
+  let lastSection = null;
+  slideEls.forEach((s, i) => {
+    const sec = s.dataset.section;
+    if(lastSection !== null && sec !== lastSection){
+      const gap = document.createElement('span'); gap.className = 'dot gap'; wrap.appendChild(gap);
+    }
+    const b = document.createElement('button');
+    b.className = 'dot';
+    b.setAttribute('aria-label', 'Go to slide ' + (i+1));
+    b.addEventListener('click', () => goTo(i));
+    wrap.appendChild(b);
+    lastSection = sec;
+  });
+}
+function goTo(i){
+  i = clamp(i, 0, slideEls.length-1);
+  slideEls[cur].classList.remove('active');
+  cur = i;
+  const s = slideEls[cur];
+  s.classList.add('active');
+  document.body.dataset.section = s.dataset.section;
+  const chip = $('#chapterChip');
+  const meta = CHAPTERS[s.dataset.section];
+  if(meta){ chip.style.display = 'flex'; $('#chapterNum').textContent = meta.num; $('#chapterLabel').innerHTML = meta.label; }
+  else { chip.style.display = 'none'; }
+  $('#curNum').textContent = cur+1;
+  $('#prevBtn').disabled = cur === 0;
+  $('#nextBtn').disabled = cur === slideEls.length-1;
+  $$('.dot:not(.gap)', $('#progress')).forEach((d,idx)=> d.classList.toggle('active', idx===cur));
+  const fn = onEnter[s.id];
+  if(fn) requestAnimationFrame(fn);
+}
+function next(){ if(cur < slideEls.length-1) goTo(cur+1); }
+function prev(){ if(cur > 0) goTo(cur-1); }
+$('#nextBtn').addEventListener('click', next);
+$('#prevBtn').addEventListener('click', prev);
+window.addEventListener('keydown', e => {
+  if(e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+  else if(e.key === 'ArrowLeft'){ e.preventDefault(); prev(); }
+});
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => { const fn = onEnter[slideEls[cur].id]; if(fn) fn(); }, 120);
+});
+const themeBtn = $('#themeToggle');
+function applyStoredTheme(){
+  const t = localStorage.getItem('sv-theme-treesknn');
+  if(t) document.documentElement.setAttribute('data-theme', t);
+}
+applyStoredTheme();
+themeBtn.addEventListener('click', () => {
+  const now = document.documentElement.getAttribute('data-theme');
+  const dark = now ? now === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const nextTheme = dark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', nextTheme);
+  localStorage.setItem('sv-theme-treesknn', nextTheme);
+  const fn = onEnter[slideEls[cur].id]; if(fn) fn();
+});
+
+/* =========================== RECAP1 — the finished tree from part 1 =========================== */
+const RECAP_TREE = {
+  leaf:false, text:'Credit_History = 1 ?', sub:'n=16, H=1.000',
+  left:  {leaf:true, tone:'reject',  leafLines:['Credit_History = 0','REJECT','n=7']},
+  right: {
+    leaf:false, text:'Property_Area = ?', sub:'n=9, H=0.503',
+    children: [
+      {leaf:true, tone:'approve', leafLines:['Semiurban','APPROVE','n=3']},
+      {leaf:true, tone:'approve', leafLines:['Urban','APPROVE','n=4']},
+      {
+        leaf:false, text:'Rural → Married = ?', sub:'n=2, H=1.000',
+        left:  {leaf:true, tone:'approve', leafLines:['Married = Yes','APPROVE','n=1']},
+        right: {leaf:true, tone:'reject',  leafLines:['Married = No','REJECT','n=1']},
+      },
+    ],
+  },
+};
+onEnter['sRecap1'] = () => renderClassTreeDiagram($('#recapTreeWrap'), $('#recapTreeSvg'), $('#recapTreeNodes'), RECAP_TREE, {nodeW:130, nodeH:64});
+
+/* =========================== N2 — income table =========================== */
+onEnter['sN2'] = () => {
+  const ids = Object.keys(LOAN16).map(Number).sort((a,b)=> LOAN16[a].income-LOAN16[b].income);
+  $('#incomeTableBody').innerHTML = ids.map(id => {
+    const a = LOAN16[id];
+    const hl = Math.abs(a.income-61.5)<0.01 ? '' : '';
+    return `<tr><td>${id}</td><td>${a.income}</td><td>${a.status}</td></tr>`;
+  }).join('');
+};
+
+/* =========================== N4 — interactive income threshold =========================== */
+function n4Render(){
+  const thresh = parseFloat($('#n4ThreshSlider').value);
+  $('#n4ThreshLabel').textContent = fmt(thresh,1);
+  const all = Object.values(LOAN16);
+  const left = all.filter(a => a.income < thresh);
+  const right = all.filter(a => a.income >= thresh);
+  const toBin = arr => arr.map(a => a.status==='Y'?1:0);
+  const eLeft = entropyOf(toBin(left)), eRight = entropyOf(toBin(right));
+  const weighted = (left.length/16)*eLeft + (right.length/16)*eRight;
+  const gain = LOAN_ROOT_H - weighted;
+  $('#n4Left').textContent = `n=${left.length}, H=${fmt(eLeft,3)}`;
+  $('#n4Right').textContent = `n=${right.length}, H=${fmt(eRight,3)}`;
+  $('#n4Gain').textContent = fmt(gain,3);
+
+  const layout = drawScatter($('#cvN4'), {
+    points: Object.entries(LOAN16).map(([id,a]) => ({x:a.income, y:a.status==='Y'?1:0, label:a.status==='Y'?1:0})),
+    xDomain: [15,100], yDomain: [-0.4,1.4],
+    xLabel: 'ApplicantIncome ($k) →', yLabel: 'Loan_Status (0=N, 1=Y) →',
+    colorFn: p => p.label===1 ? cssVar('--good') : cssVar('--bad'),
+  });
+  if(layout) drawVLine(layout.ctx, layout, thresh, cssVar('--c-num'), [5,4]);
+
+  const banner = $('#n4Banner');
+  if(left.length===0 || right.length===0){ banner.className='banner warn'; banner.textContent = '⚠️ One side is empty — not a real split.'; }
+  else if(gain >= 0.20){ banner.className='banner good'; banner.textContent = `🔥 Gain = ${fmt(gain,3)} — close to (or at) the best possible threshold for this column.`; }
+  else if(gain >= 0.10){ banner.className='banner info'; banner.textContent = `🙂 Gain = ${fmt(gain,3)} — decent, but not the best spot yet. Keep dragging.`; }
+  else { banner.className='banner bad'; banner.textContent = `😐 Gain = ${fmt(gain,3)} — weak. Try dragging closer to the middle of the sorted incomes.`; }
+}
+onEnter['sN4'] = n4Render;
+$('#n4ThreshSlider').addEventListener('input', n4Render);
+
+/* =========================== G4 — entropy vs gini curves =========================== */
+onEnter['sG4'] = () => {
+  const layout = drawScatter($('#cvG4'), {
+    points: [], xDomain: [0,1], yDomain: [0,1.05],
+    xLabel: 'p  (fraction of class "approved") →', yLabel: 'impurity →',
+  });
+  if(layout){
+    const entFn = p => { p = clamp(p,0.0001,0.9999); return -(p*Math.log2(p) + (1-p)*Math.log2(1-p)); };
+    const giniFn = p => 1 - (p*p + (1-p)*(1-p));
+    drawCurve(layout.ctx, layout, entFn, cssVar('--c-num'), 2.8);
+    drawCurve(layout.ctx, layout, giniFn, cssVar('--c-gini'), 2.8);
+  }
+};
+
+/* =========================== Income -> LoanAmount regression dataset =========================== */
+const LOAN_REG = [
+  {x:20.4,y:97},{x:22.7,y:74},{x:23.3,y:80},{x:32,y:150},{x:36.1,y:114},{x:36.9,y:135},
+  {x:38.6,y:162},{x:39.1,y:127},{x:40.9,y:144},{x:42.5,y:153},{x:42.7,y:153},{x:53.4,y:148},
+  {x:55,y:185},{x:55.1,y:217},{x:57.3,y:150},{x:57.8,y:212},{x:58.6,y:195},{x:58.6,y:176},
+  {x:61.5,y:250},{x:65.9,y:231},{x:66.7,y:183},{x:66.9,y:216},{x:67.2,y:229},{x:78.2,y:239},
+  {x:79.4,y:264},{x:79.8,y:246},{x:81.6,y:269},{x:85.5,y:298},{x:87.3,y:250},{x:88.8,y:276},
+  {x:94.2,y:273},{x:94.7,y:289},
+];
+const REG_X_DOMAIN=[15,100], REG_Y_DOMAIN=[50,320];
+
+onEnter['sR2'] = () => {
+  drawScatter($('#cvR2'), {
+    points: LOAN_REG, xDomain: REG_X_DOMAIN, yDomain: REG_Y_DOMAIN,
+    xLabel:'ApplicantIncome ($k) →', yLabel:'LoanAmount ($k) →', color: cssVar('--c-num'),
+  });
+};
+
+function sseOf(points){
+  if(points.length===0) return 0;
+  const m = mean(points.map(p=>p.y));
+  return points.reduce((a,p)=>a+(p.y-m)**2, 0);
+}
+function buildRegTree1D(points, xMin, xMax, depth, maxDepth){
+  const m = points.length ? mean(points.map(p=>p.y)) : 0;
+  if(depth>=maxDepth || points.length<4) return {leaf:true, xMin, xMax, mean:m};
+  const sorted = [...points].sort((a,b)=>a.x-b.x);
+  let bestSSE=Infinity, bestThresh=null, bestLeft=null, bestRight=null;
+  for(let i=1;i<sorted.length;i++){
+    const t = (sorted[i-1].x+sorted[i].x)/2;
+    if(t<=xMin || t>=xMax) continue;
+    const left = points.filter(p=>p.x<t), right = points.filter(p=>p.x>=t);
+    if(left.length<2 || right.length<2) continue;
+    const sse = sseOf(left)+sseOf(right);
+    if(sse<bestSSE){ bestSSE=sse; bestThresh=t; bestLeft=left; bestRight=right; }
+  }
+  if(bestThresh===null) return {leaf:true, xMin, xMax, mean:m};
+  return { leaf:false, thresh:bestThresh,
+    left: buildRegTree1D(bestLeft, xMin, bestThresh, depth+1, maxDepth),
+    right: buildRegTree1D(bestRight, bestThresh, xMax, depth+1, maxDepth) };
+}
+function collectLeaves(node, out){
+  if(node.leaf) out.push(node);
+  else { collectLeaves(node.left, out); collectLeaves(node.right, out); }
+  return out;
+}
+
+function r4Render(){
+  const depth = parseInt($('#r4DepthSlider').value);
+  $('#r4DepthLabel').textContent = depth;
+  const root = buildRegTree1D(LOAN_REG, REG_X_DOMAIN[0], REG_X_DOMAIN[1], 0, depth);
+  const leaves = collectLeaves(root, []);
+  const layout = drawScatter($('#cvR4'), {
+    points: LOAN_REG, xDomain: REG_X_DOMAIN, yDomain: REG_Y_DOMAIN,
+    xLabel:'ApplicantIncome ($k) →', yLabel:'LoanAmount ($k) →', color: cssVar('--c-num'),
+  });
+  if(layout) drawStaircase(layout.ctx, layout, leaves, cssVar('--c-reg'));
+  const banner = $('#r4Banner');
+  if(depth<=1){ banner.className='banner warn'; banner.textContent = '⚠️ depth='+depth+': one or two flat steps — badly underfit.'; }
+  else if(depth<=4){ banner.className='banner good'; banner.textContent = '✅ depth='+depth+': a reasonable staircase approximation.'; }
+  else { banner.className='banner bad'; banner.textContent = '🚩 depth='+depth+': a step for nearly every applicant — memorizing noise.'; }
+}
+onEnter['sR4'] = r4Render;
+$('#r4DepthSlider').addEventListener('input', r4Render);
+
+const REG_MSE_BY_DEPTH = [
+  [1,1125.3,1778.1],[2,302.1,822.2],[3,198.9,879.6],[4,137.8,1131.8],[5,62.6,1247.7],[6,30.2,1365.1],[8,7.5,1277.4],
+];
+onEnter['sR5'] = () => drawTrainTestSweep($('#cvR5'), REG_MSE_BY_DEPTH, [0,9], [0,1900], 'max depth →', 2);
+
+/* =========================== init =========================== */
+buildDots();
+$('#totalNum').textContent = slideEls.length;
+const deepLinkSlide = parseInt(new URLSearchParams(location.search).get('slide'), 10);
+goTo(Number.isFinite(deepLinkSlide) ? deepLinkSlide-1 : 0);
+</script>
+</body>
+</html>
