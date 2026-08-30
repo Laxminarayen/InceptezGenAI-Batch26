@@ -405,7 +405,7 @@ A full end-to-end assignment applying the same skills to a new dataset: cleaning
 ---
 
 <a name="day-25"></a>
-## 🗓️ Day 25: Decision Trees Part 2 & Hands-on (29-Aug-2026)
+## 🗓️ Day 25: Decision Trees Part 2 & Hands-on (29–30-Aug-2026)
 
 ### Highlights
 - **Numeric Splits, The Thing We Skipped:** Extending decision trees from categorical columns to a real numeric Kaggle column — inventing the threshold ("the blank") to split on, and comparing candidate thresholds honestly.
