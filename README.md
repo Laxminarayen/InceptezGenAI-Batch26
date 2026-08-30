@@ -419,6 +419,8 @@ A full end-to-end assignment applying the same skills to a new dataset: cleaning
 - **Exercise Notebook:** [`25. Decision Tree Handson - Regression/Exercise.ipynb`](25.%20Decision%20Tree%20Handson%20-%20Regression/Exercise.ipynb)
 - **Dataset:** [`25. Decision Tree Handson - Regression/loan_prediction_dataset.csv`](25.%20Decision%20Tree%20Handson%20-%20Regression/loan_prediction_dataset.csv)
 - **Exercise Solution Notebook:** [`25. Decision Tree Handson - Regression/DecsionTreeClassification.ipynb`](25.%20Decision%20Tree%20Handson%20-%20Regression/DecsionTreeClassification.ipynb) — worked solution: imputation, encoding, and a trained decision tree comparing fixed vs. dropped data
+- **Decision Tree Regression Notebook:** [`25. Decision Tree Handson - Regression/DecisionTreeRegression.ipynb`](25.%20Decision%20Tree%20Handson%20-%20Regression/DecisionTreeRegression.ipynb) — `DecisionTreeRegressor` on the IT-salary dataset, tuned with `GridSearchCV`, then compared against Linear and KNN Regression
+- **IT Salary Prediction — Tree vs. KNN vs. Linear Regression:** [`25. Decision Tree Handson - Regression/IT_Salary_DecisionTree_KNN_LinearRegression.ipynb`](25.%20Decision%20Tree%20Handson%20-%20Regression/IT_Salary_DecisionTree_KNN_LinearRegression.ipynb) — a full production-style pipeline (duplicate/outlier cleaning, high-cardinality bucketing, shared `ColumnTransformer`, honestly-tuned hyperparameters, and a final head-to-head — plus pickling the winning pipeline for a Streamlit app)
 
 ---
 
