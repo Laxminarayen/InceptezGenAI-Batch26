@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Articles — Inceptez Batch 26 Class Forum</title>
-<meta name="description" content="Student-written explanations and deep dives on any Inceptez GenAI Batch 26 class — clap, share, and comment." />
+<title>Daily Tasks — Inceptez Batch 26 Class Forum</title>
+<meta name="description" content="Daily task tracker for Inceptez GenAI Batch 26 — the instructor posts a task per day, students mark it done, and everyone can see progress on the calendar." />
 <link rel="stylesheet" href="assets/style.css" />
 <script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
@@ -23,8 +23,8 @@
     <a class="topbar-link" href="questions.html">💬 Questions</a>
     <a class="topbar-link" href="issues.html">🐛 Issues</a>
     <a class="topbar-link" href="notes.html">📝 Notes</a>
-    <a class="topbar-link is-active" href="articles.html">✍️ Articles</a>
-    <a class="topbar-link" href="tasks.html">📅 Daily Tasks</a>
+    <a class="topbar-link" href="articles.html">✍️ Articles</a>
+    <a class="topbar-link is-active" href="tasks.html">📅 Daily Tasks</a>
     <a class="topbar-link topbar-github" href="https://github.com/Laxminarayen/InceptezGenAI-Batch26" target="_blank" rel="noopener">
       <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
       GitHub
@@ -82,49 +82,40 @@
 
   <main class="main">
     <header class="page-header">
-      <h1>Articles</h1>
+      <h1>Daily Tasks</h1>
       <p>
-        Long-form explanations, walkthroughs, and deep dives written by students, for students. Pick any
-        class, explain it your way, and publish it right here. Readers can 👏 clap, share, and comment.
+        The instructor posts one task per class day right here. Click into a day to read it and mark it
+        done — the calendar shows how many people have finished each task at a glance.
       </p>
     </header>
 
-    <div class="forum-app" id="forum-app" data-collection="articles" data-reaction-emoji="👏" data-answer-noun="Comments" data-empty-text="No articles published yet — be the first!">
-      <div class="post-form-wrap">
-        <h2>Write an article</h2>
-        <p class="posting-as"></p>
-        <form id="post-form" class="post-form">
-          <div class="form-row">
-            <input type="text" name="title" placeholder="Title (e.g. which class/topic this is about)" maxlength="200" required />
-          </div>
-          <div class="form-row form-row-meta">
-            <select name="classTag" class="class-select" title="Which class is this about?"></select>
-            <input type="text" name="topics" placeholder="Topics, comma separated (e.g. regression, ols)" maxlength="120" />
-          </div>
-          <div class="form-row">
-            <textarea name="body" class="js-rich-editor" placeholder="Write as much as you like — explain it your way." maxlength="8000" rows="6" required></textarea>
-          </div>
-          <div class="form-actions">
-            <button type="submit" class="btn btn-primary">✍️ Publish Article</button>
-            <span class="form-status"></span>
-          </div>
-        </form>
+    <div class="tasks-app" id="tasks-app">
+      <div class="tasks-toolbar">
+        <button type="button" class="btn btn-secondary" data-action="prev-month" aria-label="Previous month">◀</button>
+        <h2 class="tasks-month-label"></h2>
+        <button type="button" class="btn btn-secondary" data-action="next-month" aria-label="Next month">▶</button>
+        <button type="button" class="btn btn-secondary tasks-today-btn" data-action="today">Today</button>
       </div>
 
-      <div class="tag-filter-bar" hidden></div>
-
-      <div class="forum-feed">
-        <div class="feed-status">Loading articles…</div>
-      </div>
+      <div class="calendar-status">Loading tasks…</div>
+      <div class="calendar-grid" hidden></div>
     </div>
 
-    <p class="footer-note">👏 to clap, 🔗 to share the link, or open comments to reply.</p>
+    <p class="footer-note">Click any day to see the full task and mark it done.</p>
   </main>
+</div>
+
+<div class="task-day-panel" id="task-day-panel" hidden>
+  <div class="task-day-panel-backdrop"></div>
+  <div class="task-day-panel-content">
+    <button type="button" class="task-day-panel-close" aria-label="Close">✕</button>
+    <div class="task-day-panel-body"></div>
+  </div>
 </div>
 
 <script src="assets/auth.js"></script>
 <script src="assets/forum.js"></script>
-<script src="assets/collections.js"></script>
 <script src="assets/editor.js"></script>
+<script src="assets/tasks.js"></script>
 </body>
 </html>

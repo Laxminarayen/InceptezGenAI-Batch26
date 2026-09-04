@@ -3,7 +3,8 @@ const REPO = "InceptezGenAI-Batch26";
 const BRANCH = "main";
 const SITE_ORIGIN = "https://laxminarayen.github.io";
 const ALLOWED_ORIGINS = new Set([SITE_ORIGIN, "http://localhost:8000", "http://localhost:8080", "http://127.0.0.1:8000"]);
-const COLLECTIONS = new Set(["notes", "articles", "questions"]);
+const COLLECTIONS = new Set(["notes", "articles", "questions", "tasks"]);
+const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 const LIMITS = { title: 200, body: 8000, comment: 2000, classTag: 80 };
 const MAX_RETRIES = 5;
 const IMAGE_EXT_BY_TYPE = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/gif": "gif" };
@@ -50,6 +51,10 @@ function cleanTopics(raw) {
 
 function genId() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+}
+
+function isInstructor(login) {
+  return typeof login === "string" && login.toLowerCase() === OWNER.toLowerCase();
 }
 
 function toBase64Utf8(str) {
@@ -262,11 +267,21 @@ async function handlePost(request, env, origin) {
   const collection = body.collection;
   if (!COLLECTIONS.has(collection)) return json({ error: "Invalid collection" }, 400, origin);
 
+  if (collection === "tasks" && !isInstructor(auth.session.login)) {
+    return json({ error: "Only the instructor can post tasks." }, 403, origin);
+  }
+
   const title = clean(body.title, LIMITS.title);
   const text = clean(body.body, LIMITS.body);
   const classTag = clean(body.classTag, LIMITS.classTag);
   const topics = cleanTopics(body.topics);
   if (!title || !text) return json({ error: "title and body are required" }, 400, origin);
+
+  let taskDate;
+  if (collection === "tasks") {
+    taskDate = clean(body.date, 10);
+    if (!DATE_RE.test(taskDate)) return json({ error: "A valid date (YYYY-MM-DD) is required" }, 400, origin);
+  }
 
   const entry = {
     id: genId(),
@@ -279,6 +294,7 @@ async function handlePost(request, env, origin) {
     createdAt: new Date().toISOString(),
     likes: [],
     comments: [],
+    ...(taskDate ? { date: taskDate } : {}),
   };
 
   const result = await mutateCollection(env, collection, `forum: add ${collection.slice(0, -1)} "${title}"`, (data) => {
@@ -305,6 +321,12 @@ async function handleEdit(request, env, origin) {
   const topics = cleanTopics(body.topics);
   if (!title || !text) return json({ error: "title and body are required" }, 400, origin);
 
+  let taskDate;
+  if (collection === "tasks" && body.date !== undefined) {
+    taskDate = clean(body.date, 10);
+    if (!DATE_RE.test(taskDate)) return json({ error: "A valid date (YYYY-MM-DD) is required" }, 400, origin);
+  }
+
   const result = await mutateCollection(env, collection, `forum: edit ${postId}`, (data) => {
     const post = data.find((p) => p.id === postId);
     if (!post) return { notFound: true };
@@ -313,6 +335,7 @@ async function handleEdit(request, env, origin) {
     post.body = text;
     post.classTag = classTag;
     post.topics = topics;
+    if (taskDate) post.date = taskDate;
     post.editedAt = new Date().toISOString();
     return { entry: post };
   });

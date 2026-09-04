@@ -1362,6 +1362,271 @@ a { color: inherit; }
   min-width: 180px;
 }
 
+/* ================= Daily Tasks calendar ================= */
+
+.tasks-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.tasks-month-label {
+  flex: 1;
+  margin: 0;
+  font-size: 1.1rem;
+  text-align: center;
+}
+
+.tasks-today-btn {
+  margin-left: auto;
+}
+
+.calendar-status {
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--bg-elev);
+  color: var(--text-dim);
+  text-align: center;
+}
+
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.calendar-weekday {
+  text-align: center;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-dim);
+  padding-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.cal-day {
+  min-height: 92px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-elev);
+  padding: 6px 6px 8px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.cal-day:hover {
+  border-color: var(--accent);
+}
+
+.cal-day.is-other-month {
+  opacity: 0.45;
+}
+
+.cal-day.is-today {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.cal-day.has-tasks {
+  border-style: solid;
+}
+
+.cal-day-num {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-dim);
+}
+
+.cal-day.is-today .cal-day-num {
+  color: var(--accent);
+}
+
+.cal-day-tasks {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  overflow: hidden;
+}
+
+.cal-task-pill {
+  background: var(--bg-elev-2);
+  border-radius: 6px;
+  padding: 3px 6px;
+  font-size: 0.7rem;
+  line-height: 1.25;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.cal-task-title {
+  color: var(--text);
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cal-task-count {
+  color: var(--text-dim);
+  font-size: 0.66rem;
+}
+
+.cal-task-more {
+  font-size: 0.68rem;
+  color: var(--text-dim);
+  padding-left: 2px;
+}
+
+/* Day detail panel */
+.task-day-panel {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 6vh 16px;
+  overflow-y: auto;
+}
+
+.task-day-panel[hidden] {
+  display: none;
+}
+
+.task-day-panel-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+}
+
+.task-day-panel-content {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 620px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 28px 24px 24px;
+}
+
+.task-day-panel-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--bg-elev-2);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.task-day-panel-close:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.task-day-title {
+  margin: 0 0 16px;
+  font-size: 1.15rem;
+  padding-right: 30px;
+}
+
+.tasks-empty-note {
+  color: var(--text-dim);
+  font-size: 0.9rem;
+}
+
+.task-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg-elev-2);
+  padding: 16px 18px;
+  margin-bottom: 14px;
+}
+
+.task-card-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.task-card-title {
+  margin: 0;
+  font-size: 1rem;
+  flex: 1;
+}
+
+.task-card-body {
+  font-size: 0.9rem;
+  margin-bottom: 12px;
+}
+
+.task-card-footer {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.done-toggle-btn {
+  font-size: 0.82rem;
+}
+
+.done-summary {
+  color: var(--text-dim);
+  font-size: 0.82rem;
+}
+
+.done-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.done-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 3px 10px 3px 4px;
+  font-size: 0.76rem;
+  color: var(--text-dim);
+}
+
+.done-avatar {
+  border-radius: 50%;
+  display: block;
+}
+
+.done-list-empty {
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  margin: 0;
+}
+
+#add-task-for-day {
+  margin-top: 4px;
+}
+
+.task-form {
+  margin-top: 12px;
+}
+
 @media (max-width: 860px) {
   .layout { grid-template-columns: 1fr; }
   .sidebar {
@@ -1374,4 +1639,8 @@ a { color: inherit; }
   .topbar { flex-wrap: wrap; height: auto; padding: 12px 16px; gap: 10px; }
   .topbar-nav { order: 3; width: 100%; justify-content: space-between; }
   .topbar-link.topbar-github { margin-left: 0; }
+  .cal-day { min-height: 64px; }
+  .cal-task-title { max-width: 100%; }
+  .task-day-panel { padding: 0; align-items: stretch; }
+  .task-day-panel-content { max-width: none; border-radius: 0; min-height: 100%; }
 }
