@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Daily Tasks — Inceptez Batch 26 Class Forum</title>
+<meta name="description" content="Daily task tracker for Inceptez GenAI Batch 26 — the instructor posts a task per day, students mark it done, and everyone can see progress on the calendar." />
+<link rel="stylesheet" href="assets/style.css" />
+<script src="https://cdn.jsdelivr.net/npm/marked@12/marked.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <a class="topbar-brand" href="index.html">
+    <span class="topbar-logo">🎓</span>
+    <span>
+      <span class="topbar-title">Inceptez Batch 26</span>
+      <span class="topbar-subtitle">Class Forum</span>
+    </span>
+  </a>
+  <nav class="topbar-nav">
+    <a class="topbar-link" href="index.html">🏠 Home</a>
+    <a class="topbar-link" href="questions.html">💬 Questions</a>
+    <a class="topbar-link" href="issues.html">🐛 Issues</a>
+    <a class="topbar-link" href="notes.html">📝 Notes</a>
+    <a class="topbar-link" href="articles.html">✍️ Articles</a>
+    <a class="topbar-link is-active" href="tasks.html">📅 Daily Tasks</a>
+    <a class="topbar-link topbar-github" href="https://github.com/Laxminarayen/InceptezGenAI-Batch26" target="_blank" rel="noopener">
+      <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+      GitHub
+    </a>
+  </nav>
+  <button id="like-btn" class="like-btn" type="button" title="Like it? Click to star it on GitHub (opens a new tab to confirm).">
+    <svg class="like-icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"></path></svg>
+    <span class="like-text">Star</span>
+    <span class="like-count" id="star-count">···</span>
+  </button>
+  <div id="auth-slot" class="auth-slot"></div>
+</header>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="title">Inceptez Batch 26</span>
+      <span class="subtitle">Class Materials Portal</span>
+    </div>
+
+    <nav>
+      <div class="nav-group" data-group="python">
+        <div class="nav-group-title"><span class="dot"></span>Python</div>
+        <a class="nav-link" href="index.html#c00">00 · Class Introduction</a>
+        <a class="nav-link" href="index.html#c01">01 · Why Python</a>
+        <a class="nav-link" href="index.html#c02">02 · Data Types &amp; Structures</a>
+        <a class="nav-link" href="index.html#c03">03 · Structure Ops &amp; Loops</a>
+        <a class="nav-link" href="index.html#c04">04 · Time Complexity, Set/Dict</a>
+        <a class="nav-link" href="index.html#c05">05 · While, Break/Continue, Functions</a>
+        <a class="nav-link" href="index.html#c06">06 · Functions Adv, Classes, LEGB</a>
+        <a class="nav-link" href="index.html#c07">07 · Intro to NumPy</a>
+        <a class="nav-link" href="index.html#c08">08 · Pandas</a>
+        <a class="nav-link" href="index.html#c09">09 · Pandas Stats</a>
+      </div>
+      <div class="nav-group" data-group="stats">
+        <div class="nav-group-title"><span class="dot"></span>Statistics &amp; Preprocessing</div>
+        <a class="nav-link" href="index.html#c13">13 · Descriptive Statistics 1</a>
+        <a class="nav-link" href="index.html#c14">14 · Data Preprocessing</a>
+        <a class="nav-link" href="index.html#c15">15 · Multivariate Distributions</a>
+        <a class="nav-link" href="index.html#c16">16 · Inferential Stats — Voting</a>
+      </div>
+      <div class="nav-group" data-group="ml">
+        <div class="nav-group-title"><span class="dot"></span>Machine Learning</div>
+        <a class="nav-link" href="index.html#c17">17 · ML Foundations</a>
+        <a class="nav-link" href="index.html#c18">18 · Gradient Descent</a>
+        <a class="nav-link" href="index.html#c19">19 · Linear Regression Hands-on</a>
+        <a class="nav-link" href="index.html#c20">20 · Revision &amp; Exercise: Linear Regression</a>
+        <a class="nav-link" href="index.html#c21">21 · Polynomial Regression</a>
+        <a class="nav-link" href="index.html#c22">22 · Logistic Regression</a>
+        <a class="nav-link" href="index.html#c23">23 · K-Nearest Neighbors (KNN)</a>
+        <a class="nav-link" href="index.html#c24">24 · KNN Regression &amp; Decision Trees</a>
+        <a class="nav-link" href="index.html#c25">25 · Decision Trees Part 2 &amp; Hands-on</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <header class="page-header">
+      <h1>Daily Tasks</h1>
+      <p>
+        The instructor posts one task per class day right here. Click into a day to read it and mark it
+        done — the calendar shows how many people have finished each task at a glance.
+      </p>
+    </header>
+
+    <div class="tasks-app" id="tasks-app">
+      <div class="tasks-toolbar">
+        <button type="button" class="btn btn-secondary" data-action="prev-month" aria-label="Previous month">◀</button>
+        <h2 class="tasks-month-label"></h2>
+        <button type="button" class="btn btn-secondary" data-action="next-month" aria-label="Next month">▶</button>
+        <button type="button" class="btn btn-secondary tasks-today-btn" data-action="today">Today</button>
+      </div>
+
+      <div class="calendar-status">Loading tasks…</div>
+      <div class="calendar-grid" hidden></div>
+    </div>
+
+    <p class="footer-note">Click any day to see the full task and mark it done.</p>
+  </main>
+</div>
+
+<div class="task-day-panel" id="task-day-panel" hidden>
+  <div class="task-day-panel-backdrop"></div>
+  <div class="task-day-panel-content">
+    <button type="button" class="task-day-panel-close" aria-label="Close">✕</button>
+    <div class="task-day-panel-body"></div>
+  </div>
+</div>
+
+<script src="assets/auth.js"></script>
+<script src="assets/forum.js"></script>
+<script src="assets/editor.js"></script>
+<script src="assets/tasks.js"></script>
+</body>
+</html>
