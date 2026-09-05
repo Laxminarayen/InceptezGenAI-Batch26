@@ -31,6 +31,7 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 - [Day 23: K-Nearest Neighbors (KNN)](#day-23)
 - [Day 24: KNN Regression & Decision Trees](#day-24)
 - [Day 25: Decision Trees Part 2 & Hands-on](#day-25)
+- [Day 26: Multiclass Classification & Softmax](#day-26)
 - [Assignments](#assignments)
 
 ---
@@ -421,6 +422,25 @@ A full end-to-end assignment applying the same skills to a new dataset: cleaning
 - **Exercise Solution Notebook:** [`25. Decision Tree Handson - Regression/DecsionTreeClassification.ipynb`](25.%20Decision%20Tree%20Handson%20-%20Regression/DecsionTreeClassification.ipynb) — worked solution: imputation, encoding, and a trained decision tree comparing fixed vs. dropped data
 - **Decision Tree Regression Notebook:** [`25. Decision Tree Handson - Regression/DecisionTreeRegression.ipynb`](25.%20Decision%20Tree%20Handson%20-%20Regression/DecisionTreeRegression.ipynb) — `DecisionTreeRegressor` on the IT-salary dataset, tuned with `GridSearchCV`, then compared against Linear and KNN Regression
 - **IT Salary Prediction — Tree vs. KNN vs. Linear Regression:** [`25. Decision Tree Handson - Regression/IT_Salary_DecisionTree_KNN_LinearRegression.ipynb`](25.%20Decision%20Tree%20Handson%20-%20Regression/IT_Salary_DecisionTree_KNN_LinearRegression.ipynb) — a full production-style pipeline (duplicate/outlier cleaning, high-cardinality bucketing, shared `ColumnTransformer`, honestly-tuned hyperparameters, and a final head-to-head — plus pickling the winning pipeline for a Streamlit app)
+
+---
+
+<a name="day-26"></a>
+## 🗓️ Day 26: Multiclass Classification & Softmax (05-Sep-2026)
+
+### Highlights
+- **Revision, Then One New Question:** Regression vs. classification, parametric (Linear/Logistic/Polynomial) vs. non-parametric (KNN/Decision Tree) — then: what happens once Y has three classes (Low/Medium/High risk) instead of two?
+- **KNN and Decision Trees Scale to K Classes for Free:** KNN just takes the mode instead of a majority vote; entropy's formula never assumed 2 classes to begin with.
+- **Max Entropy Is Now log₂(K):** Worked from a 12-sample, 3-class split (entropy 1.585) and a 4-class split (entropy 2.0), generalizing to the ceiling that rises with every extra class.
+- **Logistic Regression Doesn't Scale for Free:** Sigmoid only ever produces one probability. First instinct, One-vs-Rest (K independent binary models), and why its K scores don't naturally agree or sum to 1.
+- **Softmax Regression, By Hand:** One-hot encoding the target, fitting K regression lines at once, and a full worked example (loan risk tiers) converting three raw scores into a proper probability distribution that sums to 1 — with a live, draggable version of the same math in the slide deck.
+- **Confusion Matrix Grows to K×K:** Reading a worked 3×3 matrix, and deriving per-class precision/recall the same One-vs-Rest way — this time for evaluation, not training.
+- **Assignment:** Pick a business use-case with 3+ classes, build its confusion matrix, derive precision/recall/F1 per class, and argue which metric matters most given the real cost of each mistake — published as an Article on the class forum.
+
+### Resources
+- **Slide Deck:** [`26. MultiClass-Classification-SOFTMAX/multiclass-softmax-slides.html`](26.%20MultiClass-Classification-SOFTMAX/multiclass-softmax-slides.html)
+- **Classwork Notes (written up from the whiteboard):** [`26. MultiClass-Classification-SOFTMAX/classwork-notes.html`](26.%20MultiClass-Classification-SOFTMAX/classwork-notes.html)
+- **Classwork.pdf (original handwritten notes):** [`26. MultiClass-Classification-SOFTMAX/Classwork.pdf`](26.%20MultiClass-Classification-SOFTMAX/Classwork.pdf)
 
 ---
 
