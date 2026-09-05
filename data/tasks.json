@@ -4,7 +4,7 @@
     "author": "Laxminarayen",
     "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
     "title": "What is Classification?",
-    "body": "1. What are metrics? Difference between metrics vs Loss..!\n2. Confusion matrices.\n3. Write an article on confusion matrices",
+    "body": "1. What are metrics? Difference between metrics vs Loss..!\n2. Confusion matrices for multiclass classification\n3. Write an article on confusion matrices - Multiclass classification",
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-05T03:25:19.888Z",
@@ -20,6 +20,6 @@
     ],
     "comments": [],
     "date": "2026-09-05",
-    "editedAt": "2026-09-05T03:25:50.794Z"
+    "editedAt": "2026-09-05T06:57:44.808Z"
   }
 ]
