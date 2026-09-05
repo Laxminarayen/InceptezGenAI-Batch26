@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Classwork Notes · Multiclass Classification &amp; Softmax</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#6249B0;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#A78BFA;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    -webkit-font-smoothing:antialiased; line-height:1.6;
+  }
+  .wrap{max-width:840px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 80px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.7rem,4vw,2.4rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 6px;}
+  .subtitle{color:var(--ink-soft); font-size:1rem; margin-bottom:8px;}
+  .pdf-link{
+    display:inline-flex; align-items:center; gap:8px; margin:14px 0 34px; font-size:.9rem; font-weight:700;
+    color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px;
+    padding:9px 18px; text-decoration:none;
+  }
+  .pdf-link:hover{border-color:var(--accent); color:var(--accent);}
+  h2{font-size:1.35rem; font-weight:900; margin:44px 0 14px; padding-top:16px; border-top:1px solid var(--line);}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h3{font-size:1.05rem; font-weight:800; margin:22px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{
+    background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent);
+    border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink);
+    font-size:1.02rem;
+  }
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.92rem;}
+  th, td{padding:8px 12px; text-align:center; border:1px solid var(--line);}
+  th{background:var(--paper-2); font-weight:800; font-size:.78rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  tr.hl td{background:color-mix(in srgb, var(--accent) 10%, transparent); font-weight:800;}
+  .note{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px;
+    font-size:.9rem; color:var(--ink-soft); margin:14px 0;
+  }
+  .note b{color:var(--ink);}
+  .agenda{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 20px;}
+  .agenda span{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:8px 16px;
+    font-size:.86rem; font-weight:700; color:var(--ink);
+  }
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Day 26 · Classwork Notes</div>
+  <h1>Multiclass Classification &amp; Softmax Regression</h1>
+  <p class="subtitle">A written-up version of today's whiteboard notes — revision, then One-vs-Rest, entropy's ceiling, and Softmax Regression by hand.</p>
+  <a class="pdf-link" href="Classwork.pdf" target="_blank">📄 Open the original handwritten Classwork.pdf</a>
+
+  <h2>Agenda</h2>
+  <div class="agenda">
+    <span>1 · Classification?</span>
+    <span>2 · Binary vs. Multiclass</span>
+    <span>3 · Loss vs. Metric</span>
+    <span>4 · Confusion Matrix</span>
+  </div>
+
+  <h2>Revision — Supervised Learning, One More Time</h2>
+  <p>Supervised learning: X's (columns) and Y (target) — we're always trying to predict Y.</p>
+  <ul>
+    <li><b>Regression:</b> if the target is continuous, floating-point values (e.g. 0.005 ... 0.08 ... ∞).</li>
+    <li><b>Classification:</b> if the target is discrete values (e.g. 0, 1, 2, 3, ...).</li>
+  </ul>
+  <table>
+    <thead><tr><th></th><th>Input</th><th>Output</th></tr></thead>
+    <tbody>
+      <tr><td><b>Linear Regression</b></td><td>X values</td><td>Continuous number</td></tr>
+      <tr><td><b>Logistic Regression</b></td><td>X values</td><td>Sigmoid probability (0–1)</td></tr>
+      <tr><td><b>Polynomial Regression</b></td><td>x², x³ ... xⁿ</td><td>Continuous number (Y)</td></tr>
+      <tr><td><b>Polynomial Logistic</b></td><td>x², x³ ... xⁿ</td><td>Sigmoid probability (0–1)</td></tr>
+    </tbody>
+  </table>
+  <p>All four of these are <b>parametric models</b>: they learn a fixed set of dials/knobs/regulators — β₀, β₁ ... βₙ — from the training data. The pipeline is always Data → Pre-process/EDA (missing values, outliers, inconsistent text, encoding, feature engineering, scaling, feature selection) → Model Train → Learned Parameters → Predict.</p>
+
+  <h3>KNN — no dials at all</h3>
+  <p>KNN makes no assumption about the relationship between X and Y, and has no learnable knobs. For a new point Z, measure its distance (Euclidean, Manhattan, Cosine, or Minkowski) to every X in the training data, and let the K nearest values decide the answer:</p>
+  <ul>
+    <li><b>Regression:</b> K-averaged output → a continuous number.</li>
+    <li><b>Classification:</b> K-mode output → a discrete decision.</li>
+  </ul>
+  <p><b>Problem:</b> KNN is a <i>lazy learner</i> — every row stays in memory, and every prediction re-does the distance calculation on the fly. Nothing is learned ahead of time.</p>
+
+  <h2>One-vs-Rest (OvR) — The First Instinct For Multiclass</h2>
+  <p>Output is no longer binary — it's Low / Medium / High risk. One-vs-Rest trains one model per class, each one isolating a single class against everything else:</p>
+  <table>
+    <thead><tr><th>Model</th><th>Predicts</th><th>vs.</th></tr></thead>
+    <tbody>
+      <tr><td>Model A</td><td>Low Risk</td><td>{Medium, High}</td></tr>
+      <tr><td>Model B</td><td>Medium Risk</td><td>{Low, High}</td></tr>
+      <tr><td>Model C</td><td>High Risk</td><td>{Low, Medium}</td></tr>
+    </tbody>
+  </table>
+  <p>In general: <b>K classes → K models</b> (or K output nodes). Each model tries to isolate one specific class from the rest, which makes each model individually interpretable — but the K scores are produced independently, so nothing forces them to agree or to add up to 1.</p>
+
+  <h3>Binary vs. Multiclass vs. Multi-label</h3>
+  <p>Worth separating three different problems clearly:</p>
+  <ul>
+    <li><b>Binary:</b> exactly 2 outcomes (e.g. Cat vs. Not-Cat).</li>
+    <li><b>Multiclass:</b> exactly one correct label out of K options (e.g. a photo is a Cat, a Dog, <i>or</i> a Bird — never more than one).</li>
+    <li><b>Multi-label:</b> more than one label can apply, or the answer itself can be uncertain (e.g. Yes / No / Maybe). A different problem from today's.</li>
+  </ul>
+
+  <h2>Entropy, Generalized to K Classes</h2>
+  <p>Decision Trees already had the right formula — it just happens to work for any number of classes: H(S) = − Σ p(xᵢ) · log₂ p(xᵢ). Two worked examples from 12 samples:</p>
+  <table>
+    <thead><tr><th>Classes (K)</th><th>Split</th><th>H(S)</th></tr></thead>
+    <tbody>
+      <tr><td>3 (Low/Med/High)</td><td>4/12 each → p = 1/3 each</td><td>1.585</td></tr>
+      <tr><td>4</td><td>3/12 each → p = 1/4 each</td><td>2.0</td></tr>
+    </tbody>
+  </table>
+  <div class="formula">
+    Maximum possible impurity, K classes, evenly split:
+    <span class="sub">H<sub>max</sub> = log₂(K) — e.g. log₂(3) = 1.585, log₂(4) = 2.0</span>
+  </div>
+  <p>Whenever a decision tree node has K classes, that node can never be more confused than log₂(K) bits — a perfectly even split across all K classes.</p>
+
+  <h2>Softmax Regression — Rebuilding Logistic Regression For K Classes</h2>
+  <p>Logistic regression's one line, one sigmoid output isn't enough for multiclass — so linear regression itself gets reworked. With K classes, fit K regression lines, one per class:</p>
+  <div class="formula">
+    y<sub>k</sub> = W<sub>k</sub>x + b &nbsp;(equivalently, z<sub>k</sub> = β₀,ₖ + β₁,ₖ·x)
+  </div>
+  <p>Step 1 — one-hot encode the target, one column per class (a "1" marks which class that row is, a "1 Hot Vector"):</p>
+  <table>
+    <thead><tr><th>Class</th><th>One-Hot [Low, Med, High]</th></tr></thead>
+    <tbody>
+      <tr><td>Class 0 — Low Risk</td><td>[1, 0, 0]</td></tr>
+      <tr><td>Class 1 — Medium Risk</td><td>[0, 1, 0]</td></tr>
+      <tr><td>Class 2 — High Risk</td><td>[0, 0, 1]</td></tr>
+    </tbody>
+  </table>
+
+  <h3>By hand, once — an applicant at x = 3.31</h3>
+  <table>
+    <thead><tr><th>Class</th><th>β₀</th><th>β₁</th><th>z = β₀ + β₁·x</th></tr></thead>
+    <tbody>
+      <tr><td>Low</td><td>4.50</td><td>−1.20</td><td>0.528</td></tr>
+      <tr><td>Medium</td><td>0.80</td><td>0.25</td><td>1.628</td></tr>
+      <tr><td>High</td><td>−3.20</td><td>1.10</td><td>0.441</td></tr>
+    </tbody>
+  </table>
+  <p>Three raw scores — not probabilities yet. To turn them into a proper probability distribution (all positive, all summing to 1), use <b>Softmax</b>:</p>
+  <div class="formula">
+    p̂<sub>k</sub> = e<sup>z<sub>k</sub></sup> / (e<sup>z₀</sup> + e<sup>z₁</sup> + e<sup>z₂</sup>)
+    <span class="sub">Convert continuous values into a probability where the total across all classes adds up to 1.</span>
+  </div>
+  <table>
+    <tbody>
+      <tr><td>e<sup>0.528</sup> + e<sup>1.628</sup> + e<sup>0.441</sup></td><td>=</td><td>1.696 + 5.093 + 1.554 = <b>8.343</b></td></tr>
+      <tr class="hl"><td>Low</td><td>1.696 / 8.343</td><td>= 0.20</td></tr>
+      <tr class="hl"><td>Medium</td><td>5.093 / 8.343</td><td>= 0.61</td></tr>
+      <tr class="hl"><td>High</td><td>1.554 / 8.343</td><td>= 0.18</td></tr>
+    </tbody>
+  </table>
+  <p>Final output vector: <b>[0.20, 0.61, 0.18]</b> — the largest entry (argmax) wins, so this applicant is classified <b>Medium Risk</b>.</p>
+  <div class="note">See it worked interactively, with a slider you can drag yourself, in the <a href="multiclass-softmax-slides.html">slide deck</a> for this session (Section 3, "The Flagship Demo").</div>
+
+  <h2>Confusion Matrix, Multiclass — Where We Left Off</h2>
+  <p>A 2×2 confusion matrix (TP/TN/FP/FN) grows into a K×K grid — every actual class can be predicted as any of the K classes, and the diagonal is "got it right." Today's assignment: pick a business use-case with 3+ classes, build its confusion matrix, derive precision/recall/F1 per class, and argue — with the actual cost of each mistake in mind — which metric matters most for that business. Write it up as an <b>Article</b> on the class forum.</p>
+</div>
+</body>
+</html>

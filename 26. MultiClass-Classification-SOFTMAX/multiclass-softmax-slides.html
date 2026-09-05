@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Multiclass Classification &amp; Softmax · Loan Risk Tiers</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+
+    --c-recap:#3B6E63; --c-multi:#B0670C; --c-soft:#6249B0; --c-eval:#C13D68;
+
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+
+    --accent: var(--c-recap);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+      --c-recap:#79C0AE; --c-multi:#E3A238; --c-soft:#A78BFA; --c-eval:#F17BA0;
+      --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+      --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+    --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+    --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+    --c-recap:#79C0AE; --c-multi:#E3A238; --c-soft:#A78BFA; --c-eval:#F17BA0;
+    --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+    --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+  }
+  :root[data-theme="light"]{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+    --c-recap:#3B6E63; --c-multi:#B0670C; --c-soft:#6249B0; --c-eval:#C13D68;
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    overflow:hidden; -webkit-font-smoothing:antialiased;
+  }
+  body[data-section="recap"]{--accent:var(--c-recap);}
+  body[data-section="multi"]{--accent:var(--c-multi);}
+  body[data-section="soft"]{--accent:var(--c-soft);}
+  body[data-section="eval"]{--accent:var(--c-eval);}
+
+  h1,h2,h3,p{margin:0;}
+  h1,h2,h3{text-wrap:balance; letter-spacing:-0.01em;}
+  ::selection{background:var(--accent); color:#fff;}
+
+  .eyebrow{
+    font-size:.74rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent);
+  }
+  .slide h1{font-size:clamp(1.7rem,3.2vw,2.9rem); font-weight:800; color:var(--ink);}
+  .slide h2{font-size:clamp(1.2rem,1.8vw,1.6rem); font-weight:800; color:var(--ink);}
+  .body-text{font-size:clamp(1rem,1.25vw,1.2rem); font-weight:500; line-height:1.6; color:var(--ink-soft);}
+  .body-text b, .body-text strong{color:var(--ink); font-weight:800;}
+  .tabular{font-variant-numeric:tabular-nums;}
+
+  /* ---------- chrome ---------- */
+  .chrome-top{
+    position:fixed; top:0; left:0; right:0; height:52px; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 20px; pointer-events:none;
+  }
+  .chrome-top > *{pointer-events:auto;}
+  .hour-badge{
+    font-size:.72rem; font-weight:800; letter-spacing:.12em; color:var(--ink-faint);
+    background:var(--paper-2); border:1px solid var(--line); padding:6px 12px; border-radius:999px;
+  }
+  .chapter-chip{
+    display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:700;
+    color:var(--ink-soft); background:var(--paper-2); border:1px solid var(--line);
+    padding:6px 14px 6px 8px; border-radius:999px;
+  }
+  .chapter-chip .num{
+    display:inline-flex; align-items:center; justify-content:center; width:20px;height:20px;
+    border-radius:50%; background:var(--accent); color:#fff; font-size:.68rem; font-weight:800;
+  }
+  .icon-btn{
+    width:36px;height:36px; border-radius:50%; border:1px solid var(--line); background:var(--paper-2);
+    color:var(--ink); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .icon-btn:hover{background:var(--paper-3);}
+  .icon-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  .deck{position:absolute; inset:0; top:52px; bottom:64px;}
+  .slide{
+    position:absolute; inset:0; display:none; flex-direction:column;
+    padding:clamp(18px,3vw,40px) clamp(24px,5vw,80px);
+    overflow:auto;
+  }
+  .slide.active{display:flex;}
+  .slide-inner{display:flex; flex-direction:column; gap:clamp(12px,1.8vh,20px); max-width:1360px; width:100%; margin:0 auto; flex:1; min-height:0;}
+
+  .chrome-bottom{
+    position:fixed; left:0; right:0; bottom:0; height:64px; z-index:50;
+    display:flex; align-items:center; gap:14px; padding:0 clamp(14px,3vw,32px);
+    background:linear-gradient(0deg, var(--paper) 60%, transparent);
+  }
+  .nav-btn{
+    width:40px;height:40px;border-radius:50%; border:1px solid var(--line); background:var(--paper-2);
+    color:var(--ink); font-size:1.2rem; cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center;
+  }
+  .nav-btn:hover:not(:disabled){background:var(--accent); color:#fff; border-color:transparent;}
+  .nav-btn:disabled{opacity:.35; cursor:default;}
+  .progress{flex:1; display:flex; align-items:center; gap:5px; overflow-x:auto; scrollbar-width:none;}
+  .progress::-webkit-scrollbar{display:none;}
+  .dot{
+    width:9px;height:9px;border-radius:50%; background:var(--paper-3); border:none; cursor:pointer; flex:none;
+    transition:transform .15s ease;
+  }
+  .dot.gap{width:14px; height:2px; border-radius:1px; background:transparent; cursor:default;}
+  .dot.active{transform:scale(1.5);}
+  .slide-counter{font-size:.8rem; font-weight:700; color:var(--ink-faint); flex:none; white-space:nowrap;}
+
+  /* ---------- layout helpers ---------- */
+  .split{display:grid; grid-template-columns:1.05fr 1.35fr; gap:clamp(20px,4vw,52px); align-items:center; flex:1; min-height:0;}
+  @media (max-width:920px){ .split{grid-template-columns:1fr; overflow:auto;} }
+  .split.reverse{grid-template-columns:1.35fr 1.05fr;}
+  .split.even{grid-template-columns:1fr 1fr;}
+  .stack{display:flex; flex-direction:column; gap:12px; min-height:0;}
+  .center-col{display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:16px; flex:1;}
+  .visual-box{
+    background:var(--surface-canvas); border:1px solid var(--line); border-radius:24px;
+    padding:14px; box-shadow:var(--shadow); min-height:0; display:flex; flex-direction:column; gap:8px;
+  }
+
+  /* ---------- components ---------- */
+  .vocab-card{
+    border-left:5px solid var(--accent); background:var(--paper-2); border-radius:14px;
+    padding:12px 18px; display:flex; flex-direction:column; gap:4px;
+  }
+  .vocab-term{font-size:1rem; font-weight:900; letter-spacing:.04em; color:var(--accent);}
+  .vocab-def{font-size:1rem; color:var(--ink); font-weight:600; line-height:1.4;}
+
+  .console{
+    display:flex; flex-wrap:wrap; gap:14px 26px; align-items:flex-end;
+    background:var(--paper-2); border:1px solid var(--line); border-radius:20px;
+    padding:16px 20px;
+  }
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field label{font-size:.76rem; font-weight:800; color:var(--ink-soft); letter-spacing:.03em;}
+  .field .val{color:var(--accent); font-weight:900;}
+  input[type="range"]{width:180px; accent-color:var(--accent);}
+
+  .btn{
+    font:inherit; font-size:.92rem; font-weight:800; border:1px solid var(--line); border-radius:999px;
+    padding:11px 20px; cursor:pointer; background:var(--paper-3); color:var(--ink);
+    transition:transform .12s ease, box-shadow .12s ease; white-space:nowrap;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn:active{transform:translateY(0);}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .btn-primary{background:var(--accent); color:#fff; border-color:transparent; box-shadow:0 8px 18px -8px var(--accent);}
+  .btn.toggled{background:var(--accent); color:#fff; border-color:transparent;}
+  .btn-row{display:flex; flex-wrap:wrap; gap:10px;}
+
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px;}
+  .stat-tile{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:12px 14px;}
+  .stat-tile .label{font-size:.7rem; font-weight:800; color:var(--ink-faint); letter-spacing:.05em; text-transform:uppercase;}
+  .stat-tile .value{font-size:1.35rem; font-weight:900; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .stat-tile.accent .value{color:var(--accent);}
+
+  .card{background:var(--paper-2); border:1px solid var(--line); border-radius:18px; padding:18px 20px;}
+  .card-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px;}
+  .card .ico{font-size:1.8rem;}
+  .card h3{font-size:1.02rem; margin-top:8px;}
+  .card p{font-size:.92rem; color:var(--ink-soft); margin-top:4px; line-height:1.45;}
+
+  .banner{border-radius:14px; padding:12px 16px; font-weight:800; font-size:.92rem; display:flex; align-items:center; gap:10px;}
+  .banner.warn{background:color-mix(in srgb, var(--warn) 18%, var(--paper-2)); color:var(--warn);}
+  .banner.good{background:color-mix(in srgb, var(--good) 18%, var(--paper-2)); color:var(--good);}
+  .banner.bad{background:color-mix(in srgb, var(--bad) 18%, var(--paper-2)); color:var(--bad);}
+  .banner.info{background:var(--paper-3); color:var(--ink); font-weight:600; align-items:flex-start;}
+
+  .roadmap{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  .roadmap .stop{background:var(--paper-2); border-radius:18px; padding:16px 10px; text-align:center; border-top:5px solid var(--stop-color, var(--accent));}
+  .roadmap .stop .ico{font-size:2rem;}
+  .roadmap .stop .t{font-size:.8rem; font-weight:800; margin-top:6px;}
+  @media (max-width:920px){ .roadmap{grid-template-columns:repeat(2,1fr);} }
+
+  .kicker-big{font-size:clamp(2.2rem,5.6vw,3.9rem); font-weight:900; letter-spacing:-0.02em;}
+  .glow{color:var(--accent);}
+
+  .rule-list{display:flex; flex-direction:column; gap:12px;}
+  .rule{display:flex; gap:14px; align-items:flex-start; border-radius:14px; padding:6px 8px; margin:-6px -8px;}
+  .rule .n{width:34px;height:34px;border-radius:50%; background:var(--accent); color:#fff; font-weight:900; display:flex; align-items:center; justify-content:center; flex:none;}
+  .rule .t h3{font-size:1rem;}
+  .rule .t p{font-size:.92rem; color:var(--ink-soft); margin-top:2px;}
+
+  .table-wrap{border:1px solid var(--line); border-radius:14px; overflow:hidden;}
+  .data-table{width:100%; border-collapse:collapse; font-size:.88rem;}
+  .data-table th,.data-table td{padding:9px 12px; text-align:center; font-variant-numeric:tabular-nums;}
+  .data-table thead th{background:var(--paper-3); color:var(--ink-soft); font-weight:800; font-size:.74rem; letter-spacing:.03em; text-transform:uppercase;}
+  .data-table tbody tr{border-top:1px solid var(--line);}
+  .data-table tbody tr.hl-row{background:color-mix(in srgb, var(--accent) 12%, transparent); font-weight:800;}
+
+  .footnote{font-size:.82rem; color:var(--ink-faint); font-weight:600;}
+
+  /* ---------- confusion matrix ---------- */
+  .cm-wrap{display:grid; gap:3px; background:var(--line); border:1px solid var(--line); border-radius:16px; overflow:hidden;}
+  .cm-cell{background:var(--paper-2); padding:14px 8px; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;}
+  .cm-cell.head{background:var(--paper-3); font-weight:800; font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft);}
+  .cm-cell.corner{background:var(--paper-3);}
+  .cm-cell .n{font-size:1.5rem; font-weight:900; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .cm-cell .l{font-size:.68rem; font-weight:700; color:var(--ink-faint);}
+  .cm-cell.diag{background:color-mix(in srgb, var(--good) 26%, var(--paper-2));}
+  .cm-cell.off{background:color-mix(in srgb, var(--bad) 16%, var(--paper-2));}
+
+  /* ---------- softmax bar demo ---------- */
+  .bar-demo{display:flex; flex-direction:column; gap:14px;}
+  .bar-row{display:flex; align-items:center; gap:12px;}
+  .bar-row .bar-label{width:82px; flex:none; font-size:.86rem; font-weight:800; color:var(--ink-soft);}
+  .bar-track{flex:1; height:26px; background:var(--paper-3); border-radius:8px; overflow:hidden; position:relative;}
+  .bar-fill{height:100%; background:var(--ink-faint); border-radius:8px 0 0 8px; transition:width .18s ease, background .18s ease;}
+  .bar-fill.winner{background:var(--accent);}
+  .bar-row .bar-pct{width:56px; flex:none; text-align:right; font-weight:900; font-variant-numeric:tabular-nums;}
+
+  .footnote{font-size:.82rem; color:var(--ink-faint); font-weight:600;}
+
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+</style>
+</head>
+<body data-section="recap">
+  <div class="chrome-top">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="hour-badge" id="hourBadge">MULTICLASS CLASSIFICATION</div>
+      <div class="chapter-chip" id="chapterChip" style="display:none;">
+        <span class="num" id="chapterNum">1</span>
+        <span id="chapterLabel">—</span>
+      </div>
+    </div>
+    <button class="icon-btn" id="themeToggle" title="Toggle light / dark">🌗</button>
+  </div>
+
+  <main class="deck" id="deck">
+
+    <!-- ============ S0 — TITLE / ROADMAP ============ -->
+    <section class="slide" data-section="recap" id="s0">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Loan Risk, Revisited · Low / Medium / High</div>
+        <h1 class="kicker-big">What happens when<br/>Y stops being <span class="glow">0 or 1</span>?</h1>
+        <p class="body-text" style="max-width:760px;">Every model we've built so far — KNN, Decision Trees, Logistic Regression — was judged on a two-outcome world: approve or reject, spam or not. Today the loan decision grows a third option, Medium Risk, and we find out which of our models handle that for free, which one needs an entirely new formula, and how to grade any of them once "correct" means one of three things, not two.</p>
+        <div class="roadmap" style="width:100%; margin-top:6px;">
+          <div class="stop" style="--stop-color:var(--c-recap);"><div class="ico">🔁</div><div class="t">1 · Revision — One Model, Three Ways</div></div>
+          <div class="stop" style="--stop-color:var(--c-multi);"><div class="ico">🔀</div><div class="t">2 · From 2 Classes to K</div></div>
+          <div class="stop" style="--stop-color:var(--c-soft);"><div class="ico">📐</div><div class="t">3 · Softmax Regression, By Hand</div></div>
+          <div class="stop" style="--stop-color:var(--c-eval);"><div class="ico">🎯</div><div class="t">4 · Confusion Matrix &amp; the Assignment</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 1 — RECAP                                                  -->
+    <!-- ================================================================= -->
+
+    <section class="slide" data-section="recap" id="sR1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Revision · The First Fork In The Road</div>
+        <h1>Regression <span class="glow">or</span> classification — it starts with Y</h1>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card"><div class="ico">📈</div><h3>Regression</h3><p>Target Y is continuous — any floating-point value. Linear, Polynomial Regression: input X's, output a number.</p></div>
+          <div class="card"><div class="ico">🏷️</div><h3>Classification</h3><p>Target Y is discrete — a category from a fixed set: 0/1, or Low/Medium/High. That's where we live today.</p></div>
+        </div>
+        <div class="banner info">👀 Same X's, same columns — the only thing that changes the whole family of models is what kind of Y you're trying to predict.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="recap" id="sR2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Revision · Parametric vs. Non-Parametric</div>
+        <h1>Models with <span class="glow">dials</span>, and models with <span class="glow">none</span></h1>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card"><div class="ico">🎛️</div><h3>Parametric — Linear &amp; Logistic Regression</h3><p>Learn a fixed set of knobs — β₀, β₁ ... βₙ — from training data. Once learned, the training data itself can be thrown away; only the parameters matter at prediction time.</p></div>
+          <div class="card"><div class="ico">🧭</div><h3>Non-parametric — KNN &amp; Decision Trees</h3><p>No learnable dials. KNN makes no assumption about the relationship at all — it just measures distance to every stored point. Decision Trees ask a sequence of yes/no questions instead.</p></div>
+        </div>
+        <p class="footnote">Pipeline either way: Data → Pre-process/EDA (missing values, outliers, inconsistent text, encoding, scaling, feature selection) → Model Train → Predict.</p>
+      </div>
+    </section>
+
+    <section class="slide" data-section="recap" id="sR3">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Revision → Today</div>
+        <h1 class="kicker-big">All three models know<br/>0 <span class="glow">or</span> 1.<br/>Do they know <span class="glow">0, 1, or 2</span>?</h1>
+        <p class="body-text" style="max-width:640px;">Loan Risk is no longer Approve/Reject. It's Low, Medium, or High — three buckets, one of which is correct. Let's find out, model by model, what changes.</p>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 2 — FROM 2 CLASSES TO K                                    -->
+    <!-- ================================================================= -->
+
+    <section class="slide" data-section="multi" id="sM1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">From 2 Classes to K · The New Target</div>
+          <h1>Y now has <span class="glow">three</span> possible values</h1>
+          <p class="body-text">Same features as before — X's describing the applicant. Only Y changed shape: instead of a single 0/1 switch, it's a label from {Low, Medium, High}.</p>
+          <div class="vocab-card">
+            <div class="vocab-term">MULTICLASS CLASSIFICATION</div>
+            <div class="vocab-def">Exactly one correct label out of K &gt; 2 options — like Cat / Dog / Bird. Different from a "yes / no / maybe" multi-label problem, where more than one label can apply at once. Today is the K-exclusive-labels case.</div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Applicant</th><th>Credit Index</th><th>Risk Tier</th></tr></thead>
+            <tbody>
+              <tr><td>#1</td><td>2.0</td><td>Low</td></tr>
+              <tr><td>#4</td><td>2.0</td><td>Low</td></tr>
+              <tr class="hl-row"><td>#5</td><td>6.0</td><td>Medium</td></tr>
+              <tr><td>#8</td><td>6.0</td><td>Medium</td></tr>
+              <tr><td>#9</td><td>10.0</td><td>High</td></tr>
+              <tr><td>#12</td><td>10.0</td><td>High</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="multi" id="sM2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">From 2 Classes to K · KNN</div>
+        <h1>KNN handles this <span class="glow">for free</span></h1>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>Nothing about "distance" changed</h3><p>Still Euclidean (or Manhattan/Cosine) distance from a new applicant to every stored training point — the formula never knew about class labels in the first place.</p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>Only the vote changes</h3><p>Binary KNN took a majority vote between 2 labels. Multiclass KNN takes the <b>mode</b> — whichever of Low/Medium/High appears most often among the K nearest neighbors.</p></div></div>
+          <div class="rule"><div class="n">3</div><div class="t"><h3>K = 3 example</h3><p>A new applicant's 3 nearest neighbors are labeled Medium, Medium, High → mode = <b>Medium</b>. Same rule works for any number of classes.</p></div></div>
+        </div>
+        <div class="banner good">✅ Lazy learner, no training step, no dials — and completely indifferent to how many classes Y has.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="multi" id="sM3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">From 2 Classes to K · Decision Trees</div>
+          <h1>Entropy already <span class="glow">generalizes</span></h1>
+          <p class="body-text">The impurity formula was never written just for 2 classes: H(S) = −Σ p(xᵢ)·log₂ p(xᵢ), summed over however many classes are actually present in that node.</p>
+          <div class="vocab-card">
+            <div class="vocab-term">12 samples, 3 classes, evenly split</div>
+            <div class="vocab-def">p(Low) = p(Medium) = p(High) = 4/12 = 1/3 each.<br/>H(S) = −3 × (1/3 · log₂(1/3)) = <b>1.585</b></div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Class</th><th>Count</th><th>p</th></tr></thead>
+            <tbody>
+              <tr><td>Low</td><td>4</td><td>1/3</td></tr>
+              <tr><td>Medium</td><td>4</td><td>1/3</td></tr>
+              <tr><td>High</td><td>4</td><td>1/3</td></tr>
+              <tr class="hl-row"><td colspan="2">Entropy H(S)</td><td>1.585</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="multi" id="sM4">
+      <div class="slide-inner stack">
+        <div class="eyebrow">From 2 Classes to K · The Ceiling Moves</div>
+        <h1>Max entropy is now <span class="glow">log₂(K)</span></h1>
+        <p class="body-text">With 2 balanced classes the worst-case impurity was 1.0 bit. Add a third evenly-split class and the ceiling itself rises — more classes means more ways to be uncertain. Try it:</p>
+        <div class="btn-row" id="m4Buttons"></div>
+        <div class="stat-grid">
+          <div class="stat-tile"><div class="label">K classes</div><div class="value tabular" id="m4K">3</div></div>
+          <div class="stat-tile accent"><div class="label">max H(S) = log₂(K)</div><div class="value tabular" id="m4Val">1.585</div></div>
+        </div>
+        <div class="banner info">A node can never be MORE confused than a perfectly even split across all K classes — that's exactly what log₂(K) measures.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="multi" id="sM5">
+      <div class="slide-inner stack">
+        <div class="eyebrow">From 2 Classes to K · Logistic Regression's Turn</div>
+        <h1>Sigmoid only ever gives <span class="glow">one</span> number</h1>
+        <p class="body-text">σ(z) outputs a single probability between 0 and 1 — perfect for "is it class 1?", meaningless for "which of three classes is it?". Unlike KNN and Decision Trees, logistic regression cannot just be reused as-is.</p>
+        <div class="banner warn">⚠️ One line, one probability. Three classes need at least three numbers that make sense together — logistic regression itself has to be reworked.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="multi" id="sM6">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">From 2 Classes to K · First Instinct</div>
+          <h1>One-vs-Rest: <span class="glow">3 classes, 3 models</span></h1>
+          <p class="body-text">Train one binary logistic regression per class, each one asking "is it THIS class, or anything else?" With K classes, that's K independent models (or K output nodes).</p>
+          <div class="rule-list">
+            <div class="rule"><div class="n">A</div><div class="t"><h3>Model A — Low vs. Rest</h3><p>Medium and High both get folded into "Rest."</p></div></div>
+            <div class="rule"><div class="n">B</div><div class="t"><h3>Model B — Medium vs. Rest</h3><p>Low and High both get folded into "Rest."</p></div></div>
+            <div class="rule"><div class="n">C</div><div class="t"><h3>Model C — High vs. Rest</h3><p>Low and Medium both get folded into "Rest."</p></div></div>
+          </div>
+        </div>
+        <div class="banner bad">🚧 Each model is trained in isolation — their 3 output scores have no reason to add up to 1, and they can disagree with each other. Workable, but not elegant.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="multi" id="sM7">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">From 2 Classes to K → Softmax</div>
+        <h1 class="kicker-big">What if logistic regression<br/>was <span class="glow">properly</span> rebuilt for K classes?</h1>
+        <p class="body-text" style="max-width:640px;">One coherent model, K outputs that always add up to exactly 1.0 — no separate models, no disagreement. That's Softmax Regression.</p>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 3 — SOFTMAX REGRESSION, BY HAND                            -->
+    <!-- ================================================================= -->
+
+    <section class="slide" data-section="soft" id="sS1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Softmax Regression · The Setup</div>
+          <h1>One-hot encode the target <span class="glow">first</span></h1>
+          <p class="body-text">Each class becomes its own column of 0's and 1's — a "1" in exactly one position, marking which class that row belongs to.</p>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Class</th><th>One-Hot [Low, Med, High]</th></tr></thead>
+            <tbody>
+              <tr><td>Low</td><td>[1, 0, 0]</td></tr>
+              <tr><td>Medium</td><td>[0, 1, 0]</td></tr>
+              <tr><td>High</td><td>[0, 0, 1]</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="soft" id="sS2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Softmax Regression · K Regression Lines</div>
+          <h1>Every class gets its <span class="glow">own</span> line</h1>
+          <p class="body-text">Instead of 1 equation, fit K of them — one z per class, all sharing the same input x, each with its own intercept and slope.</p>
+          <div class="vocab-card">
+            <div class="vocab-term">zₖ = β₀,ₖ + β₁,ₖ · x</div>
+            <div class="vocab-def">3 classes → 3 independent (β₀, β₁) pairs, trained together as one model.</div>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Class</th><th>β₀</th><th>β₁</th></tr></thead>
+            <tbody>
+              <tr><td>Low (z₀)</td><td>4.50</td><td>−1.20</td></tr>
+              <tr><td>Medium (z₁)</td><td>0.80</td><td>0.25</td></tr>
+              <tr><td>High (z₂)</td><td>−3.20</td><td>1.10</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="soft" id="sS3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Softmax Regression · By Hand, Once</div>
+        <h1>One applicant, credit index <span class="glow">x = 3.31</span></h1>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>z₀ (Low) = 4.50 + (−1.20 × 3.31)</h3><p>= 4.50 − 3.972 = <b>0.528</b></p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>z₁ (Medium) = 0.80 + (0.25 × 3.31)</h3><p>= 0.80 + 0.828 = <b>1.628</b></p></div></div>
+          <div class="rule"><div class="n">3</div><div class="t"><h3>z₂ (High) = −3.20 + (1.10 × 3.31)</h3><p>= −3.20 + 3.641 = <b>0.441</b></p></div></div>
+        </div>
+        <div class="banner info">Three raw scores — not probabilities yet. Medium is already the largest, but by how much? That's what softmax answers next.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="soft" id="sS4">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Softmax Regression · Scores → Probabilities</div>
+        <h1>The <span class="glow">softmax</span> formula</h1>
+        <div class="vocab-card">
+          <div class="vocab-term">p̂ₖ = e^zₖ / (e^z₀ + e^z₁ + e^z₂)</div>
+          <div class="vocab-def">Exponentiate every score (always positive, and the biggest score gets stretched out the most), then divide by the total — so all K probabilities land between 0 and 1 and add up to exactly 1.</div>
+        </div>
+        <div class="banner info">Why exponentiate instead of just dividing the raw scores by their sum? Negative scores would break a plain average — e^z fixes that, and rewards the winner more than a linear average would.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="soft" id="sS5">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Softmax Regression · The Flagship Demo</div>
+          <h1>Drag the credit index — <span class="glow">watch the split shift</span></h1>
+          <p class="body-text">Same coefficients as the worked example. Move x and watch all three probabilities update together — they always sum to 1.000.</p>
+          <div class="console">
+            <div class="field"><label>Credit Index x = <span class="val" id="s5XLabel">3.31</span></label><input type="range" id="s5XSlider" min="0" max="10" value="3.31" step="0.01"></div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">z₀ / z₁ / z₂</div><div class="value tabular" id="s5Z" style="font-size:1.05rem;">0.528 / 1.628 / 0.441</div></div>
+            <div class="stat-tile accent"><div class="label">Sum of probabilities</div><div class="value tabular" id="s5Sum">1.000</div></div>
+          </div>
+        </div>
+        <div class="visual-box">
+          <div class="bar-demo">
+            <div class="bar-row"><span class="bar-label">Low</span><div class="bar-track"><div class="bar-fill" id="s5Bar0"></div></div><span class="bar-pct" id="s5Pct0">20%</span></div>
+            <div class="bar-row"><span class="bar-label">Medium</span><div class="bar-track"><div class="bar-fill winner" id="s5Bar1"></div></div><span class="bar-pct" id="s5Pct1">61%</span></div>
+            <div class="bar-row"><span class="bar-label">High</span><div class="bar-track"><div class="bar-fill" id="s5Bar2"></div></div><span class="bar-pct" id="s5Pct2">19%</span></div>
+          </div>
+          <p class="footnote" id="s5Predicted">Predicted: <b>Medium Risk</b> (highest probability)</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="soft" id="sS6">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Softmax Regression · Reading The Result</div>
+        <h1 class="kicker-big">Predict = <span class="glow">argmax</span> of the softmax output</h1>
+        <p class="body-text" style="max-width:640px;">[0.20, 0.61, 0.18] → the largest entry wins → this applicant is classified <b>Medium Risk</b>, with the model's own confidence built right in. One model, one coherent probability distribution — the exact upgrade One-vs-Rest couldn't give us.</p>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 4 — CONFUSION MATRIX & THE ASSIGNMENT                      -->
+    <!-- ================================================================= -->
+
+    <section class="slide" data-section="eval" id="sE1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Confusion Matrix · 2×2 Grows Up</div>
+        <h1>Now it's a <span class="glow">K × K</span> grid</h1>
+        <p class="body-text">Binary classification had 4 cells: TP, TN, FP, FN. With 3 classes, every one of the 3 actual classes can be predicted as any of the 3 classes — 9 cells, and the diagonal is still "got it right."</p>
+        <div class="banner info">Rows = actual class. Columns = predicted class. Every off-diagonal cell is a specific, nameable kind of mistake — e.g. "actually High, predicted Medium."</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Confusion Matrix · A Worked 3×3 Example</div>
+          <h1>Where does the model <span class="glow">actually</span> get confused?</h1>
+          <p class="body-text">30 held-out applicants. The diagonal (green) is correct; everything else is a specific misclassification worth naming out loud.</p>
+          <p class="footnote">Here: High risk applicants are never mistaken for Low — but Medium and High get confused with each other 3 times combined. That pattern matters more than the overall accuracy number.</p>
+        </div>
+        <div class="cm-wrap" id="cmGrid" style="grid-template-columns:auto repeat(3,1fr);"></div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Confusion Matrix · From Matrix to Metrics</div>
+        <h1>Precision &amp; recall, <span class="glow">one class at a time</span></h1>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>Pick one class, treat it as "the positive"</h3><p>Same One-vs-Rest idea as before — but now for grading a model, not training one.</p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>Precision(High) = TP(High) / all predicted High</h3><p>Of everyone the model called High risk, what fraction actually were?</p></div></div>
+          <div class="rule"><div class="n">3</div><div class="t"><h3>Recall(High) = TP(High) / all actually High</h3><p>Of everyone who really was High risk, what fraction did the model catch?</p></div></div>
+        </div>
+        <div class="banner info">Do this for Low, Medium, and High separately — three precision numbers, three recall numbers, then F1 per class if you want one summary number each.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE4">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Today's Assignment · Write It Up As An Article</div>
+        <h1>Metrics only mean something <span class="glow">to a business</span></h1>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card"><div class="ico">🏢</div><h3>1 · Pick a 3+ class business use-case</h3><p>Loan risk tiers, support-ticket urgency, product-defect severity — anything with more than 2 outcomes.</p></div>
+          <div class="card"><div class="ico">🧮</div><h3>2 · Build a confusion matrix</h3><p>Real or realistic counts, K×K, diagonal called out.</p></div>
+          <div class="card"><div class="ico">📊</div><h3>3 · Derive precision, recall, F1 per class</h3><p>One-vs-Rest style, exactly as done above.</p></div>
+          <div class="card"><div class="ico">⚖️</div><h3>4 · Argue which metric matters most — and why</h3><p>Is missing a High-risk loan (calling it Low) worse than the reverse? Tie the metric choice to the actual cost of that mistake.</p></div>
+        </div>
+        <div class="banner good">✍️ Publish it as an Article on the class forum — this is this week's writing assignment.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE5">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Session Complete</div>
+        <h1 class="kicker-big">Same three models.<br/>One new question: <span class="glow">how many classes?</span></h1>
+        <p class="body-text" style="max-width:640px;">KNN and Decision Trees scaled to K classes for free. Logistic regression needed Softmax — K coordinated regression lines, exponentiated and normalized into one honest probability distribution. And grading any of them now means a K×K confusion matrix, read one class at a time.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="chrome-bottom">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous slide">‹</button>
+    <div class="progress" id="progress"></div>
+    <div class="slide-counter"><span id="curNum" class="tabular">1</span> / <span id="totalNum" class="tabular">—</span></div>
+    <button class="nav-btn" id="nextBtn" aria-label="Next slide">›</button>
+  </nav>
+
+<script>
+"use strict";
+
+const $  = (sel, el=document) => el.querySelector(sel);
+const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+const clamp = (v,lo,hi) => Math.max(lo, Math.min(hi,v));
+const fmt = (v,d=2) => Number(v).toFixed(d);
+
+const slideEls = $$('.slide');
+let cur = 0;
+
+const CHAPTERS = {
+  recap: { num:1, label:'Revision — One Model, Three Ways' },
+  multi: { num:2, label:'From 2 Classes to K' },
+  soft:  { num:3, label:'Softmax Regression, By Hand' },
+  eval:  { num:4, label:'Confusion Matrix &amp; the Assignment' },
+};
+
+const onEnter = {};
+const onLeave = {};
+
+function buildDots(){
+  const wrap = $('#progress');
+  wrap.innerHTML = '';
+  let lastSection = null;
+  slideEls.forEach((s, i) => {
+    const sec = s.dataset.section;
+    if(lastSection !== null && sec !== lastSection){
+      const gap = document.createElement('span');
+      gap.className = 'dot gap';
+      wrap.appendChild(gap);
+    }
+    const b = document.createElement('button');
+    b.className = 'dot';
+    b.setAttribute('aria-label', 'Go to slide ' + (i+1));
+    b.addEventListener('click', () => goTo(i));
+    wrap.appendChild(b);
+    lastSection = sec;
+  });
+}
+
+function goTo(i){
+  i = clamp(i, 0, slideEls.length-1);
+  const leaveFn = onLeave[slideEls[cur].id];
+  if(leaveFn) leaveFn();
+  slideEls[cur].classList.remove('active');
+  cur = i;
+  const s = slideEls[cur];
+  s.classList.add('active');
+  document.body.dataset.section = s.dataset.section;
+
+  const chip = $('#chapterChip');
+  const meta = CHAPTERS[s.dataset.section];
+  if(meta){
+    chip.style.display = 'flex';
+    $('#chapterNum').textContent = meta.num;
+    $('#chapterLabel').innerHTML = meta.label;
+  } else {
+    chip.style.display = 'none';
+  }
+
+  $('#curNum').textContent = cur+1;
+  $('#prevBtn').disabled = cur === 0;
+  $('#nextBtn').disabled = cur === slideEls.length-1;
+
+  $$('.dot:not(.gap)', $('#progress')).forEach((d,idx)=> d.classList.toggle('active', idx===cur));
+
+  const fn = onEnter[s.id];
+  if(fn) requestAnimationFrame(fn);
+}
+
+function next(){ if(cur < slideEls.length-1) goTo(cur+1); }
+function prev(){ if(cur > 0) goTo(cur-1); }
+
+$('#nextBtn').addEventListener('click', next);
+$('#prevBtn').addEventListener('click', prev);
+window.addEventListener('keydown', e => {
+  if(e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+  else if(e.key === 'ArrowLeft'){ e.preventDefault(); prev(); }
+});
+
+const themeBtn = $('#themeToggle');
+function applyStoredTheme(){
+  const t = localStorage.getItem('sv-theme-multiclass');
+  if(t) document.documentElement.setAttribute('data-theme', t);
+}
+applyStoredTheme();
+themeBtn.addEventListener('click', () => {
+  const now = document.documentElement.getAttribute('data-theme');
+  const dark = now ? now === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const nextTheme = dark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', nextTheme);
+  localStorage.setItem('sv-theme-multiclass', nextTheme);
+});
+
+/* =========================== M4 — max entropy = log2(K) =========================== */
+const M4_KS = [2,3,4,5,6];
+function m4Render(k){
+  $('#m4K').textContent = k;
+  $('#m4Val').textContent = fmt(Math.log2(k), 3);
+  $$('#m4Buttons .btn').forEach(b => b.classList.toggle('toggled', Number(b.dataset.k) === k));
+}
+onEnter['sM4'] = () => {
+  const wrap = $('#m4Buttons');
+  if(!wrap.dataset.built){
+    wrap.dataset.built = '1';
+    M4_KS.forEach(k => {
+      const b = document.createElement('button');
+      b.className = 'btn';
+      b.dataset.k = k;
+      b.textContent = 'K = ' + k;
+      b.addEventListener('click', () => m4Render(k));
+      wrap.appendChild(b);
+    });
+  }
+  m4Render(3);
+};
+
+/* =========================== S5 — softmax flagship demo =========================== */
+const S5_COEF = { low:[4.5,-1.2], med:[0.8,0.25], high:[-3.2,1.1] };
+function s5Render(){
+  const x = parseFloat($('#s5XSlider').value);
+  $('#s5XLabel').textContent = fmt(x,2);
+
+  const z0 = S5_COEF.low[0]  + S5_COEF.low[1]  * x;
+  const z1 = S5_COEF.med[0]  + S5_COEF.med[1]  * x;
+  const z2 = S5_COEF.high[0] + S5_COEF.high[1] * x;
+  $('#s5Z').textContent = `${fmt(z0,3)} / ${fmt(z1,3)} / ${fmt(z2,3)}`;
+
+  const e0 = Math.exp(z0), e1 = Math.exp(z1), e2 = Math.exp(z2);
+  const sum = e0 + e1 + e2;
+  const p = [e0/sum, e1/sum, e2/sum];
+  $('#s5Sum').textContent = fmt(p[0]+p[1]+p[2], 3);
+
+  const bars = [$('#s5Bar0'), $('#s5Bar1'), $('#s5Bar2')];
+  const pcts = [$('#s5Pct0'), $('#s5Pct1'), $('#s5Pct2')];
+  const labels = ['Low','Medium','High'];
+  let winner = 0;
+  p.forEach((v,i) => { if(v > p[winner]) winner = i; });
+
+  p.forEach((v,i) => {
+    bars[i].style.width = fmt(v*100,1) + '%';
+    bars[i].classList.toggle('winner', i === winner);
+    pcts[i].textContent = fmt(v*100,0) + '%';
+  });
+  $('#s5Predicted').innerHTML = `Predicted: <b>${labels[winner]} Risk</b> (highest probability)`;
+}
+onEnter['sS5'] = s5Render;
+$('#s5XSlider').addEventListener('input', s5Render);
+
+/* =========================== E2 — confusion matrix grid =========================== */
+const CM_LABELS = ['Low','Medium','High'];
+const CM_DATA = [
+  [8,1,0],
+  [1,7,2],
+  [0,1,10],
+];
+onEnter['sE2'] = () => {
+  const grid = $('#cmGrid');
+  if(grid.dataset.built) return;
+  grid.dataset.built = '1';
+  let html = '<div class="cm-cell corner"></div>';
+  CM_LABELS.forEach(l => html += `<div class="cm-cell head">Pred. ${l}</div>`);
+  CM_DATA.forEach((row, r) => {
+    html += `<div class="cm-cell head">Actual ${CM_LABELS[r]}</div>`;
+    row.forEach((n, c) => {
+      html += `<div class="cm-cell ${r===c ? 'diag' : (n>0 ? 'off' : '')}"><div class="n">${n}</div><div class="l">${r===c ? 'correct' : 'confused'}</div></div>`;
+    });
+  });
+  grid.innerHTML = html;
+};
+
+/* =========================== init =========================== */
+buildDots();
+$('#totalNum').textContent = slideEls.length;
+const deepLinkSlide = parseInt(new URLSearchParams(location.search).get('slide'), 10);
+goTo(Number.isFinite(deepLinkSlide) ? deepLinkSlide-1 : 0);
+</script>
+</body>
+</html>
