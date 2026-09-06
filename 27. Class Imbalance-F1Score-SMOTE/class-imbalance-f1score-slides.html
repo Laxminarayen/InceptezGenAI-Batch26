@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Class Imbalance &amp; F1 Score · Confusion Matrix to SMOTE</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+
+    --c-recap:#3B6E63; --c-matrix:#1E6FA8; --c-imbal:#B0670C; --c-f1:#C13D68;
+
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+
+    --accent: var(--c-recap);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+      --c-recap:#79C0AE; --c-matrix:#5FA8E0; --c-imbal:#E3A238; --c-f1:#F17BA0;
+      --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+      --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+    --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+    --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+    --c-recap:#79C0AE; --c-matrix:#5FA8E0; --c-imbal:#E3A238; --c-f1:#F17BA0;
+    --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+    --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+  }
+  :root[data-theme="light"]{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+    --c-recap:#3B6E63; --c-matrix:#1E6FA8; --c-imbal:#B0670C; --c-f1:#C13D68;
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    overflow:hidden; -webkit-font-smoothing:antialiased;
+  }
+  body[data-section="recap"]{--accent:var(--c-recap);}
+  body[data-section="matrix"]{--accent:var(--c-matrix);}
+  body[data-section="imbal"]{--accent:var(--c-imbal);}
+  body[data-section="f1"]{--accent:var(--c-f1);}
+
+  h1,h2,h3,p{margin:0;}
+  h1,h2,h3{text-wrap:balance; letter-spacing:-0.01em;}
+  ::selection{background:var(--accent); color:#fff;}
+
+  .eyebrow{
+    font-size:.74rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent);
+  }
+  .slide h1{font-size:clamp(1.7rem,3.2vw,2.9rem); font-weight:800; color:var(--ink);}
+  .slide h2{font-size:clamp(1.2rem,1.8vw,1.6rem); font-weight:800; color:var(--ink);}
+  .body-text{font-size:clamp(1rem,1.25vw,1.2rem); font-weight:500; line-height:1.6; color:var(--ink-soft);}
+  .body-text b, .body-text strong{color:var(--ink); font-weight:800;}
+  .tabular{font-variant-numeric:tabular-nums;}
+
+  /* ---------- chrome ---------- */
+  .chrome-top{
+    position:fixed; top:0; left:0; right:0; height:52px; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 20px; pointer-events:none;
+  }
+  .chrome-top > *{pointer-events:auto;}
+  .hour-badge{
+    font-size:.72rem; font-weight:800; letter-spacing:.12em; color:var(--ink-faint);
+    background:var(--paper-2); border:1px solid var(--line); padding:6px 12px; border-radius:999px;
+  }
+  .chapter-chip{
+    display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:700;
+    color:var(--ink-soft); background:var(--paper-2); border:1px solid var(--line);
+    padding:6px 14px 6px 8px; border-radius:999px;
+  }
+  .chapter-chip .num{
+    display:inline-flex; align-items:center; justify-content:center; width:20px;height:20px;
+    border-radius:50%; background:var(--accent); color:#fff; font-size:.68rem; font-weight:800;
+  }
+  .icon-btn{
+    width:36px;height:36px; border-radius:50%; border:1px solid var(--line); background:var(--paper-2);
+    color:var(--ink); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .icon-btn:hover{background:var(--paper-3);}
+  .icon-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  .deck{position:absolute; inset:0; top:52px; bottom:64px;}
+  .slide{
+    position:absolute; inset:0; display:none; flex-direction:column;
+    padding:clamp(18px,3vw,40px) clamp(24px,5vw,80px);
+    overflow:auto;
+  }
+  .slide.active{display:flex;}
+  .slide-inner{display:flex; flex-direction:column; gap:clamp(12px,1.8vh,20px); max-width:1360px; width:100%; margin:0 auto; flex:1; min-height:0;}
+
+  .chrome-bottom{
+    position:fixed; left:0; right:0; bottom:0; height:64px; z-index:50;
+    display:flex; align-items:center; gap:14px; padding:0 clamp(14px,3vw,32px);
+    background:linear-gradient(0deg, var(--paper) 60%, transparent);
+  }
+  .nav-btn{
+    width:40px;height:40px;border-radius:50%; border:1px solid var(--line); background:var(--paper-2);
+    color:var(--ink); font-size:1.2rem; cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center;
+  }
+  .nav-btn:hover:not(:disabled){background:var(--accent); color:#fff; border-color:transparent;}
+  .nav-btn:disabled{opacity:.35; cursor:default;}
+  .progress{flex:1; display:flex; align-items:center; gap:5px; overflow-x:auto; scrollbar-width:none;}
+  .progress::-webkit-scrollbar{display:none;}
+  .dot{
+    width:9px;height:9px;border-radius:50%; background:var(--paper-3); border:none; cursor:pointer; flex:none;
+    transition:transform .15s ease;
+  }
+  .dot.gap{width:14px; height:2px; border-radius:1px; background:transparent; cursor:default;}
+  .dot.active{transform:scale(1.5);}
+  .slide-counter{font-size:.8rem; font-weight:700; color:var(--ink-faint); flex:none; white-space:nowrap;}
+
+  /* ---------- layout helpers ---------- */
+  .split{display:grid; grid-template-columns:1.05fr 1.35fr; gap:clamp(20px,4vw,52px); align-items:center; flex:1; min-height:0;}
+  @media (max-width:920px){ .split{grid-template-columns:1fr; overflow:auto;} }
+  .split.reverse{grid-template-columns:1.35fr 1.05fr;}
+  .split.even{grid-template-columns:1fr 1fr;}
+  .stack{display:flex; flex-direction:column; gap:12px; min-height:0;}
+  .center-col{display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:16px; flex:1;}
+  .visual-box{
+    background:var(--surface-canvas); border:1px solid var(--line); border-radius:24px;
+    padding:14px; box-shadow:var(--shadow); min-height:0; display:flex; flex-direction:column; gap:8px;
+  }
+
+  /* ---------- components ---------- */
+  .vocab-card{
+    border-left:5px solid var(--accent); background:var(--paper-2); border-radius:14px;
+    padding:12px 18px; display:flex; flex-direction:column; gap:4px;
+  }
+  .vocab-term{font-size:1rem; font-weight:900; letter-spacing:.04em; color:var(--accent);}
+  .vocab-def{font-size:1rem; color:var(--ink); font-weight:600; line-height:1.4;}
+
+  .console{
+    display:flex; flex-wrap:wrap; gap:14px 26px; align-items:flex-end;
+    background:var(--paper-2); border:1px solid var(--line); border-radius:20px;
+    padding:16px 20px;
+  }
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field label{font-size:.76rem; font-weight:800; color:var(--ink-soft); letter-spacing:.03em;}
+  .field .val{color:var(--accent); font-weight:900;}
+  input[type="range"]{width:180px; accent-color:var(--accent);}
+
+  .btn{
+    font:inherit; font-size:.92rem; font-weight:800; border:1px solid var(--line); border-radius:999px;
+    padding:11px 20px; cursor:pointer; background:var(--paper-3); color:var(--ink);
+    transition:transform .12s ease, box-shadow .12s ease; white-space:nowrap;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn:active{transform:translateY(0);}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .btn-primary{background:var(--accent); color:#fff; border-color:transparent; box-shadow:0 8px 18px -8px var(--accent);}
+  .btn.toggled{background:var(--accent); color:#fff; border-color:transparent;}
+  .btn-row{display:flex; flex-wrap:wrap; gap:10px;}
+
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px;}
+  .stat-tile{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:12px 14px;}
+  .stat-tile .label{font-size:.7rem; font-weight:800; color:var(--ink-faint); letter-spacing:.05em; text-transform:uppercase;}
+  .stat-tile .value{font-size:1.35rem; font-weight:900; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .stat-tile.accent .value{color:var(--accent);}
+
+  .card{background:var(--paper-2); border:1px solid var(--line); border-radius:18px; padding:18px 20px;}
+  .card-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px;}
+  .card .ico{font-size:1.8rem;}
+  .card h3{font-size:1.02rem; margin-top:8px;}
+  .card p{font-size:.92rem; color:var(--ink-soft); margin-top:4px; line-height:1.45;}
+  .card.warn-card{border-top:5px solid var(--bad);}
+
+  .banner{border-radius:14px; padding:12px 16px; font-weight:800; font-size:.92rem; display:flex; align-items:center; gap:10px;}
+  .banner.warn{background:color-mix(in srgb, var(--warn) 18%, var(--paper-2)); color:var(--warn);}
+  .banner.good{background:color-mix(in srgb, var(--good) 18%, var(--paper-2)); color:var(--good);}
+  .banner.bad{background:color-mix(in srgb, var(--bad) 18%, var(--paper-2)); color:var(--bad);}
+  .banner.info{background:var(--paper-3); color:var(--ink); font-weight:600; align-items:flex-start;}
+
+  .roadmap{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  .roadmap .stop{background:var(--paper-2); border-radius:18px; padding:16px 10px; text-align:center; border-top:5px solid var(--stop-color, var(--accent));}
+  .roadmap .stop .ico{font-size:2rem;}
+  .roadmap .stop .t{font-size:.8rem; font-weight:800; margin-top:6px;}
+  @media (max-width:920px){ .roadmap{grid-template-columns:repeat(2,1fr);} }
+
+  .kicker-big{font-size:clamp(2.2rem,5.6vw,3.9rem); font-weight:900; letter-spacing:-0.02em;}
+  .glow{color:var(--accent);}
+
+  .rule-list{display:flex; flex-direction:column; gap:12px;}
+  .rule{display:flex; gap:14px; align-items:flex-start; border-radius:14px; padding:6px 8px; margin:-6px -8px;}
+  .rule .n{width:34px;height:34px;border-radius:50%; background:var(--accent); color:#fff; font-weight:900; display:flex; align-items:center; justify-content:center; flex:none;}
+  .rule .t h3{font-size:1rem;}
+  .rule .t p{font-size:.92rem; color:var(--ink-soft); margin-top:2px;}
+
+  .table-wrap{border:1px solid var(--line); border-radius:14px; overflow:hidden;}
+  .data-table{width:100%; border-collapse:collapse; font-size:.88rem;}
+  .data-table th,.data-table td{padding:9px 12px; text-align:center; font-variant-numeric:tabular-nums;}
+  .data-table thead th{background:var(--paper-3); color:var(--ink-soft); font-weight:800; font-size:.74rem; letter-spacing:.03em; text-transform:uppercase;}
+  .data-table tbody tr{border-top:1px solid var(--line);}
+  .data-table tbody tr.hl-row{background:color-mix(in srgb, var(--accent) 12%, transparent); font-weight:800;}
+
+  .footnote{font-size:.82rem; color:var(--ink-faint); font-weight:600;}
+
+  /* ---------- confusion matrix ---------- */
+  .cm-wrap{display:grid; gap:3px; background:var(--line); border:1px solid var(--line); border-radius:16px; overflow:hidden;}
+  .cm-cell{background:var(--paper-2); padding:14px 8px; text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px;}
+  .cm-cell.head{background:var(--paper-3); font-weight:800; font-size:.7rem; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-soft);}
+  .cm-cell.corner{background:var(--paper-3);}
+  .cm-cell .n{font-size:1.5rem; font-weight:900; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .cm-cell .l{font-size:.68rem; font-weight:700; color:var(--ink-faint);}
+  .cm-cell.diag{background:color-mix(in srgb, var(--good) 26%, var(--paper-2));}
+  .cm-cell.off{background:color-mix(in srgb, var(--bad) 16%, var(--paper-2));}
+
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+</style>
+</head>
+<body data-section="recap">
+  <div class="chrome-top">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="hour-badge" id="hourBadge">CLASS IMBALANCE &amp; F1 SCORE</div>
+      <div class="chapter-chip" id="chapterChip" style="display:none;">
+        <span class="num" id="chapterNum">1</span>
+        <span id="chapterLabel">—</span>
+      </div>
+    </div>
+    <button class="icon-btn" id="themeToggle" title="Toggle light / dark">🌗</button>
+  </div>
+
+  <main class="deck" id="deck">
+
+    <!-- ============ S0 — TITLE / ROADMAP ============ -->
+    <section class="slide" data-section="recap" id="s0">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Confusion Matrix &amp; Multivariate Metrics · Hands-On</div>
+        <h1 class="kicker-big">A model can be <span class="glow">83% accurate</span><br/>and still miss <span class="glow">almost every fraud</span></h1>
+        <p class="body-text" style="max-width:760px;">Yesterday's confusion matrix grew from 2×2 to K×K. Today: finish precision and recall per class, then meet the real reason accuracy lies — imbalanced classes — and the toolbox for fixing it: undersampling, oversampling, SMOTE, and a metric built for the job, F1.</p>
+        <div class="roadmap" style="width:100%; margin-top:6px;">
+          <div class="stop" style="--stop-color:var(--c-recap);"><div class="ico">🔁</div><div class="t">1 · Revision &amp; Today's Agenda</div></div>
+          <div class="stop" style="--stop-color:var(--c-matrix);"><div class="ico">🧮</div><div class="t">2 · Confusion Matrix, Finished</div></div>
+          <div class="stop" style="--stop-color:var(--c-imbal);"><div class="ico">⚖️</div><div class="t">3 · Imbalanced Classes &amp; SMOTE</div></div>
+          <div class="stop" style="--stop-color:var(--c-f1);"><div class="ico">➗</div><div class="t">4 · F1 Score, By Hand</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 1 — RECAP & AGENDA                                         -->
+    <!-- ================================================================= -->
+
+    <section class="slide" data-section="recap" id="sR1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Revision · One More Time</div>
+        <h1>Regression <span class="glow">vs.</span> Classification</h1>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card"><div class="ico">📈</div><h3>Regression</h3><p>Input X — numerical + categorical. Output Y — numerical, continuous.</p></div>
+          <div class="card"><div class="ico">🏷️</div><h3>Classification</h3><p>Input X — numerical + categorical. Output Y — categorical, discrete.</p></div>
+        </div>
+        <div class="vocab-card">
+          <div class="vocab-term">Yesterday, extended</div>
+          <div class="vocab-def">Binary Classification (Yes / No) → Multiple Classes (Yes / Maybe / No). Logistic Regression is a binary-class model (that's what the sigmoid "S" gives you); Softmax Regression is its multiclass variant — one regression line per class.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="recap" id="sR2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Revision · The ML/DL Workflow</div>
+        <h1>Same pipeline, <span class="glow">every single time</span></h1>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>Data → Preprocessing</h3><p>What is the current shape of this data — missing values, outliers, encoding, scaling?</p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>Choice of model</h3><p>Tree-based? Linear model? Distance-based? The right family depends on the data and the question.</p></div></div>
+          <div class="rule"><div class="n">3</div><div class="t"><h3>What is the config?</h3><p>Hyperparameter tuning — squeezing the chosen model's best possible performance out of it.</p></div></div>
+          <div class="rule"><div class="n">4</div><div class="t"><h3>Performance — how?</h3><p>That "how" is today's entire session.</p></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="recap" id="sR3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Today's Agenda</div>
+        <h1>30 minutes of theory, <span class="glow">then hands-on</span></h1>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card"><div class="ico">🧮</div><h3>Confusion Matrix &amp; Multivariate Metrics</h3><p>~30 minutes — finishing per-class precision and recall.</p></div>
+          <div class="card"><div class="ico">⚖️</div><h3>Hands-On: Imbalanced + Multiclass</h3><p>Build classification models on a real imbalanced, multiclass dataset.</p></div>
+          <div class="card"><div class="ico">🧬</div><h3>SMOTE</h3><p>Synthesize new minority-class examples instead of just duplicating them.</p></div>
+          <div class="card"><div class="ico">📊</div><h3>Compare: Imbalanced vs. Balanced</h3><p>Same models, before and after fixing the imbalance — side by side.</p></div>
+        </div>
+        <div class="banner info">🎯 Questions to answer by the end of this session: How are trained assets frozen for deployment? What frameworks support deploying ML models? And — what is Streamlit?</div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 2 — CONFUSION MATRIX, FINISHED                             -->
+    <!-- ================================================================= -->
+
+    <section class="slide" data-section="matrix" id="sM1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Confusion Matrix · Binary, Recap</div>
+          <h1>Loan approval, <span class="glow">one more time</span></h1>
+          <p class="body-text">Actual on the rows, Predicted on the columns (or vice versa — just stay consistent). The diagonal is always "got it right."</p>
+          <div class="vocab-card">
+            <div class="vocab-term">Accuracy = (True Approved + True Rejected) / Total</div>
+            <div class="vocab-def">The simplest metric — and, as we're about to see, an easy one to be misled by.</div>
+          </div>
+        </div>
+        <div class="cm-wrap" id="cmBinary" style="grid-template-columns:auto 1fr 1fr;"></div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="matrix" id="sM2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Confusion Matrix · Precision &amp; Recall, Plain English</div>
+        <h1>Two questions, <span class="glow">two different directions</span></h1>
+        <div class="rule-list">
+          <div class="rule"><div class="n">P</div><div class="t"><h3>Precision — "Of what I predicted, how much did I get right?"</h3><p>When I predict Approved, how often is it actually Approved? Precision = True Approved / (True Approved + False Approved).</p></div></div>
+          <div class="rule"><div class="n">R</div><div class="t"><h3>Recall — "Of what's actually true, how much did I catch?"</h3><p>Out of all the real approvals, how many did the model actually find? Recall = True Approved / (True Approved + False Rejected).</p></div></div>
+        </div>
+        <div class="banner info">Precision looks at your predictions; Recall looks at the actual world. They can disagree — that tension is exactly what F1 is built to summarize.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="matrix" id="sM3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Confusion Matrix · Multiclass, Finished</div>
+          <h1>Low / Medium / High — <span class="glow">the full 3×3</span></h1>
+          <p class="body-text">Same idea, one row and one column per class. Off-diagonal cells are confusions between two specific classes.</p>
+          <div class="vocab-card">
+            <div class="vocab-term">Accuracy = Sum of the diagonal / Total</div>
+            <div class="vocab-def">Generalizes cleanly. Precision and recall need one more step — pick a class at a time.</div>
+          </div>
+        </div>
+        <div class="cm-wrap" id="cmMulti" style="grid-template-columns:auto repeat(3,1fr);"></div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="matrix" id="sM4">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Confusion Matrix · Precision, Per Class</div>
+        <h1>Same formula, <span class="glow">one class at a time</span></h1>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Class</th><th>Precision Formula</th></tr></thead>
+            <tbody>
+              <tr><td>Low</td><td>True Low / (True Low + confused-as-Low from Medium + confused-as-Low from High)</td></tr>
+              <tr><td>Medium</td><td>True Medium / (True Medium + confused-as-Medium from Low + confused-as-Medium from High)</td></tr>
+              <tr><td>High</td><td>True High / (True High + confused-as-High from Low + confused-as-High from Medium)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="footnote">Every "confused-as-X" term is just a specific off-diagonal cell in that class's column — everyone the model called X who wasn't actually X.</p>
+      </div>
+    </section>
+
+    <section class="slide" data-section="matrix" id="sM5">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Confusion Matrix · Recall, Per Class</div>
+        <h1>Flip the denominator: <span class="glow">actual, not predicted</span></h1>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Class</th><th>Recall Formula</th></tr></thead>
+            <tbody>
+              <tr><td>Low</td><td>True Low / (Sum of everyone who is actually Low)</td></tr>
+              <tr><td>Medium</td><td>True Medium / (Sum of everyone who is actually Medium)</td></tr>
+              <tr><td>High</td><td>True High / (Sum of everyone who is actually High)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="banner warn">🚩 A model can rack up a great-looking accuracy by mostly predicting the majority class well — and quietly recall almost nothing from the smaller classes. That's next.</div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 3 — IMBALANCED CLASSES & SMOTE                             -->
+    <!-- ================================================================= -->
+
+    <section class="slide" data-section="imbal" id="sI1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Imbalanced Classes · Meet the Shape</div>
+        <h1>A long <span class="glow">tail</span>, and a fat <span class="glow">head</span></h1>
+        <p class="body-text">Plot how often each class of Y occurs, and one class often towers over the rest.</p>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Class</th><th>Share of Data</th><th>Role</th></tr></thead>
+            <tbody>
+              <tr class="hl-row"><td>A</td><td>80%</td><td>Majority class ("the head")</td></tr>
+              <tr><td>B</td><td>15%</td><td>Minority class</td></tr>
+              <tr><td>C</td><td>5%</td><td>Minority class ("the tail")</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="imbal" id="sI2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Imbalanced Classes · A Worked Fraud Example</div>
+          <h1>550 transactions, <span class="glow">50 of them fraud</span></h1>
+          <p class="body-text">A model that's lazy about fraud can still look great on paper.</p>
+          <div class="stat-grid">
+            <div class="stat-tile accent"><div class="label">Accuracy</div><div class="value tabular">455 / 550 = 83%</div></div>
+            <div class="stat-tile"><div class="label">Actual frauds caught</div><div class="value tabular">5 / 50</div></div>
+          </div>
+        </div>
+        <div class="cm-wrap" id="cmFraud" style="grid-template-columns:auto 1fr 1fr;"></div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="imbal" id="sI3">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Imbalanced Classes · The Real Question</div>
+        <h1 class="kicker-big">Can I engineer the data<br/>so the model <span class="glow">actually learns</span> the rare cases?</h1>
+        <p class="body-text" style="max-width:640px;">The way we quantify performance has to change (more on that soon) — but first, can we change the training data itself?</p>
+      </div>
+    </section>
+
+    <section class="slide" data-section="imbal" id="sI4">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Imbalanced Classes · Two Levers</div>
+          <h1>Undersample the majority, <span class="glow">or</span> oversample the minority</h1>
+        </div>
+        <div class="card-grid" style="grid-column:1/-1;">
+          <div class="card warn-card"><div class="ico">✂️</div><h3>Undersampling</h3><p>Shrink the majority class down toward the minority's size (e.g. 455 → 55 fraud-sized). Simple — but may throw away valuable information and reduce the model's understanding of the majority class.</p></div>
+          <div class="card"><div class="ico">➕</div><h3>Oversampling</h3><p>Grow the minority class up toward the majority's size instead. Random duplication risks overfitting to the exact same few examples repeated over and over.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="imbal" id="sI5">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Imbalanced Classes · Smarter Oversampling</div>
+        <h1>SMOTE &amp; ADASYN — <span class="glow">synthesize, don't duplicate</span></h1>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>Random Oversampling</h3><p>Literally copy existing minority rows. Easy, but risks overfitting — the model just memorizes the same few points harder.</p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>SMOTE — Synthetic Minority Oversampling Technique</h3><p>Find each minority point's nearest minority neighbors (KNN), then generate brand-new synthetic points along the line between them. New data, not copies.</p></div></div>
+          <div class="rule"><div class="n">3</div><div class="t"><h3>ADASYN — Adaptive Synthetic Sampling</h3><p>Same idea as SMOTE, but generates more synthetic points near the minority examples that are hardest to learn — the ones closest to the decision boundary or that look like outliers.</p></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="imbal" id="sI6">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Imbalanced Classes · You Don't Always Need 50/50</div>
+        <h1>The right ratio is a <span class="glow">business choice</span></h1>
+        <p class="body-text">Resampling to a perfect 50/50 split isn't mandatory — 55/45, 60/40, or even 70/30 can be the right target depending on how costly each kind of mistake actually is.</p>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Majority %</th><th>Minority %</th></tr></thead>
+            <tbody>
+              <tr><td>50</td><td>50</td></tr>
+              <tr><td>55</td><td>45</td></tr>
+              <tr><td>60</td><td>40</td></tr>
+              <tr class="hl-row"><td>70</td><td>30</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 4 — F1 SCORE, BY HAND                                      -->
+    <!-- ================================================================= -->
+
+    <section class="slide" data-section="f1" id="sF1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">F1 Score · Quantifying Performance Under Imbalance</div>
+        <h1>Accuracy <span class="glow">fails</span> — it favors the skew</h1>
+        <p class="body-text">The 83%-accurate fraud model was proof: accuracy rewards agreeing with the majority class, which is exactly the wrong instinct under imbalance. Precision and recall don't have that blind spot — and F1 is how we fold both into one number.</p>
+      </div>
+    </section>
+
+    <section class="slide" data-section="f1" id="sF2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">F1 Score · Four Ways To Average Two Numbers</div>
+        <h1>Precision and Recall disagree — <span class="glow">now what?</span></h1>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card"><div class="ico">➕</div><h3>1 · Arithmetic Mean</h3><p>(a + b) / 2 — treats both numbers as equally "sized."</p></div>
+          <div class="card"><div class="ico">📉</div><h3>2 · Exponential Moving Average</h3><p>Weighs recent values more — built for time series, not a single pair of scores.</p></div>
+          <div class="card"><div class="ico">⚖️</div><h3>3 · Weighted Moving Average</h3><p>A manual weight per value — useful, but requires deciding the weights yourself.</p></div>
+          <div class="card" style="border-top:5px solid var(--accent);"><div class="ico">🔁</div><h3>4 · Harmonic Mean</h3><p>Divide the count of values by the sum of their reciprocals. The one F1 actually uses — and here's why.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="f1" id="sF3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">F1 Score · Why Harmonic Mean</div>
+          <h1>A classic trap: <span class="glow">average speed</span></h1>
+          <p class="body-text">Drive 60 km out at 60 km/h, then the same 60 km back at 20 km/h. What's your average speed for the whole trip?</p>
+          <div class="rule-list">
+            <div class="rule"><div class="n">✗</div><div class="t"><h3>Arithmetic mean says 40 km/h</h3><p>(60 + 20) / 2 = 40 — but you spent far more <i>time</i> at the slow speed, so this overstates how fast the trip really was.</p></div></div>
+            <div class="rule"><div class="n">✓</div><div class="t"><h3>The truth: 30 km/h</h3><p>1 hour out (60÷60) + 3 hours back (60÷20) = 120 km in 4 hours = 30 km/h.</p></div></div>
+            <div class="rule"><div class="n">=</div><div class="t"><h3>That's exactly the harmonic mean</h3><p>H = 2ab / (a+b) = 2×60×20 / (60+20) = <b>30 km/h</b>. It weighs by how much each rate actually contributed — not just its face value.</p></div></div>
+          </div>
+        </div>
+        <div class="banner info">Precision and Recall have the same issue as those two speeds — averaging them naively can flatter a model that's brilliant at one and terrible at the other.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="f1" id="sF4">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">F1 Score · The Flagship Demo</div>
+          <h1>Drag precision &amp; recall — <span class="glow">watch F1 punish the gap</span></h1>
+          <p class="body-text">F1 is the harmonic mean of Precision and Recall — it represents the model's "true rate," and it drops fast the moment either number is weak.</p>
+          <div class="console">
+            <div class="field"><label>Precision = <span class="val" id="f4PLabel">0.90</span></label><input type="range" id="f4PSlider" min="0.01" max="1" value="0.90" step="0.01"></div>
+            <div class="field"><label>Recall = <span class="val" id="f4RLabel">0.30</span></label><input type="range" id="f4RSlider" min="0.01" max="1" value="0.30" step="0.01"></div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Arithmetic Mean</div><div class="value tabular" id="f4Arith">0.600</div></div>
+            <div class="stat-tile accent"><div class="label">F1 (Harmonic Mean)</div><div class="value tabular" id="f4F1">0.450</div></div>
+          </div>
+        </div>
+        <div class="visual-box">
+          <div class="vocab-card" style="border-left-color:var(--c-f1);">
+            <div class="vocab-term" style="color:var(--c-f1);">F1 = 2 · Precision · Recall / (Precision + Recall)</div>
+            <div class="vocab-def" id="f4Note">Notice: the arithmetic mean barely reacts to the weak side, but F1 drops hard the moment either Precision or Recall is poor — exactly the honesty accuracy was missing.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="f1" id="sF5">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Questions &amp; Takeaways · Next Session</div>
+        <h1 class="kicker-big">The model is finally trustworthy.<br/>Now: how does it reach <span class="glow">a user</span>?</h1>
+        <p class="body-text" style="max-width:680px;">Three questions to carry forward: How are trained assets frozen for deployment? What frameworks exist for shipping ML models? And — what exactly is Streamlit? That's next.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="chrome-bottom">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous slide">‹</button>
+    <div class="progress" id="progress"></div>
+    <div class="slide-counter"><span id="curNum" class="tabular">1</span> / <span id="totalNum" class="tabular">—</span></div>
+    <button class="nav-btn" id="nextBtn" aria-label="Next slide">›</button>
+  </nav>
+
+<script>
+"use strict";
+
+const $  = (sel, el=document) => el.querySelector(sel);
+const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+const clamp = (v,lo,hi) => Math.max(lo, Math.min(hi,v));
+const fmt = (v,d=2) => Number(v).toFixed(d);
+
+const slideEls = $$('.slide');
+let cur = 0;
+
+const CHAPTERS = {
+  recap:  { num:1, label:'Revision &amp; Agenda' },
+  matrix: { num:2, label:'Confusion Matrix, Finished' },
+  imbal:  { num:3, label:'Imbalanced Classes &amp; SMOTE' },
+  f1:     { num:4, label:'F1 Score, By Hand' },
+};
+
+const onEnter = {};
+const onLeave = {};
+
+function buildDots(){
+  const wrap = $('#progress');
+  wrap.innerHTML = '';
+  let lastSection = null;
+  slideEls.forEach((s, i) => {
+    const sec = s.dataset.section;
+    if(lastSection !== null && sec !== lastSection){
+      const gap = document.createElement('span');
+      gap.className = 'dot gap';
+      wrap.appendChild(gap);
+    }
+    const b = document.createElement('button');
+    b.className = 'dot';
+    b.setAttribute('aria-label', 'Go to slide ' + (i+1));
+    b.addEventListener('click', () => goTo(i));
+    wrap.appendChild(b);
+    lastSection = sec;
+  });
+}
+
+function goTo(i){
+  i = clamp(i, 0, slideEls.length-1);
+  const leaveFn = onLeave[slideEls[cur].id];
+  if(leaveFn) leaveFn();
+  slideEls[cur].classList.remove('active');
+  cur = i;
+  const s = slideEls[cur];
+  s.classList.add('active');
+  document.body.dataset.section = s.dataset.section;
+
+  const chip = $('#chapterChip');
+  const meta = CHAPTERS[s.dataset.section];
+  if(meta){
+    chip.style.display = 'flex';
+    $('#chapterNum').textContent = meta.num;
+    $('#chapterLabel').innerHTML = meta.label;
+  } else {
+    chip.style.display = 'none';
+  }
+
+  $('#curNum').textContent = cur+1;
+  $('#prevBtn').disabled = cur === 0;
+  $('#nextBtn').disabled = cur === slideEls.length-1;
+
+  $$('.dot:not(.gap)', $('#progress')).forEach((d,idx)=> d.classList.toggle('active', idx===cur));
+
+  const fn = onEnter[s.id];
+  if(fn) requestAnimationFrame(fn);
+}
+
+function next(){ if(cur < slideEls.length-1) goTo(cur+1); }
+function prev(){ if(cur > 0) goTo(cur-1); }
+
+$('#nextBtn').addEventListener('click', next);
+$('#prevBtn').addEventListener('click', prev);
+window.addEventListener('keydown', e => {
+  if(e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+  else if(e.key === 'ArrowLeft'){ e.preventDefault(); prev(); }
+});
+
+const themeBtn = $('#themeToggle');
+function applyStoredTheme(){
+  const t = localStorage.getItem('sv-theme-imbalance');
+  if(t) document.documentElement.setAttribute('data-theme', t);
+}
+applyStoredTheme();
+themeBtn.addEventListener('click', () => {
+  const now = document.documentElement.getAttribute('data-theme');
+  const dark = now ? now === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const nextTheme = dark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', nextTheme);
+  localStorage.setItem('sv-theme-imbalance', nextTheme);
+});
+
+/* =========================== confusion matrix builders =========================== */
+function buildCM(el, labels, data, highlightNames){
+  let html = '<div class="cm-cell corner"></div>';
+  labels.forEach(l => html += `<div class="cm-cell head">Pred. ${l}</div>`);
+  data.forEach((row, r) => {
+    html += `<div class="cm-cell head">Actual ${labels[r]}</div>`;
+    row.forEach((n, c) => {
+      html += `<div class="cm-cell ${r===c ? 'diag' : (n>0 ? 'off' : '')}"><div class="n">${n}</div><div class="l">${r===c ? 'correct' : 'confused'}</div></div>`;
+    });
+  });
+  el.innerHTML = html;
+}
+
+onEnter['sM1'] = () => {
+  const el = $('#cmBinary');
+  if(el.dataset.built) return;
+  el.dataset.built = '1';
+  buildCM(el, ['Approve','Reject'], [[16,2],[1,11]]);
+};
+
+onEnter['sM3'] = () => {
+  const el = $('#cmMulti');
+  if(el.dataset.built) return;
+  el.dataset.built = '1';
+  buildCM(el, ['Low','Medium','High'], [[8,1,0],[1,7,2],[0,1,10]]);
+};
+
+onEnter['sI2'] = () => {
+  const el = $('#cmFraud');
+  if(el.dataset.built) return;
+  el.dataset.built = '1';
+  buildCM(el, ['Non-Fraud','Fraud'], [[450,50],[45,5]]);
+};
+
+/* =========================== F4 — precision/recall/F1 flagship demo =========================== */
+function f4Render(){
+  const p = parseFloat($('#f4PSlider').value);
+  const r = parseFloat($('#f4RSlider').value);
+  $('#f4PLabel').textContent = fmt(p,2);
+  $('#f4RLabel').textContent = fmt(r,2);
+  const arith = (p+r)/2;
+  const f1 = (p+r) > 0 ? (2*p*r)/(p+r) : 0;
+  $('#f4Arith').textContent = fmt(arith,3);
+  $('#f4F1').textContent = fmt(f1,3);
+  const gap = Math.abs(p-r);
+  $('#f4Note').textContent = gap > 0.35
+    ? `A big gap between Precision and Recall — the arithmetic mean (${fmt(arith,2)}) still looks decent, but F1 (${fmt(f1,2)}) tells the truth: this model is weak.`
+    : `Precision and Recall are close together — arithmetic mean and F1 nearly agree (${fmt(arith,2)} vs ${fmt(f1,2)}).`;
+}
+onEnter['sF4'] = f4Render;
+$('#f4PSlider').addEventListener('input', f4Render);
+$('#f4RSlider').addEventListener('input', f4Render);
+
+/* =========================== init =========================== */
+buildDots();
+$('#totalNum').textContent = slideEls.length;
+const deepLinkSlide = parseInt(new URLSearchParams(location.search).get('slide'), 10);
+goTo(Number.isFinite(deepLinkSlide) ? deepLinkSlide-1 : 0);
+</script>
+</body>
+</html>

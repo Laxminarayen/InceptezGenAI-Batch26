@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Classwork Notes · Class Imbalance &amp; F1 Score</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#B0670C;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#E3A238;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    -webkit-font-smoothing:antialiased; line-height:1.6;
+  }
+  .wrap{max-width:840px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 80px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.7rem,4vw,2.4rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 6px;}
+  .subtitle{color:var(--ink-soft); font-size:1rem; margin-bottom:8px;}
+  .pdf-link{
+    display:inline-flex; align-items:center; gap:8px; margin:14px 0 34px; font-size:.9rem; font-weight:700;
+    color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px;
+    padding:9px 18px; text-decoration:none;
+  }
+  .pdf-link:hover{border-color:var(--accent); color:var(--accent);}
+  h2{font-size:1.35rem; font-weight:900; margin:44px 0 14px; padding-top:16px; border-top:1px solid var(--line);}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h3{font-size:1.05rem; font-weight:800; margin:22px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{
+    background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent);
+    border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink);
+    font-size:1.02rem;
+  }
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.92rem;}
+  th, td{padding:8px 12px; text-align:center; border:1px solid var(--line);}
+  th{background:var(--paper-2); font-weight:800; font-size:.78rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  tr.hl td{background:color-mix(in srgb, var(--accent) 10%, transparent); font-weight:800;}
+  .note{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px;
+    font-size:.9rem; color:var(--ink-soft); margin:14px 0;
+  }
+  .note b{color:var(--ink);}
+  .agenda{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 20px;}
+  .agenda span{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:8px 16px;
+    font-size:.86rem; font-weight:700; color:var(--ink);
+  }
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Day 27 · Classwork Notes</div>
+  <h1>Class Imbalance, F1 Score &amp; SMOTE</h1>
+  <p class="subtitle">Written up from today's whiteboard notes — finishing the confusion matrix, then imbalanced classes, resampling, and why F1 is a harmonic mean.</p>
+  <a class="pdf-link" href="HandwrittenNotes-ClassImbalance-F1score.pdf" target="_blank">📄 Open the original handwritten notes (PDF)</a>
+
+  <h2>Agenda</h2>
+  <div class="agenda">
+    <span>Confusion Matrix &amp; Multivariate Metrics (~30 min)</span>
+    <span>Hands-on: Imbalanced + Multiclass</span>
+    <span>Build Classification Models</span>
+    <span>SMOTE</span>
+    <span>Compare: Imbalanced vs. Balanced</span>
+  </div>
+  <p>Questions &amp; takeaways for the end of this session: How are trained assets frozen for deployment? What frameworks support deploying ML models? What is Streamlit?</p>
+
+  <h2>Revision</h2>
+  <table>
+    <thead><tr><th></th><th>Input (X)</th><th>Output (Y)</th></tr></thead>
+    <tbody>
+      <tr><td><b>Regression</b></td><td>Numerical + Categorical</td><td>Numerical, continuous</td></tr>
+      <tr><td><b>Classification</b></td><td>Numerical + Categorical</td><td>Categorical, discrete</td></tr>
+    </tbody>
+  </table>
+  <p>Yesterday, extended: Binary Classification (Yes/No) → Multiple Classes (Yes/Maybe/No). Logistic Regression is a binary-class model — that's what the sigmoid "S" gives you. Softmax Regression is its multiclass variant: one regression line per class.</p>
+  <p>The ML/DL workflow, every time: <b>Data → Preprocessing</b> (what is the current shape of this data?) → <b>Choice of model</b> (tree-based? linear? distance-based?) → <b>Config / hyperparameter tuning</b> → <b>Performance</b> — how do we actually measure it? That last question is today's session.</p>
+
+  <h2>Confusion Matrix — Binary, Recap</h2>
+  <table>
+    <thead><tr><th></th><th>Predicted Approve</th><th>Predicted Reject</th></tr></thead>
+    <tbody>
+      <tr><td><b>Actual Approve</b></td><td>True Approved</td><td>False Rejected</td></tr>
+      <tr><td><b>Actual Reject</b></td><td>False Approved</td><td>True Rejected</td></tr>
+    </tbody>
+  </table>
+  <div class="formula">Accuracy = (True Approved + True Rejected) / Total</div>
+  <ul>
+    <li><b>Precision</b> — when I predict Approved, how often is it actually Approved? = True Approved / (True Approved + False Approved)</li>
+    <li><b>Recall</b> — out of actual approvals, how many did the model actually find? = True Approved / (True Approved + False Rejected)</li>
+  </ul>
+
+  <h3>Confusion Matrix — Multiclass (Low / Medium / High)</h3>
+  <div class="formula">Accuracy = Sum of the diagonal / Total</div>
+  <table>
+    <thead><tr><th>Class</th><th>Precision</th><th>Recall</th></tr></thead>
+    <tbody>
+      <tr><td>Low</td><td>True Low / (True Low + confused-as-Low)</td><td>True Low / (all actual Low)</td></tr>
+      <tr><td>Medium</td><td>True Med / (True Med + confused-as-Med)</td><td>True Med / (all actual Medium)</td></tr>
+      <tr><td>High</td><td>True High / (True High + confused-as-High)</td><td>True High / (all actual High)</td></tr>
+    </tbody>
+  </table>
+  <p>Watch out: a model can look good simply by <b>predicting the majority class well</b> — while barely recalling anything from the smaller classes. That's the accuracy paradox, and it's exactly what imbalanced classes cause.</p>
+
+  <h2>Imbalanced Classes</h2>
+  <p>Plot how often each class of Y occurs and you often get a fat "head" (majority class) and a long "tail" (minority classes) — e.g. Class A = 80%, Class B = 15%, Class C = 5%.</p>
+
+  <h3>A worked fraud example</h3>
+  <table>
+    <thead><tr><th></th><th>Predicted Non-Fraud</th><th>Predicted Fraud</th><th>Total</th></tr></thead>
+    <tbody>
+      <tr><td><b>Actual Non-Fraud (0)</b></td><td>450 ✓</td><td>50 ✗</td><td>500</td></tr>
+      <tr><td><b>Actual Fraud (1)</b></td><td>45 ✗</td><td>5 ✓</td><td>50</td></tr>
+    </tbody>
+  </table>
+  <div class="formula">Accuracy = (450 + 5) / 550 = 455/550 ≈ 83%</div>
+  <p>83% accuracy — while catching only <b>5 of the 50</b> actual frauds. The real question: can the data itself be engineered so the model actually learns the rare, fraudulent cases?</p>
+
+  <h3>Two levers</h3>
+  <ul>
+    <li><b>Undersampling</b> — shrink the majority class down toward the minority's size (e.g. 455 non-fraud → 55, matching the 55 fraud rows). Simple, but may reduce your model's understanding of the majority class and throws away information.</li>
+    <li><b>Oversampling</b> — grow the minority class up instead, increasing its count toward the majority's size.</li>
+  </ul>
+
+  <h3>Smarter oversampling — SMOTE &amp; ADASYN</h3>
+  <ul>
+    <li><b>Random Oversampling</b> — literally duplicate minority rows. Risks overfitting to the same few examples.</li>
+    <li><b>SMOTE (Synthetic Minority Oversampling Technique)</b> — find each minority point's nearest minority neighbors (KNN), and generate brand-new synthetic points along the line between them, with a little noise added — new data, not copies.</li>
+    <li><b>ADASYN (Adaptive Synthetic Sampling)</b> — same idea as SMOTE, but generates more synthetic points near the minority examples that are hardest to learn (outliers, near the decision boundary).</li>
+  </ul>
+  <p>You don't always need a perfect 50/50 split — 55/45, 60/40, even 70/30 can be the right target, depending on the actual cost of each kind of mistake for that business.</p>
+
+  <h2>How Do We Handle Imbalance Via Model Performance Quantification?</h2>
+  <ol>
+    <li>Accuracy fails — it favors class skewness.</li>
+    <li>Precision &amp; Recall — and combining the two into <b>F1 Score</b>.</li>
+  </ol>
+  <p>There's more than one way to average two numbers: (1) Arithmetic Mean, (2) Exponential Moving Average, (3) Weighted Moving Average, (4) <b>Harmonic Mean</b> — dividing the total number of values by the sum of their reciprocals. F1 uses the harmonic mean.</p>
+
+  <h3>Why harmonic mean — the driving analogy</h3>
+  <p>Drive 60 km out at 60 km/h, then the same 60 km back at 20 km/h.</p>
+  <ul>
+    <li>Arithmetic mean: (60 + 20) / 2 = <b>40 km/h</b> — wrong. It ignores that far more time was spent at the slower speed.</li>
+    <li>The truth: 1 hour out (60÷60) + 3 hours back (60÷20) = 120 km in 4 hours = <b>30 km/h</b>.</li>
+  </ul>
+  <div class="formula">
+    H = 2ab / (a + b) &nbsp;→&nbsp; 2 × 60 × 20 / (60 + 20) = <b>30 km/h</b>
+    <span class="sub">The harmonic mean represents the "true rate" of a system — exactly what's needed when combining Precision and Recall.</span>
+  </div>
+  <div class="formula">
+    F1 Score = 2 · Precision · Recall / (Precision + Recall)
+    <span class="sub">The harmonic mean of Precision and Recall. It drops fast the moment either one is weak — unlike a plain average, which can stay misleadingly high.</span>
+  </div>
+  <div class="note">Try it yourself with a live slider, in the <a href="class-imbalance-f1score-slides.html">slide deck</a> for this session (Section 4, "The Flagship Demo").</div>
+
+  <h2>Hands-On</h2>
+  <p>Same predictive-maintenance dataset as yesterday — this time building Logistic Regression, KNN, and Decision Tree models for both the imbalanced multiclass target (Failure Type) and, after applying SMOTE (with a safe <code>k</code> capped by the smallest class size), comparing results before and after balancing.</p>
+</div>
+</body>
+</html>
