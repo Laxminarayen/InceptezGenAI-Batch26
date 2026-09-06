@@ -3,14 +3,15 @@
     "id": "mtpf283l88xobk",
     "author": "Laxminarayen",
     "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
-    "title": "Dwell into classification report and Confusion matrix of Machine Maintenance prediction",
+    "title": "Dwell into metrics",
     "body": "1. What is weighed average in metrics\n2. What is micro average in metrics \n3. what is macro average in metrics",
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-06T06:14:10.305Z",
     "likes": [],
     "comments": [],
-    "date": "2026-09-09"
+    "date": "2026-09-09",
+    "editedAt": "2026-09-06T06:14:21.810Z"
   },
   {
     "id": "mtpf16eznzxie4",
