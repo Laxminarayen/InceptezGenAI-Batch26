@@ -32,6 +32,7 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 - [Day 24: KNN Regression & Decision Trees](#day-24)
 - [Day 25: Decision Trees Part 2 & Hands-on](#day-25)
 - [Day 26: Multiclass Classification & Softmax](#day-26)
+- [Day 27: Class Imbalance, F1 Score & Streamlit](#day-27)
 - [Assignments](#assignments)
 
 ---
@@ -441,6 +442,23 @@ A full end-to-end assignment applying the same skills to a new dataset: cleaning
 - **Slide Deck:** [`26. MultiClass-Classification-SOFTMAX/multiclass-softmax-slides.html`](26.%20MultiClass-Classification-SOFTMAX/multiclass-softmax-slides.html)
 - **Classwork Notes (written up from the whiteboard):** [`26. MultiClass-Classification-SOFTMAX/classwork-notes.html`](26.%20MultiClass-Classification-SOFTMAX/classwork-notes.html)
 - **Classwork.pdf (original handwritten notes):** [`26. MultiClass-Classification-SOFTMAX/Classwork.pdf`](26.%20MultiClass-Classification-SOFTMAX/Classwork.pdf)
+
+---
+
+<a name="day-27"></a>
+## 🗓️ Day 27: Class Imbalance, F1 Score & Streamlit (06-Sep-2026)
+
+### Highlights
+- **The Accuracy Paradox, On Real Data:** Predictive-maintenance dataset where only 3.4% of machines actually failed — every baseline model (Logistic Regression, KNN, Decision Tree) scores ~97–98% accuracy while barely catching a single real failure.
+- **Three Fixes For Imbalance:** `class_weight="balanced"` (reweight the loss), SMOTE (synthesize new minority-class examples, applied to the training fold only), and threshold tuning (scan cutoffs to maximize macro-F1 instead of trusting the default 0.5).
+- **Binary AND Multiclass, Same Dataset:** Part A predicts Failure vs. No Failure; Part B predicts which of 6 failure types it is — the same accuracy-paradox story shows up again, with rare failure types often scoring 0 recall at baseline.
+- **Judging By Macro-F1, Not Accuracy:** A small hyperparameter search on top of the best imbalance fix, scored with `f1_macro` throughout, then binary and multiclass results compared side by side.
+- **Shipping the Winners:** The best binary and multiclass models (picked by macro-F1), the scaler, and a SHAP background sample all serialized with `joblib` — set up for a Streamlit app.
+
+### Resources
+- **Notebook:** [`27. Class Imbalance-F1Score-Streamlit/predictive_maintenance_classification.ipynb`](27.%20Class%20Imbalance-F1Score-Streamlit/predictive_maintenance_classification.ipynb)
+- **Dataset:** [`27. Class Imbalance-F1Score-Streamlit/predictive_maintenance.csv`](27.%20Class%20Imbalance-F1Score-Streamlit/predictive_maintenance.csv)
+- **Streamlit app requirements:** [`27. Class Imbalance-F1Score-Streamlit/requirements.txt`](27.%20Class%20Imbalance-F1Score-Streamlit/requirements.txt)
 
 ---
 

@@ -33,6 +33,7 @@
     "24 · KNN Regression & Decision Trees",
     "25 · Decision Trees Part 2 & Hands-on",
     "26 · Multiclass Classification & Softmax",
+    "27 · Class Imbalance, F1 Score & Streamlit",
   ];
 
   function escapeHtml(str) {

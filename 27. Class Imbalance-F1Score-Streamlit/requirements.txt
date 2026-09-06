@@ -1,0 +1,9 @@
+pandas>=2.0,<2.2
+numpy>=1.26,<2.0
+scikit-learn>=1.4,<1.7
+imbalanced-learn>=0.12
+matplotlib>=3.8
+seaborn>=0.13
+streamlit>=1.35
+shap>=0.44,<0.46
+joblib>=1.3
