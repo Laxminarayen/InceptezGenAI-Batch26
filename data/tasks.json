@@ -30,14 +30,15 @@
     "id": "mtpd6g8waki7ej",
     "author": "Laxminarayen",
     "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
-    "title": "Model serialization and packaging",
-    "body": "1. Did you understand how to package a model?\n2. Did you have a proper introduction to Streamlit?",
+    "title": "Class imbalance",
+    "body": "1. Did you guys understand imbalance Classes\n2. Did you guys understand SMOTE",
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-06T05:21:28.256Z",
     "likes": [],
     "comments": [],
-    "date": "2026-09-06"
+    "date": "2026-09-06",
+    "editedAt": "2026-09-06T06:33:35.277Z"
   },
   {
     "id": "mtpd49u29jivbo",
