@@ -32,7 +32,7 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 - [Day 24: KNN Regression & Decision Trees](#day-24)
 - [Day 25: Decision Trees Part 2 & Hands-on](#day-25)
 - [Day 26: Multiclass Classification & Softmax](#day-26)
-- [Day 27: Class Imbalance, F1 Score & Streamlit](#day-27)
+- [Day 27: Class Imbalance, F1 Score & SMOTE](#day-27)
 - [Assignments](#assignments)
 
 ---
@@ -446,19 +446,26 @@ A full end-to-end assignment applying the same skills to a new dataset: cleaning
 ---
 
 <a name="day-27"></a>
-## 🗓️ Day 27: Class Imbalance, F1 Score & Streamlit (06-Sep-2026)
+## 🗓️ Day 27: Class Imbalance, F1 Score & SMOTE (06-Sep-2026)
 
 ### Highlights
-- **The Accuracy Paradox, On Real Data:** Predictive-maintenance dataset where only 3.4% of machines actually failed — every baseline model (Logistic Regression, KNN, Decision Tree) scores ~97–98% accuracy while barely catching a single real failure.
-- **Three Fixes For Imbalance:** `class_weight="balanced"` (reweight the loss), SMOTE (synthesize new minority-class examples, applied to the training fold only), and threshold tuning (scan cutoffs to maximize macro-F1 instead of trusting the default 0.5).
-- **Binary AND Multiclass, Same Dataset:** Part A predicts Failure vs. No Failure; Part B predicts which of 6 failure types it is — the same accuracy-paradox story shows up again, with rare failure types often scoring 0 recall at baseline.
-- **Judging By Macro-F1, Not Accuracy:** A small hyperparameter search on top of the best imbalance fix, scored with `f1_macro` throughout, then binary and multiclass results compared side by side.
+- **Confusion Matrix, Finished:** Per-class precision and recall formulas for the multiclass case, and a reminder that a model can look accurate just by predicting the majority class well.
+- **The Accuracy Paradox, On Real Data:** Predictive-maintenance dataset where only 3.4% of machines actually failed — every baseline model (Logistic Regression, KNN, Decision Tree) scores ~97–98% accuracy while barely catching a single real failure. A worked fraud example makes the same point by hand: 83% accuracy while catching only 5 of 50 actual frauds.
+- **Two Levers For Imbalance:** Undersampling (shrink the majority — simple, but throws away information) vs. oversampling (grow the minority instead), and why the target ratio doesn't have to be a perfect 50/50.
+- **SMOTE &amp; ADASYN:** Synthesizing new minority-class examples via KNN between real neighbors, instead of just duplicating them — and ADASYN's twist of focusing extra synthetic points on the hardest-to-learn minority examples.
+- **F1 Score Is a Harmonic Mean, By Hand:** Worked from a classic "average speed" trap (60 km/h there, 20 km/h back — the true average is 30, not 40) to `F1 = 2·Precision·Recall/(Precision+Recall)`, with a live drag-the-sliders demo showing how F1 punishes a weak Precision or Recall that a plain average would hide.
+- **Three Fixes For Imbalance (in the notebook):** `class_weight="balanced"`, SMOTE (training fold only), and threshold tuning (maximize macro-F1 instead of trusting the default 0.5) — applied to both a binary (Failure vs. No Failure) and multiclass (which of 6 failure types) target.
 - **Shipping the Winners:** The best binary and multiclass models (picked by macro-F1), the scaler, and a SHAP background sample all serialized with `joblib` — set up for a Streamlit app.
+- **Questions Carried Forward:** How are trained assets frozen for deployment? What frameworks support deploying ML models? What is Streamlit? — teed up for next session.
 
 ### Resources
-- **Notebook:** [`27. Class Imbalance-F1Score-Streamlit/predictive_maintenance_classification.ipynb`](27.%20Class%20Imbalance-F1Score-Streamlit/predictive_maintenance_classification.ipynb)
-- **Dataset:** [`27. Class Imbalance-F1Score-Streamlit/predictive_maintenance.csv`](27.%20Class%20Imbalance-F1Score-Streamlit/predictive_maintenance.csv)
-- **Streamlit app requirements:** [`27. Class Imbalance-F1Score-Streamlit/requirements.txt`](27.%20Class%20Imbalance-F1Score-Streamlit/requirements.txt)
+- **Slide Deck:** [`27. Class Imbalance-F1Score-SMOTE/class-imbalance-f1score-slides.html`](27.%20Class%20Imbalance-F1Score-SMOTE/class-imbalance-f1score-slides.html)
+- **Classwork Notes (written up from the whiteboard):** [`27. Class Imbalance-F1Score-SMOTE/classwork-notes.html`](27.%20Class%20Imbalance-F1Score-SMOTE/classwork-notes.html)
+- **Handwritten Notes (original PDF):** [`27. Class Imbalance-F1Score-SMOTE/HandwrittenNotes-ClassImbalance-F1score.pdf`](27.%20Class%20Imbalance-F1Score-SMOTE/HandwrittenNotes-ClassImbalance-F1score.pdf)
+- **Notebook:** [`27. Class Imbalance-F1Score-SMOTE/predictive_maintenance_classification.ipynb`](27.%20Class%20Imbalance-F1Score-SMOTE/predictive_maintenance_classification.ipynb)
+- **Classwork Notebook:** [`27. Class Imbalance-F1Score-SMOTE/Classwork_MachineMaintenancePrediction.ipynb`](27.%20Class%20Imbalance-F1Score-SMOTE/Classwork_MachineMaintenancePrediction.ipynb) — live in-class build: cleaning Target/Failure-Type mismatches, then Logistic Regression, KNN, and Decision Tree with SMOTE
+- **Dataset:** [`27. Class Imbalance-F1Score-SMOTE/predictive_maintenance.csv`](27.%20Class%20Imbalance-F1Score-SMOTE/predictive_maintenance.csv)
+- **Streamlit app requirements:** [`27. Class Imbalance-F1Score-SMOTE/requirements.txt`](27.%20Class%20Imbalance-F1Score-SMOTE/requirements.txt)
 
 ---
 
