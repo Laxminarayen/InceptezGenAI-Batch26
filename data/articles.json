@@ -1,5 +1,20 @@
 [
   {
+    "id": "mtq18sc7k9h88q",
+    "author": "asennakesavan",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/70847960?v=4",
+    "title": "Metrics vs Loss",
+    "body": "![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mtq12t39ligiyz-image.jpg)\n\nThere are two main types of prediction problems in machine learning: regression and classification.\n\n![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mtq17dc7t8s9gs-image.jpg)",
+    "classTag": "",
+    "topics": [
+      "metrics",
+      "loss"
+    ],
+    "createdAt": "2026-09-06T16:35:08.023Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mtp6os68svzzx0",
     "author": "J-Nirosha",
     "authorAvatar": "https://avatars.githubusercontent.com/u/75113966?v=4",
