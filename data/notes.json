@@ -1,5 +1,17 @@
 [
   {
+    "id": "mtpczji099eec1",
+    "author": "HarishSV01",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/235912362?v=4",
+    "title": "Harmonic Mean : F1-score is the harmonic mean of Precision and Recall because it penalizes a large imbalance between them.",
+    "body": "**F1-score is the harmonic mean of Precision and Recall because it penalizes a large imbalance between them.**\n\nThe Harmonic Mean is used when dealing with rates, such as:\n\nSpeed\nPrice per unit\nCost per item\nRatios\nPerformance metrics like the F1-score in Machine Learning\n\n**Formula\nHM = n / (1/x₁ + 1/x₂ + ... + 1/xₙ)**\n\nMost Famous Example\n\nSuppose you travel:\n\n**First half of the distance at 60 km/hr\nSecond half of the distance at 40 km/hr**\n\nMany people **incorrectly calculate:\n**\n(60 + 40)/2 = 50 km/hr\n\nBut the **correct average** speed is the Harmonic Mean:\n\n**HM = 2 / (1/60 + 1/40)\n   = 48 km/hr**\n\nSo:\nAverage speed = 48 km/hr\nnot 50 km/hr.\n\n\n**Case 1: Equal Time → Arithmetic Mean (50 km/hr)**\nSuppose you drive:\n\n1 hour at 60 km/hr\n1 hour at 40 km/hr\n\nDistance traveled:\n\n60 × 1 = 60 km\n40 × 1 = 40 km\n\nTotal:\nDistance = 100 km\nTime = 2 hours\n\nAverage speed: Speed = Distance / Time\n\n100/2 = 50 km/hr\n\nSo here:\n\nAverage Speed = (60+40)/2 = 50 km/hr\n\nbecause the time spent at each speed is equal.\n\n**Case 2: Equal Distance → Harmonic Mean (48 km/hr)**\n\nNow suppose you travel:\n\n60 km at 60 km/hr\n60 km at 40 km/hr\n\nTime taken:\n\n60/60 = 1 hour\n60/40 = 1.5 hours\n\nTotal:\n\nDistance = 120 km\nTime = 2.5 hours\n\nAverage speed:\n\n120/2.5 = 48 km/hr\n\nSo the average speed is:\n\n48 km/hr\n\nnot 50 km/hr.\n\n**Why does this happen?**\n\nBecause the slower speed (40 km/hr) keeps you on the road longer.\n\nAt 60 km/hr → 1 hour\nAt 40 km/hr → 1.5 hours\n\n**The slower speed contributes more to the total travel time, so it should have more influence on the average. That's exactly what the Harmonic Mean does.**\n\n\n**Condition\tAverage Used**\nEqual time\tArithmetic Mean\nEqual distance\tHarmonic Mean\n\nThe most important formula in Harmonic Mean\n\nFor two speeds a and b over equal distances:\n\nAverage Speed = 2ab/(a+b)\n\nExample:\n\n= 2×60×40/(60+40)\n= 4800/100\n= 48 km/hr\n\n**So your intuition that \"50 km/hr can be right\" is absolutely correct — but only when the time spent at each speed is equal, not when the distance traveled at each speed is equal. That's the key distinction interviewers look for.**",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-06T05:16:05.880Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mt45rdymkw7ams",
     "author": "suru7373",
     "authorAvatar": "https://avatars.githubusercontent.com/u/223130752?v=4",
