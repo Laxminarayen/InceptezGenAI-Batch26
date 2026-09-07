@@ -1,5 +1,17 @@
 [
   {
+    "id": "mtqxnznhniclmp",
+    "author": "pnithin578-boop",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/310021870?v=4",
+    "title": "Assumptions of Linear Regression (Simple Version)",
+    "body": "Linear Regression assumes a few things about the data to make good predictions.\n1. Linear Relationship\nMeaning: Input and output should have a straight-line relationship.\nExample:\nMore years of experience → Higher salary\nLarger house → Higher price\n2. Independence\nMeaning: One data point should not affect another.\nExample:\nSalaries of different employees are independent.\nToday's stock price depends on yesterday's price, so it is not independent.\n3. Constant Error\nMeaning: Prediction errors should be roughly similar across all data points.\nExample:\nIf the model is off by around ₹50,000 for most houses, that's good.\nIf it's off by ₹50,000 for cheap houses and ₹50 lakhs for expensive houses, that's not good.\n4. No Highly Related Features\nMeaning: Input columns should not contain almost the same information.\nExample:\nHouse area in square feet\nHouse area in square meters\nBoth represent the same thing, so keeping both can confuse the model.\n5. Errors Follow a Normal Pattern\nMeaning: Most prediction errors should be small, and very large errors should be rare.\nExample:\nMost predicted salaries are close to actual salaries.\nOnly a few predictions are far away.\n6. No Extreme Outliers\nMeaning: Avoid unusual data points that are very different from the rest.\nExample:\nMost salaries: ₹5L–₹10L\nOne salary: ₹2 Crore\nThat extreme value can distort the regression line.",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-07T07:42:45.053Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mtqt1xhlbyckyb",
     "author": "asennakesavan",
     "authorAvatar": "https://avatars.githubusercontent.com/u/70847960?v=4",
