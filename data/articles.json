@@ -30,7 +30,15 @@
     "likes": [
       "Laxminarayen"
     ],
-    "comments": []
+    "comments": [
+      {
+        "id": "mtqub9udaxtitj",
+        "author": "Laxminarayen",
+        "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+        "body": "Great cheat sheet",
+        "createdAt": "2026-09-07T06:08:52.885Z"
+      }
+    ]
   },
   {
     "id": "mtp6os68svzzx0",
