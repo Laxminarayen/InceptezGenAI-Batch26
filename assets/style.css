@@ -777,6 +777,12 @@ a { color: inherit; }
   margin: 0;
   font-size: 1.02rem;
   font-weight: 700;
+  cursor: pointer;
+}
+
+.post-title:hover {
+  color: var(--accent);
+  text-decoration: underline;
 }
 
 .post-body {
