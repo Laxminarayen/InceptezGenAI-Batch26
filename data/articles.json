@@ -1,5 +1,17 @@
 [
   {
+    "id": "mtrjuqn374x1wq",
+    "author": "RamyaNaras",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/37861694?v=4",
+    "title": "Assumptions of Linear Regression",
+    "body": "What are Assumptions w.r.t Linear Regression and why is it needed?\nTo validate a  model's accuracy, Linear Regression rely on some assumptions about the data that should be met. These assumptions ensure that the model’s estimates are accurate, unbiased, and suitable for prediction.\nWhat are the Assumptions?\n1) Linearity:\n       The independent and dependent variables form a straight line of proportion. Meaning, the change in the dependent variable is uniform/consistent with the independent variable.\n2) Homoscedasticity of Residuals:\n       The variance is spread evenly, indicating the linear behaviour of the data.\n    Homoscedasticity describes a situation in which the error term (that is, the “noise” or random disturbance in the relationship between the independent variables and the dependent variable) is the same across all values of the independent variables. \n3) Multivariate Normality :\n       The residuals follow a normal distribution when multiple predictors are involved.\n4) Independence of Errors:\n        Residuals must not correlate with each other across observations. The error terms (residuals) from one observation must not be predictable from or correlated with the residuals of another observation.\n5)  Lack of Multicollinearity:\n        Multicollinearity poses challenges when multiple regression models have independent variables that are highly correlated. This can skew analysis and produce unreliable results. The assumption is thus the independent variables are not highly correlated with each other.\n6) Absence of Endogeneity:\n       In regression analysis, the error term captures all unmeasured factors affecting the dependent variable (Y). When an independent variable (X) is linked to these unmeasured factors, or has a two-way causal relationship with Y, it becomes endogenous. This violates standard statistical assumptions and ruins simple cause-and-effect interpretations.\nSo, the assumption is that the Independent variables in the regression model should not be correlated with the error term.",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-07T18:03:51.519Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mtriupqjnj14bg",
     "author": "javidh1012",
     "authorAvatar": "https://avatars.githubusercontent.com/u/210471135?v=4",
