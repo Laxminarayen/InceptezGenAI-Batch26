@@ -190,7 +190,7 @@
           ${canEdit ? `<button type="button" class="edit-btn" data-action="edit">✏️ Edit</button><button type="button" class="edit-btn delete-btn" data-action="delete">🗑️ Delete</button>` : ""}
         </header>
         ${renderTags(post)}
-        <h3 class="post-title">${escapeHtml(post.title)}</h3>
+        <h3 class="post-title" data-action="isolate" title="Click to open just this post">${escapeHtml(post.title)}</h3>
         <div class="post-body-wrap ${isLong ? "is-clamped" : ""}">
           <div class="post-body rendered-content">${bodyHtml}</div>
         </div>
@@ -299,6 +299,13 @@
 
   function wirePostActions(card, post, config) {
     const postId = post.id;
+
+    const isolateEl = card.querySelector('[data-action="isolate"]');
+    if (isolateEl) {
+      isolateEl.addEventListener("click", () => {
+        location.hash = `post-${postId}`;
+      });
+    }
 
     const likeBtn = card.querySelector('[data-action="like"]');
     likeBtn.addEventListener("click", async () => {
@@ -497,30 +504,45 @@
     });
   }
 
-  // A shared post link (#post-<id>) points at content that only exists after
-  // the feed fetch resolves, so the browser's native hash navigation (which
-  // runs before that) can't find it. Once the feed renders, if the hash
-  // matches a real post, switch to a focused single-post view — hide the
-  // rest of the feed, the compose form, the tag filter, and the class
-  // sidebar — so the shared link reads as "this one post," not "the whole
-  // page, scrolled somewhere."
-  function applySinglePostView(app, config, feed) {
-    const match = (location.hash || "").match(/^#post-(.+)$/);
-    if (!match) return;
-    const card = feed.querySelector(`#post-${CSS.escape(match[1])}`);
-    if (!card) return;
-
+  // Drives the focused single-post view from whatever #post-<id> currently
+  // is (or isn't) — hides the rest of the feed, the compose form, the tag
+  // filter, and the class sidebar down to just that one post, with a link
+  // back to the full list. Runs three ways: once right after the feed first
+  // renders (so a shared link someone opens lands straight on that post,
+  // since the browser's native hash navigation fires before the async fetch
+  // resolves and can't find it yet), again on every "hashchange" (so
+  // clicking a post title to isolate it, or using the browser's back/
+  // forward buttons, both work without a full page reload), and is exactly
+  // reversed when the hash is cleared. Safe to call repeatedly.
+  function applyHashState(app, config, feed) {
     const layout = document.querySelector(".layout");
     const formWrap = app.querySelector(".post-form-wrap");
     const filterBar = app.querySelector(".tag-filter-bar");
+    const existingBack = app.querySelector(".single-post-back");
 
+    const match = (location.hash || "").match(/^#post-(.+)$/);
+    const card = match ? feed.querySelector(`#post-${CSS.escape(match[1])}`) : null;
+
+    if (!card) {
+      if (layout) layout.classList.remove("single-post-mode");
+      if (formWrap) formWrap.hidden = false;
+      feed.querySelectorAll(".post-card").forEach((c) => {
+        c.hidden = false;
+        c.classList.remove("is-shared-highlight");
+      });
+      if (existingBack) existingBack.remove();
+      if (filterBar) refreshTagFilterBar(app); // recomputes its true visibility, not just "show it"
+      return;
+    }
+
+    if (existingBack) existingBack.remove();
     if (layout) layout.classList.add("single-post-mode");
     if (formWrap) formWrap.hidden = true;
     if (filterBar) filterBar.hidden = true;
     feed.querySelectorAll(".post-card").forEach((c) => {
-      if (c !== card) c.hidden = true;
+      c.hidden = c !== card;
+      c.classList.toggle("is-shared-highlight", c === card);
     });
-    card.classList.add("is-shared-highlight");
 
     const collectionLabel = config.collection.charAt(0).toUpperCase() + config.collection.slice(1);
     const back = document.createElement("a");
@@ -558,7 +580,7 @@
       });
       wireInCardTagClicks(app);
       refreshTagFilterBar(app);
-      applySinglePostView(app, config, feed);
+      applyHashState(app, config, feed);
     } catch (e) {
       feed.innerHTML = `<div class="feed-status">Couldn't load ${config.collection} right now. <a href="javascript:location.reload()">Reload the page</a> to try again.</div>`;
     }
@@ -702,6 +724,10 @@
 
     loadFeed(app, config);
     wirePostForm(app, config);
+
+    window.addEventListener("hashchange", () => {
+      applyHashState(app, config, app.querySelector(".forum-feed"));
+    });
   });
 
   window.ForumMarkdown = { render: renderMarkdown };
