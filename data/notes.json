@@ -11,7 +11,15 @@
     "likes": [
       "Laxminarayen"
     ],
-    "comments": []
+    "comments": [
+      {
+        "id": "mtquctaxe5tk0q",
+        "author": "Laxminarayen",
+        "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+        "body": "Really good explanation for harmonic mean..!",
+        "createdAt": "2026-09-07T06:10:04.761Z"
+      }
+    ]
   },
   {
     "id": "mt45rdymkw7ams",
