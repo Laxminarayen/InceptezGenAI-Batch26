@@ -33,6 +33,7 @@ Welcome to the official reference repository for **Inceptez GenAI Batch 26**. Th
 - [Day 25: Decision Trees Part 2 & Hands-on](#day-25)
 - [Day 26: Multiclass Classification & Softmax](#day-26)
 - [Day 27: Class Imbalance, F1 Score & SMOTE](#day-27)
+- [Daily Tasks — Checking Completion (For Evaluators)](#daily-tasks-evaluators)
 - [Assignments](#assignments)
 
 ---
@@ -466,6 +467,24 @@ A full end-to-end assignment applying the same skills to a new dataset: cleaning
 - **Classwork Notebook:** [`27. Class Imbalance-F1Score-SMOTE/Classwork_MachineMaintenancePrediction.ipynb`](27.%20Class%20Imbalance-F1Score-SMOTE/Classwork_MachineMaintenancePrediction.ipynb) — live in-class build: cleaning Target/Failure-Type mismatches, then Logistic Regression, KNN, and Decision Tree with SMOTE
 - **Dataset:** [`27. Class Imbalance-F1Score-SMOTE/predictive_maintenance.csv`](27.%20Class%20Imbalance-F1Score-SMOTE/predictive_maintenance.csv)
 - **Streamlit app requirements:** [`27. Class Imbalance-F1Score-SMOTE/requirements.txt`](27.%20Class%20Imbalance-F1Score-SMOTE/requirements.txt)
+
+---
+
+<a name="daily-tasks-evaluators"></a>
+## ✅ Daily Tasks — Checking Completion (For Evaluators)
+
+The [Daily Tasks](https://laxminarayen.github.io/InceptezGenAI-Batch26/tasks.html) tab is a calendar-based
+tracker: the instructor posts a task for a class day, and students mark their own completion. Here's how
+to check who's done a given day's task:
+
+1. Open **Daily Tasks** in the top navigation of the [live portal](https://laxminarayen.github.io/InceptezGenAI-Batch26/).
+2. Any day with a task shows it directly on the calendar, along with a live **done count** (e.g. "6 done") — so you can scan a whole month at a glance.
+3. Click that day to open it. This shows the full task description, plus the complete list of everyone who's marked it done — each with their GitHub username and avatar.
+4. There's no built-in class roster in this tool — it only shows who **has** completed the task, not who's missing. To find out who hasn't, cross-check that list against your own attendance/roster.
+
+**For bulk checking across many days at once**, all tasks and their completions are also readable as raw JSON, no login required:
+[`https://inceptez-forum-api.nvlnarayen2496.workers.dev/collection/tasks`](https://inceptez-forum-api.nvlnarayen2496.workers.dev/collection/tasks)
+— each entry has a `date`, a `title`/`body`, and a `likes` array listing the GitHub username of everyone who's marked that task done.
 
 ---
 

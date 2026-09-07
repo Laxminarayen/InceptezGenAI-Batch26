@@ -501,6 +501,21 @@ a { color: inherit; }
   font-size: 0.8rem;
 }
 
+.evaluator-note {
+  background: var(--accent-soft);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 18px;
+  margin-bottom: 24px;
+  font-size: 0.88rem;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.evaluator-note strong {
+  color: var(--accent);
+}
+
 /* Forum pages: Questions / Issues */
 .forum-cta {
   display: flex;
