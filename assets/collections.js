@@ -498,19 +498,36 @@
   }
 
   // A shared post link (#post-<id>) points at content that only exists after
-  // the feed fetch resolves, so the browser's native hash-scroll (which runs
-  // before that) misses it — this re-does the scroll once the card exists.
-  // Also drives the highlight directly (CSS :target isn't reliably reactive
-  // to elements that appear after the initial navigation in every browser).
-  function scrollToHashedPost(feed) {
+  // the feed fetch resolves, so the browser's native hash navigation (which
+  // runs before that) can't find it. Once the feed renders, if the hash
+  // matches a real post, switch to a focused single-post view — hide the
+  // rest of the feed, the compose form, the tag filter, and the class
+  // sidebar — so the shared link reads as "this one post," not "the whole
+  // page, scrolled somewhere."
+  function applySinglePostView(app, config, feed) {
     const match = (location.hash || "").match(/^#post-(.+)$/);
     if (!match) return;
     const card = feed.querySelector(`#post-${CSS.escape(match[1])}`);
     if (!card) return;
-    requestAnimationFrame(() => {
-      card.scrollIntoView({ behavior: "smooth", block: "center" });
-      card.classList.add("is-shared-highlight");
+
+    const layout = document.querySelector(".layout");
+    const formWrap = app.querySelector(".post-form-wrap");
+    const filterBar = app.querySelector(".tag-filter-bar");
+
+    if (layout) layout.classList.add("single-post-mode");
+    if (formWrap) formWrap.hidden = true;
+    if (filterBar) filterBar.hidden = true;
+    feed.querySelectorAll(".post-card").forEach((c) => {
+      if (c !== card) c.hidden = true;
     });
+    card.classList.add("is-shared-highlight");
+
+    const collectionLabel = config.collection.charAt(0).toUpperCase() + config.collection.slice(1);
+    const back = document.createElement("a");
+    back.className = "single-post-back";
+    back.href = location.pathname + location.search;
+    back.textContent = `← Back to all ${collectionLabel}`;
+    feed.parentNode.insertBefore(back, feed);
   }
 
   async function loadFeed(app, config) {
@@ -541,7 +558,7 @@
       });
       wireInCardTagClicks(app);
       refreshTagFilterBar(app);
-      scrollToHashedPost(feed);
+      applySinglePostView(app, config, feed);
     } catch (e) {
       feed.innerHTML = `<div class="feed-status">Couldn't load ${config.collection} right now. <a href="javascript:location.reload()">Reload the page</a> to try again.</div>`;
     }
