@@ -13,7 +13,15 @@
     "likes": [
       "Laxminarayen"
     ],
-    "comments": []
+    "comments": [
+      {
+        "id": "mtqubib48r2fis",
+        "author": "Laxminarayen",
+        "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+        "body": "Good explanation!",
+        "createdAt": "2026-09-07T06:09:03.856Z"
+      }
+    ]
   },
   {
     "id": "mtq18sc7k9h88q",
