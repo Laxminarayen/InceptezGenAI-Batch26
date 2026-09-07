@@ -47,7 +47,15 @@
     "likes": [
       "Laxminarayen"
     ],
-    "comments": []
+    "comments": [
+      {
+        "id": "mtquav6jkkqitg",
+        "author": "Laxminarayen",
+        "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+        "body": "Great Examples",
+        "createdAt": "2026-09-07T06:08:33.883Z"
+      }
+    ]
   },
   {
     "id": "mtp5yhahvo9wfd",
