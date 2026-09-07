@@ -180,7 +180,7 @@
     const editedNote = post.editedAt ? '<span class="note-edited">(edited)</span>' : "";
 
     return `
-      <article class="post-card" data-post-id="${escapeHtml(post.id)}" data-class-tag="${escapeHtml(post.classTag || "")}" data-topics="${escapeHtml((post.topics || []).join(","))}">
+      <article class="post-card" id="post-${escapeHtml(post.id)}" data-post-id="${escapeHtml(post.id)}" data-class-tag="${escapeHtml(post.classTag || "")}" data-topics="${escapeHtml((post.topics || []).join(","))}">
         <header class="note-header">
           ${avatarImg(post.authorAvatar, 26)}
           <span class="note-author">@${escapeHtml(post.author)}</span>
@@ -497,6 +497,22 @@
     });
   }
 
+  // A shared post link (#post-<id>) points at content that only exists after
+  // the feed fetch resolves, so the browser's native hash-scroll (which runs
+  // before that) misses it — this re-does the scroll once the card exists.
+  // Also drives the highlight directly (CSS :target isn't reliably reactive
+  // to elements that appear after the initial navigation in every browser).
+  function scrollToHashedPost(feed) {
+    const match = (location.hash || "").match(/^#post-(.+)$/);
+    if (!match) return;
+    const card = feed.querySelector(`#post-${CSS.escape(match[1])}`);
+    if (!card) return;
+    requestAnimationFrame(() => {
+      card.scrollIntoView({ behavior: "smooth", block: "center" });
+      card.classList.add("is-shared-highlight");
+    });
+  }
+
   async function loadFeed(app, config) {
     const feed = app.querySelector(".forum-feed");
     if (!API_READY) {
@@ -525,6 +541,7 @@
       });
       wireInCardTagClicks(app);
       refreshTagFilterBar(app);
+      scrollToHashedPost(feed);
     } catch (e) {
       feed.innerHTML = `<div class="feed-status">Couldn't load ${config.collection} right now. <a href="javascript:location.reload()">Reload the page</a> to try again.</div>`;
     }

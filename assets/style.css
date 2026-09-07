@@ -758,6 +758,15 @@ a { color: inherit; }
   background: var(--bg-elev);
   border: 1px solid var(--border);
   margin-bottom: 14px;
+  scroll-margin-top: calc(var(--topbar-h) + 16px);
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.post-card:target,
+.post-card.is-shared-highlight {
+  transform: scale(1.015);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-soft), 0 12px 28px -12px rgba(0, 0, 0, 0.35);
 }
 
 .post-title {
