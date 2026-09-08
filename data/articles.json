@@ -1,5 +1,17 @@
 [
   {
+    "id": "mtsqnmwhn3gn73",
+    "author": "jimmigayatri",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/204321957?v=4",
+    "title": "CONFUSION MATRIX – MULTICLASS CLASSIFICATION",
+    "body": "CONFUSION MATRIX – MULTICLASS CLASSIFICATION\n\nA Confusion Matrix is a table used to evaluate the performance of a classification model. It compares the actual classes with the classes predicted by the model. It helps us understand how many predictions are correct and where the model is making mistakes.\n\nIn multiclass classification, there are more than two classes. For example, a customer review can be classified into three categories: Positive, Neutral, and Negative.\n\nExample:\n\nSuppose a model analyzes 100 customer reviews and predicts whether each review is Positive, Neutral, or Negative.\n\nThe confusion matrix shows:\n\n* Positive reviews correctly predicted as Positive.\n* Neutral reviews correctly predicted as Neutral.\n* Negative reviews correctly predicted as Negative.\n* It also shows incorrect predictions, such as a Neutral review being predicted as Positive.\n\nThe diagonal values of the confusion matrix represent the correctly classified reviews, while the other values represent incorrect predictions.\n\nA confusion matrix is useful because it gives a detailed view of the model's performance instead of showing only one accuracy value. It can also help identify which classes the model finds difficult to classify.\n\nIn conclusion, a confusion matrix for multiclass classification is a simple and useful tool for checking the performance of a machine learning model when there are three or more classes.",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-08T14:02:03.569Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mtsq9wh3na5yev",
     "author": "priyadj309-kim",
     "authorAvatar": "https://avatars.githubusercontent.com/u/308773191?v=4",
