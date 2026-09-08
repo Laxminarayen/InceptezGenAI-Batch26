@@ -1,5 +1,17 @@
 [
   {
+    "id": "mtsyzl4cijznvn",
+    "author": "cuteesaranya-cloud",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/326611865?v=4",
+    "title": "Confusion Matrix",
+    "body": "Confusion Matrix\nA Confusion Matrix is a simple table used in Machine Learning to understand how well a classification model is making predictions.\n\nInstead of only telling us how many predictions were correct, it also tells us what the model predicted incorrectly.\nA Simple Example\nImagine we have an email spam detection model.\n\nThe model looks at emails and predicts whether each email is:\n\nSpam\nNot Spam\nSuppose we test the model with 100 emails.\n\nThe results are:\n\nActual / Predicted\tSpam\tNot Spam\nSpam\t40\t10\nNot Spam\t5\t45\n\n1. True Positive (TP)\nThe email was actually Spam, and the model also predicted Spam.\n\nTP = 40\n\nThe model got these 40 predictions correct.\n\n2. False Negative (FN)\nThe email was actually Spam, but the model predicted Not Spam.\n\nFN = 10\n\nThe model missed 10 spam emails.\n\n3. False Positive (FP)\nThe email was actually Not Spam, but the model predicted Spam.\n\nFP = 5\n\nThe model incorrectly marked 5 normal emails as spam.\n\n4. True Negative (TN)\nThe email was actually Not Spam, and the model predicted Not Spam.\n\nTN = 45\n\nThe model correctly identified 45 normal emails.\nWhy is it called a \"Confusion\" Matrix?\nIt is called a confusion matrix because it shows where the model gets confused.\n\nIn our example, the model confused:\n\n10 Spam emails as Not Spam\n5 Not Spam emails as Spam\nSo, the matrix helps us see which mistakes the model is making.\nConfusion Matrix for Multiple Classes\nA confusion matrix can also be used when there are more than two classes.\n\nFor example, suppose we have an image classification model that identifies:\n\nCat\nDog\nHorse\nThe confusion matrix might look like this:\n\nActual / Predicted\tCat\tDog\tHorse\nCat\t40\t5\t5\nDog\t3\t45\t2\nHorse\t4\t1\t45\n\nThe diagonal values represent correct predictions:\n\nCat → Cat = 40\nDog → Dog = 45\nHorse → Horse = 45\nThe values outside the diagonal are mistakes.\n\nFor example:\n\nCat → Dog = 5\n\nmeans the image was actually a Cat, but the model predicted Dog.\n\nIn Simple Words\nA Confusion Matrix is a table that shows the performance of a classification model by comparing actual values with predicted values.\n\nIt helps us answer three important questions:\n\nWhat did the model predict correctly?\nWhat did the model predict incorrectly?\nWhich classes does the model confuse with each other?",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-08T17:55:18.060Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mtswvx2ht1sdc1",
     "author": "jimmigayatri",
     "authorAvatar": "https://avatars.githubusercontent.com/u/204321957?v=4",
