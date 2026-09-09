@@ -1,5 +1,17 @@
 [
   {
+    "id": "mttv8ivrce7wcd",
+    "author": "Mukeshkanna90",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/166968999?v=4",
+    "title": "Confusion Matrix",
+    "body": "A confusion matrix is a table used to describe the performance of a classification model. It compares the actual target values with those predicted by the model. For a multiclass classification problem, the confusion matrix is a square matrix where the number of rows and columns equals the number of classes.\n\n\n![Confusion Matix Ex](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mttv788amjs9fd-confusion-matix-ex.jpg)",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-09T08:58:02.775Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mttufvo8wrnhre",
     "author": "suru7373",
     "authorAvatar": "https://avatars.githubusercontent.com/u/223130752?v=4",
