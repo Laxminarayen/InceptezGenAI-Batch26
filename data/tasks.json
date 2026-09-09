@@ -1,5 +1,18 @@
 [
   {
+    "id": "mtu6sd5sm9w0c3",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "ROC Curve & AUC",
+    "body": "1. What is the ROC curve actually plotting?\n2. What does AUC tell you that accuracy/F1 doesn't?\n3. How would you pick a classification threshold differently for a fraud model vs a spam filter?",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-09T14:21:24.256Z",
+    "likes": [],
+    "comments": [],
+    "date": "2026-09-10"
+  },
+  {
     "id": "mtpf283l88xobk",
     "author": "Laxminarayen",
     "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
