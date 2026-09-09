@@ -1,5 +1,18 @@
 [
   {
+    "id": "mtu6w2j3gjkg3j",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Precision-Recall Curve",
+    "body": "1. What does the ROC curve plot, and what does AUC summarise?\n2. Why can ROC-AUC look \"too optimistic\" on an imbalanced dataset and how does the Precision-Recall curve expose that?\n3. For an imbalanced hackathon dataset, which curve would you trust to pick your threshold, and why?",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-09T14:24:17.103Z",
+    "likes": [],
+    "comments": [],
+    "date": "2026-09-11"
+  },
+  {
     "id": "mtu6sd5sm9w0c3",
     "author": "Laxminarayen",
     "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
