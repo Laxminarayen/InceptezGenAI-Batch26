@@ -1,5 +1,17 @@
 [
   {
+    "id": "mtvyathofq88vb",
+    "author": "RamyaNaras",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/37861694?v=4",
+    "title": "ROC Curve & AUC",
+    "body": "1. What the ROC Curve is Actually Plotting ?\nThe ROC curve (Receiver Operating Characteristic) plots how well a machine learning model separates two groups (like \"Healthy\" vs. \"Sick\"). It does this by testing every possible decision threshold from 0 to 1.\nIt plots two metrics against each other:\n•\tTrue Positive Rate (TPR) / Sensitivity (Y-axis): The percentage of actual positives the model correctly found.\no\tAnalogy: Out of 100 actual sick people, how many did the doctor catch?\n•\tFalse Positive Rate (FPR) (X-axis): The percentage of actual negatives the model accidentally flagged as positive.\no\tAnalogy: Out of 100 healthy people, how many did the doctor accidentally say were sick?\nEach point on the curve represents a different tradeoff. If you want to catch more positives (high Y-axis), you usually have to accept more false alarms (high X-axis).\n\n\n2. What AUC Tells You That Accuracy and F1 Don't ?\nAUC (Area Under the ROC Curve) measures the model's overall sorting power, completely independent of any single threshold.\n•\tThe Flaw of Accuracy: Accuracy fails completely on imbalanced data. If 99% of your emails are safe and 1% are spam, a broken model that labels everything as \"safe\" has 99% accuracy. It is high accuracy but completely useless.\n•\tThe Flaw of F1-Score: The F1-score balances precision and recall, but it only looks at one specific threshold (usually 0.5). If you change the threshold, the F1-score changes.\n•\tThe Superpower of AUC: AUC tells you the probability that a randomly chosen positive example will be scored higher than a randomly chosen negative example.\no\tAn AUC of 0.90 means 90% of the time, the model correctly rates a real fraud case as \"more suspicious\" than a legitimate transaction.\no\tIt evaluates the model's fundamental ability to separate classes, regardless of what threshold you choose later.",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-10T19:59:21.036Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mtvsrzmm89tl1k",
     "author": "Shyamala-lab",
     "authorAvatar": "https://avatars.githubusercontent.com/u/277402194?v=4",
