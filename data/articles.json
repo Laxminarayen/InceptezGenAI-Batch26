@@ -1,5 +1,17 @@
 [
   {
+    "id": "mtvyiov4oi3rzi",
+    "author": "RamyaNaras",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/37861694?v=4",
+    "title": "Micro, Macro & Weighted Averages",
+    "body": "1. Macro Average\nThe macro average calculates the performance metric independently for each class and then takes the unweighted arithmetic mean. It treats every class with equal importance, regardless of how many samples belong to that class.\n•\tBest used when: You want to evaluate how well the model performs across all classes uniformly, and minority classes are just as important as majority classes\n•\tLimitation: It can be heavily skewed by poor performance on rare/minority classes even if the overall model performs well on the majority of data.\n2. Micro Average\nThe micro average aggregates the raw counts of True Positives (TP), False Positives (FP), and False Negatives (FN) globally across all classes first, and then computes the overall metric. It gives equal weight to every individual data sample rather than every class.\n•\tBest used when: You have class imbalances and want a global picture of total errors, or in single-label multi-class classification where micro-F1 equals overall accuracy.\n•\tLimitation: Dominant (larger) classes dictate the final score, hiding poor performance in underrepresented classes\n3. Weighted Average\nThe weighted average calculates the metric for each class independently but multiplies each class's score by its \"support”-the proportion of true instances belonging to that class—before summing them up. \n•\tBest used when: You have an imbalanced dataset and want an average score that reflects class frequencies without completely pooling global counts like a micro-average. \n\nReference: [https://towardsdatascience.com/micro-macro-weighted-averages-of-f1-score-clearly-explained-b603420b292f/ \nhttps://www.kaggle.com/discussions/questions-and-answers/478940]",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-10T20:05:28.288Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mtvyathofq88vb",
     "author": "RamyaNaras",
     "authorAvatar": "https://avatars.githubusercontent.com/u/37861694?v=4",
