@@ -1,5 +1,17 @@
 [
   {
+    "id": "mtvk8xydkiyvyd",
+    "author": "Smartchronon24",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/163743484?v=4",
+    "title": "ROC Curve & AUC (Day 6)",
+    "body": "The table breaks down the topics 1 and 2: \n\n![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mtvjy8m39xfel2-image.jpg)\n\nFraud model vs Spam filter: \nyou tune the threshold of your model for the mistake that hurts you most.The \"Why\" Sliders: These indicate your red line. 50/50 split as a default because there are never any real world consequences that are evenly split.Fraud Model (Low Threshold): A missed fraudster costs thousands of dollars, but a false alarm just means sending a quick verification text. You set the threshold low and you catch everything. You want to be sensitive, not perfect.Spam Filter (High Threshold): It would be a disaster if you filtered out a job offer or a client invoice, but a junk email is only a minor annoyance. Set the threshold high, so the system only blocks e-mail that it is absolutely sure is garbage (High Precision).\n\n![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mtvjyhplyxj3e3-image.jpg)\n\nHope it helps everyone! :)",
+    "classTag": "27 · Class Imbalance, F1 Score & SMOTE",
+    "topics": [],
+    "createdAt": "2026-09-10T13:25:58.885Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mtvjijwy85wfkd",
     "author": "suru7373",
     "authorAvatar": "https://avatars.githubusercontent.com/u/223130752?v=4",
