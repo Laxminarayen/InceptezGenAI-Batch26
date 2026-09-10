@@ -1,5 +1,19 @@
 [
   {
+    "id": "mtvjijwy85wfkd",
+    "author": "suru7373",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/223130752?v=4",
+    "title": "Assumption of Linear Regression",
+    "body": "**1.Linearity:**\nYour input variable and output variable must move together in a straight line pattern.\n![Linearity image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mtvjgrsm9dpaf0-linearity-image.jpg)\n\n**2.Independence:**\nJohn's error (-0.5) has nothing to do with Sarah's error (+0.5). They are separate individuals.\n\n**3.Homoscedasticity:**\nLook at the size of the errors for all three rows: they are all exactly (0.5) in magnitude. The spread of the mistakes stays completely stable and even from left to right (no megaphone shape)\n![Homoscedacity & Hetroscedacity image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mtvjiak7rwwqs6-homoscedacity-hetroscedacity-image.jpg)\n\n**4.Normality of Errors:**\nThe prediction error makes the bell shaped curve\n\n**5.No Multicollinearity:**\nIf two variables tell the model the exact same story, your model gets completely confused about who to listen to.",
+    "classTag": "17 · ML Foundations & Simple Linear Regression",
+    "topics": [
+      "assumption of linear reg"
+    ],
+    "createdAt": "2026-09-10T13:05:27.634Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mtu8aowwfc3fvv",
     "author": "ksuneeram",
     "authorAvatar": "https://avatars.githubusercontent.com/u/275399489?v=4",
