@@ -332,7 +332,11 @@ macro_f1 = f1_score(y_true, y_pred, average="macro")</td></tr></tbody></table>
       <!-- Submit -->
       <div class="proj-panel" data-project="banking" data-panel="submit" hidden>
         <h3>Submit your predictions</h3>
-        <p>Upload a CSV with <code>id,prediction</code> columns covering every row in test.csv. You'll get your public score back immediately.</p>
+        <p>
+          A submission is <strong>your notebook (.ipynb) and a predictions CSV, together</strong>. The CSV
+          (<code>id,prediction</code> columns, covering every row in test.csv) is what gets scored; the
+          notebook is kept on file as proof of the work behind it — both are required.
+        </p>
         <div class="proj-submit-box" data-project="banking">
           <div class="proj-signed-out">
             <p>Sign in with GitHub to submit — this is how we tie your score to your leaderboard entry.</p>
@@ -340,6 +344,11 @@ macro_f1 = f1_score(y_true, y_pred, average="macro")</td></tr></tbody></table>
           </div>
           <div class="proj-signed-in" hidden>
             <p class="proj-deadline-line">Deadline: <strong>19 Sep 2026, 11:59 PM IST</strong> — <span class="proj-countdown" data-project="banking"></span></p>
+            <label class="proj-file-label">
+              <input type="file" accept=".ipynb" class="proj-notebook-input" hidden />
+              <span class="btn btn-secondary">📓 Choose notebook.ipynb</span>
+              <span class="proj-notebook-name">No file chosen</span>
+            </label>
             <label class="proj-file-label">
               <input type="file" accept=".csv" class="proj-file-input" hidden />
               <span class="btn btn-secondary">📤 Choose predictions.csv</span>
@@ -615,7 +624,11 @@ macro_f1 = f1_score(y_true, y_pred, average="macro")</td></tr></tbody></table>
       <!-- Submit -->
       <div class="proj-panel" data-project="industry" data-panel="submit" hidden>
         <h3>Submit your predictions</h3>
-        <p>Upload a CSV with <code>id,prediction</code> columns covering every row in test.csv. You'll get your public score back immediately.</p>
+        <p>
+          A submission is <strong>your notebook (.ipynb) and a predictions CSV, together</strong>. The CSV
+          (<code>id,prediction</code> columns, covering every row in test.csv) is what gets scored; the
+          notebook is kept on file as proof of the work behind it — both are required.
+        </p>
         <div class="proj-submit-box" data-project="industry">
           <div class="proj-signed-out">
             <p>Sign in with GitHub to submit — this is how we tie your score to your leaderboard entry.</p>
@@ -623,6 +636,11 @@ macro_f1 = f1_score(y_true, y_pred, average="macro")</td></tr></tbody></table>
           </div>
           <div class="proj-signed-in" hidden>
             <p class="proj-deadline-line">Deadline: <strong>19 Sep 2026, 11:59 PM IST</strong> — <span class="proj-countdown" data-project="industry"></span></p>
+            <label class="proj-file-label">
+              <input type="file" accept=".ipynb" class="proj-notebook-input" hidden />
+              <span class="btn btn-secondary">📓 Choose notebook.ipynb</span>
+              <span class="proj-notebook-name">No file chosen</span>
+            </label>
             <label class="proj-file-label">
               <input type="file" accept=".csv" class="proj-file-input" hidden />
               <span class="btn btn-secondary">📤 Choose predictions.csv</span>

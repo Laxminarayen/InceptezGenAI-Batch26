@@ -2041,7 +2041,7 @@ table.data-table tr:last-child td { border-bottom: none; }
   margin-bottom: 14px;
 }
 
-.proj-file-name {
+.proj-file-name, .proj-notebook-name {
   font-size: 0.82rem;
   color: var(--text-dim);
 }

@@ -101,6 +101,19 @@
     });
   }
 
+  function readFileAsBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = String(reader.result || "");
+        const comma = result.indexOf(",");
+        resolve(comma === -1 ? result : result.slice(comma + 1));
+      };
+      reader.onerror = () => reject(new Error("Couldn't read that file."));
+      reader.readAsDataURL(file);
+    });
+  }
+
   function renderMetricTable(perClass, classes) {
     const rows = classes
       .map(
@@ -160,7 +173,7 @@
       ${renderMetricTable(s.perClass, classes)}
       <h4>Confusion matrix (public fold)</h4>
       ${renderConfusionMatrix(s.confusion, classes)}
-      <p class="proj-submit-status">Submissions today: ${data.submissionsToday}/${data.submissionsToday + data.submissionsRemaining} ·
+      <p class="proj-submit-status">📓 Notebook saved · Submissions today: ${data.submissionsToday}/${data.submissionsToday + data.submissionsRemaining} ·
         This is your <strong>public</strong> score — it's for feedback only. Final ranking uses the hidden
         private test fold, revealed after the ${new Date(data.deadline).toLocaleString(undefined, { dateStyle: "long", timeStyle: "short" })} deadline.</p>
     `;
@@ -173,6 +186,8 @@
       const signedOut = box.querySelector(".proj-signed-out");
       const signedIn = box.querySelector(".proj-signed-in");
       const signinBtn = box.querySelector(".proj-signin-btn");
+      const notebookInput = box.querySelector(".proj-notebook-input");
+      const notebookNameEl = box.querySelector(".proj-notebook-name");
       const fileInput = box.querySelector(".proj-file-input");
       const fileNameEl = box.querySelector(".proj-file-name");
       const submitBtn = box.querySelector(".proj-submit-btn");
@@ -188,26 +203,45 @@
 
       if (signinBtn) signinBtn.addEventListener("click", () => window.ForumAuth && window.ForumAuth.login());
 
+      let chosenNotebook = null;
       let chosenFile = null;
+      function refreshSubmitEnabled() {
+        submitBtn.disabled = !chosenNotebook || !chosenFile;
+        status.textContent = "";
+        status.className = "proj-submit-status";
+      }
+
+      if (notebookInput) {
+        notebookInput.addEventListener("change", () => {
+          chosenNotebook = notebookInput.files && notebookInput.files[0] ? notebookInput.files[0] : null;
+          notebookNameEl.textContent = chosenNotebook ? chosenNotebook.name : "No file chosen";
+          refreshSubmitEnabled();
+        });
+      }
       if (fileInput) {
         fileInput.addEventListener("change", () => {
           chosenFile = fileInput.files && fileInput.files[0] ? fileInput.files[0] : null;
           fileNameEl.textContent = chosenFile ? chosenFile.name : "No file chosen";
-          submitBtn.disabled = !chosenFile;
-          status.textContent = "";
-          status.className = "proj-submit-status";
+          refreshSubmitEnabled();
         });
       }
 
       if (submitBtn) {
         submitBtn.addEventListener("click", async () => {
-          if (!chosenFile) return;
+          if (!chosenNotebook || !chosenFile) return;
           submitBtn.disabled = true;
           status.className = "proj-submit-status";
-          status.textContent = "Reading file and scoring against the test set…";
+          status.textContent = "Reading files and scoring against the test set…";
           try {
-            const csv = await readFileAsText(chosenFile);
-            const data = await apiPost(`/projects/${project}/submit`, { csv });
+            const [csv, notebookBase64] = await Promise.all([
+              readFileAsText(chosenFile),
+              readFileAsBase64(chosenNotebook),
+            ]);
+            const data = await apiPost(`/projects/${project}/submit`, {
+              csv,
+              notebookBase64,
+              notebookFilename: chosenNotebook.name,
+            });
             status.textContent = "";
             renderSubmitResult(box, data, classes);
             loadLeaderboard(project, true);
@@ -215,7 +249,7 @@
             status.className = "proj-submit-status is-error";
             status.textContent = e.message || "Submission failed — please try again.";
           } finally {
-            submitBtn.disabled = !chosenFile;
+            submitBtn.disabled = !chosenNotebook || !chosenFile;
           }
         });
       }

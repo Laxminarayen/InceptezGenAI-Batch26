@@ -54,11 +54,16 @@ You'll need a free Cloudflare account. These steps only need to be done once.
 
 ## Hackathon leaderboards (Projects tab)
 
-The `projects.html` page runs two Kaggle-style hackathons (Banking, Industry). Students upload a
-predictions CSV to `POST /projects/:id/submit`; the Worker scores it against a hidden answer key
-and updates `data/projects/:id-leaderboard.json` in this repo. The answer key itself must **never**
-be readable from the public repo, so it lives in Cloudflare KV instead — a private key/value store
-bound only to this Worker.
+The `projects.html` page runs two Kaggle-style hackathons (Banking, Industry). A submission is a
+notebook (`.ipynb`) and a predictions CSV, uploaded together to `POST /projects/:id/submit`; the
+Worker scores only the CSV against a hidden answer key and updates
+`data/projects/:id-leaderboard.json` in this repo. The answer key itself must **never** be readable
+from the public repo, so it lives in Cloudflare KV instead — a private key/value store bound only
+to this Worker.
+
+Each student's **notebook** is committed straight into the repo at
+`data/projects/<id>/submissions/<github-login>.ipynb`, overwritten on every new submission so it
+always reflects their latest attempt — that's where to look when grading.
 
 ### One-time setup
 

@@ -11,6 +11,7 @@ const IMAGE_EXT_BY_TYPE = { "image/png": "png", "image/jpeg": "jpg", "image/webp
 const MAX_IMAGE_BASE64_LEN = 7_000_000; // ~5MB decoded
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 14; // 14 days
 const MAX_SUBMISSION_CSV_LEN = 2_000_000; // ~2MB, generous for a two-column id,prediction file
+const MAX_NOTEBOOK_BASE64_LEN = 20_000_000; // ~15MB decoded — notebooks with plots can get big
 const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
 
 // ---- Hackathon-style project competitions ----
@@ -619,6 +620,36 @@ function computeScores(pairs, classes) {
   };
 }
 
+// Sanity-checks that a base64 blob decodes to something structurally shaped like a
+// Jupyter notebook (JSON with a `cells` array and an `nbformat` field), without fully
+// validating cell contents — enough to reject an obviously wrong file (PDF export, etc).
+function validateNotebookBase64(base64) {
+  let text;
+  try {
+    text = fromBase64Utf8(base64);
+  } catch (e) {
+    return { error: "Couldn't read the notebook file — make sure it's a valid .ipynb." };
+  }
+  let nb;
+  try {
+    nb = JSON.parse(text);
+  } catch (e) {
+    return { error: "That doesn't look like a valid Jupyter notebook (.ipynb) — it isn't valid JSON." };
+  }
+  if (!nb || typeof nb !== "object" || !Array.isArray(nb.cells) || nb.nbformat === undefined) {
+    return { error: "That doesn't look like a valid Jupyter notebook (.ipynb) — missing the expected cells/nbformat structure." };
+  }
+  return { ok: true };
+}
+
+async function ghGetFileSha(env, path) {
+  const res = await ghRequest(env, `${path}?ref=${BRANCH}`);
+  if (res.status === 404) return null;
+  if (!res.ok) throw new Error(`GitHub read failed: ${res.status}`);
+  const file = await res.json();
+  return file.sha;
+}
+
 async function handleSubmitProject(request, env, origin, projectId) {
   const auth = await requireSession(request, env, origin);
   if (auth.error) return auth.error;
@@ -631,6 +662,14 @@ async function handleSubmitProject(request, env, origin, projectId) {
   if (body.csv.length > MAX_SUBMISSION_CSV_LEN) {
     return json({ error: "Submission file is too large." }, 400, origin);
   }
+  if (!body.notebookBase64 || typeof body.notebookBase64 !== "string") {
+    return json({ error: "A submission needs both your notebook (.ipynb) and a predictions CSV — the notebook is missing." }, 400, origin);
+  }
+  if (body.notebookBase64.length > MAX_NOTEBOOK_BASE64_LEN) {
+    return json({ error: "Notebook file is too large (max ~15MB)." }, 400, origin);
+  }
+  const notebookCheck = validateNotebookBase64(body.notebookBase64);
+  if (notebookCheck.error) return json({ error: notebookCheck.error }, 400, origin);
 
   const now = Date.now();
   const deadlineMs = Date.parse(project.deadline);
@@ -665,6 +704,23 @@ async function handleSubmitProject(request, env, origin, projectId) {
 
   const publicScore = computeScores(publicPairs, project.classes);
   const privateScore = computeScores(privatePairs, project.classes);
+
+  // Save the notebook as proof of work — overwrites this student's previous attempt for
+  // this project, so the repo always holds their latest submission, not every retry.
+  const notebookPath = `data/projects/${projectId}/submissions/${login.toLowerCase()}.ipynb`;
+  const existingNotebookSha = await ghGetFileSha(env, notebookPath);
+  const notebookCommitRes = await ghRequest(env, notebookPath, {
+    method: "PUT",
+    body: JSON.stringify({
+      message: `projects: save ${projectId} notebook for ${login}`,
+      content: body.notebookBase64,
+      branch: BRANCH,
+      ...(existingNotebookSha ? { sha: existingNotebookSha } : {}),
+    }),
+  });
+  if (!notebookCommitRes.ok) {
+    return json({ error: `Couldn't save your notebook (GitHub error ${notebookCommitRes.status}) — please try submitting again.` }, 502, origin);
+  }
 
   await env.SUBMISSIONS_KV.put(countKey, String(countSoFar + 1), { expirationTtl: 60 * 60 * 24 * 2 });
 
@@ -701,6 +757,7 @@ async function handleSubmitProject(request, env, origin, projectId) {
     {
       project: projectId,
       isNewBest,
+      notebookSaved: true,
       submissionsToday: countSoFar + 1,
       submissionsRemaining: Math.max(0, project.dailyLimit - (countSoFar + 1)),
       deadline: project.deadline,
