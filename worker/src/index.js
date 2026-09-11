@@ -10,6 +10,28 @@ const MAX_RETRIES = 5;
 const IMAGE_EXT_BY_TYPE = { "image/png": "png", "image/jpeg": "jpg", "image/webp": "webp", "image/gif": "gif" };
 const MAX_IMAGE_BASE64_LEN = 7_000_000; // ~5MB decoded
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 14; // 14 days
+const MAX_SUBMISSION_CSV_LEN = 2_000_000; // ~2MB, generous for a two-column id,prediction file
+const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
+
+// ---- Hackathon-style project competitions ----
+const PROJECTS = {
+  banking: {
+    label: "Banking — Customer Campaign Response Prediction",
+    classes: ["yes", "no"],
+    deadline: "2026-09-19T23:59:59+05:30",
+    dailyLimit: 5,
+  },
+  industry: {
+    label: "Industry — Smart Building Occupancy Intelligence",
+    classes: ["0", "1", "2", "3"],
+    deadline: "2026-09-19T23:59:59+05:30",
+    dailyLimit: 5,
+  },
+};
+
+function istDateKey(ms) {
+  return new Date(ms + IST_OFFSET_MS).toISOString().slice(0, 10);
+}
 
 function corsHeaders(origin) {
   const allow = ALLOWED_ORIGINS.has(origin) ? origin : SITE_ORIGIN;
@@ -83,17 +105,18 @@ async function ghRequest(env, path, init = {}) {
   });
 }
 
-async function ghGetCollection(env, collection) {
-  const res = await ghRequest(env, `data/${collection}.json?ref=${BRANCH}`);
-  if (res.status === 404) return { sha: null, data: [] };
+// Generic versions, keyed by an explicit repo path rather than a fixed `data/{name}.json` shape.
+async function ghGetJsonFile(env, path, defaultData) {
+  const res = await ghRequest(env, `${path}?ref=${BRANCH}`);
+  if (res.status === 404) return { sha: null, data: defaultData };
   if (!res.ok) throw new Error(`GitHub read failed: ${res.status}`);
   const file = await res.json();
   const data = JSON.parse(fromBase64Utf8(file.content));
-  return { sha: file.sha, data: Array.isArray(data) ? data : [] };
+  return { sha: file.sha, data };
 }
 
-async function ghPutCollection(env, collection, data, sha, message) {
-  return ghRequest(env, `data/${collection}.json`, {
+async function ghPutJsonFile(env, path, data, sha, message) {
+  return ghRequest(env, path, {
     method: "PUT",
     body: JSON.stringify({
       message,
@@ -104,21 +127,34 @@ async function ghPutCollection(env, collection, data, sha, message) {
   });
 }
 
-// Reads the collection, applies `mutate(data)`, writes it back.
+// Reads the file, applies `mutate(data)`, writes it back.
 // Retries on a 409/422 SHA conflict by re-reading and re-applying the mutation.
 // `mutate` returns { entry } on success, or { notFound: true } / { forbidden: true } to abort.
-async function mutateCollection(env, collection, message, mutate) {
+async function mutateJsonFile(env, path, message, mutate) {
   for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    const { sha, data } = await ghGetCollection(env, collection);
+    const { sha, data } = await ghGetJsonFile(env, path, []);
     const outcome = mutate(data);
     if (outcome.notFound || outcome.forbidden) return outcome;
 
-    const res = await ghPutCollection(env, collection, data, sha, message);
+    const res = await ghPutJsonFile(env, path, data, sha, message);
     if (res.ok) return { entry: outcome.entry };
     if (res.status === 409 || res.status === 422) continue;
     throw new Error(`GitHub write failed: ${res.status} ${await res.text()}`);
   }
   throw new Error("Too many conflicting writes, please try again");
+}
+
+async function ghGetCollection(env, collection) {
+  const { sha, data } = await ghGetJsonFile(env, `data/${collection}.json`, []);
+  return { sha, data: Array.isArray(data) ? data : [] };
+}
+
+async function ghPutCollection(env, collection, data, sha, message) {
+  return ghPutJsonFile(env, `data/${collection}.json`, data, sha, message);
+}
+
+async function mutateCollection(env, collection, message, mutate) {
+  return mutateJsonFile(env, `data/${collection}.json`, message, mutate);
 }
 
 // ---- Auth: GitHub OAuth + signed session tokens (JWT-style HS256) ----
@@ -463,6 +499,260 @@ async function handleUpload(request, env, origin) {
   return json({ url }, 201, origin);
 }
 
+// ---- Hackathon project submissions ----
+
+// Parses a two-column `id,prediction` CSV. Tolerant of an optional header row,
+// CRLF/CR/LF line endings, and blank lines. Returns { preds: Map<id,rawPrediction> } or { error }.
+function parseSubmissionCsv(csvText) {
+  const lines = csvText
+    .split(/\r\n|\r|\n/)
+    .map((l) => l.trim())
+    .filter((l) => l.length > 0);
+  if (lines.length === 0) return { error: "The submission file is empty." };
+
+  let start = 0;
+  const firstCols = lines[0].split(",").map((s) => s.trim().toLowerCase());
+  if (firstCols[0] === "id") start = 1;
+
+  const preds = new Map();
+  for (let i = start; i < lines.length; i++) {
+    const commaIdx = lines[i].indexOf(",");
+    if (commaIdx === -1) continue;
+    const id = lines[i].slice(0, commaIdx).trim();
+    const pred = lines[i].slice(commaIdx + 1).trim();
+    if (!id) continue;
+    preds.set(id, pred);
+  }
+  if (preds.size === 0) return { error: "No id,prediction rows were found in the file." };
+  return { preds };
+}
+
+// Matches a raw prediction string against the project's allowed class labels,
+// case-insensitively, with a numeric fallback (e.g. "2.0" -> "2") for numeric classes.
+function normalizePrediction(raw, classes) {
+  const v = String(raw ?? "").trim();
+  const lowerClasses = classes.map((c) => c.toLowerCase());
+  const idx = lowerClasses.indexOf(v.toLowerCase());
+  if (idx !== -1) return classes[idx];
+  if (classes.every((c) => /^\d+$/.test(c))) {
+    const n = Number(v);
+    if (Number.isFinite(n)) {
+      const rounded = String(Math.round(n));
+      if (classes.includes(rounded)) return rounded;
+    }
+  }
+  return null;
+}
+
+// Cross-checks a parsed submission against the full set of test ids, requiring exact
+// 1:1 coverage (Kaggle-style: every test row must get exactly one valid prediction).
+function validateSubmission(preds, answerKey, classes) {
+  const answerIds = Object.keys(answerKey);
+  const missing = [];
+  const invalid = [];
+  const normalized = new Map();
+
+  for (const id of answerIds) {
+    if (!preds.has(id)) {
+      missing.push(id);
+      continue;
+    }
+    const norm = normalizePrediction(preds.get(id), classes);
+    if (norm === null) {
+      invalid.push({ id, value: preds.get(id) });
+      continue;
+    }
+    normalized.set(id, norm);
+  }
+  const extra = [...preds.keys()].filter((id) => !(id in answerKey));
+
+  if (missing.length > 0) {
+    return { error: `Missing predictions for ${missing.length} row id(s), e.g. ${missing.slice(0, 5).join(", ")}. Every id in test.csv must appear exactly once.` };
+  }
+  if (invalid.length > 0) {
+    const sample = invalid.slice(0, 5).map((x) => `${x.id}="${x.value}"`).join(", ");
+    return { error: `${invalid.length} row(s) have a prediction outside the allowed values (${classes.join(", ")}), e.g. ${sample}.` };
+  }
+  if (extra.length > 100) {
+    return { error: `Found ${extra.length} row ids that don't belong to this project's test.csv. Make sure you're submitting the right file.` };
+  }
+
+  return { normalized };
+}
+
+// Macro-averaged precision/recall/F1 (unweighted mean across classes) plus accuracy
+// and a confusion matrix. `pairs` is an array of [actualLabel, predictedLabel].
+function computeScores(pairs, classes) {
+  const tp = Object.fromEntries(classes.map((c) => [c, 0]));
+  const fp = Object.fromEntries(classes.map((c) => [c, 0]));
+  const fn = Object.fromEntries(classes.map((c) => [c, 0]));
+  const confusion = Object.fromEntries(classes.map((c) => [c, Object.fromEntries(classes.map((c2) => [c2, 0]))]));
+  let correct = 0;
+
+  for (const [actual, predicted] of pairs) {
+    confusion[actual][predicted] += 1;
+    if (predicted === actual) {
+      tp[actual] += 1;
+      correct += 1;
+    } else {
+      fp[predicted] += 1;
+      fn[actual] += 1;
+    }
+  }
+
+  const perClass = {};
+  let f1Sum = 0;
+  for (const c of classes) {
+    const precision = tp[c] + fp[c] > 0 ? tp[c] / (tp[c] + fp[c]) : 0;
+    const recall = tp[c] + fn[c] > 0 ? tp[c] / (tp[c] + fn[c]) : 0;
+    const f1 = precision + recall > 0 ? (2 * precision * recall) / (precision + recall) : 0;
+    perClass[c] = { precision, recall, f1, support: tp[c] + fn[c] };
+    f1Sum += f1;
+  }
+
+  return {
+    rows: pairs.length,
+    accuracy: pairs.length > 0 ? correct / pairs.length : 0,
+    macroF1: classes.length > 0 ? f1Sum / classes.length : 0,
+    perClass,
+    confusion,
+  };
+}
+
+async function handleSubmitProject(request, env, origin, projectId) {
+  const auth = await requireSession(request, env, origin);
+  if (auth.error) return auth.error;
+
+  const project = PROJECTS[projectId];
+  if (!project) return json({ error: "Unknown project" }, 404, origin);
+
+  const body = await request.json().catch(() => null);
+  if (!body || typeof body.csv !== "string") return json({ error: "Missing csv field" }, 400, origin);
+  if (body.csv.length > MAX_SUBMISSION_CSV_LEN) {
+    return json({ error: "Submission file is too large." }, 400, origin);
+  }
+
+  const now = Date.now();
+  const deadlineMs = Date.parse(project.deadline);
+  if (now > deadlineMs) {
+    return json({ error: `Submissions for ${project.label} closed on ${project.deadline}.` }, 403, origin);
+  }
+
+  const login = auth.session.login;
+  const countKey = `subcount:${projectId}:${login.toLowerCase()}:${istDateKey(now)}`;
+  const countRaw = await env.SUBMISSIONS_KV.get(countKey);
+  const countSoFar = countRaw ? parseInt(countRaw, 10) : 0;
+  if (countSoFar >= project.dailyLimit) {
+    return json({ error: `Daily submission limit reached (${project.dailyLimit}/day). Try again after midnight IST.` }, 429, origin);
+  }
+
+  const answerKeyRaw = await env.SUBMISSIONS_KV.get(`answerkey:${projectId}`);
+  if (!answerKeyRaw) return json({ error: "This project's answer key isn't configured yet — ask the instructor." }, 503, origin);
+  const answerKey = JSON.parse(answerKeyRaw);
+
+  const parsed = parseSubmissionCsv(body.csv);
+  if (parsed.error) return json({ error: parsed.error }, 400, origin);
+
+  const validation = validateSubmission(parsed.preds, answerKey, project.classes);
+  if (validation.error) return json({ error: validation.error }, 400, origin);
+
+  const publicPairs = [];
+  const privatePairs = [];
+  for (const [id, entry] of Object.entries(answerKey)) {
+    const pair = [entry.label, validation.normalized.get(id)];
+    (entry.fold === "public" ? publicPairs : privatePairs).push(pair);
+  }
+
+  const publicScore = computeScores(publicPairs, project.classes);
+  const privateScore = computeScores(privatePairs, project.classes);
+
+  await env.SUBMISSIONS_KV.put(countKey, String(countSoFar + 1), { expirationTtl: 60 * 60 * 24 * 2 });
+
+  const bestKey = `best:${projectId}:${login.toLowerCase()}`;
+  const prevBestRaw = await env.SUBMISSIONS_KV.get(bestKey);
+  const prevBest = prevBestRaw ? JSON.parse(prevBestRaw) : null;
+  const isNewBest = !prevBest || publicScore.macroF1 > prevBest.publicScore.macroF1;
+  const submissionCount = (prevBest ? prevBest.submissionCount : 0) + 1;
+  const nowIso = new Date(now).toISOString();
+
+  const bestRecord = isNewBest
+    ? { login, avatarUrl: auth.session.avatarUrl, publicScore, privateScore, submittedAt: nowIso, submissionCount }
+    : { ...prevBest, submissionCount };
+  await env.SUBMISSIONS_KV.put(bestKey, JSON.stringify(bestRecord));
+
+  if (isNewBest) {
+    await mutateJsonFile(env, `data/projects/${projectId}-leaderboard.json`, `projects: update ${projectId} leaderboard for ${login}`, (data) => {
+      const idx = data.findIndex((e) => String(e.login).toLowerCase() === login.toLowerCase());
+      const entry = {
+        login,
+        avatarUrl: auth.session.avatarUrl,
+        publicAccuracy: publicScore.accuracy,
+        publicMacroF1: publicScore.macroF1,
+        submissionCount,
+        submittedAt: nowIso,
+      };
+      if (idx === -1) data.push(entry);
+      else data[idx] = entry;
+      return { entry };
+    });
+  }
+
+  return json(
+    {
+      project: projectId,
+      isNewBest,
+      submissionsToday: countSoFar + 1,
+      submissionsRemaining: Math.max(0, project.dailyLimit - (countSoFar + 1)),
+      deadline: project.deadline,
+      public: publicScore,
+    },
+    200,
+    origin
+  );
+}
+
+async function handleProjectLeaderboard(env, origin, projectId) {
+  const project = PROJECTS[projectId];
+  if (!project) return json({ error: "Unknown project" }, 404, origin);
+
+  const { data } = await ghGetJsonFile(env, `data/projects/${projectId}-leaderboard.json`, []);
+  const revealed = Date.now() > Date.parse(project.deadline);
+
+  let rows = Array.isArray(data) ? data.map((e) => ({ ...e })) : [];
+
+  if (revealed) {
+    const withPrivate = [];
+    for (const e of rows) {
+      const bestRaw = await env.SUBMISSIONS_KV.get(`best:${projectId}:${String(e.login).toLowerCase()}`);
+      const best = bestRaw ? JSON.parse(bestRaw) : null;
+      withPrivate.push({
+        ...e,
+        privateAccuracy: best ? best.privateScore.accuracy : null,
+        privateMacroF1: best ? best.privateScore.macroF1 : null,
+      });
+    }
+    withPrivate.sort((a, b) => (b.privateMacroF1 ?? -1) - (a.privateMacroF1 ?? -1));
+    rows = withPrivate;
+  } else {
+    rows.sort((a, b) => b.publicMacroF1 - a.publicMacroF1);
+  }
+
+  rows = rows.map((e, i) => ({ rank: i + 1, ...e }));
+
+  return new Response(JSON.stringify({ project: projectId, revealed, deadline: project.deadline, rows }), {
+    status: 200,
+    headers: { "Content-Type": "application/json", "Cache-Control": "no-store", ...corsHeaders(origin) },
+  });
+}
+
+function handleProjectsMeta(origin) {
+  const meta = {};
+  for (const [id, p] of Object.entries(PROJECTS)) {
+    meta[id] = { label: p.label, classes: p.classes, deadline: p.deadline, dailyLimit: p.dailyLimit };
+  }
+  return json(meta, 200, origin);
+}
+
 export {
   genId,
   clean,
@@ -502,6 +792,11 @@ export default {
       if (request.method === "POST" && url.pathname === "/like") return await handleLike(request, env, origin);
       if (request.method === "POST" && url.pathname === "/comment") return await handleComment(request, env, origin);
       if (request.method === "POST" && url.pathname === "/upload") return await handleUpload(request, env, origin);
+      if (request.method === "GET" && url.pathname === "/projects/meta") return handleProjectsMeta(origin);
+      const submitMatch = url.pathname.match(/^\/projects\/([a-z]+)\/submit$/);
+      if (request.method === "POST" && submitMatch) return await handleSubmitProject(request, env, origin, submitMatch[1]);
+      const leaderboardMatch = url.pathname.match(/^\/projects\/([a-z]+)\/leaderboard$/);
+      if (request.method === "GET" && leaderboardMatch) return await handleProjectLeaderboard(env, origin, leaderboardMatch[1]);
       return json({ error: "Not found" }, 404, origin);
     } catch (e) {
       return json({ error: e.message || "Server error" }, 500, origin);

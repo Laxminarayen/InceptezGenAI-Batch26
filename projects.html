@@ -1,0 +1,689 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Projects — Inceptez Batch 26 Class Forum</title>
+<meta name="description" content="Two hackathon-style capstone projects for Inceptez GenAI Batch 26 — Banking and Industry — with real train/test data, a public/private leaderboard, and portfolio-ready case studies." />
+<link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+<header class="topbar">
+  <a class="topbar-brand" href="index.html">
+    <span class="topbar-logo">🎓</span>
+    <span>
+      <span class="topbar-title">Inceptez Batch 26</span>
+      <span class="topbar-subtitle">Class Forum</span>
+    </span>
+  </a>
+  <nav class="topbar-nav">
+    <a class="topbar-link" href="index.html">🏠 Home</a>
+    <a class="topbar-link" href="questions.html">💬 Questions</a>
+    <a class="topbar-link" href="issues.html">🐛 Issues</a>
+    <a class="topbar-link" href="notes.html">📝 Notes</a>
+    <a class="topbar-link" href="articles.html">✍️ Articles</a>
+    <a class="topbar-link" href="tasks.html">📅 Daily Tasks</a>
+    <a class="topbar-link is-active" href="projects.html">🏆 Projects</a>
+    <a class="topbar-link topbar-github" href="https://github.com/Laxminarayen/InceptezGenAI-Batch26" target="_blank" rel="noopener">
+      <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+      GitHub
+    </a>
+  </nav>
+  <button id="like-btn" class="like-btn" type="button" title="Like it? Click to star it on GitHub (opens a new tab to confirm).">
+    <svg class="like-icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"></path></svg>
+    <span class="like-text">Star</span>
+    <span class="like-count" id="star-count">···</span>
+  </button>
+  <div id="auth-slot" class="auth-slot"></div>
+</header>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="title">Inceptez Batch 26</span>
+      <span class="subtitle">Class Materials Portal</span>
+    </div>
+
+    <nav>
+      <div class="nav-group" data-group="python">
+        <div class="nav-group-title"><span class="dot"></span>Python</div>
+        <a class="nav-link" href="index.html#c00">00 · Class Introduction</a>
+        <a class="nav-link" href="index.html#c01">01 · Why Python</a>
+        <a class="nav-link" href="index.html#c02">02 · Data Types &amp; Structures</a>
+        <a class="nav-link" href="index.html#c03">03 · Structure Ops &amp; Loops</a>
+        <a class="nav-link" href="index.html#c04">04 · Time Complexity, Set/Dict</a>
+        <a class="nav-link" href="index.html#c05">05 · While, Break/Continue, Functions</a>
+        <a class="nav-link" href="index.html#c06">06 · Functions Adv, Classes, LEGB</a>
+        <a class="nav-link" href="index.html#c07">07 · Intro to NumPy</a>
+        <a class="nav-link" href="index.html#c08">08 · Pandas</a>
+        <a class="nav-link" href="index.html#c09">09 · Pandas Stats</a>
+      </div>
+      <div class="nav-group" data-group="stats">
+        <div class="nav-group-title"><span class="dot"></span>Statistics &amp; Preprocessing</div>
+        <a class="nav-link" href="index.html#c13">13 · Descriptive Statistics 1</a>
+        <a class="nav-link" href="index.html#c14">14 · Data Preprocessing</a>
+        <a class="nav-link" href="index.html#c15">15 · Multivariate Distributions</a>
+        <a class="nav-link" href="index.html#c16">16 · Inferential Stats — Voting</a>
+      </div>
+      <div class="nav-group" data-group="ml">
+        <div class="nav-group-title"><span class="dot"></span>Machine Learning</div>
+        <a class="nav-link" href="index.html#c17">17 · ML Foundations</a>
+        <a class="nav-link" href="index.html#c18">18 · Gradient Descent</a>
+        <a class="nav-link" href="index.html#c19">19 · Linear Regression Hands-on</a>
+        <a class="nav-link" href="index.html#c20">20 · Revision &amp; Exercise: Linear Regression</a>
+        <a class="nav-link" href="index.html#c21">21 · Polynomial Regression</a>
+        <a class="nav-link" href="index.html#c22">22 · Logistic Regression</a>
+        <a class="nav-link" href="index.html#c23">23 · K-Nearest Neighbors (KNN)</a>
+        <a class="nav-link" href="index.html#c24">24 · KNN Regression &amp; Decision Trees</a>
+        <a class="nav-link" href="index.html#c25">25 · Decision Trees Part 2 &amp; Hands-on</a>
+        <a class="nav-link" href="index.html#c26">26 · Multiclass Classification &amp; Softmax</a>
+        <a class="nav-link" href="index.html#c27">27 · Class Imbalance, F1 Score &amp; SMOTE</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <header class="page-header">
+      <h1>Projects</h1>
+      <p>
+        Two capstone case studies, run exactly like a Kaggle competition. Each one drops you into a company as
+        the Data Scientist (or Data Engineer) who just got handed a real business problem — you train on real
+        UCI data, submit predictions against a genuinely held-out test set, and climb a live leaderboard. When
+        you're done, you'll have a portfolio project you can talk through in an interview, not just a notebook.
+      </p>
+    </header>
+
+    <div class="proj-deadline-banner">
+      ⏰ Both hackathons close <strong>19 September 2026, 11:59 PM IST</strong>. You get
+      <strong>5 submissions per day</strong> per project — only your best public score is kept on the
+      leaderboard, and final ranking is decided by a hidden private test split that's revealed only after
+      the deadline.
+    </div>
+
+    <div class="proj-intro-grid">
+      <a class="proj-intro-card" href="#banking">
+        <span class="proj-intro-kicker">Hackathon 1 · Binary Classification</span>
+        <h3>🏦 Customer Campaign Response Prediction</h3>
+        <p>NorthStar Bank wants to know who's actually worth calling for its Term Deposit campaign. 45,211 customers, ~12% say yes. Predict who will.</p>
+      </a>
+      <a class="proj-intro-card" href="#industry">
+        <span class="proj-intro-kicker">Hackathon 2 · Multiclass Classification</span>
+        <h3>🏢 Smart Building Occupancy Intelligence</h3>
+        <p>NovaSpace Technologies wants to know how many people are actually in a meeting room — 0, 1, 2, or 3 — using nothing but IoT sensors.</p>
+      </a>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- BANKING                                                       -->
+    <!-- ============================================================ -->
+    <section class="proj-competition" id="banking">
+      <div class="proj-comp-header">
+        <div class="proj-comp-kicker">🏦 Hackathon · Binary Classification</div>
+        <h2>Customer Campaign Response Prediction</h2>
+        <p class="proj-comp-company">NorthStar Bank — Customer Analytics Division</p>
+        <div class="proj-comp-pills">
+          <span class="chip">⏰ Deadline: 19 Sep 2026, 11:59 PM IST</span>
+          <span class="chip">📊 Metric: Macro F1</span>
+          <span class="chip">🔁 5 submissions / day</span>
+          <span class="chip">🧠 Logistic Regression · KNN · Decision Tree only</span>
+        </div>
+      </div>
+
+      <div class="proj-tabs" data-project="banking">
+        <button type="button" class="proj-tab is-active" data-panel="overview">Overview &amp; Story</button>
+        <button type="button" class="proj-tab" data-panel="dataset">Dataset</button>
+        <button type="button" class="proj-tab" data-panel="rules">Rules &amp; Scoring</button>
+        <button type="button" class="proj-tab" data-panel="submit">Submit</button>
+        <button type="button" class="proj-tab" data-panel="leaderboard">Leaderboard</button>
+      </div>
+
+      <!-- Overview -->
+      <div class="proj-panel" data-project="banking" data-panel="overview">
+        <h3>Objective</h3>
+        <p>
+          This isn't a textbook ML exercise — it's a simulation of the kind of assignment a Data Scientist
+          receives in their first few months at a company. A business department has a problem; you are the
+          Data Science team member who has to understand the requirement, turn it into an ML problem, prepare
+          the data, build and evaluate models, and — most importantly — <em>recommend</em> something a
+          non-technical stakeholder can act on.
+        </p>
+
+        <h3>The company</h3>
+        <p>
+          <strong>NorthStar Bank</strong> offers savings accounts, loans, credit products and investment
+          products. One of those products is a <strong>Term Deposit</strong>. Right now, whenever Marketing
+          launches a Term Deposit campaign, they phone <em>every single customer</em> in the database. That's
+          expensive, it annoys customers who were never going to say yes, and it burns hours of call-centre
+          time that could go toward customers who actually convert.
+        </p>
+
+        <h3>Your role</h3>
+        <p>
+          You are a Data Scientist on the <strong>Customer Analytics Team</strong>. Your manager has asked you
+          to investigate whether historical customer and campaign data can predict who is <strong>Likely to
+          Subscribe</strong> vs. <strong>Unlikely to Subscribe</strong> to the Term Deposit — so Marketing can
+          prioritise their call list instead of dialling blind.
+        </p>
+
+        <div class="proj-leak-warning">
+          <strong>⚠ Watch for data leakage.</strong> The dataset includes a column called <code>duration</code>
+          — the length of the phone call in seconds. Think about when the model actually has to make its
+          prediction: <em>before</em> the call happens, to decide whether to make it at all. At that point,
+          <code>duration</code> cannot possibly be known — it's a leak from the future. A big part of being a
+          Data Scientist is asking "would this column actually be available at prediction time?", not just
+          throwing every column at the model because it improves your score. We deliberately left
+          <code>duration</code> in the raw data so you have to catch this yourself — a model that leans on it
+          will look great on paper and be useless in production.
+        </div>
+
+        <h3>What your project should cover</h3>
+        <p>Structure your notebook around these steps — this is exactly what a manager would expect to see in your writeup:</p>
+
+        <h4>1. Understand the business problem</h4>
+        <ul>
+          <li>What problem is Marketing actually trying to solve, and why would an ML model help?</li>
+          <li>What exactly are you predicting? Is this regression or classification — binary or multiclass?</li>
+          <li>What would the bank <em>do</em> with your prediction once they have it?</li>
+        </ul>
+
+        <h4>2. Understand the data</h4>
+        <p>Rows/columns, feature names, data types, numerical vs. categorical variables, missing/"unknown" values, duplicates, and the target distribution. What % subscribed vs. didn't? Is it balanced?</p>
+
+        <h4>3. Exploratory Data Analysis</h4>
+        <p>Investigate what actually matters to the business — subscription rate by age, job, education; the effect of housing/personal loans; previous campaign outcome; number of prior contacts; account balance. For every notable pattern, say what it could mean for Marketing — don't plot for the sake of plotting.</p>
+
+        <h4>4. Data preparation</h4>
+        <p>Separate features/target, encode categoricals, handle "unknown" values sensibly, <strong>drop columns that wouldn't be available at prediction time</strong>, split train/test, and scale numeric features — KNN is distance-based, so scaling isn't optional there.</p>
+
+        <h4>5. Build three models</h4>
+        <p>Logistic Regression, K-Nearest Neighbours (try a few values of K), and a Decision Tree (experiment with depth). You're expected to compare all three and recommend one.</p>
+
+        <h4>6. Evaluate properly</h4>
+        <p>
+          Don't pick a winner on accuracy alone. Report Accuracy, Precision, Recall, F1, and the Confusion
+          Matrix for each model, and explain — in terms of <em>this bank</em> — what a False Positive means
+          (you call someone who was never going to subscribe) vs. a False Negative (you skip someone who
+          would have said yes). Which mistake should Marketing care about more?
+        </p>
+
+        <h4>Final business recommendation</h4>
+        <p>
+          Write this for the Head of Marketing, who is not a Data Scientist: which model, why, what it does
+          well, where it fails, which customer segments look most promising, how the team should actually use
+          it day-to-day, and what limitations they should know about before trusting it. "Decision Tree had
+          the highest accuracy" is not a recommendation — explain <em>why</em> your pick makes sense for the
+          business.
+        </p>
+
+        <h3>🎤 How to tell this story in an interview</h3>
+        <div class="proj-story">
+          A hiring manager doesn't want a walkthrough of your code — they want the shape of your thinking.
+          Here's a scaffold you can adapt once you've actually built this:
+          <br /><br />
+          <em>"At NorthStar Bank, Marketing was cold-calling every customer for every Term Deposit campaign —
+          expensive, and most calls went nowhere. I built a classifier to score customers as likely or
+          unlikely to subscribe, using demographics and campaign history. One early finding mattered a lot:
+          the raw data had a call-duration field that looked predictive, but it couldn't possibly be known
+          before the call happens — so I dropped it to avoid a model that looks great in a notebook and fails
+          in production. I compared Logistic Regression, KNN, and a Decision Tree, and evaluated them on
+          [your Macro F1 / recall], not just accuracy, because only ~12% of customers actually subscribe — a
+          model that says 'no' to everyone is 88% accurate and useless. I recommended [your model] because
+          [your reason — e.g. best recall on the minority class, most interpretable for a non-technical
+          stakeholder, most stable across CV folds]. In production, this would let Marketing call the top-N
+          scored customers instead of the whole list."</em>
+          <cite>Fill in the brackets with your actual results once you've run the hackathon — that's the story that goes on your resume.</cite>
+        </div>
+      </div>
+
+      <!-- Dataset -->
+      <div class="proj-panel" data-project="banking" data-panel="dataset" hidden>
+        <h3>Source</h3>
+        <p>
+          UCI Machine Learning Repository — <strong>Bank Marketing Dataset</strong> (Dataset ID 222), direct
+          marketing campaigns of a Portuguese banking institution. 45,211 customer records, mixed numeric and
+          categorical features. We've split it into a hackathon-style train/test the same way Kaggle does —
+          you get the train set with labels, and a test set with the labels hidden.
+        </p>
+
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Split</th><th>Rows</th><th># subscribed (yes)</th><th># didn't (no)</th></tr></thead>
+            <tbody>
+              <tr><td>train.csv (yours, with labels)</td><td>36,168</td><td>4,231 (11.7%)</td><td>31,937 (88.3%)</td></tr>
+              <tr><td>test.csv (yours, no labels — predict this)</td><td>9,043</td><td>—</td><td>—</td></tr>
+              <tr><td>&nbsp;&nbsp;↳ public fold (your instant feedback)</td><td>2,712</td><td colspan="2">Not shown — this is what your uploaded score is computed against</td></tr>
+              <tr><td>&nbsp;&nbsp;↳ private fold (final ranking)</td><td>6,331</td><td colspan="2">Hidden until 19 Sep 2026</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:0.82rem;color:var(--text-dim)">test.csv contains both folds shuffled together — there's no way to tell which row is which, so treat every row the same way.</p>
+
+        <h3>Data dictionary</h3>
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Column</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td>age</td><td>numeric</td><td>Customer age</td></tr>
+              <tr><td>job</td><td>categorical</td><td>Type of job (management, technician, blue-collar, student, retired, …)</td></tr>
+              <tr><td>marital</td><td>categorical</td><td>married / divorced / single</td></tr>
+              <tr><td>education</td><td>categorical</td><td>primary / secondary / tertiary / unknown</td></tr>
+              <tr><td>default</td><td>categorical</td><td>Has credit in default? yes/no</td></tr>
+              <tr><td>balance</td><td>numeric</td><td>Average yearly balance, in euros</td></tr>
+              <tr><td>housing</td><td>categorical</td><td>Has a housing loan? yes/no</td></tr>
+              <tr><td>loan</td><td>categorical</td><td>Has a personal loan? yes/no</td></tr>
+              <tr><td>contact</td><td>categorical</td><td>Contact type: cellular / telephone / unknown</td></tr>
+              <tr><td>day</td><td>numeric</td><td>Last contact day of the month</td></tr>
+              <tr><td>month</td><td>categorical</td><td>Last contact month (jan…dec)</td></tr>
+              <tr><td>duration</td><td>numeric</td><td>Last contact duration, seconds — <strong>⚠ leakage, see Overview</strong></td></tr>
+              <tr><td>campaign</td><td>numeric</td><td># contacts during this campaign, this client</td></tr>
+              <tr><td>pdays</td><td>numeric</td><td>Days since last contact from a <em>previous</em> campaign (-1 = never)</td></tr>
+              <tr><td>previous</td><td>numeric</td><td># contacts before this campaign, this client</td></tr>
+              <tr><td>poutcome</td><td>categorical</td><td>Outcome of the previous campaign: success / failure / other / unknown</td></tr>
+              <tr><td>y <span style="color:var(--text-dim)">(train.csv only — this is the target)</span></td><td>categorical</td><td>Subscribed to the term deposit? yes/no</td></tr>
+              <tr><td>id <span style="color:var(--text-dim)">(test.csv only)</span></td><td>string</td><td>Row identifier, e.g. <code>BANK-00001</code> — use this to build your submission</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Downloads</h3>
+        <div class="proj-download-grid">
+          <a class="proj-download-card" href="data/projects/banking/train.csv" download>
+            <span class="dl-title">📄 train.csv</span>
+            <span class="dl-meta">36,168 rows · with labels</span>
+          </a>
+          <a class="proj-download-card" href="data/projects/banking/test.csv" download>
+            <span class="dl-title">📄 test.csv</span>
+            <span class="dl-meta">9,043 rows · no labels</span>
+          </a>
+          <a class="proj-download-card" href="data/projects/banking/sample_submission.csv" download>
+            <span class="dl-title">📄 sample_submission.csv</span>
+            <span class="dl-meta">Correct format, baseline filled in</span>
+          </a>
+          <a class="proj-download-card" href="Projects/Banking-Usecase1.pdf" target="_blank" rel="noopener">
+            <span class="dl-title">📕 Original brief (PDF)</span>
+            <span class="dl-meta">Full assignment as written</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Rules -->
+      <div class="proj-panel" data-project="banking" data-panel="rules" hidden>
+        <h3>How this hackathon works</h3>
+        <div class="proj-rules-grid">
+          <div class="proj-rule-card">
+            <div class="rule-icon">📤</div>
+            <h4>Submission format</h4>
+            <p>A CSV with exactly two columns: <code>id,prediction</code>. One row per id in test.csv, predictions must be exactly <code>yes</code> or <code>no</code>. See sample_submission.csv.</p>
+          </div>
+          <div class="proj-rule-card">
+            <div class="rule-icon">📊</div>
+            <h4>Scoring metric</h4>
+            <p><strong>Macro F1</strong> — the unweighted average of F1 across both classes. This rewards models that actually catch the minority "yes" class, not just ones that predict "no" for everyone (which would score ~88% accuracy for free).</p>
+          </div>
+          <div class="proj-rule-card">
+            <div class="rule-icon">🔒</div>
+            <h4>Public vs. private</h4>
+            <p>Your upload is scored instantly against a 2,712-row <strong>public</strong> fold — that's what you see on the leaderboard immediately. Final ranking is decided by the hidden 6,331-row <strong>private</strong> fold, revealed only after the deadline. This mirrors real Kaggle competitions and discourages overfitting to the public score.</p>
+          </div>
+          <div class="proj-rule-card">
+            <div class="rule-icon">🔁</div>
+            <h4>Daily limit</h4>
+            <p>5 submissions per day, resetting at midnight IST. Only your <strong>best public Macro F1</strong> is kept — worse submissions don't hurt you.</p>
+          </div>
+          <div class="proj-rule-card">
+            <div class="rule-icon">⏰</div>
+            <h4>Deadline</h4>
+            <p><strong>19 September 2026, 11:59 PM IST.</strong> Submissions are rejected after this instant — don't leave it to the last minute.</p>
+          </div>
+          <div class="proj-rule-card">
+            <div class="rule-icon">🧠</div>
+            <h4>Models allowed</h4>
+            <p>Logistic Regression, K-Nearest Neighbours, Decision Tree — that's it. No Random Forest, Gradient Boosting, XGBoost, Neural Networks, or AutoML. The point is demonstrating judgement with the tools you've actually learned, not chasing leaderboard points with a black box.</p>
+          </div>
+        </div>
+
+        <h3>Scoring it yourself before you submit</h3>
+        <p>Compute the same metric locally so your local number matches what the leaderboard will show:</p>
+        <div class="data-table-wrap">
+          <table class="data-table"><tbody><tr><td style="font-family:monospace;white-space:pre">from sklearn.metrics import f1_score
+macro_f1 = f1_score(y_true, y_pred, average="macro")</td></tr></tbody></table>
+        </div>
+
+        <h3>Deliverables (for your own portfolio / evaluation)</h3>
+        <ul>
+          <li><strong>Jupyter Notebook</strong> covering: Business Understanding → Data Understanding → EDA → Data Preparation → the three models → Evaluation → Model Comparison → Business Recommendation.</li>
+          <li><strong>A short written recommendation</strong> aimed at the Head of Marketing (non-technical) — see the Overview tab for exactly what it should cover.</li>
+        </ul>
+      </div>
+
+      <!-- Submit -->
+      <div class="proj-panel" data-project="banking" data-panel="submit" hidden>
+        <h3>Submit your predictions</h3>
+        <p>Upload a CSV with <code>id,prediction</code> columns covering every row in test.csv. You'll get your public score back immediately.</p>
+        <div class="proj-submit-box" data-project="banking">
+          <div class="proj-signed-out">
+            <p>Sign in with GitHub to submit — this is how we tie your score to your leaderboard entry.</p>
+            <button type="button" class="btn btn-primary proj-signin-btn">Sign in with GitHub</button>
+          </div>
+          <div class="proj-signed-in" hidden>
+            <p class="proj-deadline-line">Deadline: <strong>19 Sep 2026, 11:59 PM IST</strong> — <span class="proj-countdown" data-project="banking"></span></p>
+            <label class="proj-file-label">
+              <input type="file" accept=".csv" class="proj-file-input" hidden />
+              <span class="btn btn-secondary">📤 Choose predictions.csv</span>
+              <span class="proj-file-name">No file chosen</span>
+            </label>
+            <button type="button" class="btn btn-primary proj-submit-btn" disabled>Submit predictions</button>
+            <p class="proj-submit-status"></p>
+            <div class="proj-submit-result" hidden></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leaderboard -->
+      <div class="proj-panel" data-project="banking" data-panel="leaderboard" hidden>
+        <h3>Leaderboard</h3>
+        <div class="proj-leaderboard" data-project="banking">
+          <p class="lb-reveal-note" hidden></p>
+          <p class="leaderboard-status">Loading leaderboard…</p>
+          <table class="leaderboard-table" hidden>
+            <thead><tr><th>Rank</th><th>Student</th><th>Macro F1</th><th>Submissions</th><th>Last submitted</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============================================================ -->
+    <!-- INDUSTRY                                                      -->
+    <!-- ============================================================ -->
+    <section class="proj-competition" id="industry">
+      <div class="proj-comp-header">
+        <div class="proj-comp-kicker">🏢 Hackathon · Multiclass Classification</div>
+        <h2>Smart Building Occupancy Intelligence</h2>
+        <p class="proj-comp-company">NovaSpace Technologies — Enterprise Data Platform Team</p>
+        <div class="proj-comp-pills">
+          <span class="chip">⏰ Deadline: 19 Sep 2026, 11:59 PM IST</span>
+          <span class="chip">📊 Metric: Macro F1</span>
+          <span class="chip">🔁 5 submissions / day</span>
+          <span class="chip">🧠 Logistic Regression · KNN · Decision Tree only</span>
+        </div>
+      </div>
+
+      <div class="proj-tabs" data-project="industry">
+        <button type="button" class="proj-tab is-active" data-panel="overview">Overview &amp; Story</button>
+        <button type="button" class="proj-tab" data-panel="dataset">Dataset</button>
+        <button type="button" class="proj-tab" data-panel="rules">Rules &amp; Scoring</button>
+        <button type="button" class="proj-tab" data-panel="submit">Submit</button>
+        <button type="button" class="proj-tab" data-panel="leaderboard">Leaderboard</button>
+      </div>
+
+      <!-- Overview -->
+      <div class="proj-panel" data-project="industry" data-panel="overview">
+        <h3>Objective</h3>
+        <p>
+          This project puts you on the other side of the ML pipeline: you're a <strong>Data Engineer</strong>,
+          not a Data Scientist. Your team ingests data from operational systems and makes reliable datasets
+          available to the business — and now the Facilities team wants to know if a dataset your platform
+          already collects can answer a new question. You have to judge the data quality first, then prove
+          out a Proof of Concept classifier.
+        </p>
+
+        <h3>The company</h3>
+        <p>
+          <strong>NovaSpace Technologies</strong> runs multiple offices and has been investing in smart-building
+          tech. Meeting rooms are wired with non-intrusive IoT sensors — temperature, light, sound, CO₂, and
+          motion — streaming readings roughly every 30 seconds into the company's analytics platform.
+        </p>
+
+        <h3>The business problem</h3>
+        <p>
+          Facilities currently only knows whether a room was <em>booked</em> — not whether it's actually being
+          used. Meetings get cancelled, an 8-person room might host 2 people, employees grab unbooked rooms,
+          and lights/AC keep running in empty spaces. Facilities wants to know: <strong>can the existing sensor
+          data estimate how many people (0, 1, 2, or 3) are actually in a room right now?</strong> This is a
+          multiclass classification problem, and your job is to build the Proof of Concept — not the
+          production system.
+        </p>
+
+        <h3>Think of the dataset as an enterprise data product</h3>
+        <p>
+          In a real company you wouldn't get a raw CSV straight off the sensors. Imagine a pipeline already
+          happened upstream of you: <em>IoT Sensors → Sensor Gateway → Raw Sensor Data → Enterprise Data
+          Platform → Curated Room Sensor Table → your ML project.</em> The data you're given represents that
+          curated layer — but "curated" doesn't mean "ready for modelling." Inspect it carefully before you
+          trust it.
+        </p>
+
+        <h3>What your project should cover</h3>
+
+        <h4>Part 1 — Understand the data</h4>
+        <p>Rows, columns, feature names, dtypes, missing values, duplicates, the possible occupancy values, and how many rows belong to each class. What does one row actually represent?</p>
+
+        <h4>Part 2 — Data quality assessment</h4>
+        <p>As a Data Engineer, you don't jump straight to modelling. Are any readings missing? Duplicate timestamps? Unusual sensor values? Are all sensors on the same scale? Are the occupancy classes balanced? Are Date/Time useful predictors, or could timestamps leak unintended patterns into the model?</p>
+
+        <h4>Part 3 — Understand the sensors</h4>
+        <p>Does temperature rise with more occupants? Does CO₂ climb? Are occupied rooms louder? Does light level tell you anything? How strongly does PIR motion correlate with occupancy? Explain what each pattern means, don't just plot it.</p>
+
+        <h4>Part 4 — Exploratory Data Analysis</h4>
+        <p>How often is the room empty? Which occupancy level is most common? How do CO₂/sound/PIR distributions shift across classes? Are any sensors redundant with each other?</p>
+
+        <h4>Part 5 — Prepare the data</h4>
+        <div class="proj-leak-warning">
+          <strong>⚠ Feature scaling matters here more than usual.</strong> Temperature sits around 20–30, CO₂
+          is in the hundreds, light intensity is on its own scale entirely. KNN calculates distance between
+          points — an unscaled variable with big raw values will quietly dominate every distance calculation
+          unless you standardise first.
+        </div>
+
+        <h4>Parts 6–9 — Build &amp; evaluate three models</h4>
+        <p>
+          Logistic Regression (multiclass), KNN (justify your choice of K, don't pick it randomly), and a
+          Decision Tree (compare a shallow tree, a deeper one, and an unrestricted one — does more depth
+          always help on unseen data?). Report Accuracy, Precision, Recall, F1 for each — and since this is
+          multiclass, be explicit about how you're averaging them (this is <em>exactly</em> what "macro vs.
+          weighted average" means, which you covered in Module 27).
+        </p>
+
+        <h4>Part 8 — Read the confusion matrix like a business person</h4>
+        <p>
+          Confusing 2 occupants with 3 is a minor miss. Confusing 0 occupants with 3 is a much bigger deal —
+          Facilities might think a room is empty and switch off climate control while three people are
+          actually in it. Find the model's worst mistakes and say why they matter.
+        </p>
+
+        <h4>Parts 10–11 — Translate the prediction back to the business</h4>
+        <p>
+          If the model predicts 0 occupants, what could Facilities do with that (energy savings, releasing an
+          unused booking)? If it predicts 3, how might that be used differently (capacity planning, meeting
+          overflow alerts)? Then sketch — at a high level, no need to actually build it — how this would flow
+          at scale: <em>Sensors → ingestion → cleaning → feature dataset → classification model → prediction
+          table → Facilities dashboard.</em>
+        </p>
+
+        <h4>Part 12 — Final recommendation, for the Head of Facilities (not an ML engineer)</h4>
+        <p>
+          Can occupancy be estimated at all? Which model do you recommend and why? How accurate is it, and
+          what mistakes does it make? Which sensors matter most? And — important — would you deploy this
+          across every office immediately? The source data came from one room, in a controlled window. Real
+          offices have different sizes, sensor placements, and occupancy patterns. What would you collect
+          before going from Proof of Concept to production?
+        </p>
+
+        <h3>🎤 How to tell this story in an interview</h3>
+        <div class="proj-story">
+          <em>"At NovaSpace, Facilities only knew if a room was <strong>booked</strong>, not if it was actually
+          <strong>used</strong> — meetings got cancelled, rooms sat empty with the AC running. I was asked, as
+          a Data Engineer, to evaluate whether the sensor data our platform already ingested — temperature,
+          CO₂, sound, light, motion — could estimate real-time occupancy as a 4-class problem: 0 to 3 people.
+          Before I touched a model, I did a data-quality pass — checking whether Date/Time would leak
+          information a live system wouldn't have, and whether the sensors were even on comparable scales,
+          which mattered a lot for KNN specifically. I compared Logistic Regression, KNN, and a Decision Tree
+          using macro-averaged F1, because the room is empty most of the time — a model that always guesses
+          'empty' would look accurate and be useless. I recommended [your model] because [your reason], and
+          flagged that the biggest real-world risk wasn't the model's accuracy — it was that this Proof of
+          Concept was trained on one room's sensor placement, and I wouldn't roll it out company-wide without
+          collecting data from multiple room layouts first."</em>
+          <cite>Fill in the brackets with your actual results — this is the story that shows you think like an engineer, not just a modeler.</cite>
+        </div>
+      </div>
+
+      <!-- Dataset -->
+      <div class="proj-panel" data-project="industry" data-panel="dataset" hidden>
+        <h3>Source</h3>
+        <p>
+          UCI Machine Learning Repository — <strong>Room Occupancy Estimation Dataset</strong> (Dataset ID
+          864). 10,129 sensor readings from 4 nodes, ~30-second intervals, labelled with the true occupancy
+          count (0–3 people).
+        </p>
+
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Split</th><th>Rows</th><th>0</th><th>1</th><th>2</th><th>3</th></tr></thead>
+            <tbody>
+              <tr><td>train.csv (yours, with labels)</td><td>8,103</td><td>6,582 (81.2%)</td><td>367 (4.5%)</td><td>599 (7.4%)</td><td>555 (6.8%)</td></tr>
+              <tr><td>test.csv (yours, no labels — predict this)</td><td>2,026</td><td colspan="4">Hidden</td></tr>
+              <tr><td>&nbsp;&nbsp;↳ public fold (instant feedback)</td><td>607</td><td colspan="4">Scored on submit</td></tr>
+              <tr><td>&nbsp;&nbsp;↳ private fold (final ranking)</td><td>1,419</td><td colspan="4">Hidden until 19 Sep 2026</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p style="font-size:0.82rem;color:var(--text-dim)">Note the imbalance: an empty room (class 0) dominates. This is a real-world pattern, not a data issue — design your evaluation accordingly.</p>
+
+        <h3>Data dictionary</h3>
+        <div class="data-table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Column</th><th>Type</th><th>Description</th></tr></thead>
+            <tbody>
+              <tr><td>Date</td><td>categorical</td><td>yyyy/mm/dd — investigate whether this should be a model feature</td></tr>
+              <tr><td>Time</td><td>categorical</td><td>hh:mm:ss</td></tr>
+              <tr><td>S1_Temp … S4_Temp</td><td>numeric</td><td>Temperature (°C) from 4 sensor nodes</td></tr>
+              <tr><td>S1_Light … S4_Light</td><td>numeric</td><td>Light intensity (Lux)</td></tr>
+              <tr><td>S1_Sound … S4_Sound</td><td>numeric</td><td>Sound level (Volts, amplifier output)</td></tr>
+              <tr><td>S5_CO2</td><td>numeric</td><td>CO₂ concentration (PPM)</td></tr>
+              <tr><td>S5_CO2_Slope</td><td>numeric</td><td>CO₂ slope over a 5-minute window</td></tr>
+              <tr><td>S6_PIR, S7_PIR</td><td>binary</td><td>Motion detected in a 1-minute window (2 sensors)</td></tr>
+              <tr><td>Room_Occupancy_Count <span style="color:var(--text-dim)">(train.csv only — target)</span></td><td>0–3</td><td>True number of occupants</td></tr>
+              <tr><td>id <span style="color:var(--text-dim)">(test.csv only)</span></td><td>string</td><td>Row identifier, e.g. <code>ROOM-00001</code></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>Downloads</h3>
+        <div class="proj-download-grid">
+          <a class="proj-download-card" href="data/projects/industry/train.csv" download>
+            <span class="dl-title">📄 train.csv</span>
+            <span class="dl-meta">8,103 rows · with labels</span>
+          </a>
+          <a class="proj-download-card" href="data/projects/industry/test.csv" download>
+            <span class="dl-title">📄 test.csv</span>
+            <span class="dl-meta">2,026 rows · no labels</span>
+          </a>
+          <a class="proj-download-card" href="data/projects/industry/sample_submission.csv" download>
+            <span class="dl-title">📄 sample_submission.csv</span>
+            <span class="dl-meta">Correct format, baseline filled in</span>
+          </a>
+          <a class="proj-download-card" href="Projects/Industry%20Project%202%20%E2%80%93%20Smart%20Building%20Occupancy%20Intelligence.pdf" target="_blank" rel="noopener">
+            <span class="dl-title">📕 Original brief (PDF)</span>
+            <span class="dl-meta">Full assignment as written</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Rules -->
+      <div class="proj-panel" data-project="industry" data-panel="rules" hidden>
+        <h3>How this hackathon works</h3>
+        <div class="proj-rules-grid">
+          <div class="proj-rule-card">
+            <div class="rule-icon">📤</div>
+            <h4>Submission format</h4>
+            <p>A CSV with exactly two columns: <code>id,prediction</code>. One row per id in test.csv, predictions must be one of <code>0</code>, <code>1</code>, <code>2</code>, <code>3</code>. See sample_submission.csv.</p>
+          </div>
+          <div class="proj-rule-card">
+            <div class="rule-icon">📊</div>
+            <h4>Scoring metric</h4>
+            <p><strong>Macro F1</strong> across all four classes — unweighted, so getting the rare classes (1, 2, 3) right counts just as much as getting the dominant empty-room class right.</p>
+          </div>
+          <div class="proj-rule-card">
+            <div class="rule-icon">🔒</div>
+            <h4>Public vs. private</h4>
+            <p>Instant score against a 607-row <strong>public</strong> fold. Final ranking on the hidden 1,419-row <strong>private</strong> fold, revealed after the deadline.</p>
+          </div>
+          <div class="proj-rule-card">
+            <div class="rule-icon">🔁</div>
+            <h4>Daily limit</h4>
+            <p>5 submissions per day, resetting at midnight IST. Only your best public Macro F1 counts.</p>
+          </div>
+          <div class="proj-rule-card">
+            <div class="rule-icon">⏰</div>
+            <h4>Deadline</h4>
+            <p><strong>19 September 2026, 11:59 PM IST.</strong></p>
+          </div>
+          <div class="proj-rule-card">
+            <div class="rule-icon">🧠</div>
+            <h4>Models allowed</h4>
+            <p>Logistic Regression, K-Nearest Neighbours, Decision Tree only. No Random Forest, Gradient Boosting, XGBoost, LightGBM, Neural Networks, Deep Learning, or AutoML.</p>
+          </div>
+        </div>
+
+        <h3>Scoring it yourself before you submit</h3>
+        <div class="data-table-wrap">
+          <table class="data-table"><tbody><tr><td style="font-family:monospace;white-space:pre">from sklearn.metrics import f1_score
+macro_f1 = f1_score(y_true, y_pred, average="macro")</td></tr></tbody></table>
+        </div>
+
+        <h3>Deliverables (for your own portfolio / evaluation)</h3>
+        <ul>
+          <li><strong>Jupyter Notebook</strong>: Business Understanding → Data Understanding → Data Quality Analysis → EDA → Data Preparation → the three models → Evaluation → Model Comparison → Business Recommendation.</li>
+          <li><strong>An 8-slide management presentation</strong> for the Facilities team: Business Requirement → Available Sensor Data → What We Learned → Models Evaluated → Model Performance → Recommended Model → How the Prediction Could Be Used → Limitations &amp; Next Steps.</li>
+        </ul>
+      </div>
+
+      <!-- Submit -->
+      <div class="proj-panel" data-project="industry" data-panel="submit" hidden>
+        <h3>Submit your predictions</h3>
+        <p>Upload a CSV with <code>id,prediction</code> columns covering every row in test.csv. You'll get your public score back immediately.</p>
+        <div class="proj-submit-box" data-project="industry">
+          <div class="proj-signed-out">
+            <p>Sign in with GitHub to submit — this is how we tie your score to your leaderboard entry.</p>
+            <button type="button" class="btn btn-primary proj-signin-btn">Sign in with GitHub</button>
+          </div>
+          <div class="proj-signed-in" hidden>
+            <p class="proj-deadline-line">Deadline: <strong>19 Sep 2026, 11:59 PM IST</strong> — <span class="proj-countdown" data-project="industry"></span></p>
+            <label class="proj-file-label">
+              <input type="file" accept=".csv" class="proj-file-input" hidden />
+              <span class="btn btn-secondary">📤 Choose predictions.csv</span>
+              <span class="proj-file-name">No file chosen</span>
+            </label>
+            <button type="button" class="btn btn-primary proj-submit-btn" disabled>Submit predictions</button>
+            <p class="proj-submit-status"></p>
+            <div class="proj-submit-result" hidden></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leaderboard -->
+      <div class="proj-panel" data-project="industry" data-panel="leaderboard" hidden>
+        <h3>Leaderboard</h3>
+        <div class="proj-leaderboard" data-project="industry">
+          <p class="lb-reveal-note" hidden></p>
+          <p class="leaderboard-status">Loading leaderboard…</p>
+          <table class="leaderboard-table" hidden>
+            <thead><tr><th>Rank</th><th>Student</th><th>Macro F1</th><th>Submissions</th><th>Last submitted</th></tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <p class="footer-note">
+      Both datasets come from the UCI Machine Learning Repository. Train on your own machine with whatever
+      workflow you like — only your submitted predictions.csv is scored here.
+    </p>
+  </main>
+</div>
+
+<script src="assets/auth.js"></script>
+<script src="assets/forum.js"></script>
+<script src="assets/projects.js"></script>
+</body>
+</html>
