@@ -63,30 +63,33 @@
       </p>
     </header>
 
-    <div class="proj-deadline-banner">
-      ⏰ Both hackathons close <strong>19 September 2026, 11:59 PM IST</strong>. You get
-      <strong>5 submissions per day</strong> per project — only your best public score is kept on the
-      leaderboard, and final ranking is decided by a hidden private test split that's revealed only after
-      the deadline.
-    </div>
-
     <div class="proj-intro-grid">
       <a class="proj-intro-card" href="#banking">
         <span class="proj-intro-kicker">Hackathon 1 · Binary Classification</span>
         <h3>🏦 Customer Campaign Response Prediction</h3>
         <p>NorthStar Bank wants to know who's actually worth calling for its Term Deposit campaign. 45,211 customers, ~12% say yes. Predict who will.</p>
+        <span class="proj-intro-deadline">⏰ Deadline: 19 Sep 2026, 11:59 PM IST</span>
       </a>
       <a class="proj-intro-card" href="#industry">
         <span class="proj-intro-kicker">Hackathon 2 · Multiclass Classification</span>
         <h3>🏢 Smart Building Occupancy Intelligence</h3>
         <p>NovaSpace Technologies wants to know how many people are actually in a meeting room — 0, 1, 2, or 3 — using nothing but IoT sensors.</p>
+        <span class="proj-intro-deadline">⏰ Deadline: 19 Sep 2026, 11:59 PM IST</span>
       </a>
+    </div>
+
+    <div class="proj-deadline-banner">
+      🏆 Each hackathon has its <strong>own</strong> submission window — check the card above for its deadline
+      (more projects will be added over time, each with its own). Once a project is open you get
+      <strong>5 submissions per day</strong> — only your best public score is kept on the leaderboard, and
+      final ranking is decided by a hidden private test split that's revealed only after that project's
+      deadline passes.
     </div>
 
     <!-- ============================================================ -->
     <!-- BANKING                                                       -->
     <!-- ============================================================ -->
-    <section class="proj-competition" id="banking">
+    <section class="proj-competition" id="banking" hidden>
       <div class="proj-comp-header">
         <div class="proj-comp-kicker">🏦 Hackathon · Binary Classification</div>
         <h2>Customer Campaign Response Prediction</h2>
@@ -366,7 +369,7 @@ macro_f1 = f1_score(y_true, y_pred, average="macro")</td></tr></tbody></table>
     <!-- ============================================================ -->
     <!-- INDUSTRY                                                      -->
     <!-- ============================================================ -->
-    <section class="proj-competition" id="industry">
+    <section class="proj-competition" id="industry" hidden>
       <div class="proj-comp-header">
         <div class="proj-comp-kicker">🏢 Hackathon · Multiclass Classification</div>
         <h2>Smart Building Occupancy Intelligence</h2>
