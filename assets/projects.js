@@ -281,9 +281,50 @@
     }
   }
 
+  // ---------------- Isolate a single project (sidebar link or intro card) ----------------
+  // Mirrors the notes/articles single-post-mode pattern: a #banking / #industry hash hides
+  // everything else (intro cards, deadline banner, the other competition, the sidebar) down
+  // to just that one project, with a link back to the full page. Runs on load (so a shared
+  // projects.html#banking link lands isolated) and on every hashchange (so clicking a project
+  // link while already on this page, or using back/forward, both work without a reload).
+  function applyProjectIsolation() {
+    const layout = document.querySelector(".layout");
+    const intro = document.querySelector(".proj-intro-grid");
+    const banner = document.querySelector(".proj-deadline-banner");
+    const sections = Array.from(document.querySelectorAll(".proj-competition"));
+    const pageHeader = document.querySelector(".page-header");
+    const existingBack = document.querySelector(".single-post-back");
+
+    const match = (location.hash || "").match(/^#(banking|industry)$/);
+    const targetId = match ? match[1] : null;
+
+    if (existingBack) existingBack.remove();
+
+    if (!targetId) {
+      if (layout) layout.classList.remove("single-project-mode");
+      if (intro) intro.hidden = false;
+      if (banner) banner.hidden = false;
+      sections.forEach((s) => { s.hidden = false; });
+      return;
+    }
+
+    if (layout) layout.classList.add("single-project-mode");
+    if (intro) intro.hidden = true;
+    if (banner) banner.hidden = true;
+    sections.forEach((s) => { s.hidden = s.id !== targetId; });
+
+    const back = document.createElement("a");
+    back.className = "single-post-back";
+    back.href = "projects.html";
+    back.textContent = "← Back to all Projects";
+    if (pageHeader) pageHeader.parentNode.insertBefore(back, pageHeader);
+  }
+
   document.addEventListener("DOMContentLoaded", () => {
     initTabs();
     initCountdowns();
     initSubmitBoxes();
+    applyProjectIsolation();
   });
+  window.addEventListener("hashchange", applyProjectIsolation);
 })();
