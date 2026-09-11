@@ -3,3 +3,4 @@
 __pycache__/
 worker/.dev.vars
 worker/node_modules/
+worker/private-data/

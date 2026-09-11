@@ -52,6 +52,59 @@ You'll need a free Cloudflare account. These steps only need to be done once.
    with the real URL from step 5, then commit and push. GitHub Pages will redeploy
    automatically.
 
+## Hackathon leaderboards (Projects tab)
+
+The `projects.html` page runs two Kaggle-style hackathons (Banking, Industry). Students upload a
+predictions CSV to `POST /projects/:id/submit`; the Worker scores it against a hidden answer key
+and updates `data/projects/:id-leaderboard.json` in this repo. The answer key itself must **never**
+be readable from the public repo, so it lives in Cloudflare KV instead — a private key/value store
+bound only to this Worker.
+
+### One-time setup
+
+1. **Create the KV namespace:**
+   ```
+   cd worker
+   npx wrangler kv namespace create SUBMISSIONS_KV
+   ```
+   This prints an `id`. Paste it into `wrangler.toml`, replacing `REPLACE_WITH_KV_NAMESPACE_ID`.
+
+2. **Deploy** so the binding takes effect:
+   ```
+   npx wrangler deploy
+   ```
+
+3. **Generate the datasets + answer keys** (if you ever need to regenerate them — the checked-in
+   `data/projects/*/train.csv`, `test.csv`, and `sample_submission.csv` were built this way):
+   ```
+   pip install pandas scikit-learn requests   # if not already installed
+   python3 worker/scripts/build_hackathon_datasets.py
+   ```
+   This downloads the two UCI source datasets fresh, then writes the public CSVs into
+   `data/projects/banking/` and `data/projects/industry/`, and the **private** answer keys into
+   `worker/private-data/answerkey_banking.json` and `answerkey_industry.json` — that folder is
+   gitignored, it must never be committed.
+
+4. **Seed each answer key into KV** (run once per project; re-run any time you regenerate the data):
+   ```
+   npx wrangler kv key put --binding=SUBMISSIONS_KV "answerkey:banking" --path=private-data/answerkey_banking.json
+   npx wrangler kv key put --binding=SUBMISSIONS_KV "answerkey:industry" --path=private-data/answerkey_industry.json
+   ```
+   Run these from the `worker/` folder. This is the one step that actually contains the "solution" —
+   it goes straight from your machine into KV over Wrangler's authenticated API, the same way you
+   already handle `GITHUB_TOKEN` as a secret rather than a chat-pasted value.
+
+That's it — submissions to `/projects/:id/submit` will start scoring against the real answer key,
+and `GET /projects/:id/leaderboard` will serve the public leaderboard (and reveal private scores
+automatically once the deadline in `PROJECTS` inside `src/index.js` has passed).
+
+### If you change the deadline or add a project
+
+Update the `PROJECTS` config in `src/index.js` (deadline, allowed classes, daily submission limit)
+**and** the matching `PROJECTS` object at the top of `assets/projects.js` — the front end hardcodes
+its own copy so the countdown timer doesn't need an extra network round-trip. Redeploy the Worker
+after any change to `src/index.js`.
+
 ## Making changes later
 
 Edit `src/index.js`, then run `npx wrangler deploy` again from the `worker/` folder.

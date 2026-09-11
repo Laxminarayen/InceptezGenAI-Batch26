@@ -11,3 +11,12 @@ GITHUB_OAUTH_CLIENT_ID = "Ov23liAgv7WXEm2yjRyw"
 #   wrangler secret put GITHUB_TOKEN
 #   wrangler secret put GITHUB_OAUTH_CLIENT_SECRET
 #   wrangler secret put SESSION_SECRET
+
+# Holds the hidden hackathon answer keys (data/projects/*-leaderboard scoring) and
+# per-user submission counters/best scores. Never readable from the public GitHub repo.
+# One-time setup:
+#   npx wrangler kv namespace create SUBMISSIONS_KV
+# then paste the printed id below.
+[[kv_namespaces]]
+binding = "SUBMISSIONS_KV"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
