@@ -1,5 +1,17 @@
 [
   {
+    "id": "mtx8u3mspki06i",
+    "author": "RamyaNaras",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/37861694?v=4",
+    "title": "ROC-AUC Curve, Precision Recall Curve",
+    "body": "1.\tWhat does the ROC curve plot, and what does AUC summarise?\nThe Receiver Operating Characteristic Curve (ROC Curve) is a visual representation of the model’s performance across all thresholds. ROC curve is drawn by calculating the True Positive Rate(TPR) and the False Positive Rate (FPR) at every possible threshold.\nArea Under The Curve(AUC):\n\tThe area under the ROC curve (AUC) represents the probability that the model if given a randomly chosen +ve or -ve example, will rank the +ve higher than the -ve\nAUC is good for comparing the performance of two different models ( if the models are balanced).\nA model with a greater AUC is a better one.\nWhen AUC is 1.0, it means that there is 100% probability that the model will correctly rank a randomly selected +ve example higher than a randomly selected -ve example.\nIf AUC=1.0 => +ve example is ranked higher\n\n2.\tWhy can ROC-AUC look \"too optimistic\" on an imbalanced dataset and how does the Precision-Recall curve expose that?\nROC-AUC can look overly optimistic on severely imbalanced datasets because the False Positive Rate (FPR) denominator uses the massive number of actual negatives (FP + TN). Even if a model misclassifies a large absolute number of false positives, dividing by a huge true negative count keeps the FPR small, artificially inflating the curve's area.\nThe ROC Illusion: As the number of negatives vastly outweighs positives, the TN term in FPR = FP/(FP+TN) dominates the denominator. A high number of false positives barely moves the X-axis of the ROC curve to the right, maintaining a high AUC score despite poor precision.\nHow Precision-Recall Exposes It: The Precision-Recall (PR) curve replaces FPR with Precision TP/(TP+FP).  Because Precision's denominator focuses strictly on the predicted positives (TP+FP) false positives weigh heavily against the score. If a model generates many false positives on a rare positive class, precision drops sharply, immediately revealing poor performance.\n\n3.\tFor an imbalanced hackathon dataset, which curve would you trust to pick your threshold, and why?\nThe Precision Recall curve, since the Precision concentrates on the positives (TP+FP).",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-11T17:42:02.980Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mtx87it6onox1t",
     "author": "SanjayPraveenNVR",
     "authorAvatar": "https://avatars.githubusercontent.com/u/169007032?v=4",
