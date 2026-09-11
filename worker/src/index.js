@@ -12,6 +12,7 @@ const MAX_IMAGE_BASE64_LEN = 7_000_000; // ~5MB decoded
 const SESSION_TTL_SECONDS = 60 * 60 * 24 * 14; // 14 days
 const MAX_SUBMISSION_CSV_LEN = 2_000_000; // ~2MB, generous for a two-column id,prediction file
 const MAX_NOTEBOOK_BASE64_LEN = 20_000_000; // ~15MB decoded — notebooks with plots can get big
+const MAX_NOTE_LEN = 500;
 const IST_OFFSET_MS = 5.5 * 60 * 60 * 1000;
 
 // ---- Hackathon-style project competitions ----
@@ -704,23 +705,21 @@ async function handleSubmitProject(request, env, origin, projectId) {
 
   const publicScore = computeScores(publicPairs, project.classes);
   const privateScore = computeScores(privatePairs, project.classes);
+  const nowIso = new Date(now).toISOString();
 
-  // Save the notebook as proof of work — overwrites this student's previous attempt for
-  // this project, so the repo always holds their latest submission, not every retry.
-  const notebookPath = `data/projects/${projectId}/submissions/${login.toLowerCase()}.ipynb`;
-  const existingNotebookSha = await ghGetFileSha(env, notebookPath);
-  const notebookCommitRes = await ghRequest(env, notebookPath, {
-    method: "PUT",
-    body: JSON.stringify({
-      message: `projects: save ${projectId} notebook for ${login}`,
-      content: body.notebookBase64,
-      branch: BRANCH,
-      ...(existingNotebookSha ? { sha: existingNotebookSha } : {}),
-    }),
-  });
-  if (!notebookCommitRes.ok) {
-    return json({ error: `Couldn't save your notebook (GitHub error ${notebookCommitRes.status}) — please try submitting again.` }, 502, origin);
-  }
+  // Save the notebook privately in KV — overwrites this student's previous attempt for this
+  // project, so it always holds their latest submission. It stays hidden from the public repo
+  // (and from other students) until the instructor explicitly releases it — see
+  // handleReleaseNotebooks. The instructor can always view/download it via the instructor-only
+  // submissions endpoints below, regardless of release state.
+  const notebookRecord = {
+    login,
+    filename: clean(body.notebookFilename, 200) || "notebook.ipynb",
+    contentBase64: body.notebookBase64,
+    note: clean(body.note, MAX_NOTE_LEN),
+    submittedAt: nowIso,
+  };
+  await env.SUBMISSIONS_KV.put(`notebook:${projectId}:${login.toLowerCase()}`, JSON.stringify(notebookRecord));
 
   await env.SUBMISSIONS_KV.put(countKey, String(countSoFar + 1), { expirationTtl: 60 * 60 * 24 * 2 });
 
@@ -729,7 +728,6 @@ async function handleSubmitProject(request, env, origin, projectId) {
   const prevBest = prevBestRaw ? JSON.parse(prevBestRaw) : null;
   const isNewBest = !prevBest || publicScore.macroF1 > prevBest.publicScore.macroF1;
   const submissionCount = (prevBest ? prevBest.submissionCount : 0) + 1;
-  const nowIso = new Date(now).toISOString();
 
   const bestRecord = isNewBest
     ? { login, avatarUrl: auth.session.avatarUrl, publicScore, privateScore, submittedAt: nowIso, submissionCount }
@@ -810,6 +808,106 @@ function handleProjectsMeta(origin) {
   return json(meta, 200, origin);
 }
 
+// ---- Instructor-only: view/download/release student notebooks ----
+// These bypass the deadline entirely — the instructor can see everything at any time.
+// Only handleReleaseNotebooks actually publishes notebooks into the public repo, and only
+// when the instructor deliberately calls it (never automatic).
+
+async function requireInstructor(request, env, origin) {
+  const auth = await requireSession(request, env, origin);
+  if (auth.error) return { error: auth.error };
+  if (!isInstructor(auth.session.login)) return { error: json({ error: "Instructor only." }, 403, origin) };
+  return { session: auth.session };
+}
+
+async function handleListSubmissions(request, env, origin, projectId) {
+  const project = PROJECTS[projectId];
+  if (!project) return json({ error: "Unknown project" }, 404, origin);
+  const authCheck = await requireInstructor(request, env, origin);
+  if (authCheck.error) return authCheck.error;
+
+  const list = await env.SUBMISSIONS_KV.list({ prefix: `notebook:${projectId}:` });
+  const rows = [];
+  for (const key of list.keys) {
+    const raw = await env.SUBMISSIONS_KV.get(key.name);
+    if (!raw) continue;
+    const record = JSON.parse(raw);
+    const bestRaw = await env.SUBMISSIONS_KV.get(`best:${projectId}:${record.login.toLowerCase()}`);
+    const best = bestRaw ? JSON.parse(bestRaw) : null;
+    const releasedSha = await ghGetFileSha(env, `data/projects/${projectId}/submissions/${record.login.toLowerCase()}.ipynb`);
+    rows.push({
+      login: record.login,
+      filename: record.filename,
+      note: record.note || "",
+      submittedAt: record.submittedAt,
+      publicMacroF1: best ? best.publicScore.macroF1 : null,
+      privateMacroF1: best ? best.privateScore.macroF1 : null,
+      submissionCount: best ? best.submissionCount : null,
+      released: !!releasedSha,
+    });
+  }
+  rows.sort((a, b) => (b.publicMacroF1 ?? -1) - (a.publicMacroF1 ?? -1));
+  return json({ project: projectId, rows }, 200, origin);
+}
+
+async function handleDownloadNotebook(request, env, origin, projectId, login) {
+  const project = PROJECTS[projectId];
+  if (!project) return json({ error: "Unknown project" }, 404, origin);
+  const authCheck = await requireInstructor(request, env, origin);
+  if (authCheck.error) return authCheck.error;
+
+  const raw = await env.SUBMISSIONS_KV.get(`notebook:${projectId}:${login.toLowerCase()}`);
+  if (!raw) return json({ error: "No notebook found for that student." }, 404, origin);
+  const record = JSON.parse(raw);
+  const binary = atob(record.contentBase64);
+  const bytes = Uint8Array.from(binary, (c) => c.charCodeAt(0));
+  return new Response(bytes, {
+    status: 200,
+    headers: {
+      "Content-Type": "application/x-ipynb+json",
+      "Content-Disposition": `attachment; filename="${record.filename || `${login}.ipynb`}"`,
+      ...corsHeaders(origin),
+    },
+  });
+}
+
+async function releaseAllNotebooks(env, projectId) {
+  const list = await env.SUBMISSIONS_KV.list({ prefix: `notebook:${projectId}:` });
+  let released = 0;
+  let skipped = 0;
+  for (const key of list.keys) {
+    const raw = await env.SUBMISSIONS_KV.get(key.name);
+    if (!raw) continue;
+    const record = JSON.parse(raw);
+    const notebookPath = `data/projects/${projectId}/submissions/${record.login.toLowerCase()}.ipynb`;
+    const existingSha = await ghGetFileSha(env, notebookPath);
+    if (existingSha) {
+      skipped++;
+      continue;
+    }
+    const res = await ghRequest(env, notebookPath, {
+      method: "PUT",
+      body: JSON.stringify({
+        message: `projects: release ${projectId} notebook for ${record.login}`,
+        content: record.contentBase64,
+        branch: BRANCH,
+      }),
+    });
+    if (res.ok) released++;
+  }
+  return { released, skipped };
+}
+
+async function handleReleaseNotebooks(request, env, origin, projectId) {
+  const project = PROJECTS[projectId];
+  if (!project) return json({ error: "Unknown project" }, 404, origin);
+  const authCheck = await requireInstructor(request, env, origin);
+  if (authCheck.error) return authCheck.error;
+
+  const result = await releaseAllNotebooks(env, projectId);
+  return json({ project: projectId, ...result }, 200, origin);
+}
+
 export {
   genId,
   clean,
@@ -854,6 +952,12 @@ export default {
       if (request.method === "POST" && submitMatch) return await handleSubmitProject(request, env, origin, submitMatch[1]);
       const leaderboardMatch = url.pathname.match(/^\/projects\/([a-z]+)\/leaderboard$/);
       if (request.method === "GET" && leaderboardMatch) return await handleProjectLeaderboard(env, origin, leaderboardMatch[1]);
+      const submissionsMatch = url.pathname.match(/^\/projects\/([a-z]+)\/submissions$/);
+      if (request.method === "GET" && submissionsMatch) return await handleListSubmissions(request, env, origin, submissionsMatch[1]);
+      const notebookMatch = url.pathname.match(/^\/projects\/([a-z]+)\/submissions\/([A-Za-z0-9-]+)\/notebook$/);
+      if (request.method === "GET" && notebookMatch) return await handleDownloadNotebook(request, env, origin, notebookMatch[1], notebookMatch[2]);
+      const releaseMatch = url.pathname.match(/^\/projects\/([a-z]+)\/release-notebooks$/);
+      if (request.method === "POST" && releaseMatch) return await handleReleaseNotebooks(request, env, origin, releaseMatch[1]);
       return json({ error: "Not found" }, 404, origin);
     } catch (e) {
       return json({ error: e.message || "Server error" }, 500, origin);

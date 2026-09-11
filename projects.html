@@ -108,6 +108,7 @@
         <button type="button" class="proj-tab" data-panel="rules">Rules &amp; Scoring</button>
         <button type="button" class="proj-tab" data-panel="submit">Submit</button>
         <button type="button" class="proj-tab" data-panel="leaderboard">Leaderboard</button>
+        <button type="button" class="proj-tab is-instructor-only" data-panel="submissions" hidden>📋 Submissions</button>
       </div>
 
       <!-- Overview -->
@@ -354,6 +355,10 @@ macro_f1 = f1_score(y_true, y_pred, average="macro")</td></tr></tbody></table>
               <span class="btn btn-secondary">📤 Choose predictions.csv</span>
               <span class="proj-file-name">No file chosen</span>
             </label>
+            <label class="proj-note-label">
+              <span class="proj-note-title">Submission note (optional)</span>
+              <textarea class="proj-note-input" maxlength="500" rows="2" placeholder="What did you try in this attempt? e.g. Decision Tree, max_depth=6, dropped the duration column"></textarea>
+            </label>
             <button type="button" class="btn btn-primary proj-submit-btn" disabled>Submit predictions</button>
             <p class="proj-submit-status"></p>
             <div class="proj-submit-result" hidden></div>
@@ -371,6 +376,23 @@ macro_f1 = f1_score(y_true, y_pred, average="macro")</td></tr></tbody></table>
             <thead><tr><th>Rank</th><th>Student</th><th>Macro F1</th><th>Submissions</th><th>Last submitted</th></tr></thead>
             <tbody></tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- Instructor-only: visible only when signed in as the instructor -->
+      <div class="proj-panel" data-project="banking" data-panel="submissions" hidden>
+        <h3>📋 Submissions (Instructor)</h3>
+        <p>Every student's latest notebook and note — visible to you any time, regardless of the deadline. Notebooks stay private from other students until you release them.</p>
+        <div class="proj-instructor-box" data-project="banking">
+          <button type="button" class="btn btn-primary proj-release-btn">🔓 Release all notebooks to the repo</button>
+          <p class="proj-release-status"></p>
+          <p class="proj-submissions-status">Loading submissions…</p>
+          <div class="data-table-wrap">
+            <table class="data-table proj-submissions-table" hidden>
+              <thead><tr><th>Student</th><th>Note</th><th>Public F1</th><th>Private F1</th><th>Subs</th><th>Last submitted</th><th>Released</th><th>Notebook</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>
@@ -397,6 +419,7 @@ macro_f1 = f1_score(y_true, y_pred, average="macro")</td></tr></tbody></table>
         <button type="button" class="proj-tab" data-panel="rules">Rules &amp; Scoring</button>
         <button type="button" class="proj-tab" data-panel="submit">Submit</button>
         <button type="button" class="proj-tab" data-panel="leaderboard">Leaderboard</button>
+        <button type="button" class="proj-tab is-instructor-only" data-panel="submissions" hidden>📋 Submissions</button>
       </div>
 
       <!-- Overview -->
@@ -646,6 +669,10 @@ macro_f1 = f1_score(y_true, y_pred, average="macro")</td></tr></tbody></table>
               <span class="btn btn-secondary">📤 Choose predictions.csv</span>
               <span class="proj-file-name">No file chosen</span>
             </label>
+            <label class="proj-note-label">
+              <span class="proj-note-title">Submission note (optional)</span>
+              <textarea class="proj-note-input" maxlength="500" rows="2" placeholder="What did you try in this attempt? e.g. Decision Tree, max_depth=6, dropped the duration column"></textarea>
+            </label>
             <button type="button" class="btn btn-primary proj-submit-btn" disabled>Submit predictions</button>
             <p class="proj-submit-status"></p>
             <div class="proj-submit-result" hidden></div>
@@ -663,6 +690,23 @@ macro_f1 = f1_score(y_true, y_pred, average="macro")</td></tr></tbody></table>
             <thead><tr><th>Rank</th><th>Student</th><th>Macro F1</th><th>Submissions</th><th>Last submitted</th></tr></thead>
             <tbody></tbody>
           </table>
+        </div>
+      </div>
+
+      <!-- Instructor-only: visible only when signed in as the instructor -->
+      <div class="proj-panel" data-project="industry" data-panel="submissions" hidden>
+        <h3>📋 Submissions (Instructor)</h3>
+        <p>Every student's latest notebook and note — visible to you any time, regardless of the deadline. Notebooks stay private from other students until you release them.</p>
+        <div class="proj-instructor-box" data-project="industry">
+          <button type="button" class="btn btn-primary proj-release-btn">🔓 Release all notebooks to the repo</button>
+          <p class="proj-release-status"></p>
+          <p class="proj-submissions-status">Loading submissions…</p>
+          <div class="data-table-wrap">
+            <table class="data-table proj-submissions-table" hidden>
+              <thead><tr><th>Student</th><th>Note</th><th>Public F1</th><th>Private F1</th><th>Subs</th><th>Last submitted</th><th>Released</th><th>Notebook</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
         </div>
       </div>
     </section>

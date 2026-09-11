@@ -61,9 +61,18 @@ Worker scores only the CSV against a hidden answer key and updates
 from the public repo, so it lives in Cloudflare KV instead — a private key/value store bound only
 to this Worker.
 
-Each student's **notebook** is committed straight into the repo at
-`data/projects/<id>/submissions/<github-login>.ipynb`, overwritten on every new submission so it
-always reflects their latest attempt — that's where to look when grading.
+Each student's **notebook** (plus an optional short note they write about their attempt) is stored
+privately in KV, overwritten on every new submission so it always reflects their latest attempt —
+it never touches the public repo on its own. As the instructor (GitHub login `Laxminarayen`) you
+can, from the "📋 Submissions" tab on `projects.html` (only visible when you're signed in), see
+every student's note and scores and download any notebook at any time, deadline or not:
+
+- `GET /projects/:id/submissions` — list all students' notes/scores/release-status
+- `GET /projects/:id/submissions/:login/notebook` — download one student's notebook
+- `POST /projects/:id/release-notebooks` — publish **every** participant's notebook for that
+  project into `data/projects/<id>/submissions/<github-login>.ipynb` in this repo, all at once.
+  This is the only thing that makes notebooks visible to other students, and it only happens when
+  you click the "Release all notebooks" button — never automatically.
 
 ### One-time setup
 

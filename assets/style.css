@@ -2051,6 +2051,73 @@ table.data-table tr:last-child td { border-bottom: none; }
   cursor: not-allowed;
 }
 
+.proj-note-label {
+  display: block;
+  margin-bottom: 14px;
+}
+
+.proj-note-title {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+
+.proj-note-input {
+  width: 100%;
+  max-width: 480px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-elev-2);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-family: inherit;
+  resize: vertical;
+}
+
+.proj-note-input:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+/* Instructor-only submissions panel */
+
+.proj-instructor-box {
+  max-width: 100%;
+}
+
+.proj-release-status {
+  font-size: 0.84rem;
+  color: var(--text-dim);
+  min-height: 1.2em;
+}
+
+.proj-release-status.is-error { color: #e0679c; }
+.proj-release-status.is-ok { color: var(--python); }
+
+.proj-submissions-status {
+  color: var(--text-dim);
+  font-size: 0.88rem;
+}
+
+.proj-note-cell {
+  max-width: 220px;
+  white-space: normal;
+  color: var(--text-dim);
+  font-size: 0.78rem;
+}
+
+.released-badge {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+}
+
+.released-badge.is-yes { background: var(--python-soft); color: var(--python); }
+.released-badge.is-no { background: var(--bg-elev-2); color: var(--text-dim); }
+
 .proj-submit-status {
   font-size: 0.84rem;
   color: var(--text-dim);

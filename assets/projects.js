@@ -1,5 +1,6 @@
 (function () {
   const API_BASE = "https://inceptez-forum-api.nvlnarayen2496.workers.dev";
+  const INSTRUCTOR_LOGIN = "laxminarayen";
 
   // Keep in sync with worker/src/index.js PROJECTS config.
   const PROJECTS = {
@@ -9,6 +10,11 @@
 
   function getSession() {
     return window.ForumAuth ? window.ForumAuth.getSession() : null;
+  }
+
+  function isInstructor() {
+    const session = getSession();
+    return !!session && session.login.toLowerCase() === INSTRUCTOR_LOGIN;
   }
 
   async function apiPost(path, payload) {
@@ -22,7 +28,10 @@
   }
 
   async function apiGet(path) {
-    const res = await fetch(`${API_BASE}${path}`, { cache: "no-store" });
+    const session = getSession();
+    const headers = {};
+    if (session) headers.Authorization = `Bearer ${session.token}`;
+    const res = await fetch(`${API_BASE}${path}`, { cache: "no-store", headers });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
     return data;
@@ -57,8 +66,16 @@
             p.hidden = p.dataset.panel !== tab.dataset.panel;
           });
           if (tab.dataset.panel === "leaderboard") loadLeaderboard(project);
+          if (tab.dataset.panel === "submissions") loadSubmissions(project);
         });
       });
+    });
+  }
+
+  function refreshInstructorTabs() {
+    const instructor = isInstructor();
+    document.querySelectorAll(".proj-tab.is-instructor-only").forEach((tab) => {
+      tab.hidden = !instructor;
     });
   }
 
@@ -226,6 +243,8 @@
         });
       }
 
+      const noteInput = box.querySelector(".proj-note-input");
+
       if (submitBtn) {
         submitBtn.addEventListener("click", async () => {
           if (!chosenNotebook || !chosenFile) return;
@@ -241,6 +260,7 @@
               csv,
               notebookBase64,
               notebookFilename: chosenNotebook.name,
+              note: noteInput ? noteInput.value : "",
             });
             status.textContent = "";
             renderSubmitResult(box, data, classes);
@@ -315,6 +335,114 @@
     }
   }
 
+  // ---------------- Instructor: submissions list, notebook download, release ----------------
+
+  const submissionsLoaded = {};
+
+  async function loadSubmissions(project, force) {
+    const box = document.querySelector(`.proj-instructor-box[data-project="${project}"]`);
+    if (!box || !isInstructor()) return;
+    if (submissionsLoaded[project] && !force) return;
+    submissionsLoaded[project] = true;
+
+    const status = box.querySelector(".proj-submissions-status");
+    const table = box.querySelector(".proj-submissions-table");
+    const tbody = table.querySelector("tbody");
+
+    status.textContent = "Loading submissions…";
+    table.hidden = true;
+    try {
+      const data = await apiGet(`/projects/${project}/submissions`);
+      if (!data.rows || data.rows.length === 0) {
+        status.textContent = "No submissions yet.";
+        return;
+      }
+      tbody.innerHTML = data.rows
+        .map(
+          (r) => `
+            <tr>
+              <td><span class="lb-user"><img class="lb-avatar" src="${avatarFor(r.login)}" width="20" height="20" alt="" />@${r.login}</span></td>
+              <td class="proj-note-cell">${r.note ? escapeHtml(r.note) : "—"}</td>
+              <td>${fourDp(r.publicMacroF1)}</td>
+              <td>${fourDp(r.privateMacroF1)}</td>
+              <td>${r.submissionCount ?? "—"}</td>
+              <td>${new Date(r.submittedAt).toLocaleString()}</td>
+              <td><span class="released-badge ${r.released ? "is-yes" : "is-no"}">${r.released ? "Released" : "Private"}</span></td>
+              <td><button type="button" class="btn btn-secondary proj-download-notebook-btn" data-project="${project}" data-login="${r.login}">📓 Download</button></td>
+            </tr>`
+        )
+        .join("");
+      status.textContent = "";
+      table.hidden = false;
+    } catch (e) {
+      status.textContent = e.message || "Couldn't load submissions.";
+      submissionsLoaded[project] = false;
+    }
+  }
+
+  function escapeHtml(str) {
+    const div = document.createElement("div");
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  async function downloadNotebook(project, login) {
+    const session = getSession();
+    if (!session) return;
+    const res = await fetch(`${API_BASE}/projects/${project}/submissions/${encodeURIComponent(login)}/notebook`, {
+      headers: { Authorization: `Bearer ${session.token}` },
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      alert(data.error || `Couldn't download that notebook (${res.status}).`);
+      return;
+    }
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `${login}-${project}.ipynb`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function initInstructorBoxes() {
+    document.querySelectorAll(".proj-instructor-box").forEach((box) => {
+      const project = box.dataset.project;
+      const releaseBtn = box.querySelector(".proj-release-btn");
+      const releaseStatus = box.querySelector(".proj-release-status");
+      const table = box.querySelector(".proj-submissions-table");
+
+      table.addEventListener("click", (e) => {
+        const btn = e.target.closest(".proj-download-notebook-btn");
+        if (!btn) return;
+        downloadNotebook(btn.dataset.project, btn.dataset.login);
+      });
+
+      if (releaseBtn) {
+        releaseBtn.addEventListener("click", async () => {
+          if (!confirm(`Release ALL ${project} notebooks into the public repo now? Students will be able to see each other's notebooks after this.`)) return;
+          releaseBtn.disabled = true;
+          releaseStatus.className = "proj-release-status";
+          releaseStatus.textContent = "Releasing…";
+          try {
+            const data = await apiPost(`/projects/${project}/release-notebooks`, {});
+            releaseStatus.className = "proj-release-status is-ok";
+            releaseStatus.textContent = `Released ${data.released} notebook(s), ${data.skipped} already released.`;
+            loadSubmissions(project, true);
+          } catch (e) {
+            releaseStatus.className = "proj-release-status is-error";
+            releaseStatus.textContent = e.message || "Release failed.";
+          } finally {
+            releaseBtn.disabled = false;
+          }
+        });
+      }
+    });
+  }
+
   // ---------------- Isolate a single project (sidebar link or intro card) ----------------
   // Mirrors the notes/articles single-post-mode pattern: a #banking / #industry hash hides
   // everything else (intro cards, deadline banner, the other competition, the sidebar) down
@@ -364,7 +492,10 @@
     initTabs();
     initCountdowns();
     initSubmitBoxes();
+    initInstructorBoxes();
+    refreshInstructorTabs();
     applyProjectIsolation();
   });
   window.addEventListener("hashchange", applyProjectIsolation);
+  window.addEventListener("storage", refreshInstructorTabs);
 })();
