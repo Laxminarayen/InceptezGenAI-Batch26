@@ -1,5 +1,17 @@
 [
   {
+    "id": "mtx69ftzziw5vv",
+    "author": "Smartchronon24",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/163743484?v=4",
+    "title": "Precision-Recall Curve (day 7)",
+    "body": "1)\n![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mtx62htk9dypbv-image.jpg)\n\n2) An ROC-AUC looks too optimistic because its formula includes True Negatives, allowing an ocean of majority-class samples to completely mask a huge flood of false alarms.\n![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mtx68xxu2kvc7q-image.jpg)\n\n\n3) I would absolutely go with Precision-Recall (PR) to pick the threshold. If you use the ROC curve, you are flying blind. ROC lets the massive ocean of negative samples drown out your mistakes, making a mediocre model look like a masterpiece right up until your public score plummets on the private test set. The PR curve doesn't let your model hide. By stripping out true negatives entirely, it forces you to look at the raw reality: exactly how many false alarms you are generating for every true positive you find. Trusting the PR curve ensures you pick a realistic, battle-tested threshold that catches the rare cases you actually care about without flooding your submissions with garbage predictions.",
+    "classTag": "27 · Class Imbalance, F1 Score & SMOTE",
+    "topics": [],
+    "createdAt": "2026-09-11T16:29:59.783Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mtw6x214ifd1r8",
     "author": "Malini-Sekar",
     "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
