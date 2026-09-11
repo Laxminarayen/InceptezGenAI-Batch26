@@ -20,6 +20,8 @@
   --open-soft: rgba(95, 208, 163, 0.14);
   --closed: #a487ff;
   --closed-soft: rgba(164, 135, 255, 0.16);
+  --projects: #f2c744;
+  --projects-soft: rgba(242, 199, 68, 0.14);
 }
 
 @media (prefers-color-scheme: light) {
@@ -272,6 +274,7 @@ a { color: inherit; }
 .nav-group[data-group="python"] .dot { background: var(--python); }
 .nav-group[data-group="stats"] .dot { background: var(--stats); }
 .nav-group[data-group="ml"] .dot { background: var(--ml); }
+.nav-group[data-group="projects"] .dot { background: var(--projects); }
 
 .nav-link {
   display: block;
@@ -2154,4 +2157,19 @@ table.leaderboard-table tr.is-me { background: var(--accent-soft); }
 @media (max-width: 860px) {
   .proj-comp-header, .proj-panel { padding-left: 18px; padding-right: 18px; }
   .proj-tabs { padding: 0 18px; overflow-x: auto; flex-wrap: nowrap; }
+}
+
+/* Focused single-project view (clicking a project in the sidebar or an intro card) */
+.proj-intro-grid[hidden], .proj-deadline-banner[hidden], .proj-competition[hidden] { display: none; }
+
+.layout.single-project-mode {
+  grid-template-columns: 1fr;
+}
+
+.layout.single-project-mode .sidebar {
+  display: none;
+}
+
+.layout.single-project-mode .main {
+  margin: 0 auto;
 }
