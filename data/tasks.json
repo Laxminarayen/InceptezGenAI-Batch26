@@ -1,5 +1,37 @@
 [
   {
+    "id": "mtu6w2j3gjkg3j",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Precision-Recall Curve",
+    "body": "1. What does the ROC curve plot, and what does AUC summarise?\n2. Why can ROC-AUC look \"too optimistic\" on an imbalanced dataset and how does the Precision-Recall curve expose that?\n3. For an imbalanced hackathon dataset, which curve would you trust to pick your threshold, and why?",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-09T14:24:17.103Z",
+    "likes": [],
+    "comments": [],
+    "date": "2026-09-11"
+  },
+  {
+    "id": "mtu6sd5sm9w0c3",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "ROC Curve & AUC",
+    "body": "1. What is the ROC curve actually plotting?\n2. What does AUC tell you that accuracy/F1 doesn't?\n3. How would you pick a classification threshold differently for a fraud model vs a spam filter?",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-09T14:21:24.256Z",
+    "likes": [
+      "Mukeshkanna90",
+      "Smartchronon24",
+      "RamyaNaras",
+      "J-Nirosha",
+      "asennakesavan"
+    ],
+    "comments": [],
+    "date": "2026-09-10"
+  },
+  {
     "id": "mtpf283l88xobk",
     "author": "Laxminarayen",
     "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
@@ -8,7 +40,17 @@
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-06T06:14:10.305Z",
-    "likes": [],
+    "likes": [
+      "jimmigayatri",
+      "priyadj309-kim",
+      "suru7373",
+      "asennakesavan",
+      "Bakkiyarani",
+      "cuteesaranya-cloud",
+      "RamyaNaras",
+      "J-Nirosha",
+      "pepcivic-it-innovations"
+    ],
     "comments": [],
     "date": "2026-09-09",
     "editedAt": "2026-09-06T06:14:21.810Z"
@@ -22,7 +64,16 @@
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-06T06:13:21.467Z",
-    "likes": [],
+    "likes": [
+      "jimmigayatri",
+      "priyadj309-kim",
+      "J-Nirosha",
+      "Mukeshkanna90",
+      "suru7373",
+      "ksuneeram",
+      "Bakkiyarani",
+      "cuteesaranya-cloud"
+    ],
     "comments": [],
     "date": "2026-09-08"
   },
@@ -36,7 +87,21 @@
     "topics": [],
     "createdAt": "2026-09-06T05:21:28.256Z",
     "likes": [
-      "satinder00001"
+      "satinder00001",
+      "Mukeshkanna90",
+      "javidh1012",
+      "asennakesavan",
+      "jimmigayatri",
+      "priyadj309-kim",
+      "cuteesaranya-cloud",
+      "J-Nirosha",
+      "ksuneeram",
+      "Bakkiyarani",
+      "suru7373",
+      "Shyamala-lab",
+      "Malini-Sekar",
+      "Uganderb",
+      "pepcivic-it-innovations"
     ],
     "comments": [],
     "date": "2026-09-06",
@@ -54,7 +119,17 @@
     "likes": [
       "satinder00001",
       "Mukeshkanna90",
-      "pnithin578-boop"
+      "pnithin578-boop",
+      "RamyaNaras",
+      "priyadj309-kim",
+      "jimmigayatri",
+      "cuteesaranya-cloud",
+      "J-Nirosha",
+      "asennakesavan",
+      "ksuneeram",
+      "suru7373",
+      "Bakkiyarani",
+      "Uganderb"
     ],
     "comments": [],
     "date": "2026-09-07"
@@ -69,14 +144,22 @@
     "topics": [],
     "createdAt": "2026-09-05T03:25:19.888Z",
     "likes": [
-      "ram7072",
       "J-Nirosha",
       "suru7373",
       "devendirans",
       "Mukeshkanna90",
       "mrmageswaran-rgb",
       "satinder00001",
-      "Bakkiyarani"
+      "Bakkiyarani",
+      "javidh1012",
+      "asennakesavan",
+      "priyadj309-kim",
+      "jimmigayatri",
+      "ksuneeram",
+      "Uganderb",
+      "Shyamala-lab",
+      "Malini-Sekar",
+      "pepcivic-it-innovations"
     ],
     "comments": [],
     "date": "2026-09-05",
