@@ -305,10 +305,12 @@
     if (existingBack) existingBack.remove();
 
     if (!targetId) {
+      // No project selected: show just the collection view (intro cards + deadline banner),
+      // not the full detail of both competitions.
       if (layout) layout.classList.remove("single-project-mode");
       if (intro) intro.hidden = false;
       if (banner) banner.hidden = false;
-      sections.forEach((s) => { s.hidden = false; });
+      sections.forEach((s) => { s.hidden = true; });
       return;
     }
 
