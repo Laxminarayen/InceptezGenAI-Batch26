@@ -298,6 +298,10 @@
     const match = (location.hash || "").match(/^#(banking|industry)$/);
     const targetId = match ? match[1] : null;
 
+    document.querySelectorAll('.nav-group[data-group="projects"] .nav-link[data-project]').forEach((link) => {
+      link.classList.toggle("active", link.dataset.project === targetId);
+    });
+
     if (existingBack) existingBack.remove();
 
     if (!targetId) {
