@@ -14,5 +14,13 @@
     "publicMacroF1": 0.625578778519955,
     "submissionCount": 1,
     "submittedAt": "2026-09-12T07:24:59.358Z"
+  },
+  {
+    "login": "asennakesavan",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/70847960?v=4",
+    "publicAccuracy": 0.8912241887905604,
+    "publicMacroF1": 0.6282312639086833,
+    "submissionCount": 1,
+    "submittedAt": "2026-09-12T08:33:45.075Z"
   }
 ]
