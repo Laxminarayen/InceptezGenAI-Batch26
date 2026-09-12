@@ -26,9 +26,9 @@
   {
     "login": "Shyamala-lab",
     "avatarUrl": "https://avatars.githubusercontent.com/u/277402194?v=4",
-    "publicAccuracy": 0.8617256637168141,
-    "publicMacroF1": 0.4732488632378983,
-    "submissionCount": 1,
-    "submittedAt": "2026-09-12T10:25:46.630Z"
+    "publicAccuracy": 0.7901917404129793,
+    "publicMacroF1": 0.4925615296208667,
+    "submissionCount": 2,
+    "submittedAt": "2026-09-12T12:34:11.149Z"
   }
 ]
