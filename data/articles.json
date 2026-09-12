@@ -1,5 +1,17 @@
 [
   {
+    "id": "mtxnyo4zq0wup2",
+    "author": "Malini-Sekar",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
+    "title": "LINEAR REGRESSION ASSUMPTIONS",
+    "body": "LINEAR REGRESSION ASSUMPTIONS\n\nReal-time Example:\n\nWe want to predict the resale price of a car using:\n\nCar Age + Kilometres Driven + Engine Size + Mileage → Resale Price\n\nAssumption\tSimple Meaning\tCar Price Example\tIf Violated\nLinearity\tInput and target should have an approximately linear relationship\tAs car age increases, resale price generally decreases\tLinear Regression may not capture the pattern properly\nIndependence\tOne observation should not depend strongly on another\tPrice of Car A should not directly depend on Car B\tModel errors may become dependent\nHomoscedasticity\tError spread should remain roughly constant\tPrediction errors should not become much larger only for expensive cars\tModel may be less reliable for some price ranges\nNormality of Residuals\tPrediction errors should be approximately normally distributed\tMost errors should be small, with fewer very large errors\tStatistical tests and confidence intervals may become unreliable\nNo Strong Multicollinearity\tInput variables should not contain almost the same information\tCar age and manufacturing year may be highly related\tCoefficients become difficult to interpret\nNo Extreme Influential Outliers\tOne unusual record should not control the regression line\tMost cars cost ₹5–20 lakh, but one rare supercar costs ₹3 crore\tRegression line can be pulled strongly toward the outlier\n\nQUICK CONCEPTS\n\nResidual = Actual Value − Predicted Value\n\nExample:\n\nActual Car Price = ₹8 lakh\n\nPredicted Car Price = ₹7.5 lakh\n\nResidual = ₹50,000\n\nEASY MEMORY\n\nL → Linearity\n\nI → Independence\n\nH → Homoscedasticity\n\nN → Normality of Residuals\n\nM → No Strong Multicollinearity\n\nO → No Extreme Influential Outliers",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-12T00:45:30.419Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mtx8u3mspki06i",
     "author": "RamyaNaras",
     "authorAvatar": "https://avatars.githubusercontent.com/u/37861694?v=4",
