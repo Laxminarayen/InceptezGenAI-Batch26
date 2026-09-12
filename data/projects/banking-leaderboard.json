@@ -6,5 +6,13 @@
     "publicMacroF1": 0.46896416682984143,
     "submissionCount": 1,
     "submittedAt": "2026-09-11T18:57:59.227Z"
+  },
+  {
+    "login": "J-Nirosha",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/75113966?v=4",
+    "publicAccuracy": 0.8724188790560472,
+    "publicMacroF1": 0.625578778519955,
+    "submissionCount": 1,
+    "submittedAt": "2026-09-12T07:24:59.358Z"
   }
 ]
