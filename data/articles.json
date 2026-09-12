@@ -1,5 +1,17 @@
 [
   {
+    "id": "mtxpcwj3g3fozc",
+    "author": "Malini-Sekar",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
+    "title": "Macro, Micro and Weighted Averages in Metrics",
+    "body": "Macro, Micro and Weighted Average in Classification Metrics\n\nWhen we evaluate a multiclass classification model, metrics such as Precision, Recall and F1-Score can be summarized using Macro, Micro or Weighted Average.\n\nExample\n\nSuppose a customer-support model classifies tickets into:\n\nBilling – 800 tickets\nTechnical Issue – 150 tickets\nAccount Problem – 50 tickets\n\nThe classes are clearly imbalanced.\n\n1. Macro Average\n\nMacro Average calculates the metric for each class separately and then takes the simple average.\n\nExample F1-Scores:\n\nBilling = 0.90\nTechnical = 0.70\nAccount = 0.40\n\nMacro F1 = (0.90 + 0.70 + 0.40) / 3 = 0.67\n\nMacro Average gives equal importance to every class, regardless of class size.\n\n2. Micro Average\n\nMicro Average combines the True Positives, False Positives and False Negatives from all classes before calculating the final metric.\n\nIt therefore measures the overall performance across all predictions.\n\nIn standard single-label multiclass classification, Micro Precision, Recall and F1 are often equal to overall Accuracy.\n\n3. Weighted Average\n\nWeighted Average calculates the metric for each class, but gives more importance to classes with more samples.\n\nClass\tRecords\tF1 Score\nBilling\t800\t0.90\nTechnical\t150\t0.70\nAccount\t50\t0.40\n\nWeighted F1 = (0.90 × 800 + 0.70 × 150 + 0.40 × 50) / 1000\n\nWeighted F1 = 0.845\n\nSince Billing has the largest number of records, it has the highest influence on the weighted result.\n\nQuick Comparison\nAverage\tMain Idea\nMacro\tEvery class gets equal importance\nMicro\tAll predictions are evaluated together\nWeighted\tLarger classes get more importance\nConclusion\n\nMacro Average is useful when every class is equally important.\n\nMicro Average reflects the overall prediction performance.\n\nWeighted Average reflects performance while considering the actual class distribution",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-12T01:24:34.095Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mtxnyo4zq0wup2",
     "author": "Malini-Sekar",
     "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
