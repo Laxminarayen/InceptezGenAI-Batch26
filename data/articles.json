@@ -1,5 +1,17 @@
 [
   {
+    "id": "mtyity02rqhtyh",
+    "author": "HarishSV01",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/235912362?v=4",
+    "title": "Confusion Matrix for Multiclass Classification",
+    "body": "![multiclass](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mtyik0j886exjl-multiclass.jpg)\n\nA confusion matrix is a table used to evaluate a classification model by comparing:\n\nActual class → what the sample really belongs to\nPredicted class → what the model predicted\n\nFor a multiclass classification problem, each class gets its own row and column.\n\nIn multiclass classification, we calculate Precision, Recall and F1-score for each class separately.\n\nWe can look at one class at a time using a One-vs-Rest (OvR) approach.",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-12T15:09:38.018Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mtyefe0cxho1wj",
     "author": "HarishSV01",
     "authorAvatar": "https://avatars.githubusercontent.com/u/235912362?v=4",
