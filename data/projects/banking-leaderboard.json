@@ -30,5 +30,13 @@
     "publicMacroF1": 0.4925615296208667,
     "submissionCount": 2,
     "submittedAt": "2026-09-12T12:34:11.149Z"
+  },
+  {
+    "login": "suru7373",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/223130752?v=4",
+    "publicAccuracy": 0.8941740412979351,
+    "publicMacroF1": 0.606336894460452,
+    "submissionCount": 1,
+    "submittedAt": "2026-09-12T18:30:18.819Z"
   }
 ]
