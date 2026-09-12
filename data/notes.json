@@ -1,5 +1,17 @@
 [
   {
+    "id": "mty1pchr6x77kr",
+    "author": "HarishSV01",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/235912362?v=4",
+    "title": "📌 Note on Confusion Matrix: Theory vs Scikit-learn Convention",
+    "body": "**Theory vs Scikit-learn Convention**\n\nWhile learning **Confusion Matrix**, I noticed a small difference in how the matrix is represented:\n\n**In the convention used in our notes/class:**\n\nRows → Predicted\nColumns → Actual\n\n**In scikit-learn:**\n\nRows → Actual (True)\nColumns → Predicted\n\n**For example, scikit-learn uses:**\n\n**cm = confusion_matrix(y_true, y_pred)**\n\nHere:\n\nRows         →     y_true  (Actual)\nColumns   →     y_pred  (Predicted)\n\nIf we want to display the matrix in our classroom convention (Predicted as rows and Actual as columns), we can simply transpose it:\n\n**cm_paper = cm.T**\n\nSo there is no need to swap the inputs:\n\n❌ **confusion_matrix(y_pred, y_true)**\n\nbecause swapping them changes the interpretation of the matrix and **can affect metrics such as precision and recall** when interpreted using the standard convention.\n\n**The safest approach is:**\n\ncm = confusion_matrix(y_true, y_pred)      **# Correct sklearn usage**\ncm.T                                                            **# Only for preferred display orientation**\n\n**Takeaway:  Both orientations represent the same information; the important thing is to know which convention is being used.**",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-12T07:10:10.047Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mtpczji099eec1",
     "author": "HarishSV01",
     "authorAvatar": "https://avatars.githubusercontent.com/u/235912362?v=4",
