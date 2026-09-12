@@ -1,5 +1,17 @@
 [
   {
+    "id": "mtyefe0cxho1wj",
+    "author": "HarishSV01",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/235912362?v=4",
+    "title": "Loss Functions vs Evaluation Metrics",
+    "body": "**1. Loss Functions vs Metrics**\n\nLoss functions help the model learn by measuring how wrong its predictions are, while metrics help us evaluate how well the trained model is performing.\n\n![LossVsMetric](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mtye3rp46frgps-lossvsmetric.jpg)\n\n**For example, take MSE in regression:**\n\n**During training, MSE can be the loss function.**\n----The optimizer tries to minimize MSE.\n----It tells the model how wrong its predictions are and provides a quantity to optimize.\n\n**During evaluation, MSE can also be an evaluation metric.**\n----We calculate MSE on validation/test data to measure how well the trained model performs.\n----We are not necessarily using it to update the model.",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-12T13:06:20.460Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mty5jrdr9oqxjj",
     "author": "archna26",
     "authorAvatar": "https://avatars.githubusercontent.com/u/301626807?v=4",
