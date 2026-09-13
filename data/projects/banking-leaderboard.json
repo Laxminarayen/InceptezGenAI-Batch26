@@ -54,5 +54,13 @@
     "publicMacroF1": 0.711775888136208,
     "submissionCount": 1,
     "submittedAt": "2026-09-13T08:42:59.483Z"
+  },
+  {
+    "login": "RajeswariSivakumar",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/328692159?v=4",
+    "publicAccuracy": 0.7953539823008849,
+    "publicMacroF1": 0.4761481316486006,
+    "submissionCount": 1,
+    "submittedAt": "2026-09-13T12:12:04.047Z"
   }
 ]
