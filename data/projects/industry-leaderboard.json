@@ -14,5 +14,13 @@
     "publicMacroF1": 0.9942406990599761,
     "submissionCount": 1,
     "submittedAt": "2026-09-13T07:09:16.136Z"
+  },
+  {
+    "login": "RajeswariSivakumar",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/328692159?v=4",
+    "publicAccuracy": 0.9967051070840197,
+    "publicMacroF1": 0.9884920634920635,
+    "submissionCount": 1,
+    "submittedAt": "2026-09-13T14:24:10.111Z"
   }
 ]
