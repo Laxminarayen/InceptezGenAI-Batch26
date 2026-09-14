@@ -1,5 +1,18 @@
 [
   {
+    "id": "mu149zphvkxqri",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Decision Trees & Overfitting",
+    "body": "1. What happens to a Decision Tree's training accuracy vs. test accuracy as you increase max_depth?\n2. In your hackathon notebook, did a deeper tree actually help on your validation split, or hurt?",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-14T10:45:31.013Z",
+    "likes": [],
+    "comments": [],
+    "date": "2026-09-17"
+  },
+  {
     "id": "mu1492rxkflwyb",
     "author": "Laxminarayen",
     "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
