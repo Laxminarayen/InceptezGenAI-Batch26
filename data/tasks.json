@@ -3,14 +3,15 @@
     "id": "mu1492rxkflwyb",
     "author": "Laxminarayen",
     "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
-    "title": "Feature Scaling",
+    "title": "KNN & Feature Scaling",
     "body": "1. Why does KNN specifically need scaled features, more than Logistic Regression or Decision Trees do?\n2. What K did you land on for your hackathon model, and how did you pick it?",
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-14T10:44:48.333Z",
     "likes": [],
     "comments": [],
-    "date": "2026-09-16"
+    "date": "2026-09-16",
+    "editedAt": "2026-09-14T10:45:01.664Z"
   },
   {
     "id": "mu148hekssbmef",
