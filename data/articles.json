@@ -1,5 +1,17 @@
 [
   {
+    "id": "mu0sozyrzoobn1",
+    "author": "HarishSV01",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/235912362?v=4",
+    "title": "Imbalanced Clssed and SMOTE",
+    "body": "![SMOTE](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mu0sijli5wrvxz-smote.jpg)\n\nA dataset is called imbalanced when the classes do not have similar numbers of observations. For example, in a fraud-detection dataset, we might have 9,900 genuine transactions and only 100 fraudulent transactions. Genuine transactions become the majority class and fraud becomes the minority class.\n\nInitially, I thought a model with 99% accuracy would be a very good model. But in this example, a model that predicts every transaction as genuine would already achieve 99% accuracy while detecting none of the fraudulent transactions. This made me understand why accuracy alone can be misleading when the classes are highly imbalanced. Precision, recall and F1-score can give us a better view of performance depending on the problem.\n\nOne way to handle class imbalance is SMOTE — Synthetic Minority Over-sampling Technique. Instead of simply copying minority-class observations, SMOTE creates new synthetic samples using nearby minority-class observations. It does this by interpolating between a minority sample and one of its neighbors.\n\nFor example, if two minority samples are close to each other in feature space, SMOTE can generate a new sample somewhere between them. This gives the model more minority-class examples to learn from.\n\nI also learned that SMOTE should be applied only to the training data. The test data should remain untouched so that we can evaluate the model on realistic, unseen data.\n\nClass imbalance can make a model look better than it really is, especially when we rely only on accuracy. SMOTE is one technique that helps by generating synthetic minority-class samples rather than simply duplicating existing ones.",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-14T05:21:15.795Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mu0p2mr0jjm1d0",
     "author": "archna26",
     "authorAvatar": "https://avatars.githubusercontent.com/u/301626807?v=4",
