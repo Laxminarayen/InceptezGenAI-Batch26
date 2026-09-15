@@ -1,5 +1,17 @@
 [
   {
+    "id": "mu25byw6z0qewj",
+    "author": "Mukeshkanna90",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/166968999?v=4",
+    "title": "Linear Vs Logistic Regression",
+    "body": "Model Type\t                Coefficient Meaning\t            Example Interpretation\nLinear Regression\tChange in predicted outcome (Y)\t+2.5 points per study hour\nLogistic Regression\tChange in log odds → odds ratio\tOdds of passing double per study hour",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-15T04:02:49.062Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mu0sozyrzoobn1",
     "author": "HarishSV01",
     "authorAvatar": "https://avatars.githubusercontent.com/u/235912362?v=4",
