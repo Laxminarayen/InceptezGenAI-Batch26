@@ -1,5 +1,17 @@
 [
   {
+    "id": "mu3pi70g3ypnqz",
+    "author": "Malini-Sekar",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
+    "title": "ROC Curve & AUC",
+    "body": "ROC Curve & AUC\n\nROC Curve and AUC are useful for understanding how well a binary classification model separates the positive and negative classes across different classification thresholds.\n\n1. What Does the ROC Curve Plot?\n\nThe ROC curve plots:\n\nTrue Positive Rate (TPR) against False Positive Rate (FPR) at different classification thresholds.\n\nMeasure\tMeaning\nTrue Positive Rate\tHow many actual positive cases were correctly identified\nFalse Positive Rate\tHow many actual negative cases were wrongly classified as positive\nExample\n\nConsider a medical screening model.\n\nIf we lower the classification threshold, the model may detect more patients with the disease.\n\nHowever, it may also incorrectly classify more healthy people as having the disease.\n\nThe ROC curve shows this trade-off across many threshold values.\n\nA curve closer to the top-left corner generally represents a better model.\n\n2. What Does AUC Tell Us?\n\nAUC stands for Area Under the ROC Curve.\n\nIt summarizes how well the model can distinguish between positive and negative classes across different thresholds.\n\nAUC\tInterpretation\n0.50\tSimilar to random guessing\n0.60–0.70\tFair\n0.70–0.80\tGood\n0.80–0.90\tVery good\nClose to 1.00\tExcellent separation\nAUC vs Accuracy / F1\n\nAccuracy and F1-Score evaluate the model at a particular classification threshold.\n\nAUC evaluates the model's ability to separate the classes across many possible thresholds.\n\nSo, AUC helps us understand the model's overall ranking ability before deciding the final threshold.\n\n3. Choosing the Classification Threshold\n\nThe default classification threshold is often 0.5, but the best threshold depends on the business problem.\n\nFraud Detection\n\nFor fraud detection, missing an actual fraud can be very costly.\n\nSo we may choose a lower threshold.\n\nExample:\n\nProbability ≥ 0.30 → Fraud\n\nThis catches more fraudulent transactions, increasing Recall, even if some genuine transactions are flagged for review.\n\nSpam Filter\n\nFor a spam filter, incorrectly sending an important email to the spam folder can be frustrating.\n\nSo we may use a higher threshold.\n\nExample:\n\nProbability ≥ 0.80 → Spam\n\nThis requires stronger confidence before marking an email as spam and helps reduce False Positives.\n\nQuick Comparison\nScenario\tMain Concern\tThreshold Approach\nFraud Detection\tDo not miss fraud\tLower threshold\nSpam Filter\tDo not block genuine emails\tHigher threshold\nConclusion\n\nThe ROC Curve shows the trade-off between detecting positives and creating false alarms at different thresholds.\n\nAUC summarizes the model's overall ability to separate the classes.\n\nThe final classification threshold should be chosen based on the real-world cost of False Positives and False Negatives, rather than always using 0.5.",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-16T06:15:18.016Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mu2liqawas68km",
     "author": "Suriyakumarmd",
     "authorAvatar": "https://avatars.githubusercontent.com/u/147255736?v=4",
