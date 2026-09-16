@@ -1,5 +1,17 @@
 [
   {
+    "id": "mu4plhn4qt5mop",
+    "author": "Malini-Sekar",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
+    "title": "ROC-AUC vs Precision-Recall Curve",
+    "body": "ROC-AUC vs Precision-Recall Curve\n\nConsider a fraud detection model:\n\n10,000 transactions\n9,900 Genuine\n100 Fraud\n\nHere, Fraud is the minority class, so the dataset is highly imbalanced.\n\n1. What Does the ROC Curve Plot?\n\nThe ROC Curve shows the trade-off between:\n\nTrue Positive Rate (TPR / Recall) → How many actual frauds were detected?\nFalse Positive Rate (FPR) → How many genuine transactions were wrongly flagged as fraud?\n\nEach point on the ROC curve represents a different classification threshold.\n\nSimple Idea\n\nLower threshold:\n\n✅ Detects more fraud\n❌ Also flags more genuine transactions\n\nHigher threshold:\n\n✅ Fewer false alarms\n❌ May miss more fraud\n\nAUC (Area Under the Curve) summarizes how well the model separates Fraud from Genuine transactions across different thresholds.\n\nAUC\tMeaning\n0.5\tRandom-like separation\nCloser to 1\tBetter class separation\n2. Why Can ROC-AUC Look Too Optimistic for Imbalanced Data?\n\nImagine:\n\nGenuine transactions = 9,900\nFraud transactions = 100\n\nSuppose the model wrongly flags 100 genuine transactions.\n\nBecause there are 9,900 genuine transactions:\n\nFPR = 100 / 9,900 ≈ 1%\n\nSo the False Positive Rate still looks very small.\n\nBut for the business, 100 false fraud alerts may be significant.\n\nThis is where the Precision-Recall Curve helps.\n\nThe Precision-Recall Curve focuses more directly on the positive/minority class.\n\nPrecision → Of all transactions flagged as fraud, how many were really fraud?\nRecall → Of all actual frauds, how many did we catch?\n\nSo if the model produces many false fraud alerts, Precision drops immediately.\n\nQuick Comparison\nROC Curve\tPrecision-Recall Curve\nUses TPR and FPR\tUses Precision and Recall\nLooks at both positive and negative classes\tFocuses strongly on positive-class performance\nCan appear strong when negatives greatly outnumber positives\tExposes false-positive problems more clearly\nUseful for overall class separation\tEspecially useful for imbalanced datasets\n3. Which Curve Should We Use for an Imbalanced Dataset?\n\nFor a dataset where the positive class is rare, such as:\n\nFraud detection\nDisease detection\nEquipment failure\nCustomer churn\n\nthe Precision-Recall Curve is usually more informative for selecting a useful threshold.\n\nWhy?\n\nBecause we care about two questions:\n\nRecall: Are we catching enough of the rare positive cases?\nPrecision: When we raise an alert, how often is that alert actually correct?\n\nThe threshold can then be selected based on the required balance between Precision and Recall.\n\nKey Takeaway\n\nROC Curve → How well can the model separate the two classes?\n\nROC-AUC → Summarises that separation ability across thresholds.\n\nPrecision-Recall Curve → How effectively is the model finding the important positive class without producing too many false alarms?\n\nIn One Line\n\nFor highly imbalanced classification, ROC-AUC can look impressive while Precision-Recall reveals how well the model is actually handling the rare class.",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-16T23:05:37.936Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mu3pi70g3ypnqz",
     "author": "Malini-Sekar",
     "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
