@@ -1,5 +1,17 @@
 [
   {
+    "id": "mu482bsyyc2imv",
+    "author": "Mukeshkanna90",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/166968999?v=4",
+    "title": "Decision Tree Vs Logistic tree",
+    "body": "Decision Tree\n\nRule-based explanation: Each decision is a simple “if–then” condition, which aligns with how managers think about business rules.\n\nLogistic Regression\nMathematical nature: Coefficients represent changes in log odds, which requires translating into odds ratios or probabilities.\n\nSolution : Managers prefer concrete rules(Decision Tree) over abstract math(Logistic Regression).",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-16T14:54:50.434Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mty1pchr6x77kr",
     "author": "HarishSV01",
     "authorAvatar": "https://avatars.githubusercontent.com/u/235912362?v=4",
