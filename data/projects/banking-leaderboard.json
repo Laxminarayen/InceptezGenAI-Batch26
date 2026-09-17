@@ -114,9 +114,9 @@
   {
     "login": "sada1708",
     "avatarUrl": "https://avatars.githubusercontent.com/u/242890225?v=4",
-    "publicAccuracy": 0.8831120943952803,
-    "publicMacroF1": 0.46896416682984143,
-    "submissionCount": 1,
-    "submittedAt": "2026-09-17T16:48:55.385Z"
+    "publicAccuracy": 0.8259587020648967,
+    "publicMacroF1": 0.6636268462809499,
+    "submissionCount": 2,
+    "submittedAt": "2026-09-17T16:56:42.007Z"
   }
 ]
