@@ -86,5 +86,13 @@
     "publicMacroF1": 0.7007743807337887,
     "submissionCount": 1,
     "submittedAt": "2026-09-14T16:31:37.596Z"
+  },
+  {
+    "login": "manoj102931",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/325143501?v=4",
+    "publicAccuracy": 0.825589970501475,
+    "publicMacroF1": 0.6625800065707118,
+    "submissionCount": 1,
+    "submittedAt": "2026-09-17T02:22:16.212Z"
   }
 ]
