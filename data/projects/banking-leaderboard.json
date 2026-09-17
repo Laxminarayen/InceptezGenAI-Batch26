@@ -102,5 +102,13 @@
     "publicMacroF1": 0.7113464182351195,
     "submissionCount": 1,
     "submittedAt": "2026-09-17T06:52:18.794Z"
+  },
+  {
+    "login": "Bakkiyarani",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/314846130?v=4",
+    "publicAccuracy": 0.8259587020648967,
+    "publicMacroF1": 0.6636268462809499,
+    "submissionCount": 1,
+    "submittedAt": "2026-09-17T12:34:08.972Z"
   }
 ]
