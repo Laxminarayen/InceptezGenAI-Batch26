@@ -134,5 +134,13 @@
     "publicMacroF1": 0.6408407027622629,
     "submissionCount": 1,
     "submittedAt": "2026-09-18T09:46:09.769Z"
+  },
+  {
+    "login": "priyadj309-kim",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/308773191?v=4",
+    "publicAccuracy": 0.8609882005899705,
+    "publicMacroF1": 0.704690783212481,
+    "submissionCount": 1,
+    "submittedAt": "2026-09-18T10:17:13.210Z"
   }
 ]
