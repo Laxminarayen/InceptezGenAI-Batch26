@@ -126,5 +126,13 @@
     "publicMacroF1": 0.7047750413043209,
     "submissionCount": 1,
     "submittedAt": "2026-09-18T04:27:16.129Z"
+  },
+  {
+    "login": "pnithin578-boop",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/310021870?v=4",
+    "publicAccuracy": 0.8882743362831859,
+    "publicMacroF1": 0.6408407027622629,
+    "submissionCount": 1,
+    "submittedAt": "2026-09-18T09:46:09.769Z"
   }
 ]
