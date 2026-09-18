@@ -158,5 +158,13 @@
     "publicMacroF1": 0.7421692084615008,
     "submissionCount": 1,
     "submittedAt": "2026-09-18T14:22:05.425Z"
+  },
+  {
+    "login": "rajeshece27",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/302352054?v=4",
+    "publicAccuracy": 0.842551622418879,
+    "publicMacroF1": 0.6866288265737578,
+    "submissionCount": 1,
+    "submittedAt": "2026-09-18T15:27:52.370Z"
   }
 ]
