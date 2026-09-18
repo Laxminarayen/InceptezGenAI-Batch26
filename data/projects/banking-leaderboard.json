@@ -118,5 +118,13 @@
     "publicMacroF1": 0.6636268462809499,
     "submissionCount": 2,
     "submittedAt": "2026-09-17T16:56:42.007Z"
+  },
+  {
+    "login": "HarishSV01",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/235912362?v=4",
+    "publicAccuracy": 0.883480825958702,
+    "publicMacroF1": 0.7047750413043209,
+    "submissionCount": 1,
+    "submittedAt": "2026-09-18T04:27:16.129Z"
   }
 ]
