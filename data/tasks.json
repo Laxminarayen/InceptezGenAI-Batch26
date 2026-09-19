@@ -1,5 +1,143 @@
 [
   {
+    "id": "mu7yvb6ttvyf0s",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Random Forest",
+    "body": "1. Understand the Random Forest Algorithm\n2. Go into the scikit-learn Random Forest Library and understand the hyperparameters: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-19T05:48:31.205Z",
+    "likes": [],
+    "comments": [],
+    "date": "2026-09-19"
+  },
+  {
+    "id": "mu14anmmdbxuuf",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Hackathon final check-in, one day left",
+    "body": "1. Which of your three models is currently your best on the public leaderboard?\n2. If you had one submission left, what's the one thing you'd try?",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-14T10:46:02.014Z",
+    "likes": [],
+    "comments": [],
+    "date": "2026-09-18"
+  },
+  {
+    "id": "mu149zphvkxqri",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Decision Trees & Overfitting",
+    "body": "1. What happens to a Decision Tree's training accuracy vs. test accuracy as you increase max_depth?\n2. In your hackathon notebook, did a deeper tree actually help on your validation split, or hurt?",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-14T10:45:31.013Z",
+    "likes": [
+      "J-Nirosha"
+    ],
+    "comments": [],
+    "date": "2026-09-17"
+  },
+  {
+    "id": "mu1492rxkflwyb",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "KNN & Feature Scaling",
+    "body": "1. Why does KNN specifically need scaled features, more than Logistic Regression or Decision Trees do?\n2. What K did you land on for your hackathon model, and how did you pick it?",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-14T10:44:48.333Z",
+    "likes": [
+      "J-Nirosha"
+    ],
+    "comments": [],
+    "date": "2026-09-16",
+    "editedAt": "2026-09-14T10:45:01.664Z"
+  },
+  {
+    "id": "mu148hekssbmef",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Logistic Regression or Decision Tree",
+    "body": "1. To explain your model's decision to a non-technical manager, which is easier, and why?",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-14T10:44:20.636Z",
+    "likes": [
+      "Mukeshkanna90",
+      "Malini-Sekar",
+      "jimmigayatri",
+      "J-Nirosha"
+    ],
+    "comments": [],
+    "date": "2026-09-15"
+  },
+  {
+    "id": "mu147q1cqpqbkj",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Logistic Regression & interpretability",
+    "body": "1. What does a Logistic Regression coefficient actually tell you about a feature?\n2. Is that same for Linear Regression as well?",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-14T10:43:45.168Z",
+    "likes": [
+      "Mukeshkanna90",
+      "asennakesavan",
+      "Malini-Sekar",
+      "jimmigayatri",
+      "J-Nirosha",
+      "Smartchronon24"
+    ],
+    "comments": [],
+    "date": "2026-09-14"
+  },
+  {
+    "id": "mtxsn5l599fl43",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Hackathon Challenge 2",
+    "body": "1. Finish Hackathon challenge 2\n2. Submit both ipynb and csv",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-12T02:56:31.241Z",
+    "likes": [
+      "javidh1012",
+      "asennakesavan",
+      "suru7373",
+      "jimmigayatri",
+      "archna26",
+      "Smartchronon24"
+    ],
+    "comments": [],
+    "date": "2026-09-13"
+  },
+  {
+    "id": "mtxsktqtdqibok",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Hackathon challenge 1",
+    "body": "1. Finish Hackathon challenge 1: Customer Campaign Response Prediction.\n2. Submit both ipynb and csv",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-12T02:54:42.581Z",
+    "likes": [
+      "Smartchronon24",
+      "javidh1012",
+      "asennakesavan",
+      "mrmageswaran-rgb",
+      "Mukeshkanna90",
+      "archna26",
+      "suru7373",
+      "jimmigayatri"
+    ],
+    "comments": [],
+    "date": "2026-09-12",
+    "editedAt": "2026-09-12T02:55:05.035Z"
+  },
+  {
     "id": "mtu6w2j3gjkg3j",
     "author": "Laxminarayen",
     "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
@@ -10,7 +148,12 @@
     "createdAt": "2026-09-09T14:24:17.103Z",
     "likes": [
       "Smartchronon24",
-      "RamyaNaras"
+      "RamyaNaras",
+      "J-Nirosha",
+      "priyadj309-kim",
+      "jimmigayatri",
+      "archna26",
+      "Malini-Sekar"
     ],
     "comments": [],
     "date": "2026-09-11"
@@ -29,7 +172,11 @@
       "Smartchronon24",
       "RamyaNaras",
       "J-Nirosha",
-      "asennakesavan"
+      "asennakesavan",
+      "priyadj309-kim",
+      "jimmigayatri",
+      "archna26",
+      "Malini-Sekar"
     ],
     "comments": [],
     "date": "2026-09-10"
@@ -52,7 +199,10 @@
       "cuteesaranya-cloud",
       "RamyaNaras",
       "J-Nirosha",
-      "pepcivic-it-innovations"
+      "pepcivic-it-innovations",
+      "Malini-Sekar",
+      "archna26",
+      "Smartchronon24"
     ],
     "comments": [],
     "date": "2026-09-09",
@@ -76,7 +226,10 @@
       "ksuneeram",
       "Bakkiyarani",
       "cuteesaranya-cloud",
-      "asennakesavan"
+      "asennakesavan",
+      "archna26",
+      "Malini-Sekar",
+      "Smartchronon24"
     ],
     "comments": [],
     "date": "2026-09-08"
@@ -106,7 +259,11 @@
       "Malini-Sekar",
       "Uganderb",
       "pepcivic-it-innovations",
-      "sakthisen"
+      "sakthisen",
+      "archna26",
+      "HarishSV01",
+      "SadhanaBalachandran",
+      "Smartchronon24"
     ],
     "comments": [],
     "date": "2026-09-06",
@@ -135,7 +292,12 @@
       "suru7373",
       "Bakkiyarani",
       "Uganderb",
-      "SanjayPraveenNVR"
+      "SanjayPraveenNVR",
+      "Malini-Sekar",
+      "archna26",
+      "HarishSV01",
+      "Suriyakumarmd",
+      "Smartchronon24"
     ],
     "comments": [],
     "date": "2026-09-07"
@@ -166,7 +328,13 @@
       "Shyamala-lab",
       "Malini-Sekar",
       "pepcivic-it-innovations",
-      "sakthisen"
+      "sakthisen",
+      "pravesg6-png",
+      "archna26",
+      "HarishSV01",
+      "Rams08061985",
+      "SadhanaBalachandran",
+      "Smartchronon24"
     ],
     "comments": [],
     "date": "2026-09-05",
