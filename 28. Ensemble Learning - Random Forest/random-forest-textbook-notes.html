@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Random Forest — Reference Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#1E6FA8;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#5FA8E0;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    -webkit-font-smoothing:antialiased; line-height:1.65;
+  }
+  .wrap{max-width:860px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:680px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{
+    display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700;
+    color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px;
+    padding:9px 18px; text-decoration:none;
+  }
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+
+  h2{font-size:1.4rem; font-weight:900; margin:48px 0 14px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px;}
+  h3{font-size:1.06rem; font-weight:800; margin:24px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+
+  .formula{
+    background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent);
+    border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink);
+    font-size:1.02rem;
+  }
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:9px 12px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  td code, th code{white-space:nowrap;}
+
+  .note{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px;
+    font-size:.9rem; color:var(--ink-soft); margin:14px 0;
+  }
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono);}
+  pre{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:12px; padding:16px 18px;
+    overflow-x:auto; margin:14px 0 18px; font-size:.86rem; line-height:1.55;
+  }
+  pre code{background:none; padding:0; font-size:1em;}
+
+  .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px;}
+  .pill{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:.82rem; font-weight:700; color:var(--ink);}
+
+  .summary-box{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;
+  }
+  .summary-box h3{margin-top:0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Reference Notes · Ensemble Learning</div>
+  <h1>Random Forest</h1>
+  <p class="abstract">Random Forest is a bagging-based ensemble of Decision Trees that reduces variance by training many trees on bootstrapped samples of the data, each restricted to a random subset of features at every split. This page is a standalone reference — for the whiteboard walkthrough and worked loan-approval example from class, see the classwork notes and slides linked below.</p>
+
+  <div class="related-links">
+    <a href="classwork-notes.html">📝 Classwork Notes (Day 28 session write-up)</a>
+    <a href="ensemble-learning-random-forest-slides.html">🖥️ Slide Deck</a>
+    <a href="Random%20Forest%20Handwritten.pdf" target="_blank">📄 Original Handwritten Notes (PDF)</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">Why Ensembles Reduce Variance</a></li>
+      <li><a href="#s2">Bagging: Bootstrap Aggregating</a></li>
+      <li><a href="#s3">From Bagging to Random Forest</a></li>
+      <li><a href="#s4">The Algorithm</a></li>
+      <li><a href="#s5">Out-of-Bag (OOB) Error Estimation</a></li>
+      <li><a href="#s6">Feature Importance</a></li>
+      <li><a href="#s7">Proximity Matrix</a></li>
+      <li><a href="#s8">Hyperparameter Reference</a></li>
+      <li><a href="#s9">Random Forest vs. a Single Decision Tree</a></li>
+      <li><a href="#s10">Where Random Forest Sits in the Ensemble Family</a></li>
+      <li><a href="#s11">Worked Example (scikit-learn)</a></li>
+      <li><a href="#s12">Summary</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1"><span class="num">1.</span>Why Ensembles Reduce Variance</h2>
+  <p>A single, fully-grown Decision Tree is a <b>low-bias, high-variance</b> estimator: it can represent almost any decision boundary (low bias), but small changes to the training set produce very different trees (high variance). Averaging many independent, high-variance estimators reduces variance without increasing bias — this is the statistical justification for every bagging-based method, Random Forest included.</p>
+  <div class="formula">
+    Var(mean of B independent estimators) = Var(single estimator) / B
+    <span class="sub">If the B trees were truly independent, variance would shrink linearly with the number of trees. In practice trees trained on the same dataset are correlated, which caps the benefit — this is precisely the problem random feature selection (Section 3) exists to address.</span>
+  </div>
+
+  <h2 id="s2"><span class="num">2.</span>Bagging: Bootstrap Aggregating</h2>
+  <p><b>Bagging</b> (Bootstrap Aggregating) is a two-step recipe that works with any base learner, though it's almost always paired with Decision Trees:</p>
+  <ol>
+    <li><b>Bootstrap</b> — draw B new training sets, each of size n, by sampling <i>with replacement</i> from the original n-row dataset.</li>
+    <li><b>Aggregate</b> — train one model per bootstrap sample, then combine their predictions: majority vote for classification, average for regression.</li>
+  </ol>
+
+  <h3>How much of the data does one bootstrap sample actually contain?</h3>
+  <p>For a dataset of n rows, the probability a specific row is <i>not</i> chosen in a single draw is <code>(n−1)/n</code>. Since sampling is independent across the n draws that make up one bootstrap sample, the probability that row is left out entirely is:</p>
+  <div class="formula">
+    P(row excluded) = ((n−1)/n)ⁿ &nbsp;→&nbsp; 1/e ≈ <b>36.8%</b> as n → ∞
+    <span class="sub">Roughly a third of the rows are left out of any given bootstrap sample — this is exactly what makes Out-of-Bag evaluation possible (Section 5), and it's true regardless of how large n is.</span>
+  </div>
+
+  <h2 id="s3"><span class="num">3.</span>From Bagging to Random Forest</h2>
+  <p>Plain bagging alone only decorrelates trees partially — if one feature is a very strong predictor, most bootstrapped trees will still pick it as (or near) the root, making the trees more similar to each other than the variance-reduction math above assumes. Random Forest adds a second, independent source of randomness to fix this:</p>
+  <div class="formula">
+    At every split, consider only a random subset of <code>max_features</code> features — never all of them.
+    <span class="sub">This forces trees to occasionally split on weaker features, decorrelating them further. Bagging + this random feature subsampling is the full definition of Random Forest.</span>
+  </div>
+  <table>
+    <thead><tr><th>Task</th><th>Common default for <code>max_features</code></th></tr></thead>
+    <tbody>
+      <tr><td>Classification</td><td><code>sqrt(p)</code> — square root of the total feature count</td></tr>
+      <tr><td>Regression</td><td><code>p</code> / 3 (or all <code>p</code> features, depending on library/version)</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s4"><span class="num">4.</span>The Algorithm</h2>
+  <p>For a training set of n rows and p features, to build a forest of B trees:</p>
+  <ol>
+    <li>For b = 1 to B:
+      <ul>
+        <li>Draw a bootstrap sample of n rows, with replacement, from the training data.</li>
+        <li>Grow a Decision Tree on that sample. At each node, pick the best split from a random subset of <code>max_features</code> features (a fresh random subset at every single split, not once per tree).</li>
+        <li>Grow the tree to full depth (or to whatever depth limit is configured) — individual trees are allowed to overfit, because aggregation is what controls the ensemble's variance, not any one tree's depth.</li>
+      </ul>
+    </li>
+    <li>To predict a new row: pass it through all B trees, then aggregate — majority vote (classification) or mean (regression) of their B individual predictions.</li>
+  </ol>
+
+  <h2 id="s5"><span class="num">5.</span>Out-of-Bag (OOB) Error Estimation</h2>
+  <p>Because each tree is trained on a bootstrap sample that excludes ~36.8% of the rows (Section 2), every row in the training set is "out-of-bag" for roughly a third of the trees in the forest — those trees never saw it during training.</p>
+  <div class="formula">
+    OOB prediction for row i = aggregate of the predictions from only the trees that did <i>not</i> include row i in their bootstrap sample
+    <span class="sub">Comparing every row's OOB prediction to its true label gives the OOB score — a near-unbiased estimate of test performance computed entirely from the training set, with no separate validation split required.</span>
+  </div>
+  <p>In scikit-learn, set <code>oob_score=True</code> when constructing the forest (requires <code>bootstrap=True</code>, the default) to get this for free as <code>.oob_score_</code> after fitting.</p>
+
+  <h2 id="s6"><span class="num">6.</span>Feature Importance</h2>
+  <p>Random Forest produces a feature importance ranking as a side effect of training, in two common flavors:</p>
+  <ul>
+    <li><b>Mean Decrease in Impurity (MDI)</b> — for every split that uses a given feature, record how much that split reduced impurity (Gini/entropy), weighted by how many rows reach that node; sum and average across all trees. This is scikit-learn's default <code>.feature_importances_</code>.</li>
+    <li><b>Permutation Importance</b> — shuffle one feature's values (breaking its relationship with the target) and measure how much model performance drops. More computationally expensive, but not biased toward high-cardinality numerical features the way MDI can be.</li>
+  </ul>
+  <div class="note warn"><b>Caveat:</b> MDI importance is biased toward features with many distinct values (e.g. a continuous "salary" column) simply because they offer more possible split points — it does not automatically mean they're more causally relevant. Cross-check important findings with permutation importance before trusting them for a business decision.</div>
+
+  <h2 id="s7"><span class="num">7.</span>Proximity Matrix</h2>
+  <p>A Random Forest can produce more than predictions — it can also produce a <b>similarity score between any two rows</b>, using nothing but the structure of the trees it already built.</p>
+  <div class="formula">
+    Proximity(i, j) = (number of trees where rows i and j land in the same terminal leaf) / (total number of trees)
+    <span class="sub">Two rows that repeatedly end up in the same leaf, across many independently-built trees, are being treated as "alike" by the forest — even though the forest was never explicitly trained to measure similarity.</span>
+  </div>
+  <p>Practical uses of the resulting n×n proximity matrix:</p>
+  <ul>
+    <li><b>Missing value imputation</b> — fill a missing value with a proximity-weighted average of other rows' values for that feature, instead of a plain column mean.</li>
+    <li><b>Outlier detection</b> — a row with low average proximity to every other row of its predicted class is an outlier with respect to the forest's learned structure.</li>
+    <li><b>Clustering / visualization</b> — treat <code>1 − Proximity</code> as a distance metric and feed it into hierarchical clustering or multidimensional scaling (MDS) to visualize how the forest "sees" the dataset's structure.</li>
+  </ul>
+
+  <h2 id="s8"><span class="num">8.</span>Hyperparameter Reference</h2>
+  <p>Parameter names below match scikit-learn's <code>RandomForestClassifier</code> / <code>RandomForestRegressor</code>.</p>
+  <table>
+    <thead><tr><th>Parameter</th><th>What it controls</th><th>Typical default</th></tr></thead>
+    <tbody>
+      <tr><td><code>n_estimators</code></td><td>Number of trees in the forest. More trees almost never hurts accuracy, only training/inference time.</td><td>100</td></tr>
+      <tr><td><code>max_features</code></td><td>Number of features considered at each split — the "random columns" step.</td><td><code>"sqrt"</code> (classifier)</td></tr>
+      <tr><td><code>max_depth</code></td><td>Maximum depth of each tree. Bagging tolerates deep, overfit-prone trees better than a standalone tree would.</td><td><code>None</code> (fully grown)</td></tr>
+      <tr><td><code>min_samples_split</code></td><td>Minimum rows required at a node before it's allowed to split further.</td><td>2</td></tr>
+      <tr><td><code>min_samples_leaf</code></td><td>Minimum rows required to keep a leaf node. Raising this smooths the model, trading variance for a little bias.</td><td>1</td></tr>
+      <tr><td><code>bootstrap</code></td><td>Whether to bootstrap-sample rows at all. <code>False</code> turns this into plain feature-randomized bagging over the full dataset every time.</td><td><code>True</code></td></tr>
+      <tr><td><code>oob_score</code></td><td>Whether to compute the free Out-of-Bag validation score (Section 5).</td><td><code>False</code></td></tr>
+      <tr><td><code>criterion</code></td><td>Split quality measure — Gini impurity or entropy for classification, squared error for regression.</td><td><code>"gini"</code></td></tr>
+      <tr><td><code>n_jobs</code></td><td>Trees are trained independently, so this parallelizes almost linearly across CPU cores.</td><td><code>None</code> (single core)</td></tr>
+      <tr><td><code>random_state</code></td><td>Seed for reproducible bootstrap samples and feature subsets.</td><td><code>None</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s9"><span class="num">9.</span>Random Forest vs. a Single Decision Tree</h2>
+  <table>
+    <thead><tr><th></th><th>Single Decision Tree</th><th>Random Forest</th></tr></thead>
+    <tbody>
+      <tr><td><b>Variance</b></td><td>High — small data changes can restructure the whole tree</td><td>Much lower — errors average out across many trees</td></tr>
+      <tr><td><b>Interpretability</b></td><td>High — you can draw and read the whole tree</td><td>Low — hundreds of trees can't be read individually; use feature importance instead</td></tr>
+      <tr><td><b>Overfitting risk</b></td><td>High if left unpruned</td><td>Low — individual trees may overfit, the aggregate doesn't</td></tr>
+      <tr><td><b>Built-in validation</b></td><td>None</td><td>Out-of-Bag score, essentially free</td></tr>
+      <tr><td><b>Training/inference cost</b></td><td>Fast</td><td>Slower — proportional to <code>n_estimators</code>, though trees parallelize well</td></tr>
+      <tr><td><b>Feature importance</b></td><td>Can be misleading from one tree alone</td><td>More stable, averaged over many trees</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s10"><span class="num">10.</span>Where Random Forest Sits in the Ensemble Family</h2>
+  <table>
+    <thead><tr><th>Technique</th><th>Trees are built…</th><th>Primarily reduces</th></tr></thead>
+    <tbody>
+      <tr><td><b>Bagging / Random Forest</b></td><td>In parallel, independently</td><td>Variance</td></tr>
+      <tr><td>Boosting</td><td>Sequentially — each tree corrects the previous ensemble's errors</td><td>Bias</td></tr>
+      <tr><td>Stacking</td><td>Independently, then a meta-model learns how to combine their outputs</td><td>Both, depending on the meta-model</td></tr>
+      <tr><td>Voting</td><td>Independently, often different model types entirely</td><td>Variance (soft ceiling — no learned combination step)</td></tr>
+    </tbody>
+  </table>
+  <p>Boosting, Stacking, and Voting are covered separately — this reference focuses on the bagging branch of the family.</p>
+
+  <h2 id="s11"><span class="num">11.</span>Worked Example (scikit-learn)</h2>
+  <pre><code>from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+import pandas as pd
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y, test_size=0.2, random_state=42, stratify=y
+)
+
+rf = RandomForestClassifier(
+    n_estimators=200,      # number of trees
+    max_features="sqrt",   # random feature subset at each split
+    max_depth=None,        # let each tree grow fully
+    min_samples_leaf=1,
+    oob_score=True,        # free validation via Out-of-Bag rows
+    random_state=42,
+    n_jobs=-1,             # use all CPU cores — trees train independently
+)
+rf.fit(X_train, y_train)
+
+print("OOB score:  ", rf.oob_score_)
+print("Test score: ", rf.score(X_test, y_test))
+
+importances = (
+    pd.Series(rf.feature_importances_, index=X_train.columns)
+    .sort_values(ascending=False)
+)
+print(importances.head(10))
+</code></pre>
+  <div class="note">If <code>oob_score_</code> and the held-out test score disagree by a lot, that's a signal to double-check for data leakage or a train/test split issue — the two should normally be close, since OOB is itself an unbiased estimate of test performance.</div>
+
+  <h2 id="s12"><span class="num">12.</span>Summary</h2>
+  <div class="summary-box">
+    <h3>The whole idea, in one paragraph</h3>
+    <p>Random Forest trains many Decision Trees, each on a random bootstrap sample of the rows and restricted to a random subset of the columns at every split, then aggregates their predictions by vote or average. Bootstrapping alone (bagging) reduces variance; random feature selection decorrelates the trees further, which is what separates Random Forest from plain bagged trees. Two useful byproducts fall out of this construction for free: an Out-of-Bag validation score, and a feature importance ranking — with a proximity matrix available as a further extension for similarity-based tasks like imputation, outlier detection, and clustering.</p>
+  </div>
+  <div class="pill-row">
+    <span class="pill">Bagging</span>
+    <span class="pill">Bootstrap Sampling</span>
+    <span class="pill">Random Feature Subsampling</span>
+    <span class="pill">Out-of-Bag Score</span>
+    <span class="pill">Feature Importance</span>
+    <span class="pill">Proximity Matrix</span>
+  </div>
+</div>
+</body>
+</html>
