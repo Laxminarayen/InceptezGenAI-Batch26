@@ -1,5 +1,18 @@
 [
   {
+    "id": "mu7yvb6ttvyf0s",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Random Forest",
+    "body": "1. Understand the Random Forest Algorithm\n2. Go into the scikit-learn Random Forest Library and understand the hyperparameters: https://scikit-learn.org/stable/modules/generated/sklearn.ensemble.RandomForestClassifier.html",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-19T05:48:31.205Z",
+    "likes": [],
+    "comments": [],
+    "date": "2026-09-19"
+  },
+  {
     "id": "mu14anmmdbxuuf",
     "author": "Laxminarayen",
     "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
