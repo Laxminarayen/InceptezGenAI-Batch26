@@ -1,5 +1,17 @@
 [
   {
+    "id": "mu87ggg404456m",
+    "author": "Smartchronon24",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/163743484?v=4",
+    "title": "daily task: sept 6, 2026 ; Class Imbalance",
+    "body": "1. Yes, Imbalanced classes occur when one category heavily outnumbers the other in a dataset (like 99% genuine transactions vs. 1% fraud). This skews the data, causing machine learning models to lazily guess the majority class every time while completely failing to detect the rare events you actually care about.\n\n2. Yes. SMOTE (Synthetic Minority Over-sampling Technique) fixes this imbalance by creating entirely new, realistic examples of the rare class instead of just copying old ones. It looks at existing minority samples, draws a line between their nearest neighbors, and generates synthetic data points along those lines to balance the dataset.",
+    "classTag": "27 · Class Imbalance, F1 Score & SMOTE",
+    "topics": [],
+    "createdAt": "2026-09-19T09:48:54.724Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mu87axz4elwoa2",
     "author": "Smartchronon24",
     "authorAvatar": "https://avatars.githubusercontent.com/u/163743484?v=4",
