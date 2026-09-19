@@ -1,5 +1,272 @@
 [
   {
+    "id": "mu88206zeruvrd",
+    "author": "Smartchronon24",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/163743484?v=4",
+    "title": "daily task: sept 9, 2026; Dwell into metrics",
+    "body": "![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mu87vx4ilxtn8r-image.jpg)\n\nImagine you train a model to look at 1,000 animal images containing 997 Cats and only 3 rare Birds. If your model is excellent at identifying cats (100% score) but completely misses every single bird (0% score), a simple global check can easily lie to you.The Weighted Average looks at this scenario and gives you a beautiful 99.7% score because it balances the calculation based on population size—since cats make up almost the entire dataset, their success hides the bird failure. The Macro Average, however, steps in as an equalizer. It treats both species with absolute equality, averaging the 100% cat score and the 0% bird score to hand you a realistic 50% result. This instantly flashes a red flag that your model is completely blind to rare categories.\n\n![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mu88157092l491-image.jpg)",
+    "classTag": "27 · Class Imbalance, F1 Score & SMOTE",
+    "topics": [],
+    "createdAt": "2026-09-19T10:05:40.091Z",
+    "likes": [],
+    "comments": []
+  },
+  {
+    "id": "mu87rmi4llcj2y",
+    "author": "Smartchronon24",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/163743484?v=4",
+    "title": "daily task: sept 8, 2026; Look at machine prediction.",
+    "body": "1. Binary classification is a type of machine learning task where the goal is to predict one of two possible outcomes for a given input. The model analyzes data to categorize items into discrete, mutually exclusive groups, such as yes/no, spam/not spam, or true/false.\n\n2. A classification report standardizes your model's evaluation metrics into a clean, human-readable breakdown. Instead of just giving you a single high-level accuracy score that can easily hide major flaws, the report forces you to look at the harmony between Precision (the quality of your positive guesses) and Recall (the quantity of true positive cases your model actually captured).\n\nIn a Binary report, the layout is simple because you are tracking a straight yes-or-no choice. When you scale up to a Multiclass report, the structure mirrors this simplicity by breaking the problem down into multiple mini-binary tasks. It computes scores for each class independently, tells you the exact sample count (Support) for each row, and then uses averaging techniques—like Macro and Weighted averages—to give you a transparent look at where the model is succeeding or stumbling.\n\n![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mu87og3ncz83jo-image.jpg)",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-19T09:57:35.788Z",
+    "likes": [],
+    "comments": []
+  },
+  {
+    "id": "mu87jswl7sijw6",
+    "author": "Smartchronon24",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/163743484?v=4",
+    "title": "daily task: sept 7, 2026; Assumptions of Linear Regression",
+    "body": "Think of building a linear regression model like building a basic wooden ramp.First, Linearity assumes you are actually trying to bridge a straight gap—if the path you are tracing naturally loops or bends like a roller coaster, your flat wooden ramp is completely useless from the start. Second, Independence means each measurement you take stands on its own feet. If you are predicting house prices over ten consecutive years, this year's market shock will automatically bleed into next year's, creating a chain reaction that breaks independent logic.The last two assumptions govern the chaotic part of the world: your model's mistakes. Normality expects that your model will make a lot of tiny, balanced mistakes right near zero and only occasionally make a massive blunder. Finally, Equal Variance (Homoscedasticity) ensures your model is equally fair across the board. If you are predicting someone's daily spending based on their income, low-income earners have small variations in spending because their budgets are tight. High-income earners, however, might spend nothing one day and buy a car the next. This creates a volatile, fanning \"cone\" of mistakes (Heteroscedasticity) that breaks the flat, stable assumptions your linear model relies on.\n\n![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mu87jr6k2b6yjy-image.jpg)",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-19T09:51:30.837Z",
+    "likes": [],
+    "comments": []
+  },
+  {
+    "id": "mu87ggg404456m",
+    "author": "Smartchronon24",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/163743484?v=4",
+    "title": "daily task: sept 6, 2026 ; Class Imbalance",
+    "body": "1. Yes, Imbalanced classes occur when one category heavily outnumbers the other in a dataset (like 99% genuine transactions vs. 1% fraud). This skews the data, causing machine learning models to lazily guess the majority class every time while completely failing to detect the rare events you actually care about.\n\n2. Yes. SMOTE (Synthetic Minority Over-sampling Technique) fixes this imbalance by creating entirely new, realistic examples of the rare class instead of just copying old ones. It looks at existing minority samples, draws a line between their nearest neighbors, and generates synthetic data points along those lines to balance the dataset.",
+    "classTag": "27 · Class Imbalance, F1 Score & SMOTE",
+    "topics": [],
+    "createdAt": "2026-09-19T09:48:54.724Z",
+    "likes": [],
+    "comments": []
+  },
+  {
+    "id": "mu87axz4elwoa2",
+    "author": "Smartchronon24",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/163743484?v=4",
+    "title": "daily task: sept 5, 2026; What is Classification?",
+    "body": "1. \n![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mu876i99sd8pen-image.jpg)\n\n\n2. \n![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mu8783qlnzmy5e-image.jpg)\n\n\n3. The Multi-Class Dimensional ShiftIn multiclass problems, your model handles multiple labels instead of a simple binary choice. A single class acts as its own reference point, turning columns into Predicted targets and rows into Actual entries.Calculating Per-Class MetricsTo evaluate performance, you isolate one target category as the positive class and group all remaining classes together as the negative class:True Positives (\\[TP\\]): The green diagonal cells where the predicted label perfectly matches the actual label.False Positives (\\[FP\\]): The sum of all incorrect predictions found down that class's column (mislabeled as the target).False Negatives (\\[FN\\]): The sum of all missed predictions found across that class's row (target mislabeled as something else).Global Averaging StrategiesTo merge these per-class scores into a single final metric for a leaderboard, choose one of three global averages:Macro Averaging: Computes the raw average of all class scores equally, making it ideal for checking if the model handles rare, minority classes well.Micro Averaging: Aggregates total global counts of all classifications together, meaning its final score is heavily driven by your largest, most frequent classes.Weighted Averaging: Computes scores by weighting each class proportional to its true presence in the dataset, keeping the final score realistic to your true operational data split.",
+    "classTag": "26 · Multiclass Classification & Softmax",
+    "topics": [],
+    "createdAt": "2026-09-19T09:44:37.504Z",
+    "likes": [],
+    "comments": []
+  },
+  {
+    "id": "mu870zpx9fo9ie",
+    "author": "Smartchronon24",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/163743484?v=4",
+    "title": "daily task: sept 14, 2026; Logistic Regression & interpretability",
+    "body": "1. \n![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mu86ztbaap9kw4-image.jpg)\n\n\n2. No, they are fundamentally different because they operate in entirely separate spaces. Linear regression lives in a simple world where a one-unit increase in a feature always adds or subtracts a fixed, predictable amount from your prediction—like adding a constant weight onto a scale. Logistic regression, however, has to warp the entire universe using a sigmoid function so that its predictions stay locked safely between 0% and 100% probability. Because of this warping, its coefficients do not talk about regular numbers; they talk about log-odds. You cannot easily digest a raw logistic coefficient until you run it through an exponentiation function (\\[e^{\\beta }\\]) to turn it into an Odds Ratio, which finally tells you how many times more (or less) likely an event is to happen.",
+    "classTag": "22 · Logistic Regression",
+    "topics": [],
+    "createdAt": "2026-09-19T09:36:53.205Z",
+    "likes": [],
+    "comments": []
+  },
+  {
+    "id": "mu4r9ph4ar61sj",
+    "author": "Malini-Sekar",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
+    "title": "Logistic Regression or Decision Tree",
+    "body": "![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mu4r93mh69i6jd-image.jpg)",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-16T23:52:27.448Z",
+    "likes": [],
+    "comments": []
+  },
+  {
+    "id": "mu4qw80igghrcw",
+    "author": "Malini-Sekar",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
+    "title": "Logistic Regression & interpretability",
+    "body": "![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mu4qvnf2ahkkgr-image.jpg)",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-16T23:41:58.290Z",
+    "likes": [],
+    "comments": []
+  },
+  {
+    "id": "mu4plhn4qt5mop",
+    "author": "Malini-Sekar",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
+    "title": "ROC-AUC vs Precision-Recall Curve",
+    "body": "ROC-AUC vs Precision-Recall Curve\n\nConsider a fraud detection model:\n\n10,000 transactions\n9,900 Genuine\n100 Fraud\n\nHere, Fraud is the minority class, so the dataset is highly imbalanced.\n\n1. What Does the ROC Curve Plot?\n\nThe ROC Curve shows the trade-off between:\n\nTrue Positive Rate (TPR / Recall) → How many actual frauds were detected?\nFalse Positive Rate (FPR) → How many genuine transactions were wrongly flagged as fraud?\n\nEach point on the ROC curve represents a different classification threshold.\n\nSimple Idea\n\nLower threshold:\n\n✅ Detects more fraud\n❌ Also flags more genuine transactions\n\nHigher threshold:\n\n✅ Fewer false alarms\n❌ May miss more fraud\n\nAUC (Area Under the Curve) summarizes how well the model separates Fraud from Genuine transactions across different thresholds.\n\nAUC\tMeaning\n0.5\tRandom-like separation\nCloser to 1\tBetter class separation\n2. Why Can ROC-AUC Look Too Optimistic for Imbalanced Data?\n\nImagine:\n\nGenuine transactions = 9,900\nFraud transactions = 100\n\nSuppose the model wrongly flags 100 genuine transactions.\n\nBecause there are 9,900 genuine transactions:\n\nFPR = 100 / 9,900 ≈ 1%\n\nSo the False Positive Rate still looks very small.\n\nBut for the business, 100 false fraud alerts may be significant.\n\nThis is where the Precision-Recall Curve helps.\n\nThe Precision-Recall Curve focuses more directly on the positive/minority class.\n\nPrecision → Of all transactions flagged as fraud, how many were really fraud?\nRecall → Of all actual frauds, how many did we catch?\n\nSo if the model produces many false fraud alerts, Precision drops immediately.\n\nQuick Comparison\nROC Curve\tPrecision-Recall Curve\nUses TPR and FPR\tUses Precision and Recall\nLooks at both positive and negative classes\tFocuses strongly on positive-class performance\nCan appear strong when negatives greatly outnumber positives\tExposes false-positive problems more clearly\nUseful for overall class separation\tEspecially useful for imbalanced datasets\n3. Which Curve Should We Use for an Imbalanced Dataset?\n\nFor a dataset where the positive class is rare, such as:\n\nFraud detection\nDisease detection\nEquipment failure\nCustomer churn\n\nthe Precision-Recall Curve is usually more informative for selecting a useful threshold.\n\nWhy?\n\nBecause we care about two questions:\n\nRecall: Are we catching enough of the rare positive cases?\nPrecision: When we raise an alert, how often is that alert actually correct?\n\nThe threshold can then be selected based on the required balance between Precision and Recall.\n\nKey Takeaway\n\nROC Curve → How well can the model separate the two classes?\n\nROC-AUC → Summarises that separation ability across thresholds.\n\nPrecision-Recall Curve → How effectively is the model finding the important positive class without producing too many false alarms?\n\nIn One Line\n\nFor highly imbalanced classification, ROC-AUC can look impressive while Precision-Recall reveals how well the model is actually handling the rare class.",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-16T23:05:37.936Z",
+    "likes": [],
+    "comments": []
+  },
+  {
+    "id": "mu3pi70g3ypnqz",
+    "author": "Malini-Sekar",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
+    "title": "ROC Curve & AUC",
+    "body": "ROC Curve & AUC\n\nROC Curve and AUC are useful for understanding how well a binary classification model separates the positive and negative classes across different classification thresholds.\n\n1. What Does the ROC Curve Plot?\n\nThe ROC curve plots:\n\nTrue Positive Rate (TPR) against False Positive Rate (FPR) at different classification thresholds.\n\nMeasure\tMeaning\nTrue Positive Rate\tHow many actual positive cases were correctly identified\nFalse Positive Rate\tHow many actual negative cases were wrongly classified as positive\nExample\n\nConsider a medical screening model.\n\nIf we lower the classification threshold, the model may detect more patients with the disease.\n\nHowever, it may also incorrectly classify more healthy people as having the disease.\n\nThe ROC curve shows this trade-off across many threshold values.\n\nA curve closer to the top-left corner generally represents a better model.\n\n2. What Does AUC Tell Us?\n\nAUC stands for Area Under the ROC Curve.\n\nIt summarizes how well the model can distinguish between positive and negative classes across different thresholds.\n\nAUC\tInterpretation\n0.50\tSimilar to random guessing\n0.60–0.70\tFair\n0.70–0.80\tGood\n0.80–0.90\tVery good\nClose to 1.00\tExcellent separation\nAUC vs Accuracy / F1\n\nAccuracy and F1-Score evaluate the model at a particular classification threshold.\n\nAUC evaluates the model's ability to separate the classes across many possible thresholds.\n\nSo, AUC helps us understand the model's overall ranking ability before deciding the final threshold.\n\n3. Choosing the Classification Threshold\n\nThe default classification threshold is often 0.5, but the best threshold depends on the business problem.\n\nFraud Detection\n\nFor fraud detection, missing an actual fraud can be very costly.\n\nSo we may choose a lower threshold.\n\nExample:\n\nProbability ≥ 0.30 → Fraud\n\nThis catches more fraudulent transactions, increasing Recall, even if some genuine transactions are flagged for review.\n\nSpam Filter\n\nFor a spam filter, incorrectly sending an important email to the spam folder can be frustrating.\n\nSo we may use a higher threshold.\n\nExample:\n\nProbability ≥ 0.80 → Spam\n\nThis requires stronger confidence before marking an email as spam and helps reduce False Positives.\n\nQuick Comparison\nScenario\tMain Concern\tThreshold Approach\nFraud Detection\tDo not miss fraud\tLower threshold\nSpam Filter\tDo not block genuine emails\tHigher threshold\nConclusion\n\nThe ROC Curve shows the trade-off between detecting positives and creating false alarms at different thresholds.\n\nAUC summarizes the model's overall ability to separate the classes.\n\nThe final classification threshold should be chosen based on the real-world cost of False Positives and False Negatives, rather than always using 0.5.",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-16T06:15:18.016Z",
+    "likes": [],
+    "comments": []
+  },
+  {
+    "id": "mu2liqawas68km",
+    "author": "Suriyakumarmd",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/147255736?v=4",
+    "title": "Assumptions of Linear Regression",
+    "body": "Linear Regression Assumptions\n1. What are assumptions?\nThink of assumptions as safety checks before trusting a linear regression model. They are conditions that help the model give reliable estimates, interpretations, standard errors, confidence intervals, and predictions.\nOur one real-world example\nAn HR team wants to predict an employee's salary using variables such as years of experience, education, age, job level, and location.\nA very important term: Residual\nResidual = Actual Salary − Predicted Salary\nExample: Actual salary = ₹12 lakh and predicted salary = ₹10 lakh. Residual = ₹2 lakh. The model under-predicted by ₹2 lakh.\n\nAssumption 1 — Linearity\nSimple meaning: The relationship between the predictors and the target should be approximately linear.\nReal-world example: As experience increases, salary generally increases in an approximately straight-line pattern.\nIf violated: A straight line may systematically miss a curved relationship. Consider transformations, polynomial terms, or a different model.\nHow to check: How Scatter plots and residual-vs-fitted plots. Look for a clear curve or systematic pattern.\n \n \nMemory: “Can a straight line describe the relationship reasonably well?”\nAssumption 2 — Independence of observations/errors\nSimple meaning: One observation should not depend on another in a way that creates correlated errors.\nReal-world example: If we have separate employees, one employee's salary record should not be a direct repeated measurement of another employee.\nIf violated: Standard errors and statistical tests can become misleading. Time-series data are a common source of dependence.\nHow to check: Understand how the data were collected; for ordered/time data, inspect residual autocorrelation and use suitable tests such as Durbin–Watson where appropriate. \nMemory: “Is one observation independent of another?”\nAssumption 3 — No severe multicollinearity\nSimple meaning: Predictor variables (X variables) should not be excessively redundant with each other.\nReal-world example: House size and number of rooms can be strongly related. In salary data, years of experience and job level may also be related.\nIf violated: Individual coefficients can become unstable, have large standard errors, or change a lot when variables are added/removed.\nHow to check: Correlation matrix and VIF. As a rough guide, VIF around 5+ deserves attention and 10+ is often considered serious, but context matters.\n \nMemory: “Are my X variables telling me almost the same thing?”\nAssumption 4 — Homoscedasticity\nSimple meaning: The spread of residuals should be roughly constant across the range of predicted values.\nReal-world example: For low-, medium-, and high-salary employees, prediction errors should have roughly similar spread.\nIf violated: Standard errors, p-values, and confidence intervals can be unreliable. The regression coefficients are not automatically useless.\nHow to check: How Residual-vs-fitted plot. A funnel shape is a common warning sign.\n \n \nMemory: “Is the error spread roughly the same everywhere?”\n \nAssumption 5 — Normality of residuals\nSimple meaning: Residuals should be approximately normally distributed when using classical small-sample inference.\nReal-world example: Most salary prediction errors are near zero, with fewer large positive or negative errors, producing an approximately bell-shaped distribution.\nIf violated: Inference such as p-values and confidence intervals can be affected, especially in smaller samples. Large samples are often more tolerant.\nHow to check: Histogram and Q-Q plot of residuals. Do not require X or Y themselves to be normally distributed.\n \nMemory: “Do my residuals look approximately bell-shaped?”\nAssumption 6 — No highly influential outliers\nSimple meaning: A small number of unusual observations should not control the regression line.\nReal-world example: Most employees have salaries between ₹4–30 lakh, but one record has an unusual salary far outside the usual range. It may strongly pull the fitted line.\nIf violated: Coefficients and predictions can change substantially because of a single observation.\nHow to check: Investigate outliers, leverage, and Cook's distance. Never delete a point automatically; first determine whether it is an error or a genuine case.\n \nMemory: “Is one unusual point controlling my model?”",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-15T11:35:58.376Z",
+    "likes": [],
+    "comments": []
+  },
+  {
+    "id": "mu25hj1ao0zzhe",
+    "author": "Mukeshkanna90",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/166968999?v=4",
+    "title": "Linear Vs Logistic Regression",
+    "body": "![image 2026 09 15 093703914](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mu25hg03gnqkke-image-2026-09-15-093703914.jpg)",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-15T04:07:08.446Z",
+    "likes": [],
+    "comments": []
+  },
+  {
+    "id": "mu0sozyrzoobn1",
+    "author": "HarishSV01",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/235912362?v=4",
+    "title": "Imbalanced Clssed and SMOTE",
+    "body": "![SMOTE](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mu0sijli5wrvxz-smote.jpg)\n\nA dataset is called imbalanced when the classes do not have similar numbers of observations. For example, in a fraud-detection dataset, we might have 9,900 genuine transactions and only 100 fraudulent transactions. Genuine transactions become the majority class and fraud becomes the minority class.\n\nInitially, I thought a model with 99% accuracy would be a very good model. But in this example, a model that predicts every transaction as genuine would already achieve 99% accuracy while detecting none of the fraudulent transactions. This made me understand why accuracy alone can be misleading when the classes are highly imbalanced. Precision, recall and F1-score can give us a better view of performance depending on the problem.\n\nOne way to handle class imbalance is SMOTE — Synthetic Minority Over-sampling Technique. Instead of simply copying minority-class observations, SMOTE creates new synthetic samples using nearby minority-class observations. It does this by interpolating between a minority sample and one of its neighbors.\n\nFor example, if two minority samples are close to each other in feature space, SMOTE can generate a new sample somewhere between them. This gives the model more minority-class examples to learn from.\n\nI also learned that SMOTE should be applied only to the training data. The test data should remain untouched so that we can evaluate the model on realistic, unseen data.\n\nClass imbalance can make a model look better than it really is, especially when we rely only on accuracy. SMOTE is one technique that helps by generating synthetic minority-class samples rather than simply duplicating existing ones.",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-14T05:21:15.795Z",
+    "likes": [
+      "HarishSV01"
+    ],
+    "comments": []
+  },
+  {
+    "id": "mu0p2mr0jjm1d0",
+    "author": "archna26",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/301626807?v=4",
+    "title": "ROC - AUC, Precision - Recall Curve",
+    "body": "https://medium.com/@archna26/machine-learning-03-roc-auc-precision-recall-ffd594b0e5d5",
+    "classTag": "27 · Class Imbalance, F1 Score & SMOTE",
+    "topics": [],
+    "createdAt": "2026-09-14T03:39:53.388Z",
+    "likes": [
+      "Malini-Sekar"
+    ],
+    "comments": []
+  },
+  {
+    "id": "mu03qcljg8u9g3",
+    "author": "HarishSV01",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/235912362?v=4",
+    "title": "Assumptions of Linear Regression",
+    "body": "![LR](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mu03oz2f4mc0yf-lr.jpg)",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-13T17:42:28.423Z",
+    "likes": [
+      "HarishSV01",
+      "Malini-Sekar"
+    ],
+    "comments": []
+  },
+  {
+    "id": "mtynf7yxux3kaz",
+    "author": "archna26",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/301626807?v=4",
+    "title": "Class Imbalance & SMOTE",
+    "body": "https://medium.com/@archna26/machine-learning-02-class-imbalance-smote-2d1906daa689?sharedUserId=archna26",
+    "classTag": "27 · Class Imbalance, F1 Score & SMOTE",
+    "topics": [
+      "class imbalance & smote"
+    ],
+    "createdAt": "2026-09-12T17:18:09.177Z",
+    "likes": [],
+    "comments": []
+  },
+  {
+    "id": "mtyity02rqhtyh",
+    "author": "HarishSV01",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/235912362?v=4",
+    "title": "Confusion Matrix for Multiclass Classification",
+    "body": "![multiclass](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mtyik0j886exjl-multiclass.jpg)\n\nA confusion matrix is a table used to evaluate a classification model by comparing:\n\nActual class → what the sample really belongs to\nPredicted class → what the model predicted\n\nFor a multiclass classification problem, each class gets its own row and column.\n\nIn multiclass classification, we calculate Precision, Recall and F1-score for each class separately.\n\nWe can look at one class at a time using a One-vs-Rest (OvR) approach.",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-12T15:09:38.018Z",
+    "likes": [
+      "HarishSV01"
+    ],
+    "comments": []
+  },
+  {
+    "id": "mtyefe0cxho1wj",
+    "author": "HarishSV01",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/235912362?v=4",
+    "title": "Loss Functions vs Evaluation Metrics",
+    "body": "**1. Loss Functions vs Metrics**\n\nLoss functions help the model learn by measuring how wrong its predictions are, while metrics help us evaluate how well the trained model is performing.\n\n![LossVsMetric](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mtye3rp46frgps-lossvsmetric.jpg)\n\n**For example, take MSE in regression:**\n\n**During training, MSE can be the loss function.**\n----The optimizer tries to minimize MSE.\n----It tells the model how wrong its predictions are and provides a quantity to optimize.\n\n**During evaluation, MSE can also be an evaluation metric.**\n----We calculate MSE on validation/test data to measure how well the trained model performs.\n----We are not necessarily using it to update the model.",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-12T13:06:20.460Z",
+    "likes": [
+      "HarishSV01"
+    ],
+    "comments": []
+  },
+  {
+    "id": "mty5jrdr9oqxjj",
+    "author": "archna26",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/301626807?v=4",
+    "title": "Classification, Assumption of Linear Regression, binary classification and classification reports for binary - multi class, metrics including average, weighted and micro",
+    "body": "https://medium.com/@archna26/machine-learning-01-classification-6f9ec990dd99?sharedUserId=archna26",
+    "classTag": "26 · Multiclass Classification & Softmax",
+    "topics": [],
+    "createdAt": "2026-09-12T08:57:47.871Z",
+    "likes": [],
+    "comments": [],
+    "editedAt": "2026-09-12T11:54:50.026Z"
+  },
+  {
+    "id": "mtxpcwj3g3fozc",
+    "author": "Malini-Sekar",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
+    "title": "Macro, Micro and Weighted Averages in Metrics",
+    "body": "Macro, Micro and Weighted Average in Classification Metrics\n\nWhen we evaluate a multiclass classification model, metrics such as Precision, Recall and F1-Score can be summarized using Macro, Micro or Weighted Average.\n\nExample\n\nSuppose a customer-support model classifies tickets into:\n\nBilling – 800 tickets\nTechnical Issue – 150 tickets\nAccount Problem – 50 tickets\n\nThe classes are clearly imbalanced.\n\n1. Macro Average\n\nMacro Average calculates the metric for each class separately and then takes the simple average.\n\nExample F1-Scores:\n\nBilling = 0.90\nTechnical = 0.70\nAccount = 0.40\n\nMacro F1 = (0.90 + 0.70 + 0.40) / 3 = 0.67\n\nMacro Average gives equal importance to every class, regardless of class size.\n\n2. Micro Average\n\nMicro Average combines the True Positives, False Positives and False Negatives from all classes before calculating the final metric.\n\nIt therefore measures the overall performance across all predictions.\n\nIn standard single-label multiclass classification, Micro Precision, Recall and F1 are often equal to overall Accuracy.\n\n3. Weighted Average\n\nWeighted Average calculates the metric for each class, but gives more importance to classes with more samples.\n\nClass\tRecords\tF1 Score\nBilling\t800\t0.90\nTechnical\t150\t0.70\nAccount\t50\t0.40\n\nWeighted F1 = (0.90 × 800 + 0.70 × 150 + 0.40 × 50) / 1000\n\nWeighted F1 = 0.845\n\nSince Billing has the largest number of records, it has the highest influence on the weighted result.\n\nQuick Comparison\nAverage\tMain Idea\nMacro\tEvery class gets equal importance\nMicro\tAll predictions are evaluated together\nWeighted\tLarger classes get more importance\nConclusion\n\nMacro Average is useful when every class is equally important.\n\nMicro Average reflects the overall prediction performance.\n\nWeighted Average reflects performance while considering the actual class distribution",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-12T01:24:34.095Z",
+    "likes": [],
+    "comments": []
+  },
+  {
+    "id": "mtxnyo4zq0wup2",
+    "author": "Malini-Sekar",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
+    "title": "LINEAR REGRESSION ASSUMPTIONS",
+    "body": "Assumptions of Linear Regression\n\nLinear Regression predicts a continuous numerical value by finding the best relationship between input features and the target.\n\n🏠 Real-time Example\n\nSuppose we want to predict a house price using:\n\nArea + Bedrooms + House Age + Location → House Price\n\nBefore trusting the Linear Regression model, some important assumptions should be checked.\n\n1. Linearity\n\nThere should be an approximately linear relationship between the input variables and the target.\n\nExample\n\nAs the house area increases, the house price generally increases.\n\nIf:\n\nArea ↑ → Price ↑ approximately in a consistent pattern\n\nLinear Regression can model the relationship well.\n\n👉 Easy memory:\nX changes → Y should change roughly like a straight-line relationship.\n\n2. Independence of Observations\n\nEach observation should be independent of the other observations.\n\nExample\n\nThe price of House A should not directly determine the price recorded for House B.\n\nIf today's observation strongly depends on yesterday's observation, independence may be violated.\n\nThis is especially important in time-series data.\n\n👉 Easy memory:\nOne row should not depend heavily on another row.\n\n3. Homoscedasticity\n\nThe spread of prediction errors should remain approximately constant across different predicted values.\n\nExample\n\nSuppose our house-price model makes errors:\n\n₹2 lakh, ₹1.5 lakh, ₹2 lakh, ₹1 lakh...\n\nThis is reasonable.\n\nBut if errors become:\n\n₹1 lakh → ₹2 lakh → ₹10 lakh → ₹25 lakh\n\nas house prices increase, the error spread is changing significantly.\n\nThis condition is called Heteroscedasticity.\n\n👉 Easy memory:\nError spread should stay reasonably consistent.\n\n4. Normality of Residuals\n\nThe residuals should be approximately normally distributed, especially when we want reliable statistical inference.\n\nWhat is a Residual?\n\nResidual = Actual Value − Predicted Value\n\nExample:\n\nActual House Price = ₹50 lakh\nPredicted Price = ₹47 lakh\n\nResidual = ₹3 lakh\n\nThe collection of residuals should roughly follow a bell-shaped distribution.\n\n👉 Easy memory:\nResiduals should be roughly centered around zero and reasonably normal.\n\n5. No Strong Multicollinearity\n\nThe independent variables should not be too strongly correlated with each other.\n\nExample\n\nSuppose our features are:\n\nHouse Area in sq.ft\nHouse Area in sq.metre\nNumber of Bedrooms\n\nArea in sq.ft and area in sq.metre represent almost the same information.\n\nIncluding both can confuse the interpretation of the regression coefficients.\n\n👉 Easy memory:\nInput features should provide useful, not duplicate, information.\n\n6. No Extreme Influential Outliers\n\nExtreme observations can pull the regression line strongly in one direction.\n\nExample\n\nMost houses:\n\n₹40 lakh – ₹1 crore\n\nOne unusual luxury mansion:\n\n₹25 crore\n\nThat single record may strongly influence the regression line.\n\nOutliers should therefore be investigated, not blindly removed.\n\n👉 Easy memory:\nOne unusual record should not control the entire model.\n\nQuick Revision Table\nAssumption\tSimple Meaning\tExample Problem\nLinearity\tX and Y should have roughly linear relationship\tCurved relationship\nIndependence\tRows should be independent\tOne observation depends on another\nHomoscedasticity\tError spread should be consistent\tErrors increase with predictions\nNormal Residuals\tResiduals should be roughly normal\tHighly skewed errors\nNo Multicollinearity\tFeatures shouldn't duplicate each other\tsq.ft + sq.metre\nNo Influential Outliers\tExtreme points shouldn't dominate\t₹25 crore mansion\n🎯 Final Memory Trick\n\nRemember:\n\nL – I – H – N – M – O\n\nL → Linearity\nI → Independence\nH → Homoscedasticity\nN → Normality of residuals\nM → No strong Multicollinearity\nO → No extreme influential Outliers",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-12T00:45:30.419Z",
+    "likes": [],
+    "comments": [],
+    "editedAt": "2026-09-12T00:49:14.658Z"
+  },
+  {
     "id": "mtx8u3mspki06i",
     "author": "RamyaNaras",
     "authorAvatar": "https://avatars.githubusercontent.com/u/37861694?v=4",
@@ -161,7 +428,7 @@
     "author": "suru7373",
     "authorAvatar": "https://avatars.githubusercontent.com/u/223130752?v=4",
     "title": "Classification",
-    "body": "##What is Classification? \n\nIn machine learning, **classification** is a type of **supervised learning** where the goal is to **predict a discrete label or category** for a given input. The model learns from historical data with known labels and uses that knowledge to categorize new, unseen data.\n\n**Binary Classification:** Choosing between two classes (e.g., Email: Spam or Not Spam; Medical Test: Positive or Negative).\n**Multiclass Classification:** Choosing between three or more mutually exclusive classes (e.g., Classifying an image as a Cat, Dog, or Bird).\n\n##Class Imbalance:\n![Class Imbalance](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mttt0t7jzy7zyp-class-imbalance.jpg)\n\n##Multiclass Classification: \n![ChatGPT Image Sep 9, 2026, 02 02 11 PM](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mttuewe9cv9gks-chatgpt-image-sep-9-2026-02-02-11-pm.jpg)\n\n**Multiclass data imbalance:**\nThis multiclass dataset falls squarely under the category of **Mild to Moderate Imbalance**. \nActual Compost: 45 items (30% of total data)\nActual Paper: 42 items (28% of total data)\nActual Plastic: 40 items (27% of total data)\nActual Landfill Trash: 23 items (only 15% of total data)\n\n**Accuracy:**\nAccuracy calculates the percentage of items that were correctly classified out of all 150 items processed. These correct items sit on the main green diagonal line:\n\n**Formula:**\n**Accuracy**= (Sum of Correct Predictions)/Total Items\n**Calculation:** (40 + 30 + 35 + 12)/150 = 117/150 = 0.7800\n**Result:** The system is 78.00% Accurate overall.\n\n**Precision:** checks the Model's output \n**Recall:** checks Reality \n**F1-Score:** The harmonic mean balancing both metrics 2 (Precision * Recall) / (Precision + Recall)\n\n**Per-Class Metrics:**\n\n**Compost**\n**Precision:** 40/43 = 0.9302 (93.02%)\n**Recall:** 40/45= 0.8889 (88.89%)\n**F1-Score:** 2 (0.9302 * 0.8889)/(0.9302 + 0.8889)= 0.9091\n\n**Plastic Recycling**\n**Precision:** 30/45 = 0.6667 (66.67%)\n**Recall:** 30/40 = 0.7500 (75.00%)\n**F1-Score:** 2 (0.6667 * 0.7500)/(0.6667 + 0.7500)= 0.7059\n\n**Paper Recycling**\n**Precision:** 35/43 = 0.8140 (81.40%)\n**Recall:**  35/42= 0.8333 (83.33%)\n**F1-Score:** 2 (0.8140 * 0.8333)/(0.8140 + 0.8333) = 0.8235\n\n**Landfill Trash**\n**Precision:** 12/19 = 0.6316 (63.16%)\n**Recall:** 12/23 = 0.5217 (52.17%)\n**F1-Score:** 2 (0.6316 * 0.5217)/(0.6316 + 0.5217)= 0.5714\n\n##Macro Average:\n\n**Macro-Precision:**\n=(0.9302+0.6667+0.8140+0.6316)/4 =0.76060 (76.06%)\n**Macro-Recall:**\n=(0.8889+0.7500+0.8333+0.5217)/4 =0.7485 (74.85%) \n**Macro-F1 Score:**\n=(0.7059+0.9091+0.8235+0.5714)/4 =0.7525 (75.25%) \n\n##Weighted Average:\n**Weighted-Precision:**\n=(0.9302 * 45 + 0.6667 * 40 + 0.8140 * 42 + 0.6316 * 23)/150 = 0.7816 (78.16%)\n\n**Weighted-Recall:**\n=(0.8889 * 45 + 0.7500 * 40 + 0.8333 * 42 + 0.5217 * 23)/150 = 0.7800 (78%)\n\n**Weighted-F1 Score:**\n =(0.7059 * 45 + 0.9091 * 40 + 0.8235 * 42 + 0.5714 * 23)/150 = 0.7801 (78.01%)\n\n##Micro-Average:\n\n**Micro-Precision:**\n=Total correct predictions/Total items =40+30+35+12/150 =117/150 =0.78\n\n**Micro-Recall:**\n=Total correct predictions/Total items = 40+30+35+12/150 =117/150 =0.78\n\n**Micro-F1 Score:**\n=2(0.78 * 0.78)/(0.78+ 0.78) = 0.78 \n\n\n**Note:** The Micro Average is intentionally left out of standard classification reports because it is mathematically identical to Overall Accuracy in single-label multi-class classification.\n\n##Performance Insights:\n\n**High Trust, High Capture (The Star Performer: Compost)**\nPrecision = 93.02%, Recall = 88.89%\nThe Insight: The model has mastered organic waste\n\n**The Dangerous Blind Spot (The Worst Performer: Landfill Trash)**\nPrecision = 63.16%, Recall = 52.17%\nThe Insight: The system completely falls apart when dealing with general garbage\n\n**High Risk of Batch Ruin (The Contaminated Stream: Plastic Recycling)**\nPrecision = 66.67%, Recall = 75.00%\nThe Insight: While the model successfully catches a fair amount of plastic (75% Recall), its Precision is poor.\n\n##BinaryClass Classification:\n![ChatGPT Image Sep 9, 2026, 02 02 20 PM](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mttufe0a7iopr7-chatgpt-image-sep-9-2026-02-02-20-pm.jpg)\n\nThere is a mild data imbalance in this dataset.\nAlways look at the Total Actual counts (the row totals on the right side of the confusion matrix):\n**Actual Recyclable:** 60 items (60% of the data)\n**Actual Not Recyclable:** 40 items (40% of the data)\n\n**Accuracy:**\nAccuracy = (Sum of Correct Predictions) / Total Items\nCalculation: (50 + 35) / 100 = 85 / 100 = 0.8500\nResult: The system is 85.00% Accurate overall.\n\n**Per-Class Metrics:**\n\n**Recyclable**\n**Precision:** 50 / 55 = 0.9091 (90.91%)\n**Recall:** 50 / 60 = 0.8333 (83.33%)\n**F1-Score:** 2 * (0.9091 * 0.8333) / (0.9091 + 0.8333) = 0.8696\n \n**Not Recyclable:**\n**Precision:** 35 / 45 = 0.7778 (77.78%)\n**Recall:** 35 / 40 = 0.8750 (87.50%)\n**F1-Score:** 2 * (0.7778 * 0.8750) / (0.7778 + 0.8750) = 0.8235\n\n##Macro Average:\n\n**Macro-Precision:**\n= (0.9091 + 0.7778) / 2 = 0.8435 (84.35%)\n\n**Macro-Recall:**\n= (0.8333 + 0.8750) / 2 = 0.8542 (85.42%)\n\n**Macro-F1 Score:**\n= (0.8696 + 0.8235) / 2 = 0.8466 (84.66%)\n\n##Weighted Average: \n\n**Weighted-Precision:**\n= (0.9091 * 60 + 0.7778 * 40) / 100 = 0.8566 (85.66%)\n\n**Weighted-Recall:**\n= (0.8333 * 60 + 0.8750 * 40) / 100 = 0.8500 (85.00%)\n\n**Weighted-F1 Score:**\n= (0.8696 * 60 + 0.8235 * 40) / 100 = 0.8512 (85.12%)\n\n##Micro-Average:\n\n**Micro-Precision:**\n= Total correct predictions / Total items = (50 + 35) / 100 = 85 / 100 = 0.8500\n\n**Micro-Recall:**\n= Total correct predictions / Total items = (50 + 35) / 100 = 85 / 100 = 0.8500\n\n**Micro-F1 Score:**\n= 2 * (0.8500 * 0.8500) / (0.8500 + 0.8500) = 0.8500\n\n\n##Performance Insights: \n\n**Highly Trustworthy Bin (Recyclable)** \nPrecision = 90.91%, Recall = 83.33% \n**The Insight:** When the machine says an item is \"Recyclable\", you can safely trust it. It rarely puts bad trash into this bin. It does miss a few recyclable items by accident, but the bin itself stays very clean. \n\n**Aggressive Trash Collector (Not Recyclable)** \nPrecision = 77.78%, Recall = 87.50% \n**The Insight:** The machine is excellent at hunting down and catching trash, grabbing almost 88% of it. However, because it is so aggressive, it gets a bit clumsy and accidentally throws away good recyclable items by mistake.\n\nMacro tells you if the model is being fair to all categories.\nWeighted tells you if the model is doing well on daily business volume.\nMicro tells you the raw total of correct items, ignoring the categories",
+    "body": "##What is Classification? \n\nIn machine learning, **classification** is a type of **supervised learning** where the goal is to **predict a discrete label or category** for a given input. The model learns from historical data with known labels and uses that knowledge to categorize new, unseen data.\n\n**Binary Classification:** Choosing between two classes (e.g., Email: Spam or Not Spam; Medical Test: Positive or Negative).\n**Multiclass Classification:** Choosing between three or more mutually exclusive classes (e.g., Classifying an image as a Cat, Dog, or Bird).\n\n##Class Imbalance:\n![Class Imbalance](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mttt0t7jzy7zyp-class-imbalance.jpg)\n\n##Multiclass Classification: \n![MultiClassClassificationExample](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mu2jenxb2mifoc-multiclassclassificationexample.jpg)\n\n**Multiclass data imbalance:**\nThis multiclass dataset falls squarely under the category of **Mild to Moderate Imbalance**. \nActual Compost: 45 items (30% of total data)\nActual Paper: 42 items (28% of total data)\nActual Plastic: 40 items (27% of total data)\nActual Landfill Trash: 23 items (only 15% of total data)\n\n**Accuracy:**\nAccuracy calculates the percentage of items that were correctly classified out of all 150 items processed. These correct items sit on the main green diagonal line:\n\n**Formula:**\n**Accuracy**= (Sum of Correct Predictions)/Total Items\n**Calculation:** (40 + 30 + 35 + 12)/150 = 117/150 = 0.7800\n**Result:** The system is 78.00% Accurate overall.\n\n**Precision:** checks the Model's output \n**Recall:** checks Reality \n**F1-Score:** The harmonic mean balancing both metrics 2 (Precision * Recall) / (Precision + Recall)\n\n**Per-Class Metrics:**\n\n**Compost**\n**Precision:** 40/43 = 0.9302 (93.02%)\n**Recall:** 40/45= 0.8889 (88.89%)\n**F1-Score:** 2 (0.9302 * 0.8889)/(0.9302 + 0.8889)= 0.9091\n\n**Plastic Recycling**\n**Precision:** 30/45 = 0.6667 (66.67%)\n**Recall:** 30/40 = 0.7500 (75.00%)\n**F1-Score:** 2 (0.6667 * 0.7500)/(0.6667 + 0.7500)= 0.7059\n\n**Paper Recycling**\n**Precision:** 35/43 = 0.8140 (81.40%)\n**Recall:**  35/42= 0.8333 (83.33%)\n**F1-Score:** 2 (0.8140 * 0.8333)/(0.8140 + 0.8333) = 0.8235\n\n**Landfill Trash**\n**Precision:** 12/19 = 0.6316 (63.16%)\n**Recall:** 12/23 = 0.5217 (52.17%)\n**F1-Score:** 2 (0.6316 * 0.5217)/(0.6316 + 0.5217)= 0.5714\n\n##Macro Average:\n\n**Macro-Precision:**\n=(0.9302+0.6667+0.8140+0.6316)/4 =0.76060 (76.06%)\n**Macro-Recall:**\n=(0.8889+0.7500+0.8333+0.5217)/4 =0.7485 (74.85%) \n**Macro-F1 Score:**\n=(0.7059+0.9091+0.8235+0.5714)/4 =0.7525 (75.25%) \n\n##Weighted Average:\n**Weighted-Precision:**\n=(0.9302 * 45 + 0.6667 * 40 + 0.8140 * 42 + 0.6316 * 23)/150 = 0.7816 (78.16%)\n\n**Weighted-Recall:**\n=(0.8889 * 45 + 0.7500 * 40 + 0.8333 * 42 + 0.5217 * 23)/150 = 0.7800 (78%)\n\n**Weighted-F1 Score:**\n =(0.7059 * 45 + 0.9091 * 40 + 0.8235 * 42 + 0.5714 * 23)/150 = 0.7801 (78.01%)\n\n##Micro-Average:\n\n**Micro-Precision:**\n=Total correct predictions/Total items =40+30+35+12/150 =117/150 =0.78\n\n**Micro-Recall:**\n=Total correct predictions/Total items = 40+30+35+12/150 =117/150 =0.78\n\n**Micro-F1 Score:**\n=2(0.78 * 0.78)/(0.78+ 0.78) = 0.78 \n\n\n**Note:** The Micro Average is intentionally left out of standard classification reports because it is mathematically identical to Overall Accuracy in single-label multi-class classification.\n\n##Performance Insights:\n\n**High Trust, High Capture (The Star Performer: Compost)**\nPrecision = 93.02%, Recall = 88.89%\nThe Insight: The model has mastered organic waste\n\n**The Dangerous Blind Spot (The Worst Performer: Landfill Trash)**\nPrecision = 63.16%, Recall = 52.17%\nThe Insight: The system completely falls apart when dealing with general garbage\n\n**High Risk of Batch Ruin (The Contaminated Stream: Plastic Recycling)**\nPrecision = 66.67%, Recall = 75.00%\nThe Insight: While the model successfully catches a fair amount of plastic (75% Recall), its Precision is poor.\n\n##BinaryClass Classification:\n![ChatGPT Image Sep 9, 2026, 02 02 20 PM](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mttufe0a7iopr7-chatgpt-image-sep-9-2026-02-02-20-pm.jpg)\n\nThere is a mild data imbalance in this dataset.\nAlways look at the Total Actual counts (the row totals on the right side of the confusion matrix):\n**Actual Recyclable:** 60 items (60% of the data)\n**Actual Not Recyclable:** 40 items (40% of the data)\n\n**Accuracy:**\nAccuracy = (Sum of Correct Predictions) / Total Items\nCalculation: (50 + 35) / 100 = 85 / 100 = 0.8500\nResult: The system is 85.00% Accurate overall.\n\n**Per-Class Metrics:**\n\n**Recyclable**\n**Precision:** 50 / 55 = 0.9091 (90.91%)\n**Recall:** 50 / 60 = 0.8333 (83.33%)\n**F1-Score:** 2 * (0.9091 * 0.8333) / (0.9091 + 0.8333) = 0.8696\n \n**Not Recyclable:**\n**Precision:** 35 / 45 = 0.7778 (77.78%)\n**Recall:** 35 / 40 = 0.8750 (87.50%)\n**F1-Score:** 2 * (0.7778 * 0.8750) / (0.7778 + 0.8750) = 0.8235\n\n##Macro Average:\n\n**Macro-Precision:**\n= (0.9091 + 0.7778) / 2 = 0.8435 (84.35%)\n\n**Macro-Recall:**\n= (0.8333 + 0.8750) / 2 = 0.8542 (85.42%)\n\n**Macro-F1 Score:**\n= (0.8696 + 0.8235) / 2 = 0.8466 (84.66%)\n\n##Weighted Average: \n\n**Weighted-Precision:**\n= (0.9091 * 60 + 0.7778 * 40) / 100 = 0.8566 (85.66%)\n\n**Weighted-Recall:**\n= (0.8333 * 60 + 0.8750 * 40) / 100 = 0.8500 (85.00%)\n\n**Weighted-F1 Score:**\n= (0.8696 * 60 + 0.8235 * 40) / 100 = 0.8512 (85.12%)\n\n##Micro-Average:\n\n**Micro-Precision:**\n= Total correct predictions / Total items = (50 + 35) / 100 = 85 / 100 = 0.8500\n\n**Micro-Recall:**\n= Total correct predictions / Total items = (50 + 35) / 100 = 85 / 100 = 0.8500\n\n**Micro-F1 Score:**\n= 2 * (0.8500 * 0.8500) / (0.8500 + 0.8500) = 0.8500\n\n\n##Performance Insights: \n\n**Highly Trustworthy Bin (Recyclable)** \nPrecision = 90.91%, Recall = 83.33% \n**The Insight:** When the machine says an item is \"Recyclable\", you can safely trust it. It rarely puts bad trash into this bin. It does miss a few recyclable items by accident, but the bin itself stays very clean. \n\n**Aggressive Trash Collector (Not Recyclable)** \nPrecision = 77.78%, Recall = 87.50% \n**The Insight:** The machine is excellent at hunting down and catching trash, grabbing almost 88% of it. However, because it is so aggressive, it gets a bit clumsy and accidentally throws away good recyclable items by mistake.\n\nMacro tells you if the model is being fair to all categories.\nWeighted tells you if the model is doing well on daily business volume.\nMicro tells you the raw total of correct items, ignoring the categories",
     "classTag": "26 · Multiclass Classification & Softmax",
     "topics": [
       "binary-multiclass classi",
@@ -172,7 +439,7 @@
     "createdAt": "2026-09-09T08:35:46.328Z",
     "likes": [],
     "comments": [],
-    "editedAt": "2026-09-09T10:37:25.003Z"
+    "editedAt": "2026-09-15T10:36:56.946Z"
   },
   {
     "id": "mtsyzl4cijznvn",
