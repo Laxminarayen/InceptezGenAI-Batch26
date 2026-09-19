@@ -1,5 +1,17 @@
 [
   {
+    "id": "mu870zpx9fo9ie",
+    "author": "Smartchronon24",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/163743484?v=4",
+    "title": "daily task: sept 14, 2026; Logistic Regression & interpretability",
+    "body": "1. \n![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mu86ztbaap9kw4-image.jpg)\n\n\n2. No, they are fundamentally different because they operate in entirely separate spaces. Linear regression lives in a simple world where a one-unit increase in a feature always adds or subtracts a fixed, predictable amount from your prediction—like adding a constant weight onto a scale. Logistic regression, however, has to warp the entire universe using a sigmoid function so that its predictions stay locked safely between 0% and 100% probability. Because of this warping, its coefficients do not talk about regular numbers; they talk about log-odds. You cannot easily digest a raw logistic coefficient until you run it through an exponentiation function (\\[e^{\\beta }\\]) to turn it into an Odds Ratio, which finally tells you how many times more (or less) likely an event is to happen.",
+    "classTag": "22 · Logistic Regression",
+    "topics": [],
+    "createdAt": "2026-09-19T09:36:53.205Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mu4r9ph4ar61sj",
     "author": "Malini-Sekar",
     "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
