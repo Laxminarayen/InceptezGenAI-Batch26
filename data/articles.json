@@ -1,5 +1,17 @@
 [
   {
+    "id": "mu88206zeruvrd",
+    "author": "Smartchronon24",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/163743484?v=4",
+    "title": "daily task: sept 9, 2026; Dwell into metrics",
+    "body": "![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mu87vx4ilxtn8r-image.jpg)\n\nImagine you train a model to look at 1,000 animal images containing 997 Cats and only 3 rare Birds. If your model is excellent at identifying cats (100% score) but completely misses every single bird (0% score), a simple global check can easily lie to you.The Weighted Average looks at this scenario and gives you a beautiful 99.7% score because it balances the calculation based on population size—since cats make up almost the entire dataset, their success hides the bird failure. The Macro Average, however, steps in as an equalizer. It treats both species with absolute equality, averaging the 100% cat score and the 0% bird score to hand you a realistic 50% result. This instantly flashes a red flag that your model is completely blind to rare categories.\n\n![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mu88157092l491-image.jpg)",
+    "classTag": "27 · Class Imbalance, F1 Score & SMOTE",
+    "topics": [],
+    "createdAt": "2026-09-19T10:05:40.091Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mu87rmi4llcj2y",
     "author": "Smartchronon24",
     "authorAvatar": "https://avatars.githubusercontent.com/u/163743484?v=4",
