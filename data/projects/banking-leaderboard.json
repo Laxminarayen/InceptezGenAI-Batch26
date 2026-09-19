@@ -166,5 +166,13 @@
     "publicMacroF1": 0.6866288265737578,
     "submissionCount": 1,
     "submittedAt": "2026-09-18T15:27:52.370Z"
+  },
+  {
+    "login": "Malini-Sekar",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/308294651?v=4",
+    "publicAccuracy": 0.8764749262536873,
+    "publicMacroF1": 0.7172994900923197,
+    "submissionCount": 1,
+    "submittedAt": "2026-09-19T00:24:44.691Z"
   }
 ]
