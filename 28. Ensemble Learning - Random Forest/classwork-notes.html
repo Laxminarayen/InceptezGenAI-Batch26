@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Classwork Notes · Ensemble Learning &amp; Random Forest</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#1E6FA8;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#5FA8E0;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    -webkit-font-smoothing:antialiased; line-height:1.6;
+  }
+  .wrap{max-width:840px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 80px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.7rem,4vw,2.4rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 6px;}
+  .subtitle{color:var(--ink-soft); font-size:1rem; margin-bottom:8px;}
+  .pdf-link{
+    display:inline-flex; align-items:center; gap:8px; margin:14px 0 34px; font-size:.9rem; font-weight:700;
+    color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px;
+    padding:9px 18px; text-decoration:none;
+  }
+  .pdf-link:hover{border-color:var(--accent); color:var(--accent);}
+  h2{font-size:1.35rem; font-weight:900; margin:44px 0 14px; padding-top:16px; border-top:1px solid var(--line);}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h3{font-size:1.05rem; font-weight:800; margin:22px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{
+    background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent);
+    border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink);
+    font-size:1.02rem;
+  }
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.92rem;}
+  th, td{padding:8px 12px; text-align:center; border:1px solid var(--line);}
+  th{background:var(--paper-2); font-weight:800; font-size:.78rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  tr.hl td{background:color-mix(in srgb, var(--accent) 10%, transparent); font-weight:800;}
+  .note{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px;
+    font-size:.9rem; color:var(--ink-soft); margin:14px 0;
+  }
+  .note b{color:var(--ink);}
+  .agenda{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 20px;}
+  .agenda span{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:8px 16px;
+    font-size:.86rem; font-weight:700; color:var(--ink);
+  }
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Day 28 · Classwork Notes</div>
+  <h1>Ensemble Learning &amp; Random Forest</h1>
+  <p class="subtitle">Written up from today's whiteboard notes — why a single Decision Tree isn't enough, what Ensemble Learning actually means, and how Random Forest turns that idea into bootstrapping, random features, and free out-of-bag validation.</p>
+  <a class="pdf-link" href="Random%20Forest%20Handwritten.pdf" target="_blank">📄 Open the original handwritten notes (PDF)</a>
+
+  <h2>Agenda</h2>
+  <div class="agenda">
+    <span>Decision Trees — the disadvantage</span>
+    <span>Ensemble Learning Algorithms</span>
+    <span>Random Forest, deep dive</span>
+    <span>Bootstrapping &amp; random features</span>
+    <span>Out-of-Bag evaluation</span>
+  </div>
+  <p>Boosting, Stacking, and Voting are weekend reading — today is entirely about Bagging → Random Forest.</p>
+
+  <h2>Before Anything Else: Models Go Stale</h2>
+  <p>10 rows trained the model. Row 11 just showed up with new information. The instinct to resist is: "my model already saw very good data — do I still need to retrain?" Yes — good data once isn't all the data forever. New information changes what the model should have learned. Retraining isn't a failure of the first model, it's routine maintenance.</p>
+
+  <h2>Decision Trees — the Disadvantage</h2>
+  <p>Everything today starts from one uncomfortable fact about a single Decision Tree:</p>
+  <ul>
+    <li><b>Extremely sensitive to training data</b> — change a handful of rows, and the root split, entropy calculations, and every downstream decision can come out completely different.</li>
+    <li><b>The whole structure can flip</b> — Root Node → Entropy → Information Gain is a chain reaction. Perturb the input even slightly and the tree that comes out the other end can look nothing like the last one.</li>
+    <li><b>One perspective on the data</b> — a single tree only ever tells you the one story shaped by exactly the rows and columns it happened to train on.</li>
+  </ul>
+
+  <h3>The analogy: Company A vs. Company B</h3>
+  <table>
+    <thead><tr><th></th><th>Company A</th><th>Company B</th></tr></thead>
+    <tbody>
+      <tr><td><b>Strategy</b></td><td>Prefers Expert AI</td><td>Diversifies the investment</td></tr>
+      <tr><td><b>Hiring</b></td><td>1 PhD candidate, ~2/year</td><td>10 B.Tech / M.Tech grads</td></tr>
+      <tr><td><b>Expertise</b></td><td>≈ 8/10</td><td>≈ 6/10 each</td></tr>
+      <tr><td><b>Tradeoff</b></td><td>Slow, expensive, narrow</td><td>Better resource utilization, better generalization</td></tr>
+    </tbody>
+  </table>
+  <p>Company B's instinct — many smaller, moderately good members combining to form one good team — is exactly Ensemble Learning.</p>
+
+  <h2>Ensemble Learning, Defined</h2>
+  <p>Five spam filters vote on the same email: Spam, Spam, Not Spam, Spam, Spam. Four out of five say Spam — the ensemble's answer is Spam. That's the whole idea: combine many moderately good models to produce one better output.</p>
+  <div class="formula">
+    Main Objective: Better Accuracy + Better Generalization
+    <span class="sub">Not overfitting — achieved by combining multiple Decision Trees, each seeing the data from a slightly different perspective.</span>
+  </div>
+
+  <h3>The four main ensemble techniques</h3>
+  <ol>
+    <li><b>Bagging</b> — today's entire focus. Bootstrap + Aggregate; the engine behind Random Forest.</li>
+    <li><b>Boosting</b> — each new model focuses on fixing the previous one's mistakes. Weekend reading.</li>
+    <li><b>Stacking</b> — train a "meta-model" on top of other models' predictions. Weekend reading.</li>
+    <li><b>Voting</b> — combine different model types directly by majority vote or averaging. Weekend reading.</li>
+  </ol>
+
+  <h2>Random Forest = Bagging + Randomness</h2>
+  <p>Multiple trees → forest. Random Forest is Bagging applied to Decision Trees, with extra randomness injected while <i>building</i> each tree — in both the rows and the columns it's allowed to see. It's a fairly new field, and the "Random" in the name refers to exactly two design choices.</p>
+
+  <h3>Running example: loan approval</h3>
+  <table>
+    <thead><tr><th>ID</th><th>Age</th><th>Sex</th><th>Salary</th><th>Credit Score</th><th>Approval</th></tr></thead>
+    <tbody>
+      <tr><td>R1</td><td>25</td><td>M</td><td>45</td><td>620</td><td>N</td></tr>
+      <tr><td>R2</td><td>38</td><td>F</td><td>90</td><td>760</td><td>Y</td></tr>
+      <tr><td>R3</td><td>45</td><td>M</td><td>110</td><td>690</td><td>Y</td></tr>
+      <tr><td>R4</td><td>29</td><td>F</td><td>55</td><td>710</td><td>Y</td></tr>
+      <tr><td>R5</td><td>52</td><td>M</td><td>60</td><td>580</td><td>Y</td></tr>
+      <tr class="hl"><td>R6</td><td>28</td><td>M</td><td>120</td><td>?</td><td>New data →</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Step 1 — Bootstrapping: random rows, with replacement</h3>
+  <p>To build Tree 1's dataset, sample rows randomly <b>with replacement</b> from R1–R5. The same row can be picked more than once, and some rows won't get picked at all.</p>
+  <div class="formula">
+    Boot 1 = [ R1, R1, R3, R2, R4 ]
+    <span class="sub">R1 was picked twice, R5 wasn't picked at all. The rows left out of a tree's bootstrap sample are that tree's Out-of-Bag (OOB) rows.</span>
+  </div>
+
+  <h3>Step 2 — Random Features: random columns, per split</h3>
+  <p>Each tree isn't allowed to look at every column when deciding a split — only a random subset. That's the second "Random" in Random Forest's name. Rule of thumb for how many columns to keep: roughly <code>√(total columns)</code> — e.g. with 9 columns, about 3 are considered at each split.</p>
+  <p>If Tree 1 is forced to split on {Age, Gender} instead of Credit Score, it has to find a different — but still valid — way to separate the data. That's exactly how T1 ≠ T2 ≠ T3, even though every tree runs the same underlying Decision Tree algorithm.</p>
+  <div class="formula">
+    Random Forest = Random Rows + Random Columns + Trees
+    <span class="sub">The balance is deliberate: enough "tree stretch" that each tree is genuinely different, but not so much randomness that any single tree becomes useless on its own.</span>
+  </div>
+
+  <h3>Bagging, in full: Bootstrapping + Aggregation</h3>
+  <ol>
+    <li><b>Step 1 — Bootstrap N datasets</b>: Boot Dataset 1, Boot Dataset 2, … Boot Dataset N — each a random-with-replacement, random-columns sample.</li>
+    <li><b>Train N independent trees</b>: each bootstrapped dataset trains its own standalone Decision Tree (same algorithm — Entropy → Information Gain → Root Node). Tree 1, Tree 2, … Tree N.</li>
+    <li><b>Step 2 — Aggregate the outputs</b>: for classification, every tree votes and the <b>mode</b> (majority label) wins; for regression, take the <b>average</b> of every tree's prediction.</li>
+  </ol>
+
+  <h2>Out-of-Bag (OOB) Evaluation</h2>
+  <p>Because bootstrapping samples with replacement, each tree is never trained on every row — the leftovers are its OOB set.</p>
+  <table>
+    <thead><tr><th>Tree</th><th>Never trained on</th><th>Use those rows to…</th></tr></thead>
+    <tbody>
+      <tr><td>Tree 1</td><td>R5</td><td>Test Tree 1 on R5</td></tr>
+      <tr><td>Tree 2</td><td>R1, R3</td><td>Test Tree 2 on R1 and R3</td></tr>
+    </tbody>
+  </table>
+  <p>Out-of-Bag Evaluation emulates a validation/train split — using rows that are totally unseen by that specific tree, internally, without setting anything aside up front. The <b>OOB Score</b> scores every row using only the trees that never saw it during training, then averages across all rows: cross-validation, essentially for free. It's a big part of why Random Forests are notoriously hard to overfit badly — every tree is quietly being checked by the rows it never got to memorize.</p>
+
+  <h2>Next Up</h2>
+  <p>Boosting, Stacking, and Voting are this weekend's reading. One more idea is already waiting in the wings from today's notes: the <b>Proximity Matrix</b> — using how often two rows land in the same leaf across the whole forest as a similarity score between them.</p>
+  <div class="note">This week's hackathon rules only allowed Logistic Regression, KNN, and a single Decision Tree — now you know exactly what you'd reach for next if Random Forest were on the table. Try it yourself in the <a href="ensemble-learning-random-forest-slides.html">slide deck</a> for this session (Section 4, "Try It Yourself" — draw your own bootstrap sample and watch the out-of-bag rows appear live).</div>
+</div>
+</body>
+</html>
