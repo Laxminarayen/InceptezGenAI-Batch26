@@ -86,6 +86,30 @@
     background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;
   }
   .summary-box h3{margin-top:0;}
+
+  /* ---------- decision tree diagram ---------- */
+  .dtree-wrap{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:14px;
+    padding:18px 20px 16px; margin:14px 0;
+  }
+  .dtree-title{font-size:.78rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  ul.dtree{list-style:none; margin:0; padding-left:0;}
+  ul.dtree ul{list-style:none; margin:8px 0 0 22px; padding-left:20px; border-left:2px dashed var(--line);}
+  ul.dtree li{position:relative; padding:5px 0;}
+  .dtree .branch-label{
+    display:inline-block; font-size:.68rem; font-weight:800; letter-spacing:.04em; text-transform:uppercase;
+    color:var(--ink-faint); margin-right:8px; min-width:32px;
+  }
+  .dtree .node{
+    display:inline-flex; align-items:center; gap:8px; background:var(--paper); border:1px solid var(--line);
+    border-radius:10px; padding:7px 14px; font-weight:800; font-size:.92rem; color:var(--ink);
+  }
+  .dtree .node.split{border-left:4px solid var(--accent);}
+  .dtree .node.leaf-yes{border-left:4px solid var(--good); color:var(--good);}
+  .dtree .node.leaf-no{border-left:4px solid var(--bad); color:var(--bad);}
+  .dtree .node small{font-weight:600; color:var(--ink-faint); font-size:.78rem;}
+  .tree-compare{display:grid; grid-template-columns:1fr 1fr; gap:16px;}
+  @media (max-width:720px){ .tree-compare{grid-template-columns:1fr;} }
 </style>
 </head>
 <body>
@@ -119,7 +143,71 @@
   </div>
 
   <h2 id="s1"><span class="num">1.</span>Why Ensembles Reduce Variance</h2>
-  <p>A single, fully-grown Decision Tree is a <b>low-bias, high-variance</b> estimator: it can represent almost any decision boundary (low bias), but small changes to the training set produce very different trees (high variance). Averaging many independent, high-variance estimators reduces variance without increasing bias — this is the statistical justification for every bagging-based method, Random Forest included.</p>
+  <p>A single, fully-grown Decision Tree is a <b>low-bias, high-variance</b> estimator: it can represent almost any decision boundary (low bias), but small changes to the training set produce very different trees (high variance). Before the formal argument, here's that instability made concrete — a real tree, fit twice, with exactly one row added in between.</p>
+
+  <h3>A concrete example: one new applicant, a completely different tree</h3>
+  <p>Six loan applicants, two features (Age, Income), and whether each was approved:</p>
+  <table>
+    <thead><tr><th>Applicant</th><th>Age</th><th>Income (₹k)</th><th>Approved?</th></tr></thead>
+    <tbody>
+      <tr><td>A1</td><td>25</td><td>45</td><td>No</td></tr>
+      <tr><td>A2</td><td>38</td><td>90</td><td>Yes</td></tr>
+      <tr><td>A3</td><td>45</td><td>60</td><td>Yes</td></tr>
+      <tr><td>A4</td><td>29</td><td>70</td><td>No</td></tr>
+      <tr><td>A5</td><td>52</td><td>40</td><td>No</td></tr>
+      <tr><td>A6</td><td>41</td><td>65</td><td>Yes</td></tr>
+    </tbody>
+  </table>
+  <p>Fit a standard Decision Tree (entropy criterion, scikit-learn defaults) on exactly these six rows:</p>
+
+  <div class="dtree-wrap">
+    <div class="dtree-title">Tree A — trained on A1–A6</div>
+    <ul class="dtree">
+      <li>
+        <span class="node split">Income ≤ 52.5 ?</span>
+        <ul>
+          <li><span class="branch-label">Yes</span><span class="node leaf-no">🚫 Reject <small>A1, A5</small></span></li>
+          <li>
+            <span class="branch-label">No</span>
+            <span class="node split">Age ≤ 33.5 ?</span>
+            <ul>
+              <li><span class="branch-label">Yes</span><span class="node leaf-no">🚫 Reject <small>A4</small></span></li>
+              <li><span class="branch-label">No</span><span class="node leaf-yes">✅ Approve <small>A2, A3, A6</small></span></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+  <p><b>Income is the root</b> — it looks like the single most important feature in the dataset. Age only gets consulted as a tie-breaker for the high-income group.</p>
+
+  <p>Now a 7th applicant arrives: <b>Age 30, Income 60</b> — and is <b>rejected</b>. Nothing else changes; refit the exact same algorithm on all 7 rows:</p>
+
+  <div class="dtree-wrap">
+    <div class="dtree-title">Tree B — trained on A1–A6 + A7 (Age 30, Income 60, Rejected)</div>
+    <ul class="dtree">
+      <li>
+        <span class="node split">Age ≤ 34 ?</span>
+        <ul>
+          <li><span class="branch-label">Yes</span><span class="node leaf-no">🚫 Reject <small>A1, A4, A7</small></span></li>
+          <li>
+            <span class="branch-label">No</span>
+            <span class="node split">Age ≤ 48.5 ?</span>
+            <ul>
+              <li><span class="branch-label">Yes</span><span class="node leaf-yes">✅ Approve <small>A2, A3, A6</small></span></li>
+              <li><span class="branch-label">No</span><span class="node leaf-no">🚫 Reject <small>A5</small></span></li>
+            </ul>
+          </li>
+        </ul>
+      </li>
+    </ul>
+  </div>
+
+  <div class="note warn"><b>Income doesn't appear anywhere in Tree B.</b> One new row — 1 out of what is now 7 — was enough for the algorithm to throw out the feature it had just called the most important, and rebuild the entire tree around Age instead. Both trees fit their own data perfectly; nothing was buggy or unlucky about either fit. That's exactly the "small changes in training data → very different trees" instability the bias-variance argument below describes formally.</div>
+  <p class="footnote" style="margin-top:-6px;">Why it flips: A7 (age 30, income 60) contradicts Tree A's rule that "income &gt; 52.5 ⇒ probably approve" — a same-ish income to A3 (also 60), but rejected. That one contradiction is enough to make Income noticeably less pure as a splitter, and it turns out Age alone perfectly separates all 7 rows (young → reject, middle-aged → approve, older → reject) — so the entropy-minimizing algorithm switches roots entirely rather than keeping Income and patching around the exception.</p>
+
+  <p>Neither tree is "wrong" — each is the honestly best tree for the data it saw. That's precisely the point: <b>trust one tree, and your model's entire structure depends on which specific rows happened to be in your training set.</b> Random Forest's answer isn't to find the one "correct" tree — it's to stop asking any single tree to be right, and instead grow hundreds of them on different resamples of the data, so no one training-set accident (like applicant A7) gets to dictate the whole model.</p>
+
   <div class="formula">
     Var(mean of B independent estimators) = Var(single estimator) / B
     <span class="sub">If the B trees were truly independent, variance would shrink linearly with the number of trees. In practice trees trained on the same dataset are correlated, which caps the benefit — this is precisely the problem random feature selection (Section 3) exists to address.</span>
