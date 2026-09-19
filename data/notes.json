@@ -4,7 +4,7 @@
     "author": "kishorem5",
     "authorAvatar": "https://avatars.githubusercontent.com/u/78945546?v=4",
     "title": "Random Forest/Baggging Models- OOB (Out-of-Bag)",
-    "body": "**Simple idea\n**\nSuppose you have 1,000 training rows.\n\nFor each decision tree in a Random Forest, the algorithm randomly samples rows with replacement to create that tree's training dataset.\n\nBecause sampling is with replacement, some rows are not selected for that tree.\n\nThose unused rows are called Out-of-Bag (OOB) samples.\n\nExample:\n\nOriginal data → 1,000 rows\nTree 1 gets → ~630 unique rows\nRemaining ~370 rows → OOB for Tree 1\nTree 2 has a different set of OOB rows\nAnd so on.\n\n**Why is OOB useful?**\n\nThose OOB samples can act like a mini validation set for each tree.\n\nSo Random Forest can estimate its performance without needing a separate validation dataset.\n\n**For example:**\n\n\n![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/notes/mu7xifdz02ff6h-image.jpg)",
+    "body": "**Simple idea**\n\nSuppose you have 1,000 training rows.\n\nFor each decision tree in a Random Forest, the algorithm randomly samples rows with replacement to create that tree's training dataset.\n\nBecause sampling is with replacement, some rows are not selected for that tree.\n\nThose unused rows are called Out-of-Bag (OOB) samples.\n\nExample:\n\nOriginal data → 1,000 rows\nTree 1 gets → ~630 unique rows\nRemaining ~370 rows → OOB for Tree 1\nTree 2 has a different set of OOB rows\nAnd so on.\n\n**Why is OOB useful?**\n\nThose OOB samples can act like a mini validation set for each tree.\n\nSo Random Forest can estimate its performance without needing a separate validation dataset.\n\n**For example:**\n\n\n![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/notes/mu7xifdz02ff6h-image.jpg)",
     "classTag": "",
     "topics": [
       "random forest"
@@ -12,7 +12,7 @@
     "createdAt": "2026-09-19T05:10:55.567Z",
     "likes": [],
     "comments": [],
-    "editedAt": "2026-09-19T05:11:49.618Z"
+    "editedAt": "2026-09-19T05:12:03.385Z"
   },
   {
     "id": "mu482bsyyc2imv",
