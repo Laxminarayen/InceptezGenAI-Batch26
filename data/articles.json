@@ -1,5 +1,17 @@
 [
   {
+    "id": "mu87jswl7sijw6",
+    "author": "Smartchronon24",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/163743484?v=4",
+    "title": "daily task: sept 7, 2026; Assumptions of Linear Regression",
+    "body": "Think of building a linear regression model like building a basic wooden ramp.First, Linearity assumes you are actually trying to bridge a straight gap—if the path you are tracing naturally loops or bends like a roller coaster, your flat wooden ramp is completely useless from the start. Second, Independence means each measurement you take stands on its own feet. If you are predicting house prices over ten consecutive years, this year's market shock will automatically bleed into next year's, creating a chain reaction that breaks independent logic.The last two assumptions govern the chaotic part of the world: your model's mistakes. Normality expects that your model will make a lot of tiny, balanced mistakes right near zero and only occasionally make a massive blunder. Finally, Equal Variance (Homoscedasticity) ensures your model is equally fair across the board. If you are predicting someone's daily spending based on their income, low-income earners have small variations in spending because their budgets are tight. High-income earners, however, might spend nothing one day and buy a car the next. This creates a volatile, fanning \"cone\" of mistakes (Heteroscedasticity) that breaks the flat, stable assumptions your linear model relies on.\n\n![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mu87jr6k2b6yjy-image.jpg)",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-19T09:51:30.837Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mu87ggg404456m",
     "author": "Smartchronon24",
     "authorAvatar": "https://avatars.githubusercontent.com/u/163743484?v=4",
