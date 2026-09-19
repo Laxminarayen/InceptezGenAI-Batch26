@@ -20,13 +20,13 @@ const PROJECTS = {
   banking: {
     label: "Banking — Customer Campaign Response Prediction",
     classes: ["yes", "no"],
-    deadline: "2026-09-19T23:59:59+05:30",
+    deadline: "2026-09-21T23:59:59+05:30",
     dailyLimit: 5,
   },
   industry: {
     label: "Industry — Smart Building Occupancy Intelligence",
     classes: ["0", "1", "2", "3"],
-    deadline: "2026-09-19T23:59:59+05:30",
+    deadline: "2026-09-21T23:59:59+05:30",
     dailyLimit: 5,
   },
 };

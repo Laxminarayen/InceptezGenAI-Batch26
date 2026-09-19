@@ -4,8 +4,8 @@
 
   // Keep in sync with worker/src/index.js PROJECTS config.
   const PROJECTS = {
-    banking: { classes: ["yes", "no"], deadline: "2026-09-19T23:59:59+05:30", dailyLimit: 5 },
-    industry: { classes: ["0", "1", "2", "3"], deadline: "2026-09-19T23:59:59+05:30", dailyLimit: 5 },
+    banking: { classes: ["yes", "no"], deadline: "2026-09-21T23:59:59+05:30", dailyLimit: 5 },
+    industry: { classes: ["0", "1", "2", "3"], deadline: "2026-09-21T23:59:59+05:30", dailyLimit: 5 },
   };
 
   function getSession() {
