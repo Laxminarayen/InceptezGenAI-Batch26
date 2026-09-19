@@ -1,5 +1,17 @@
 [
   {
+    "id": "mu87rmi4llcj2y",
+    "author": "Smartchronon24",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/163743484?v=4",
+    "title": "daily task: sept 8, 2026; Look at machine prediction.",
+    "body": "1. Binary classification is a type of machine learning task where the goal is to predict one of two possible outcomes for a given input. The model analyzes data to categorize items into discrete, mutually exclusive groups, such as yes/no, spam/not spam, or true/false.\n\n2. A classification report standardizes your model's evaluation metrics into a clean, human-readable breakdown. Instead of just giving you a single high-level accuracy score that can easily hide major flaws, the report forces you to look at the harmony between Precision (the quality of your positive guesses) and Recall (the quantity of true positive cases your model actually captured).\n\nIn a Binary report, the layout is simple because you are tracking a straight yes-or-no choice. When you scale up to a Multiclass report, the structure mirrors this simplicity by breaking the problem down into multiple mini-binary tasks. It computes scores for each class independently, tells you the exact sample count (Support) for each row, and then uses averaging techniques—like Macro and Weighted averages—to give you a transparent look at where the model is succeeding or stumbling.\n\n![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mu87og3ncz83jo-image.jpg)",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-19T09:57:35.788Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mu87jswl7sijw6",
     "author": "Smartchronon24",
     "authorAvatar": "https://avatars.githubusercontent.com/u/163743484?v=4",
