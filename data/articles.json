@@ -1,5 +1,17 @@
 [
   {
+    "id": "mu87axz4elwoa2",
+    "author": "Smartchronon24",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/163743484?v=4",
+    "title": "daily task: sept 5, 2026; What is Classification?",
+    "body": "1. \n![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mu876i99sd8pen-image.jpg)\n\n\n2. \n![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mu8783qlnzmy5e-image.jpg)\n\n\n3. The Multi-Class Dimensional ShiftIn multiclass problems, your model handles multiple labels instead of a simple binary choice. A single class acts as its own reference point, turning columns into Predicted targets and rows into Actual entries.Calculating Per-Class MetricsTo evaluate performance, you isolate one target category as the positive class and group all remaining classes together as the negative class:True Positives (\\[TP\\]): The green diagonal cells where the predicted label perfectly matches the actual label.False Positives (\\[FP\\]): The sum of all incorrect predictions found down that class's column (mislabeled as the target).False Negatives (\\[FN\\]): The sum of all missed predictions found across that class's row (target mislabeled as something else).Global Averaging StrategiesTo merge these per-class scores into a single final metric for a leaderboard, choose one of three global averages:Macro Averaging: Computes the raw average of all class scores equally, making it ideal for checking if the model handles rare, minority classes well.Micro Averaging: Aggregates total global counts of all classifications together, meaning its final score is heavily driven by your largest, most frequent classes.Weighted Averaging: Computes scores by weighting each class proportional to its true presence in the dataset, keeping the final score realistic to your true operational data split.",
+    "classTag": "26 · Multiclass Classification & Softmax",
+    "topics": [],
+    "createdAt": "2026-09-19T09:44:37.504Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mu870zpx9fo9ie",
     "author": "Smartchronon24",
     "authorAvatar": "https://avatars.githubusercontent.com/u/163743484?v=4",
