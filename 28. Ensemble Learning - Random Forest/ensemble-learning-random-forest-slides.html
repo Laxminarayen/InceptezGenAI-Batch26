@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Ensemble Learning &amp; Random Forest · Bagging, Bootstrapping &amp; OOB</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+
+    --c-why:#3B6E63; --c-mech:#1E6FA8; --c-expand:#B0670C; --c-eval:#C13D68;
+
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+
+    --accent: var(--c-why);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+      --c-why:#79C0AE; --c-mech:#5FA8E0; --c-expand:#E3A238; --c-eval:#F17BA0;
+      --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+      --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+    --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+    --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+    --c-why:#79C0AE; --c-mech:#5FA8E0; --c-expand:#E3A238; --c-eval:#F17BA0;
+    --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+    --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+  }
+  :root[data-theme="light"]{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+    --c-why:#3B6E63; --c-mech:#1E6FA8; --c-expand:#B0670C; --c-eval:#C13D68;
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    overflow:hidden; -webkit-font-smoothing:antialiased;
+  }
+  body[data-section="why"]{--accent:var(--c-why);}
+  body[data-section="mech"]{--accent:var(--c-mech);}
+  body[data-section="expand"]{--accent:var(--c-expand);}
+  body[data-section="eval"]{--accent:var(--c-eval);}
+
+  h1,h2,h3,p{margin:0;}
+  h1,h2,h3{text-wrap:balance; letter-spacing:-0.01em;}
+  ::selection{background:var(--accent); color:#fff;}
+
+  .eyebrow{
+    font-size:.74rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent);
+  }
+  .slide h1{font-size:clamp(1.7rem,3.2vw,2.9rem); font-weight:800; color:var(--ink);}
+  .slide h2{font-size:clamp(1.2rem,1.8vw,1.6rem); font-weight:800; color:var(--ink);}
+  .body-text{font-size:clamp(1rem,1.25vw,1.2rem); font-weight:500; line-height:1.6; color:var(--ink-soft);}
+  .body-text b, .body-text strong{color:var(--ink); font-weight:800;}
+  .tabular{font-variant-numeric:tabular-nums;}
+
+  /* ---------- chrome ---------- */
+  .chrome-top{
+    position:fixed; top:0; left:0; right:0; height:52px; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:0 20px; pointer-events:none;
+  }
+  .chrome-top > *{pointer-events:auto;}
+  .hour-badge{
+    font-size:.72rem; font-weight:800; letter-spacing:.12em; color:var(--ink-faint);
+    background:var(--paper-2); border:1px solid var(--line); padding:6px 12px; border-radius:999px;
+  }
+  .chapter-chip{
+    display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:700;
+    color:var(--ink-soft); background:var(--paper-2); border:1px solid var(--line);
+    padding:6px 14px 6px 8px; border-radius:999px;
+  }
+  .chapter-chip .num{
+    display:inline-flex; align-items:center; justify-content:center; width:20px;height:20px;
+    border-radius:50%; background:var(--accent); color:#fff; font-size:.68rem; font-weight:800;
+  }
+  .icon-btn{
+    width:36px;height:36px; border-radius:50%; border:1px solid var(--line); background:var(--paper-2);
+    color:var(--ink); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;
+  }
+  .icon-btn:hover{background:var(--paper-3);}
+  .icon-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  .deck{position:absolute; inset:0; top:52px; bottom:64px;}
+  .slide{
+    position:absolute; inset:0; display:none; flex-direction:column;
+    padding:clamp(18px,3vw,40px) clamp(24px,5vw,80px);
+    overflow:auto;
+  }
+  .slide.active{display:flex;}
+  .slide-inner{display:flex; flex-direction:column; gap:clamp(12px,1.8vh,20px); max-width:1360px; width:100%; margin:0 auto; flex:1; min-height:0;}
+
+  .chrome-bottom{
+    position:fixed; left:0; right:0; bottom:0; height:64px; z-index:50;
+    display:flex; align-items:center; gap:14px; padding:0 clamp(14px,3vw,32px);
+    background:linear-gradient(0deg, var(--paper) 60%, transparent);
+  }
+  .nav-btn{
+    width:40px;height:40px;border-radius:50%; border:1px solid var(--line); background:var(--paper-2);
+    color:var(--ink); font-size:1.2rem; cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center;
+  }
+  .nav-btn:hover:not(:disabled){background:var(--accent); color:#fff; border-color:transparent;}
+  .nav-btn:disabled{opacity:.35; cursor:default;}
+  .progress{flex:1; display:flex; align-items:center; gap:5px; overflow-x:auto; scrollbar-width:none;}
+  .progress::-webkit-scrollbar{display:none;}
+  .dot{
+    width:9px;height:9px;border-radius:50%; background:var(--paper-3); border:none; cursor:pointer; flex:none;
+    transition:transform .15s ease;
+  }
+  .dot.gap{width:14px; height:2px; border-radius:1px; background:transparent; cursor:default;}
+  .dot.active{transform:scale(1.5);}
+  .slide-counter{font-size:.8rem; font-weight:700; color:var(--ink-faint); flex:none; white-space:nowrap;}
+
+  /* ---------- layout helpers ---------- */
+  .split{display:grid; grid-template-columns:1.05fr 1.35fr; gap:clamp(20px,4vw,52px); align-items:center; flex:1; min-height:0;}
+  @media (max-width:920px){ .split{grid-template-columns:1fr; overflow:auto;} }
+  .split.reverse{grid-template-columns:1.35fr 1.05fr;}
+  .split.even{grid-template-columns:1fr 1fr;}
+  .stack{display:flex; flex-direction:column; gap:12px; min-height:0;}
+  .center-col{display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:16px; flex:1;}
+  .visual-box{
+    background:var(--surface-canvas); border:1px solid var(--line); border-radius:24px;
+    padding:14px; box-shadow:var(--shadow); min-height:0; display:flex; flex-direction:column; gap:8px;
+  }
+
+  /* ---------- components ---------- */
+  .vocab-card{
+    border-left:5px solid var(--accent); background:var(--paper-2); border-radius:14px;
+    padding:12px 18px; display:flex; flex-direction:column; gap:4px;
+  }
+  .vocab-term{font-size:1rem; font-weight:900; letter-spacing:.04em; color:var(--accent);}
+  .vocab-def{font-size:1rem; color:var(--ink); font-weight:600; line-height:1.4;}
+
+  .console{
+    display:flex; flex-wrap:wrap; gap:14px 26px; align-items:center;
+    background:var(--paper-2); border:1px solid var(--line); border-radius:20px;
+    padding:16px 20px;
+  }
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field label{font-size:.76rem; font-weight:800; color:var(--ink-soft); letter-spacing:.03em;}
+  .field .val{color:var(--accent); font-weight:900;}
+  input[type="range"]{width:180px; accent-color:var(--accent);}
+
+  .btn{
+    font:inherit; font-size:.92rem; font-weight:800; border:1px solid var(--line); border-radius:999px;
+    padding:11px 20px; cursor:pointer; background:var(--paper-3); color:var(--ink);
+    transition:transform .12s ease, box-shadow .12s ease; white-space:nowrap;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn:active{transform:translateY(0);}
+  .btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .btn-primary{background:var(--accent); color:#fff; border-color:transparent; box-shadow:0 8px 18px -8px var(--accent);}
+  .btn.toggled{background:var(--accent); color:#fff; border-color:transparent;}
+  .btn-row{display:flex; flex-wrap:wrap; gap:10px;}
+
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px;}
+  .stat-tile{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:12px 14px;}
+  .stat-tile .label{font-size:.7rem; font-weight:800; color:var(--ink-faint); letter-spacing:.05em; text-transform:uppercase;}
+  .stat-tile .value{font-size:1.35rem; font-weight:900; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .stat-tile.accent .value{color:var(--accent);}
+
+  .card{background:var(--paper-2); border:1px solid var(--line); border-radius:18px; padding:18px 20px;}
+  .card-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px;}
+  .card .ico{font-size:1.8rem;}
+  .card h3{font-size:1.02rem; margin-top:8px;}
+  .card p{font-size:.92rem; color:var(--ink-soft); margin-top:4px; line-height:1.45;}
+  .card.warn-card{border-top:5px solid var(--bad);}
+  .card.dim{opacity:.6;}
+
+  .banner{border-radius:14px; padding:12px 16px; font-weight:800; font-size:.92rem; display:flex; align-items:center; gap:10px;}
+  .banner.warn{background:color-mix(in srgb, var(--warn) 18%, var(--paper-2)); color:var(--warn);}
+  .banner.good{background:color-mix(in srgb, var(--good) 18%, var(--paper-2)); color:var(--good);}
+  .banner.bad{background:color-mix(in srgb, var(--bad) 18%, var(--paper-2)); color:var(--bad);}
+  .banner.info{background:var(--paper-3); color:var(--ink); font-weight:600; align-items:flex-start;}
+
+  .roadmap{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  .roadmap .stop{background:var(--paper-2); border-radius:18px; padding:16px 10px; text-align:center; border-top:5px solid var(--stop-color, var(--accent));}
+  .roadmap .stop .ico{font-size:2rem;}
+  .roadmap .stop .t{font-size:.8rem; font-weight:800; margin-top:6px;}
+  @media (max-width:920px){ .roadmap{grid-template-columns:repeat(2,1fr);} }
+
+  .kicker-big{font-size:clamp(2.2rem,5.6vw,3.9rem); font-weight:900; letter-spacing:-0.02em;}
+  .glow{color:var(--accent);}
+
+  .rule-list{display:flex; flex-direction:column; gap:12px;}
+  .rule{display:flex; gap:14px; align-items:flex-start; border-radius:14px; padding:6px 8px; margin:-6px -8px;}
+  .rule .n{width:34px;height:34px;border-radius:50%; background:var(--accent); color:#fff; font-weight:900; display:flex; align-items:center; justify-content:center; flex:none;}
+  .rule .t h3{font-size:1rem;}
+  .rule .t p{font-size:.92rem; color:var(--ink-soft); margin-top:2px;}
+
+  .table-wrap{border:1px solid var(--line); border-radius:14px; overflow:hidden; overflow-x:auto;}
+  .data-table{width:100%; border-collapse:collapse; font-size:.88rem;}
+  .data-table th,.data-table td{padding:9px 12px; text-align:center; font-variant-numeric:tabular-nums;}
+  .data-table thead th{background:var(--paper-3); color:var(--ink-soft); font-weight:800; font-size:.74rem; letter-spacing:.03em; text-transform:uppercase;}
+  .data-table tbody tr{border-top:1px solid var(--line);}
+  .data-table tbody tr.hl-row{background:color-mix(in srgb, var(--accent) 12%, transparent); font-weight:800;}
+
+  .footnote{font-size:.82rem; color:var(--ink-faint); font-weight:600;}
+
+  /* ---------- bootstrap demo chips ---------- */
+  .chip-row{display:flex; flex-wrap:wrap; gap:8px;}
+  .row-chip{
+    display:inline-flex; align-items:center; justify-content:center; min-width:44px; height:36px;
+    border-radius:10px; font-weight:800; font-size:.9rem; padding:0 10px;
+    background:var(--paper-3); color:var(--ink-soft); border:1px solid var(--line);
+  }
+  .row-chip.inbag{background:color-mix(in srgb, var(--good) 22%, var(--paper-2)); color:var(--good); border-color:transparent;}
+  .row-chip.oob{background:color-mix(in srgb, var(--bad) 20%, var(--paper-2)); color:var(--bad); border-color:transparent;}
+  .row-chip .mult{font-size:.68rem; opacity:.75; margin-left:3px;}
+
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+</style>
+</head>
+<body data-section="why">
+  <div class="chrome-top">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="hour-badge" id="hourBadge">ENSEMBLE LEARNING &amp; RANDOM FOREST</div>
+      <div class="chapter-chip" id="chapterChip" style="display:none;">
+        <span class="num" id="chapterNum">1</span>
+        <span id="chapterLabel">—</span>
+      </div>
+    </div>
+    <button class="icon-btn" id="themeToggle" title="Toggle light / dark">🌗</button>
+  </div>
+
+  <main class="deck" id="deck">
+
+    <!-- ============ S0 — TITLE / ROADMAP ============ -->
+    <section class="slide" data-section="why" id="s0">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Ensemble Learning · Bagging &amp; Random Forest</div>
+        <h1 class="kicker-big">One <span class="glow">expert</span>, or a team<br/>of ten <span class="glow">decent</span> ones?</h1>
+        <p class="body-text" style="max-width:760px;">A single Decision Tree is fragile — change a handful of training rows and its whole structure can flip. Today: why combining many moderate models beats trusting one expert model, and how Random Forest turns that idea into an algorithm with two simple sources of randomness.</p>
+        <div class="roadmap" style="width:100%; margin-top:6px;">
+          <div class="stop" style="--stop-color:var(--c-why);"><div class="ico">🌳</div><div class="t">1 · Why a Single Tree Isn't Enough</div></div>
+          <div class="stop" style="--stop-color:var(--c-expand);"><div class="ico">🧩</div><div class="t">2 · Ensemble Learning, the Idea</div></div>
+          <div class="stop" style="--stop-color:var(--c-mech);"><div class="ico">🌲</div><div class="t">3 · Random Forest, Step by Step</div></div>
+          <div class="stop" style="--stop-color:var(--c-eval);"><div class="ico">🎯</div><div class="t">4 · Out-of-Bag Evaluation</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 1 — WHY A SINGLE TREE ISN'T ENOUGH                         -->
+    <!-- ================================================================= -->
+
+    <section class="slide" data-section="why" id="sW1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Before Anything Else · Models Go Stale</div>
+        <h1>10 rows trained it. <span class="glow">Row 11 just arrived.</span></h1>
+        <p class="body-text">Your model already saw a training set and learned from it. New data shows up tomorrow — do you trust the old model, or retrain?</p>
+        <div class="vocab-card">
+          <div class="vocab-term">"My model already saw very good data — do I still need to retrain?"</div>
+          <div class="vocab-def">Yes. "Good data once" isn't "all the data forever." New information changes what the model should have learned — retraining isn't a failure, it's maintenance.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="why" id="sW2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Today's Agenda</div>
+        <h1>From one fragile tree <span class="glow">to a whole forest</span></h1>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card"><div class="ico">🌳</div><h3>Decision Trees — the disadvantage</h3><p>What actually goes wrong with trusting a single tree?</p></div>
+          <div class="card"><div class="ico">🧩</div><h3>Ensemble Learning Algorithms</h3><p>Bagging, Boosting, Stacking, Voting — the four big ideas.</p></div>
+          <div class="card"><div class="ico">🌲</div><h3>Random Forest, deep dive</h3><p>Bootstrapping + random features, step by step.</p></div>
+          <div class="card"><div class="ico">🎯</div><h3>Out-of-Bag Evaluation</h3><p>A validation set you get for free, hiding inside the algorithm itself.</p></div>
+        </div>
+        <div class="banner info">🎯 Boosting, Stacking, and Voting are weekend reading — today is entirely about Bagging → Random Forest.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="why" id="sW3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Decision Trees · The Disadvantage</div>
+        <h1>One tree, <span class="glow">one very opinionated structure</span></h1>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>Extremely sensitive to training data</h3><p>Change a few rows, and the root split, the entropy calculations, the whole tree can come out looking completely different.</p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>The whole structure can flip</h3><p>Root Node → Entropy → Information Gain is a chain — perturb the input even slightly, and every downstream decision can change.</p></div></div>
+          <div class="rule"><div class="n">3</div><div class="t"><h3>One perspective on the data</h3><p>A single tree only ever tells you one story about the dataset — the one shaped by exactly the rows and columns it happened to be trained on.</p></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="why" id="sW4">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">The Analogy · Company A vs. Company B</div>
+          <h1>Hire <span class="glow">one expert</span>, or diversify?</h1>
+          <p class="body-text">Two companies solve the same hiring problem in opposite ways — and one of them is secretly describing Ensemble Learning.</p>
+        </div>
+        <div class="card-grid" style="grid-column:1/-1;">
+          <div class="card">
+            <div class="ico">🎓</div><h3>Company A — Prefers Expert AI</h3>
+            <p>Hires 1 PhD candidate, ~2 a year. Expertise ≈ 8/10, but slow, expensive, and highly specific to what that one person knows.</p>
+          </div>
+          <div class="card" style="border-top:5px solid var(--accent);">
+            <div class="ico">🧑‍🤝‍🧑</div><h3>Company B — Diversifies the Investment</h3>
+            <p>Hires 10 B.Tech/M.Tech grads instead. Expertise ≈ 6/10 each — but better resource utilization, better generalization, and no single point of failure.</p>
+          </div>
+        </div>
+        <div class="banner info" style="grid-column:1/-1;">Company B's instinct — many smaller, moderately good members combining to form one good team — is exactly Ensemble Learning.</div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 2 — ENSEMBLE LEARNING, THE IDEA                            -->
+    <!-- ================================================================= -->
+
+    <section class="slide" data-section="expand" id="sE1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Ensemble Learning · Defined</div>
+        <h1>Many <span class="glow">moderately good</span> models, one good team</h1>
+        <p class="body-text">Five spam filters vote on the same email — one disagrees, four agree. Majority wins.</p>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Model</th><th>Prediction</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>Spam</td></tr>
+              <tr><td>2</td><td>Spam</td></tr>
+              <tr><td>3</td><td>Not Spam</td></tr>
+              <tr><td>4</td><td>Spam</td></tr>
+              <tr><td>5</td><td>Spam</td></tr>
+              <tr class="hl-row"><td>Ensemble (majority vote)</td><td>Spam</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="expand" id="sE2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Ensemble Learning · Main Objective</div>
+        <h1>Better accuracy, <span class="glow">better generalization</span></h1>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card"><div class="ico">🎯</div><h3>Better Accuracy</h3><p>Averaging out the individual mistakes of many models tends to beat trusting any single one of them.</p></div>
+          <div class="card"><div class="ico">🧭</div><h3>Better Generalization</h3><p>Not overfitting to one specific training set's quirks — the whole point of not relying on a single tree.</p></div>
+          <div class="card"><div class="ico">👀</div><h3>Multiple Perspectives</h3><p>Many Decision Trees, each seeing the data slightly differently ⇒ multiple perspectives of the same dataset.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="expand" id="sE3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Ensemble Learning · The Four Big Techniques</div>
+        <h1>Today: Bagging. <span class="glow">This weekend: the rest.</span></h1>
+        <div class="card-grid" style="margin-top:6px;">
+          <div class="card" style="border-top:5px solid var(--accent);"><div class="ico">✅</div><h3>1 · Bagging</h3><p>Bootstrap + Aggregate. The engine behind Random Forest — today's entire focus.</p></div>
+          <div class="card dim"><div class="ico">📅</div><h3>2 · Boosting</h3><p>Each new model focuses on fixing the previous one's mistakes. Weekend reading.</p></div>
+          <div class="card dim"><div class="ico">📅</div><h3>3 · Stacking</h3><p>Train a "meta-model" on top of other models' predictions. Weekend reading.</p></div>
+          <div class="card dim"><div class="ico">📅</div><h3>4 · Voting</h3><p>Combine different model types directly by majority vote or averaging. Weekend reading.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 3 — RANDOM FOREST, STEP BY STEP                            -->
+    <!-- ================================================================= -->
+
+    <section class="slide" data-section="mech" id="sM1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Random Forest · The One-Line Definition</div>
+        <h1>Bagging, <span class="glow">plus a bit of randomness</span></h1>
+        <div class="vocab-card">
+          <div class="vocab-term">Multiple Trees → Forest</div>
+          <div class="vocab-def">Random Forest = Bagging applied to Decision Trees, with extra randomness injected while <i>building</i> each tree — in both the rows and the columns it's allowed to see.</div>
+        </div>
+        <p class="body-text">It's a fairly new field as these things go — and the "Random" in the name refers to exactly two design choices, both coming up next.</p>
+      </div>
+    </section>
+
+    <section class="slide" data-section="mech" id="sM2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Random Forest · The Running Example</div>
+          <h1>Loan approval — <span class="glow">a new applicant just arrived</span></h1>
+          <p class="body-text">Five historical rows to learn from, and one brand-new applicant (R6) to predict.</p>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>ID</th><th>Age</th><th>Sex</th><th>Salary</th><th>Credit Score</th><th>Approval</th></tr></thead>
+            <tbody>
+              <tr><td>R1</td><td>25</td><td>M</td><td>45</td><td>620</td><td>N</td></tr>
+              <tr><td>R2</td><td>38</td><td>F</td><td>90</td><td>760</td><td>Y</td></tr>
+              <tr><td>R3</td><td>45</td><td>M</td><td>110</td><td>690</td><td>Y</td></tr>
+              <tr><td>R4</td><td>29</td><td>F</td><td>55</td><td>710</td><td>Y</td></tr>
+              <tr><td>R5</td><td>52</td><td>M</td><td>60</td><td>580</td><td>Y</td></tr>
+              <tr class="hl-row"><td>R6</td><td>28</td><td>M</td><td>120</td><td>?</td><td>New data →</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="mech" id="sM3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Random Forest · Step 1</div>
+        <h1>Bootstrapping — <span class="glow">random rows, with replacement</span></h1>
+        <p class="body-text">To build Tree 1's dataset, sample rows randomly <b>with replacement</b> from R1–R5. The same row can be picked more than once — and some rows won't get picked at all.</p>
+        <div class="vocab-card">
+          <div class="vocab-term">Boot 1 = [ R1, R1, R3, R2, R4 ]</div>
+          <div class="vocab-def">R1 was picked twice, R5 wasn't picked at all. The rows left out of a tree's bootstrap sample are that tree's <b>Out-of-Bag (OOB)</b> rows — more on that in Section 4.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="mech" id="sM4">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Random Forest · Step 2</div>
+        <h1>Random Features — <span class="glow">random columns, per split</span></h1>
+        <p class="body-text">Each tree isn't allowed to look at every column when deciding a split — only a random subset of them. That's the second "Random" in Random Forest's name.</p>
+        <div class="stat-grid">
+          <div class="stat-tile"><div class="label">Example: 4 rows, 9 columns</div><div class="value">√9 ≈ 3 columns per split</div></div>
+          <div class="stat-tile accent"><div class="label">Common rule of thumb</div><div class="value">√(total columns)</div></div>
+        </div>
+        <div class="banner info">If Tree 1 is forced to split on {Age, Gender} instead of Credit Score, it must find a different — but still valid — way to separate the data. That's exactly how T1 ≠ T2 ≠ T3, even though every tree uses the same Decision Tree algorithm underneath.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="mech" id="sM5">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Random Forest · Putting It Together</div>
+        <h1 class="kicker-big">Random Forest =<br/>Random <span class="glow">Rows</span> + Random <span class="glow">Columns</span> + Trees</h1>
+        <p class="body-text" style="max-width:680px;">The balance is deliberate: enough "tree stretch" that each tree is genuinely different, but not so much randomness that any single tree becomes useless on its own.</p>
+      </div>
+    </section>
+
+    <section class="slide" data-section="mech" id="sM6">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Bagging · The Full Picture</div>
+        <h1>Bootstrapping <span class="glow">+</span> Aggregation</h1>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>Step 1 — Bootstrap N datasets</h3><p>Boot Dataset 1, Boot Dataset 2, … Boot Dataset N — each one a random-with-replacement, random-columns sample.</p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>Train N independent trees</h3><p>Each bootstrapped dataset trains its own standalone Decision Tree — same algorithm (Entropy → Information Gain → Root Node) as always. Tree 1, Tree 2, … Tree N.</p></div></div>
+          <div class="rule"><div class="n">3</div><div class="t"><h3>Step 2 — Aggregate the outputs</h3><p>For classification: every tree votes, take the <b>mode</b> (majority label). For regression: take the <b>average</b> of every tree's prediction.</p></div></div>
+        </div>
+        <div class="banner good">✓ That's the whole algorithm: Bootstrap → many trees → Aggregate. Random Forest just adds the random-columns twist inside step 1.</div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 4 — OUT-OF-BAG EVALUATION                                  -->
+    <!-- ================================================================= -->
+
+    <section class="slide" data-section="eval" id="sO1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Out-of-Bag (OOB) · A Validation Set You Already Have</div>
+        <h1>Every tree leaves <span class="glow">some rows unseen</span></h1>
+        <p class="body-text">Because bootstrapping samples with replacement, each tree is never trained on every row — the leftovers are its OOB set.</p>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Tree</th><th>Never trained on</th><th>Use those rows to…</th></tr></thead>
+            <tbody>
+              <tr><td>Tree 1</td><td>R5</td><td>Test Tree 1 on R5</td></tr>
+              <tr><td>Tree 2</td><td>R1, R3</td><td>Test Tree 2 on R1 and R3</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="banner info">Out-of-Bag Evaluation emulates a validation/train split — using rows that are totally unseen by that specific tree, internally, without setting anything aside up front.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sO2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Try It Yourself</div>
+          <h1>Draw a bootstrap sample <span class="glow">from R1–R5</span></h1>
+          <p class="body-text">Every click draws 5 rows, with replacement, from R1–R5 — exactly like Step 1 of building one tree. Watch which rows repeat, and which get left out entirely.</p>
+          <div class="console">
+            <button class="btn btn-primary" id="drawBtn">🎲 Draw a new bootstrap sample</button>
+          </div>
+        </div>
+        <div class="visual-box">
+          <div class="vocab-card">
+            <div class="vocab-term">In-bag (this tree's training rows)</div>
+            <div class="vocab-def"><div class="chip-row" id="inBagRow"></div></div>
+          </div>
+          <div class="vocab-card" style="border-left-color:var(--bad);">
+            <div class="vocab-term" style="color:var(--bad);">Out-of-bag (this tree's free validation rows)</div>
+            <div class="vocab-def"><div class="chip-row" id="oobRow"></div></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sO3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Out-of-Bag · Scoring the Whole Forest</div>
+        <h1>The <span class="glow">OOB Score</span> — cross-validation, for free</h1>
+        <p class="body-text">Score every row using only the trees that never saw it during training, then average across all rows. No separate held-out validation set required — the randomness of bagging already built one in.</p>
+        <div class="banner good">✓ This is why Random Forests are famously hard to overfit badly — every tree is quietly being checked by the rows it never got to memorize.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sO4">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Next Up</div>
+        <h1 class="kicker-big">Boosting, Stacking &amp; Voting — <span class="glow">this weekend</span></h1>
+        <p class="body-text" style="max-width:680px;">One more idea is already waiting in the wings: the <b>Proximity Matrix</b> — using how often two rows land in the same leaf across the whole forest as a similarity score between them. Meanwhile: your hackathon rules only allowed Logistic Regression, KNN, and a single Decision Tree — now you know exactly what you'd try next if Random Forest were on the table.</p>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="chrome-bottom">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous slide">‹</button>
+    <div class="progress" id="progress"></div>
+    <div class="slide-counter"><span id="curNum" class="tabular">1</span> / <span id="totalNum" class="tabular">—</span></div>
+    <button class="nav-btn" id="nextBtn" aria-label="Next slide">›</button>
+  </nav>
+
+<script>
+"use strict";
+
+const $  = (sel, el=document) => el.querySelector(sel);
+const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+const clamp = (v,lo,hi) => Math.max(lo, Math.min(hi,v));
+
+const slideEls = $$('.slide');
+let cur = 0;
+
+const CHAPTERS = {
+  why:    { num:1, label:'Why a Single Tree Isn’t Enough' },
+  expand: { num:2, label:'Ensemble Learning, the Idea' },
+  mech:   { num:3, label:'Random Forest, Step by Step' },
+  eval:   { num:4, label:'Out-of-Bag Evaluation' },
+};
+
+const onEnter = {};
+const onLeave = {};
+
+function buildDots(){
+  const wrap = $('#progress');
+  wrap.innerHTML = '';
+  let lastSection = null;
+  slideEls.forEach((s, i) => {
+    const sec = s.dataset.section;
+    if(lastSection !== null && sec !== lastSection){
+      const gap = document.createElement('span');
+      gap.className = 'dot gap';
+      wrap.appendChild(gap);
+    }
+    const b = document.createElement('button');
+    b.className = 'dot';
+    b.setAttribute('aria-label', 'Go to slide ' + (i+1));
+    b.addEventListener('click', () => goTo(i));
+    wrap.appendChild(b);
+    lastSection = sec;
+  });
+}
+
+function goTo(i){
+  i = clamp(i, 0, slideEls.length-1);
+  const leaveFn = onLeave[slideEls[cur].id];
+  if(leaveFn) leaveFn();
+  slideEls[cur].classList.remove('active');
+  cur = i;
+  const s = slideEls[cur];
+  s.classList.add('active');
+  document.body.dataset.section = s.dataset.section;
+
+  const chip = $('#chapterChip');
+  const meta = CHAPTERS[s.dataset.section];
+  if(meta){
+    chip.style.display = 'flex';
+    $('#chapterNum').textContent = meta.num;
+    $('#chapterLabel').innerHTML = meta.label;
+  } else {
+    chip.style.display = 'none';
+  }
+
+  $('#curNum').textContent = cur+1;
+  $('#prevBtn').disabled = cur === 0;
+  $('#nextBtn').disabled = cur === slideEls.length-1;
+
+  $$('.dot:not(.gap)', $('#progress')).forEach((d,idx)=> d.classList.toggle('active', idx===cur));
+
+  const fn = onEnter[s.id];
+  if(fn) requestAnimationFrame(fn);
+}
+
+function next(){ if(cur < slideEls.length-1) goTo(cur+1); }
+function prev(){ if(cur > 0) goTo(cur-1); }
+
+$('#nextBtn').addEventListener('click', next);
+$('#prevBtn').addEventListener('click', prev);
+window.addEventListener('keydown', e => {
+  if(e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+  else if(e.key === 'ArrowLeft'){ e.preventDefault(); prev(); }
+});
+
+const themeBtn = $('#themeToggle');
+function applyStoredTheme(){
+  const t = localStorage.getItem('sv-theme-randomforest');
+  if(t) document.documentElement.setAttribute('data-theme', t);
+}
+applyStoredTheme();
+themeBtn.addEventListener('click', () => {
+  const now = document.documentElement.getAttribute('data-theme');
+  const dark = now ? now === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const nextTheme = dark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', nextTheme);
+  localStorage.setItem('sv-theme-randomforest', nextTheme);
+});
+
+/* =========================== O2 — bootstrap sampling demo =========================== */
+function drawBootstrap(){
+  const n = 5;
+  const counts = {1:0,2:0,3:0,4:0,5:0};
+  const draws = [];
+  for(let i=0;i<n;i++){
+    const idx = Math.floor(Math.random()*n)+1;
+    draws.push(idx);
+    counts[idx]++;
+  }
+  draws.sort((a,b)=>a-b);
+
+  const inBagWrap = $('#inBagRow');
+  inBagWrap.innerHTML = draws.map(idx => `<span class="row-chip inbag">R${idx}</span>`).join('');
+
+  const oob = [1,2,3,4,5].filter(i => counts[i] === 0);
+  const oobWrap = $('#oobRow');
+  oobWrap.innerHTML = oob.length
+    ? oob.map(idx => `<span class="row-chip oob">R${idx}</span>`).join('')
+    : '<span class="footnote">Every row got picked at least once this time — draw again.</span>';
+}
+onEnter['sO2'] = drawBootstrap;
+$('#drawBtn').addEventListener('click', drawBootstrap);
+
+/* =========================== init =========================== */
+buildDots();
+$('#totalNum').textContent = slideEls.length;
+const deepLinkSlide = parseInt(new URLSearchParams(location.search).get('slide'), 10);
+goTo(Number.isFinite(deepLinkSlide) ? deepLinkSlide-1 : 0);
+</script>
+</body>
+</html>
