@@ -283,7 +283,7 @@
           <div class="card"><div class="ico">🌲</div><h3>Random Forest, deep dive</h3><p>Bootstrapping + random features, step by step.</p></div>
           <div class="card"><div class="ico">🎯</div><h3>Out-of-Bag Evaluation</h3><p>A validation set you get for free, hiding inside the algorithm itself.</p></div>
         </div>
-        <div class="banner info">🎯 Boosting, Stacking, and Voting are weekend reading — today is entirely about Bagging → Random Forest.</div>
+        <div class="banner info">🎯 Boosting, Stacking, and Voting aren't part of this course's syllabus — today and Day 2 are entirely about Bagging → Random Forest, end to end.</div>
       </div>
     </section>
 
@@ -360,12 +360,12 @@
     <section class="slide" data-section="expand" id="sE3">
       <div class="slide-inner stack">
         <div class="eyebrow">Ensemble Learning · The Four Big Techniques</div>
-        <h1>Today: Bagging. <span class="glow">This weekend: the rest.</span></h1>
+        <h1>Today: Bagging. <span class="glow">The rest: good to know.</span></h1>
         <div class="card-grid" style="margin-top:6px;">
           <div class="card" style="border-top:5px solid var(--accent);"><div class="ico">✅</div><h3>1 · Bagging</h3><p>Bootstrap + Aggregate. The engine behind Random Forest — today's entire focus.</p></div>
-          <div class="card dim"><div class="ico">📅</div><h3>2 · Boosting</h3><p>Each new model focuses on fixing the previous one's mistakes. Weekend reading.</p></div>
-          <div class="card dim"><div class="ico">📅</div><h3>3 · Stacking</h3><p>Train a "meta-model" on top of other models' predictions. Weekend reading.</p></div>
-          <div class="card dim"><div class="ico">📅</div><h3>4 · Voting</h3><p>Combine different model types directly by majority vote or averaging. Weekend reading.</p></div>
+          <div class="card dim"><div class="ico">📚</div><h3>2 · Boosting</h3><p>Each new model focuses on fixing the previous one's mistakes. Powerful — XGBoost/GBM are frequent hackathon winners — but outside this course's syllabus.</p></div>
+          <div class="card dim"><div class="ico">📚</div><h3>3 · Stacking</h3><p>Train a "meta-model" on top of other models' predictions. Outside this course's syllabus.</p></div>
+          <div class="card dim"><div class="ico">📚</div><h3>4 · Voting</h3><p>Combine different model types directly by majority vote or averaging. Outside this course's syllabus.</p></div>
         </div>
       </div>
     </section>
@@ -511,9 +511,9 @@
 
     <section class="slide" data-section="eval" id="sO4">
       <div class="slide-inner center-col">
-        <div class="eyebrow">Next Up</div>
-        <h1 class="kicker-big">Boosting, Stacking &amp; Voting — <span class="glow">this weekend</span></h1>
-        <p class="body-text" style="max-width:680px;">One more idea is already waiting in the wings: the <b>Proximity Matrix</b> — using how often two rows land in the same leaf across the whole forest as a similarity score between them. Meanwhile: your hackathon rules only allowed Logistic Regression, KNN, and a single Decision Tree — now you know exactly what you'd try next if Random Forest were on the table.</p>
+        <div class="eyebrow">Day 2</div>
+        <h1 class="kicker-big">From model <span class="glow">to app</span></h1>
+        <p class="body-text" style="max-width:680px;">Day 2 takes this all the way: the <b>Proximity Matrix</b> implemented by hand on the predictive maintenance data, the trained forest frozen with <code>joblib</code>, and served through a real <b>Streamlit</b> app. Boosting, Stacking, and Voting are powerful — XGBoost and GBM are frequent hackathon winners — but they're outside this course's syllabus. Meanwhile: your hackathon rules only allowed Logistic Regression, KNN, and a single Decision Tree — now you know exactly what you'd try next if Random Forest were on the table.</p>
       </div>
     </section>
 
