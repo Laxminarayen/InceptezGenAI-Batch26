@@ -10,7 +10,9 @@
       "random forest"
     ],
     "createdAt": "2026-09-19T05:10:55.567Z",
-    "likes": [],
+    "likes": [
+      "Laxminarayen"
+    ],
     "comments": [],
     "editedAt": "2026-09-19T05:12:03.385Z"
   },
@@ -38,7 +40,8 @@
     "topics": [],
     "createdAt": "2026-09-12T07:10:10.047Z",
     "likes": [
-      "Laxminarayen"
+      "Laxminarayen",
+      "HarishSV01"
     ],
     "comments": []
   },
