@@ -78,7 +78,7 @@
     <span>Bootstrapping &amp; random features</span>
     <span>Out-of-Bag evaluation</span>
   </div>
-  <p>Boosting, Stacking, and Voting are weekend reading — today is entirely about Bagging → Random Forest.</p>
+  <p>Boosting, Stacking, and Voting aren't part of this course's syllabus — today (and Day 2) is entirely about Bagging → Random Forest, end to end: theory, Out-of-Bag evaluation, the Proximity Matrix, and shipping the trained model as a Streamlit app.</p>
 
   <h2>Before Anything Else: Models Go Stale</h2>
   <p>10 rows trained the model. Row 11 just showed up with new information. The instinct to resist is: "my model already saw very good data — do I still need to retrain?" Yes — good data once isn't all the data forever. New information changes what the model should have learned. Retraining isn't a failure of the first model, it's routine maintenance.</p>
@@ -114,9 +114,9 @@
   <h3>The four main ensemble techniques</h3>
   <ol>
     <li><b>Bagging</b> — today's entire focus. Bootstrap + Aggregate; the engine behind Random Forest.</li>
-    <li><b>Boosting</b> — each new model focuses on fixing the previous one's mistakes. Weekend reading.</li>
-    <li><b>Stacking</b> — train a "meta-model" on top of other models' predictions. Weekend reading.</li>
-    <li><b>Voting</b> — combine different model types directly by majority vote or averaging. Weekend reading.</li>
+    <li><b>Boosting</b> — each new model focuses on fixing the previous one's mistakes. Powerful (XGBoost and GBM are frequent hackathon winners) but outside this course's syllabus.</li>
+    <li><b>Stacking</b> — train a "meta-model" on top of other models' predictions. Outside this course's syllabus.</li>
+    <li><b>Voting</b> — combine different model types directly by majority vote or averaging. Outside this course's syllabus.</li>
   </ol>
 
   <h2>Random Forest = Bagging + Randomness</h2>
@@ -168,10 +168,30 @@
   </table>
   <p>Out-of-Bag Evaluation emulates a validation/train split — using rows that are totally unseen by that specific tree, internally, without setting anything aside up front. The <b>OOB Score</b> scores every row using only the trees that never saw it during training, then averages across all rows: cross-validation, essentially for free. It's a big part of why Random Forests are notoriously hard to overfit badly — every tree is quietly being checked by the rows it never got to memorize.</p>
 
-  <h2>Next Up</h2>
-  <p>Boosting, Stacking, and Voting are this weekend's reading. One more idea is already waiting in the wings from today's notes: the <b>Proximity Matrix</b> — using how often two rows land in the same leaf across the whole forest as a similarity score between them.</p>
   <div class="note">This week's hackathon rules only allowed Logistic Regression, KNN, and a single Decision Tree — now you know exactly what you'd reach for next if Random Forest were on the table. Try it yourself in the <a href="ensemble-learning-random-forest-slides.html">slide deck</a> for this session (Section 4, "Try It Yourself" — draw your own bootstrap sample and watch the out-of-bag rows appear live).</div>
   <div class="note">Want the full reference version of this topic — the variance math, hyperparameters, feature importance, and the Proximity Matrix written out properly? See <a href="random-forest-textbook-notes.html">Random Forest — Reference Notes</a>.</div>
+
+  <h2>Day 2 (20 Sept) — From Model to App</h2>
+  <p>Back to the predictive maintenance dataset from Day 27 — same Logistic Regression / KNN / Decision Tree comparison on the multiclass Failure Type target, same SMOTE for the imbalance — but this time Random Forest joins the lineup, and we take the winning model all the way to a running web app.</p>
+
+  <h3>Proximity Matrix, implemented by hand</h3>
+  <p>Exactly the idea teased at the end of Day 1: for a sample of test rows, run every row down all 500 trees and record which leaf it lands in per tree (<code>rf_model.apply(X)</code>). Two rows' proximity is just the fraction of trees where they landed in the <i>same</i> leaf:</p>
+  <div class="formula">
+    proximity[i, j] = (# trees where row i and row j share a leaf) / (total trees)
+    <span class="sub">Computed for a balanced sample (8 rows per failure class) and visualized as a heatmap — rows of the same failure type light up as mutually "close," entirely from the forest's own structure, with no similarity metric ever explicitly defined.</span>
+  </div>
+
+  <h3>Freezing the model for deployment</h3>
+  <p>"Input → (Model, frozen) → Numbers." Once the Random Forest is trained, three things get serialized with <code>joblib</code> so a separate application can use them without retraining anything:</p>
+  <ul>
+    <li><b>rf_model.joblib</b> — the fitted 500-tree Random Forest itself.</li>
+    <li><b>scaler.joblib</b> — the fitted <code>StandardScaler</code>, so new raw input gets scaled exactly like training data was.</li>
+    <li><b>metadata_rfs.json</b> — feature names, per-feature min/max/mean/std (used to pre-fill sensible defaults in the app's input form), and the failure-type class labels.</li>
+  </ul>
+
+  <h3>Serving it with Streamlit</h3>
+  <p>A one-time environment setup — a fresh Conda env so Streamlit's dependencies never collide with your base install, <code>pip install streamlit</code>, then <code>pip install -r requirements.txt</code> — followed by a single command per run: <code>streamlit run app.py</code>. The app itself is short: load the three frozen files, render a number input per feature (pre-filled with that feature's training-data mean), and on "Predict" scale the input, run <code>rf_model.predict</code> / <code>predict_proba</code>, and print the predicted failure type plus its probability.</p>
+  <div class="note">Full files: <a href="Classwork_MachineMaintenancePrediction_includingRF.ipynb">Day 2 notebook</a> · <a href="Streamlit%20Setup%20and%20run.pdf">Streamlit setup &amp; run guide</a> · <a href="StreamlitApp/app.py">app.py</a> · <a href="StreamlitApp/requirements.txt">requirements.txt</a>.</div>
 </div>
 </body>
 </html>
