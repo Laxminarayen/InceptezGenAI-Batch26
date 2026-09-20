@@ -126,5 +126,13 @@
     "publicMacroF1": 0.9942406990599761,
     "submissionCount": 2,
     "submittedAt": "2026-09-20T18:02:18.594Z"
+  },
+  {
+    "login": "sada1708",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/242890225?v=4",
+    "publicAccuracy": 0.9967051070840197,
+    "publicMacroF1": 0.9909018934706532,
+    "submissionCount": 1,
+    "submittedAt": "2026-09-20T18:05:39.689Z"
   }
 ]
