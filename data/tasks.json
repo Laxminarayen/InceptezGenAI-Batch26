@@ -43,14 +43,15 @@
     "id": "muavokdi7jdm36",
     "author": "Laxminarayen",
     "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
-    "title": "Random Forest; independence",
-    "body": "1. What if trees weren't independent?\n2. In one line, what does Bagging do to reduce variance?\n3. If Bagging trains every tree independently and in parallel, what do you think happens if each new tree instead trains after seeing the previous tree's mistakes?",
+    "title": "Bagging-RF",
+    "body": "1. What is bagging, and how is it implemented in a Random Forest?\n2. How does Random Forest achieve feature randomness?",
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-21T06:42:36.198Z",
     "likes": [],
     "comments": [],
-    "date": "2026-09-21"
+    "date": "2026-09-21",
+    "editedAt": "2026-09-21T07:15:45.595Z"
   },
   {
     "id": "mu7yvb6ttvyf0s",
