@@ -150,5 +150,13 @@
     "publicMacroF1": 0.9942406990599761,
     "submissionCount": 1,
     "submittedAt": "2026-09-21T14:50:42.042Z"
+  },
+  {
+    "login": "yamini2510",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/54167304?v=4",
+    "publicAccuracy": 0.9983525535420099,
+    "publicMacroF1": 0.9942406990599761,
+    "submissionCount": 1,
+    "submittedAt": "2026-09-21T17:34:35.450Z"
   }
 ]
