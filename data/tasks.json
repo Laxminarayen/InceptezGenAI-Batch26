@@ -3,15 +3,15 @@
     "id": "muawvgx95m8ufg",
     "author": "Laxminarayen",
     "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
-    "title": "Hyperparameters of RF",
-    "body": "1. What is the OOB score, and why is it essentially \"free\" validation?\n2. Why does Random Forest need two sources of randomness, rows and columns, instead of just one?",
+    "title": "Hyperparameters",
+    "body": "1. What are the key hyperparameters of Random forest algorithm?",
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-21T07:15:57.933Z",
     "likes": [],
     "comments": [],
     "date": "2026-09-25",
-    "editedAt": "2026-09-21T07:16:44.359Z"
+    "editedAt": "2026-09-21T07:17:10.461Z"
   },
   {
     "id": "muawte2myaut4r",
