@@ -4,13 +4,14 @@
     "author": "Laxminarayen",
     "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
     "title": "Random Forest; independence",
-    "body": "das",
+    "body": "1. What if trees weren't independent?\n2. In one line, what does Bagging do to reduce variance?\n3. If Bagging trains every tree independently and in parallel, what do you think happens if each new tree instead trains after seeing the previous tree's mistakes?",
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-21T07:14:20.926Z",
     "likes": [],
     "comments": [],
-    "date": "2026-09-24"
+    "date": "2026-09-24",
+    "editedAt": "2026-09-21T07:14:36.711Z"
   },
   {
     "id": "muavrykkbykyyh",
