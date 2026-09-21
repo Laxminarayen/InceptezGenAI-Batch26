@@ -134,5 +134,13 @@
     "publicMacroF1": 0.9909018934706532,
     "submissionCount": 1,
     "submittedAt": "2026-09-20T18:05:39.689Z"
+  },
+  {
+    "login": "Sivarc14",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/56547248?v=4",
+    "publicAccuracy": 0.9983525535420099,
+    "publicMacroF1": 0.9942406990599761,
+    "submissionCount": 1,
+    "submittedAt": "2026-09-21T12:04:41.901Z"
   }
 ]
