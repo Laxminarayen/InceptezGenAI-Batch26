@@ -1,5 +1,19 @@
 [
   {
+    "id": "mucpq0ty0tcq7c",
+    "author": "suru7373",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/223130752?v=4",
+    "title": "KNN & Feature Scaling",
+    "body": "1.\n![Scaling in KNN, DT & Logistic](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mucpn9wixnwi7o-scaling-in-knn-dt-logistic.jpg)\n\n2. Landed on(K=3) for \"customer campaign response prediction\" and (K=5) for \"smart building occupancy intelligence\". Selected these specific values by evaluating the Average Macro F1-score across a range of K values using cross-validation.",
+    "classTag": "24 · KNN Regression & Decision Trees",
+    "topics": [
+      "importance of feature sc"
+    ],
+    "createdAt": "2026-09-22T13:31:18.838Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mucmvl663w87wb",
     "author": "suru7373",
     "authorAvatar": "https://avatars.githubusercontent.com/u/223130752?v=4",
