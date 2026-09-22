@@ -1,5 +1,19 @@
 [
   {
+    "id": "muc3bqxxd730gq",
+    "author": "suru7373",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/223130752?v=4",
+    "title": "ROC v/s Precision Recall curve",
+    "body": "**Important Note:** Before diving into the deep end, make sure to look at the ROC Curve & AUC Score first in my article page\n\nAs a data scientist define it, \n**The Majority Class:** Whichever category fills up the bulk of your database\n**The Minority Class:** Whichever category is rare and hard to find\n95% of real-world business applications, the normal class happens to be the giant one.\nIn our case also a normal class as majority, fraud class as minority\n\nIf it is imbalanced and also the normal as majority class\n**Note:**\nTP & TN are Good Alarms: Yes! \nTP means you correctly caught the bad guy; \nTN means you correctly let a good customer pass.\nFN & FP are Bad Alarms: Yes! \nFN means a criminal escaped; \nFP means you falsely accused an innocent person.\n\nTN is the Shield in ROC: Because the negative class(Normal class) is huge in an imbalanced dataset, the enormous TN value acts exactly like a giant shield. When placed in the ROC's FPR denominator, it absorbs and dilutes the mistakes (FP), masking the model's flaws.\n\nPR has No Shield: Precision removes the TN shield entirely and forces the mistakes (FP) to face off directly against your successful catches (TP).\n\nThe Conclusion: In an imbalanced dataset, TN is vastly larger than TP (in my case, 98,010 TN vs. only 900 TP). Because TN dwarfs TP, any metric that includes TN (like ROC-AUC or standard Accuracy) will naturally be warped and look over-optimistic.\n\n## For an imbalanced hackathon dataset, which curve would you trust to pick your threshold, and why?\n\nFrom my Confusion Matrix of\"Customer campaign response prediction\":\n[5568  820]\n[409   437]\n\nTN = 5,568: Correctly identified people who will not subscribe.\nFP = 820: Mistakes where the model flagged an uninterested person as a subscriber.\nFN = 409: Real subscribers that the model missed.  \nTP = 437: Correctly caught people who want to subscribe.\n\n**1. The TN vs. FP Relationship**\nTN (5,568) is high compared to FP (820)\nFPR=FP/(FP+TN)\n=820/(820+5568)\n=0.128 (12.8 %)\n\nThe TN acts as a massive shield. It swallows up the 820 mistakes and dilutes the score down to a comfortable-looking 12.8%. If you only look at the ROC curve, you will think your false alarms are safely under control.\n\n**2. Why the PR Curve is Crucial Here (No TN Shield)**\nhe Precision-Recall curve completely ignores that giant TN (5,568) pool. Instead, it forces your mistakes (FP) to face off directly against your actual wins (TP)\n\nPrecision=TP/(TP+FP)\n=437/(437+820)\n=0.337 (34.7 %)\n\n**Conclusion:**      \nThe ROC Curve says: \"Your false alarm rate is only 12.8%. Good job!\"The PR Curve says: \"Wait! When you actually pick up the phone to call customers, only 34.7% of your calls are successful. You are wasting your budget 65.3% of the time!\"",
+    "classTag": "27 · Class Imbalance, F1 Score & SMOTE",
+    "topics": [
+      "roc v/s pr"
+    ],
+    "createdAt": "2026-09-22T03:04:21.285Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mubxcojfqq124e",
     "author": "suru7373",
     "authorAvatar": "https://avatars.githubusercontent.com/u/223130752?v=4",
