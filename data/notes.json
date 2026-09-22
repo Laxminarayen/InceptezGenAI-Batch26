@@ -1,5 +1,17 @@
 [
   {
+    "id": "muc5nx3wjs4biq",
+    "author": "Mukeshkanna90",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/166968999?v=4",
+    "title": "Bagging and its implement in Random Forest",
+    "body": "Bagging (Bootstrap Aggregating) is an ensemble learning technique that improves model accuracy and reduces overfitting by combining predictions from multiple models.\nSteps in Bagging:\n1.Create multiple bootstrap samples (random samples drawn with replacement) from the original training dataset.\n2.Train a separate decision tree on each bootstrap sample.\n3.Combine the predictions of all trees:\nClassification: Majority voting\nRegression: Average of predictions\nIn Random Forest:\nA large number of decision trees are built using different bootstrap samples.\nEach tree is trained independently.\nThe final prediction is obtained by aggregating the predictions from all trees.\nExample: If a Random Forest contains 100 trees, it creates 100 bootstrap datasets, trains one tree on each dataset, and combines their outputs through voting or averaging.",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-22T04:09:48.380Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mu7xiyq7jfctuv",
     "author": "kishorem5",
     "authorAvatar": "https://avatars.githubusercontent.com/u/78945546?v=4",
