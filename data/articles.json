@@ -1,5 +1,17 @@
 [
   {
+    "id": "mucmatvep2mlsn",
+    "author": "suru7373",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/223130752?v=4",
+    "title": "Logistic Regression & interpretability",
+    "body": "![image 2bd41a2e](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mucm8fqezngej7-image-2bd41a2e.jpg)\n\n**Linear Regression** (Y = mX + c) \n**Positive Slope** (m = +5): Increasing X increases Y.\ne.g., More square footage increases house price.\n\n**Negative Slope** (m = -5): Increasing X decreases Y. \ne.g., Higher car mileage decreases car price\n\n**Logistic Regression** (z = mX + c →Sigmoid) \n**Positive Coefficient** (m = +0.8): Increasing X increases the log-odds, which increases the final probability of the target occurring. \ne.g., More hours studying increases the chance of passing. \n\n**Negative Coefficient** (m = -0.8): Increasing X decreases the log-odds, which decreases the final probability of the target occurring. \ne.g., More missed classes decreases the chance of passing.",
+    "classTag": "22 · Logistic Regression",
+    "topics": [],
+    "createdAt": "2026-09-22T11:55:31.130Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "muc3bqxxd730gq",
     "author": "suru7373",
     "authorAvatar": "https://avatars.githubusercontent.com/u/223130752?v=4",
