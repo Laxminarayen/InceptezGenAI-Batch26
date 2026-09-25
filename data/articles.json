@@ -1,5 +1,17 @@
 [
   {
+    "id": "muh8kufd5dvmqq",
+    "author": "RamyaNaras",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/37861694?v=4",
+    "title": "Bagging vs Boosting",
+    "body": "1. What if trees weren’t independent?\nRandom Forest relies on trees being diverse and weakly correlated. The less correlated the trees are, the more effective the averaging becomes.\nCorrelated trees → similar errors → little variance reduction.\n\n2. In one line, what does Bagging do to reduce variance?\nBagging reduces variance by averaging the predictions of many independently trained models.\n\n3. If Bagging trains every tree independently and in parallel, what happens if each new tree instead trains after seeing the previous tree's mistakes?\nTrees become dependent on previous trees.\nTraining becomes sequential, not parallel.\nThe ensemble focuses on reducing bias rather than primarily reducing variance.",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-25T17:30:14.665Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "muh3ob69oo8zsn",
     "author": "RamyaNaras",
     "authorAvatar": "https://avatars.githubusercontent.com/u/37861694?v=4",
