@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Logistic Regression — Reference Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#C13D68;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#F17BA0;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap{max-width:860px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:680px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+  h2{font-size:1.4rem; font-weight:900; margin:48px 0 14px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px;}
+  h3{font-size:1.06rem; font-weight:800; margin:24px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:9px 12px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono);}
+  pre{background:var(--paper-2); border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.86rem; line-height:1.55;}
+  pre code{background:none; padding:0; font-size:1em;}
+  .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px;}
+  .pill{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:.82rem; font-weight:700; color:var(--ink);}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Reference Notes · Classification</div>
+  <h1>Logistic Regression</h1>
+  <p class="abstract">A linear model wrapped in the sigmoid function, trained by maximizing the likelihood of the observed labels rather than minimizing squared error. The workhorse behind more real-world credit, fraud, and risk decisions than almost any other single algorithm — precisely because it's fast, well-understood, and every coefficient has a clean interpretation.</p>
+
+  <div class="related-links">
+    <a href="classwork-notes.html">📝 Classwork Notes (Day 22 session write-up)</a>
+    <a href="logistic-regression-slides.html">🖥️ Slide Deck</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">The Sigmoid Function</a></li>
+      <li><a href="#s2">The Hypothesis &amp; Decision Boundary</a></li>
+      <li><a href="#s3">From Maximum Likelihood to Log Loss</a></li>
+      <li><a href="#s4">Why Log Loss Is Convex</a></li>
+      <li><a href="#s5">The Gradient</a></li>
+      <li><a href="#s6">Multiclass: One-vs-Rest &amp; Softmax</a></li>
+      <li><a href="#s7">Regularization</a></li>
+      <li><a href="#s8">Evaluation Beyond Accuracy</a></li>
+      <li><a href="#s9">API Reference</a></li>
+      <li><a href="#s10">Worked Example</a></li>
+      <li><a href="#s11">Summary</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1"><span class="num">1.</span>The Sigmoid Function</h2>
+  <div class="formula">
+    σ(z) = 1 / (1 + e⁻ᶻ)
+    <span class="sub">Domain: all real numbers. Range: strictly (0, 1) — never touches 0 or 1 exactly. σ(0) = 0.5. As z→+∞, σ(z)→1; as z→−∞, σ(z)→0. σ'(z) = σ(z)(1−σ(z)) — the derivative is expressible entirely in terms of the function's own output, a property that drives the clean gradient in Section 5.</span>
+  </div>
+  <p>z is the <b>log-odds</b> (logit) by construction: <code>odds = p/(1−p)</code>, <code>z = log(odds)</code>, and inverting that relationship (odds = eᶻ, then p = odds/(1+odds)) algebraically simplifies to exactly σ(z). This is why a coefficient βₖ has a clean reading — a one-unit increase in Xₖ changes the log-odds of the positive class by βₖ, holding everything else fixed.</p>
+
+  <h2 id="s2"><span class="num">2.</span>The Hypothesis &amp; Decision Boundary</h2>
+  <div class="formula">
+    hβ(x) = σ(β₀ + β₁x₁ + … + βₚxₚ) = P(y=1 | x)
+    <span class="sub">The model outputs a probability, not a label. A separate decision rule (commonly p ≥ 0.5) turns it into a hard prediction.</span>
+  </div>
+  <p>Since σ(z)=0.5 exactly at z=0, the p≥0.5 rule reduces to <code>β₀+β₁x₁+…+βₚxₚ ≥ 0</code> — a linear inequality. The decision boundary itself is therefore always a straight line (2 features), a plane (3 features), or a hyperplane (more) — Logistic Regression can only ever separate classes with something linear, regardless of how the probabilities inside the sigmoid curve.</p>
+
+  <h2 id="s3"><span class="num">3.</span>From Maximum Likelihood to Log Loss</h2>
+  <p>Each label yᵢ is modeled as a Bernoulli trial with success probability pᵢ = σ(zᵢ). The likelihood of the entire dataset, assuming independent rows, is the product of each row's probability of its own observed outcome:</p>
+  <div class="formula">
+    L(β) = Π pᵢ^yᵢ (1−pᵢ)^(1−yᵢ)
+    <span class="sub">Maximizing L(β) is equivalent to maximizing its logarithm (log is monotonic), and equivalent again to minimizing the negative log-likelihood — which, divided by n, is exactly the log loss / cross-entropy formula: J(β) = −(1/n)Σ[yᵢlog(pᵢ) + (1−yᵢ)log(1−pᵢ)]. Log loss isn't an arbitrary design choice — it's the maximum-likelihood objective for a Bernoulli-distributed target, the direct classification analogue of Linear Regression's squared error being the maximum-likelihood objective under Gaussian noise.</span>
+  </div>
+
+  <h2 id="s4"><span class="num">4.</span>Why Log Loss Is Convex</h2>
+  <p>z = Xβ is affine in β, and precomposing a convex function of z with an affine map stays convex — so the question reduces to: is −log(σ(z)) convex in z? Its second derivative works out to <code>p(1−p)</code> (using p=σ(z)), which is strictly positive everywhere p is strictly between 0 and 1 — i.e. everywhere. Second derivative never negative ⇒ convex, guaranteed, for any dataset, any features. This is precisely why swapping MSE for log loss was necessary in the first place (Section on training, classwork notes): MSE composed with sigmoid is <i>not</i> guaranteed convex, and can trap gradient descent in a local minimum that isn't the true best fit.</p>
+
+  <h2 id="s5"><span class="num">5.</span>The Gradient</h2>
+  <div class="formula">
+    ∂J/∂βₖ = (1/n) Σ (pᵢ − yᵢ) xᵢₖ
+    <span class="sub">The sigmoid's own derivative identity (Section 1) cancels perfectly against the logarithm's derivative in log loss, collapsing to the same "mistake × feature" shape as Linear Regression's gradient — with pᵢ (a sigmoid output) standing in for a raw linear prediction. Same update rule, same five-step gradient descent loop, different hypothesis and cost function.</span>
+  </div>
+
+  <h2 id="s6"><span class="num">6.</span>Multiclass: One-vs-Rest &amp; Softmax</h2>
+  <table>
+    <thead><tr><th>Strategy</th><th>How it works</th></tr></thead>
+    <tbody>
+      <tr><td><b>One-vs-Rest (OvR)</b></td><td>Train K independent binary classifiers, one per class ("class k vs. everything else"). Predict the class whose classifier outputs the highest probability. Simple, but the K probabilities aren't guaranteed to sum to 1.</td></tr>
+      <tr><td><b>Softmax (Multinomial)</b></td><td>Generalizes the sigmoid directly: <code>P(y=k|x) = e^(z_k) / Σⱼe^(z_j)</code> — one linear score z per class, exponentiated and normalized so all K probabilities sum to exactly 1 by construction. The standard approach in modern libraries and the output layer of virtually every neural network classifier.</td></tr>
+    </tbody>
+  </table>
+  <p>KNN and Decision Trees need no equivalent machinery at all — multiclass falls out of "count more labels" for free (see their references). This genuinely new machinery is specific to linear models like Logistic Regression.</p>
+
+  <h2 id="s7"><span class="num">7.</span>Regularization</h2>
+  <p>Exactly like Ridge/Lasso for Linear Regression (Polynomial Regression reference, Section 5), a penalty term can be added to log loss to shrink coefficients and reduce overfitting — especially relevant with many features or with polynomial/interaction terms added to a logistic model. scikit-learn's <code>LogisticRegression</code> applies L2 regularization by default (parameterized as <code>C</code>, the <i>inverse</i> of regularization strength — smaller C means stronger regularization, the opposite direction from Ridge's α).</p>
+
+  <h2 id="s8"><span class="num">8.</span>Evaluation Beyond Accuracy</h2>
+  <p>Accuracy, precision, recall, and F1 (classwork notes) all depend on a chosen decision threshold. Two threshold-independent tools evaluate the underlying probabilities directly:</p>
+  <ul>
+    <li><b>ROC curve</b> — plots True Positive Rate against False Positive Rate as the threshold sweeps from 0 to 1. <b>AUC</b> (Area Under the Curve) summarizes it in one number: 0.5 = no better than random guessing, 1.0 = perfect separation.</li>
+    <li><b>Precision-Recall curve</b> — plots precision against recall across the same threshold sweep; more informative than ROC-AUC when the positive class is rare (imbalanced data), because it doesn't dilute performance with the (usually large) number of true negatives the way ROC/AUC can.</li>
+  </ul>
+
+  <h2 id="s9"><span class="num">9.</span>API Reference</h2>
+  <table>
+    <thead><tr><th>Parameter</th><th>What it controls</th><th>Typical default</th></tr></thead>
+    <tbody>
+      <tr><td><code>C</code></td><td>Inverse regularization strength — smaller = stronger penalty.</td><td>1.0</td></tr>
+      <tr><td><code>penalty</code></td><td><code>'l2'</code>, <code>'l1'</code>, <code>'elasticnet'</code>, or <code>'none'</code>.</td><td><code>'l2'</code></td></tr>
+      <tr><td><code>solver</code></td><td>The underlying optimization algorithm (some solvers only support some penalties).</td><td><code>'lbfgs'</code></td></tr>
+      <tr><td><code>class_weight</code></td><td><code>'balanced'</code> automatically re-weights classes inversely to their frequency — a quick lever for imbalanced data.</td><td><code>None</code></td></tr>
+      <tr><td><code>max_iter</code></td><td>Cap on solver iterations before giving up on convergence.</td><td>100</td></tr>
+      <tr><td><code>multi_class</code></td><td><code>'ovr'</code> or <code>'multinomial'</code> (softmax) for &gt;2 classes.</td><td><code>'auto'</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s10"><span class="num">10.</span>Worked Example</h2>
+  <pre><code>from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import classification_report, roc_auc_score
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
+
+model = make_pipeline(
+    StandardScaler(),
+    LogisticRegression(C=1.0, class_weight="balanced", max_iter=200),
+)
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+y_proba = model.predict_proba(X_test)[:, 1]
+
+print(classification_report(y_test, y_pred))
+print("ROC-AUC:", roc_auc_score(y_test, y_proba))
+</code></pre>
+
+  <h2 id="s11"><span class="num">11.</span>Summary</h2>
+  <div class="summary-box">
+    <h3>The whole idea, in one paragraph</h3>
+    <p>Logistic Regression squashes a linear score through the sigmoid to produce a valid probability, then trains by maximizing the likelihood of the observed 0/1 labels — an objective that simplifies to log loss, provably convex, and whose gradient collapses to the same "mistake × feature" shape used everywhere else in this course. Its decision boundary is always linear, its coefficients are individually interpretable as log-odds effects, and Softmax extends the exact same idea to any number of classes at once. Threshold-independent tools like ROC-AUC and the Precision-Recall curve evaluate the underlying probabilities directly, which is often more honest than any single accuracy number at one fixed threshold.</p>
+  </div>
+  <div class="pill-row">
+    <span class="pill">Sigmoid / Logit</span>
+    <span class="pill">Maximum Likelihood</span>
+    <span class="pill">Log Loss / Cross-Entropy</span>
+    <span class="pill">Softmax</span>
+    <span class="pill">L1 / L2 Regularization</span>
+    <span class="pill">ROC-AUC</span>
+  </div>
+</div>
+</body>
+</html>

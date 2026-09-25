@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Polynomial Regression — Reference Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#8C3F73;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#E28AC7;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap{max-width:860px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:680px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+  h2{font-size:1.4rem; font-weight:900; margin:48px 0 14px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px;}
+  h3{font-size:1.06rem; font-weight:800; margin:24px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:9px 12px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono);}
+  pre{background:var(--paper-2); border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.86rem; line-height:1.55;}
+  pre code{background:none; padding:0; font-size:1em;}
+  .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px;}
+  .pill{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:.82rem; font-weight:700; color:var(--ink);}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Reference Notes · Regression &amp; a Classification Preview</div>
+  <h1>Polynomial Regression</h1>
+  <p class="abstract">Linear Regression's exact machinery, handed engineered powers of X as extra columns — enough to draw curves without inventing a single new algorithm. Plus: the formal reason that same machinery breaks the moment the target becomes a 0/1 category instead of a number.</p>
+
+  <div class="related-links">
+    <a href="classwork-notes.html">📝 Classwork Notes (Day 21 session write-up)</a>
+    <a href="polynomial-regression-slides.html">🖥️ Slide Deck</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">Polynomial Features</a></li>
+      <li><a href="#s2">Still Linear — In the Parameters</a></li>
+      <li><a href="#s3">The Bias-Variance Decomposition</a></li>
+      <li><a href="#s4">Choosing the Degree</a></li>
+      <li><a href="#s5">Regularization, Previewed: Ridge &amp; Lasso</a></li>
+      <li><a href="#s6">Why a Straight Line Fails for 0/1 Targets</a></li>
+      <li><a href="#s7">What a Valid Probability Function Needs</a></li>
+      <li><a href="#s8">API Reference</a></li>
+      <li><a href="#s9">Worked Example</a></li>
+      <li><a href="#s10">Summary</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1"><span class="num">1.</span>Polynomial Features</h2>
+  <div class="formula">
+    Y = β₀ + β₁X + β₂X² + β₃X³ + … + βₐXᵈ + ε
+    <span class="sub">Each power of X is computed, not measured, and treated as its own ordinary feature column. Degree d=1 recovers plain Linear Regression exactly.</span>
+  </div>
+  <p>Normalize every power before fitting — at X=15, X³=3,375 while X=15, a scale mismatch severe enough to make unscaled gradient descent lurch on one axis and crawl on another (see the Gradient Descent reference, Section 6).</p>
+
+  <h2 id="s2"><span class="num">2.</span>Still Linear — In the Parameters</h2>
+  <p>"Linear" in Linear Regression refers to linearity in the <i>parameters</i> β, not in X. <code>Y = β₀+β₁X+β₂X²</code> is non-linear in X (it curves) but perfectly linear in β — every term is a coefficient times a (possibly transformed) feature, summed. That's why OLS and Gradient Descent apply completely unchanged: to the optimizer, X² is indistinguishable from any other column.</p>
+
+  <h2 id="s3"><span class="num">3.</span>The Bias-Variance Decomposition</h2>
+  <div class="formula">
+    Expected Test Error = Bias² + Variance + Irreducible Error
+    <span class="sub">Bias — error from a model too simple to capture the true pattern (underfitting). Variance — error from a model so flexible it fits noise specific to the training sample (overfitting). Irreducible error — noise no model can ever remove.</span>
+  </div>
+  <p>Increasing polynomial degree trades bias for variance: a low degree can't bend to match the true curve (high bias, low variance — the fit barely changes if you resample the training data); a high degree matches the training sample almost perfectly but swings wildly between different training samples (low bias, high variance). Total expected error is minimized somewhere in between — never at either extreme.</p>
+
+  <h2 id="s4"><span class="num">4.</span>Choosing the Degree</h2>
+  <p>Never choose degree by training error alone — it's monotonically non-increasing as degree grows (more columns can always fit training data at least as well, up to numerical limits). The honest procedure:</p>
+  <ol>
+    <li>Split into train/test (or use k-fold cross-validation for a more stable estimate on small datasets).</li>
+    <li>Fit each candidate degree on training data only.</li>
+    <li>Score every degree on held-out data; plot test error vs. degree.</li>
+    <li>Pick the degree at the minimum of that curve — not the minimum of the training curve.</li>
+  </ol>
+
+  <h2 id="s5"><span class="num">5.</span>Regularization, Previewed: Ridge &amp; Lasso</h2>
+  <p>Instead of a hard degree cutoff, keep many polynomial terms but penalize large coefficients directly in the cost function — letting the optimizer decide how much each term is really worth.</p>
+  <table>
+    <thead><tr><th></th><th>Cost function adds</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr><td><b>Ridge (L2)</b></td><td>λΣβₖ²</td><td>Shrinks all coefficients toward zero, smoothly — none typically reach exactly zero.</td></tr>
+      <tr><td><b>Lasso (L1)</b></td><td>λΣ|βₖ|</td><td>Can shrink some coefficients to exactly zero — effectively performs feature selection.</td></tr>
+    </tbody>
+  </table>
+  <p>λ (lambda) controls the penalty strength — λ=0 recovers plain OLS; large λ shrinks the model toward the trivial "predict the mean" baseline. Not this course's topic in depth, but this is precisely the tool built to solve Section 3's tradeoff without hand-picking a strict degree.</p>
+
+  <h2 id="s6"><span class="num">6.</span>Why a Straight Line Fails for 0/1 Targets</h2>
+  <p>Treat "approved" as 1 and "rejected" as 0, fit OLS the usual way, and two problems appear that no amount of more data fixes:</p>
+  <ul>
+    <li><b>Unbounded output</b> — a line has no ceiling or floor; step slightly outside the training data's range and it happily predicts things like 1.24 or −0.22 — not a valid probability under any interpretation.</li>
+    <li><b>Sensitivity to outliers in a new way</b> — one honest, unusual data point (e.g. a well-qualified applicant who was still rejected) can pull the entire line, and therefore every other prediction, off course — because OLS is fitting a continuous quantity, an extreme y=0 or y=1 case is treated as being just as "extreme" as an extreme numeric outlier would be.</li>
+  </ul>
+
+  <h2 id="s7"><span class="num">7.</span>What a Valid Probability Function Needs</h2>
+  <p>Two hard requirements, and exactly one standard function satisfies both at once (formalized in the Logistic Regression reference):</p>
+  <ul>
+    <li><b>Always between 0 and 1</b> — a legitimate probability, for any input, with no exceptions.</li>
+    <li><b>Bounded reaction to outliers</b> — one extreme point shouldn't be able to swing predictions for every other point.</li>
+  </ul>
+  <p>The sigmoid function, σ(z) = 1/(1+e⁻ᶻ), is an S-shaped curve that satisfies both — it's next session's entire topic.</p>
+
+  <h2 id="s8"><span class="num">8.</span>API Reference</h2>
+  <table>
+    <thead><tr><th>Tool</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>PolynomialFeatures(degree=d)</code></td><td>Generates all polynomial (and, for multiple features, interaction) terms up to degree d.</td></tr>
+      <tr><td><code>Pipeline([...])</code></td><td>Chains feature generation, scaling, and the regressor into one fittable object — avoids leaking test data into the scaler (see the KNN reference, Section on evaluation).</td></tr>
+      <tr><td><code>Ridge(alpha=λ)</code> / <code>Lasso(alpha=λ)</code></td><td>Regularized linear models — <code>alpha</code> is scikit-learn's name for λ.</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s9"><span class="num">9.</span>Worked Example</h2>
+  <pre><code>from sklearn.preprocessing import PolynomialFeatures, StandardScaler
+from sklearn.linear_model import LinearRegression
+from sklearn.pipeline import make_pipeline
+from sklearn.model_selection import cross_val_score
+
+best_degree, best_score = None, -float("inf")
+for degree in range(1, 8):
+    model = make_pipeline(
+        PolynomialFeatures(degree=degree),
+        StandardScaler(),
+        LinearRegression(),
+    )
+    scores = cross_val_score(model, X_train, y_train, cv=5, scoring="r2")
+    if scores.mean() > best_score:
+        best_degree, best_score = degree, scores.mean()
+
+print(f"Best degree: {best_degree} (CV R² = {best_score:.3f})")
+</code></pre>
+
+  <h2 id="s10"><span class="num">10.</span>Summary</h2>
+  <div class="summary-box">
+    <h3>The whole idea, in one paragraph</h3>
+    <p>Polynomial Regression is Linear Regression with extra, engineered feature columns — no new optimizer, no new cost function, just more terms for the exact same machinery. The bias-variance tradeoff means more terms aren't automatically better; the honest way to pick a degree is a held-out test score, not the training score, and Ridge/Lasso regularization offer a smoother alternative to a hard degree cutoff. That same machinery has a hard boundary, though: the moment the target is a category instead of a number, an unbounded straight line stops making sense, which is exactly the gap Logistic Regression's sigmoid is built to close.</p>
+  </div>
+  <div class="pill-row">
+    <span class="pill">Feature Engineering</span>
+    <span class="pill">Bias-Variance Tradeoff</span>
+    <span class="pill">Cross-Validation</span>
+    <span class="pill">Ridge / Lasso</span>
+    <span class="pill">Regularization</span>
+    <span class="pill">Binary Classification, Motivated</span>
+  </div>
+</div>
+</body>
+</html>

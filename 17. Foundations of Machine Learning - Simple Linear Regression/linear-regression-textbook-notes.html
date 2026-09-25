@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Linear Regression — Reference Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#1C8C5A;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#3FBB7C;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    -webkit-font-smoothing:antialiased; line-height:1.65;
+  }
+  .wrap{max-width:860px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:680px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{
+    display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700;
+    color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px;
+    padding:9px 18px; text-decoration:none;
+  }
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+  h2{font-size:1.4rem; font-weight:900; margin:48px 0 14px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px;}
+  h3{font-size:1.06rem; font-weight:800; margin:24px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{
+    background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent);
+    border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink);
+    font-size:1.02rem;
+  }
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:9px 12px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono);}
+  pre{background:var(--paper-2); border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.86rem; line-height:1.55;}
+  pre code{background:none; padding:0; font-size:1em;}
+  .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px;}
+  .pill{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:.82rem; font-weight:700; color:var(--ink);}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Reference Notes · Regression</div>
+  <h1>Linear Regression</h1>
+  <p class="abstract">Fits a straight line (or hyperplane) that minimizes the sum of squared residuals between predicted and actual values. The most interpretable model in the toolbox, the baseline every fancier model has to beat, and the algorithm whose assumptions — checked or violated — quietly decide whether every number it produces can be trusted.</p>
+
+  <div class="related-links">
+    <a href="classwork-notes.html">📝 Classwork Notes (Day 17 session write-up)</a>
+    <a href="ml-foundations-slides.html">🖥️ Slide Deck</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">The Model</a></li>
+      <li><a href="#s2">Ordinary Least Squares — The Closed-Form Solution</a></li>
+      <li><a href="#s3">Why Squared Error? Two Justifications</a></li>
+      <li><a href="#s4">Evaluating Fit</a></li>
+      <li><a href="#s5">The Assumptions — LINE</a></li>
+      <li><a href="#s6">Multiple Linear Regression</a></li>
+      <li><a href="#s7">Underfitting &amp; Overfitting</a></li>
+      <li><a href="#s8">Gradient Descent vs. the Normal Equation</a></li>
+      <li><a href="#s9">API Reference (scikit-learn)</a></li>
+      <li><a href="#s10">Worked Example</a></li>
+      <li><a href="#s11">Summary</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1"><span class="num">1.</span>The Model</h2>
+  <div class="formula">
+    Y = β₀ + β₁X₁ + β₂X₂ + … + βₚXₚ + ε
+    <span class="sub">Y — the target (dependent variable). X₁…Xₚ — features (independent variables). β₀ — the intercept. β₁…βₚ — coefficients, one per feature. ε — irreducible noise the model can never explain, assumed to average to zero.</span>
+  </div>
+  <p>With one feature this is <b>Simple</b> Linear Regression (a line); with more than one it's <b>Multiple</b> Linear Regression (a hyperplane) — the fitting procedure is identical either way.</p>
+
+  <h2 id="s2"><span class="num">2.</span>Ordinary Least Squares — The Closed-Form Solution</h2>
+  <p>Unlike Logistic Regression or Decision Trees, Linear Regression has an exact algebraic solution — no iteration required.</p>
+  <div class="formula">
+    β̂ = (XᵀX)⁻¹Xᵀy
+    <span class="sub">The Normal Equation. X is the n×(p+1) design matrix (a column of 1's for the intercept, plus one column per feature); y is the n×1 target vector. Solving this directly gives the exact minimum-MSE coefficients in one step — no learning rate, no convergence check, no local minima to worry about, because the cost surface is always a single convex bowl (Gradient Descent's Hour 1).</span>
+  </div>
+  <p>The catch: computing <code>(XᵀX)⁻¹</code> costs roughly O(p³) — fine for tens or hundreds of features, prohibitively slow (or numerically unstable, if XᵀX is close to singular) for very large or highly collinear feature sets. That's when Gradient Descent becomes the practical choice instead (Section 8).</p>
+
+  <h2 id="s3"><span class="num">3.</span>Why Squared Error? Two Justifications</h2>
+  <ul>
+    <li><b>Calculus convenience</b> — squared error is smooth and differentiable everywhere, with a single global minimum (Section 2). Absolute error (MAE) is not differentiable at zero, which complicates gradient-based optimization.</li>
+    <li><b>Statistical justification (Gauss–Markov theorem)</b> — under the assumptions in Section 5, OLS is the <b>B</b>est <b>L</b>inear <b>U</b>nbiased <b>E</b>stimator (BLUE): among all linear, unbiased estimators, it has the lowest variance. Separately, if the noise ε is assumed Normally distributed, minimizing squared error is mathematically identical to Maximum Likelihood Estimation — OLS isn't an arbitrary choice, it's the maximum-likelihood answer under that noise model.</li>
+  </ul>
+
+  <h2 id="s4"><span class="num">4.</span>Evaluating Fit</h2>
+  <table>
+    <thead><tr><th>Metric</th><th>Formula</th><th>Reads as</th></tr></thead>
+    <tbody>
+      <tr><td>MSE</td><td>(1/n)Σ(y−ŷ)²</td><td>Average squared error — penalizes large misses heavily.</td></tr>
+      <tr><td>RMSE</td><td>√MSE</td><td>Same units as the target — easier to interpret than MSE.</td></tr>
+      <tr><td>MAE</td><td>(1/n)Σ|y−ŷ|</td><td>Average absolute error — robust to outliers, treats every miss linearly.</td></tr>
+      <tr><td>R²</td><td>1 − SSE/SST</td><td>Proportion of variance explained — unitless, comparable across totally different models.</td></tr>
+      <tr><td>Adjusted R²</td><td>1 − [(1−R²)(n−1)/(n−p−1)]</td><td>R² penalized for feature count — plain R² can only go up (or stay flat) as you add features, even useless ones; adjusted R² can go down.</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s5"><span class="num">5.</span>The Assumptions — LINE</h2>
+  <p>Every one of the guarantees in Section 3 (BLUE, valid p-values, trustworthy confidence intervals) depends on these holding — violate them and the coefficients can still be computed, they just can no longer be trusted the same way.</p>
+  <ul>
+    <li><b>L — Linearity</b> — the true relationship between X and Y is actually linear in the parameters. Check: a residuals-vs-fitted plot should show no pattern; a curve or funnel shape means this is violated (motivates Polynomial Regression).</li>
+    <li><b>I — Independence</b> — residuals aren't correlated with each other (a common violation in time series, where today's error predicts tomorrow's). Check: Durbin-Watson test.</li>
+    <li><b>N — Normality of residuals</b> — required for valid p-values / confidence intervals, not for the point estimates themselves. Check: a Q-Q plot of residuals.</li>
+    <li><b>E — Equal variance (Homoscedasticity)</b> — residual spread should stay roughly constant across the full range of predictions. A residual funnel that widens as fitted values grow is <b>heteroscedasticity</b> — standard errors become unreliable even though coefficients stay unbiased.</li>
+  </ul>
+  <div class="note warn"><b>A fifth practical concern: multicollinearity.</b> If two features are highly correlated with each other, OLS can't tell how much credit belongs to each individually — coefficients become unstable and hard to interpret (though predictions can still be fine). Diagnose with <b>VIF</b> (Variance Inflation Factor); VIF &gt; 5–10 on a feature is a common rule-of-thumb warning sign.</div>
+
+  <h2 id="s6"><span class="num">6.</span>Multiple Linear Regression</h2>
+  <p>Nothing about Sections 2–5 changes with more features — <code>X</code> just grows more columns, and <code>β</code> grows more entries. The interpretation of each coefficient becomes conditional: <b>β_k is the change in Y for a one-unit increase in X_k, holding every other feature constant</b> — which is exactly why multicollinearity (Section 5) is worth checking before trusting any individual coefficient's story.</p>
+
+  <h2 id="s7"><span class="num">7.</span>Underfitting &amp; Overfitting</h2>
+  <p>A straight line forced onto data that genuinely curves <b>underfits</b> — high error on both training and test data, residuals that show a systematic pattern rather than random scatter. Because plain Linear Regression has limited flexibility (it can only ever draw a hyperplane), it rarely overfits on its own — overfitting becomes a real risk once you start engineering extra features (Polynomial Regression, Section 6 of that reference) or adding many correlated predictors.</p>
+
+  <h2 id="s8"><span class="num">8.</span>Gradient Descent vs. the Normal Equation</h2>
+  <table>
+    <thead><tr><th></th><th>Normal Equation</th><th>Gradient Descent</th></tr></thead>
+    <tbody>
+      <tr><td>Result</td><td>Exact, in one step</td><td>Approximate, converges over iterations</td></tr>
+      <tr><td>Cost</td><td>O(p³) — grows fast with features</td><td>O(n·p) per iteration — scales to huge n or p</td></tr>
+      <tr><td>Hyperparameters</td><td>None</td><td>Learning rate, iteration count</td></tr>
+      <tr><td>Works when XᵀX is singular?</td><td>No (or unstable)</td><td>Yes</td></tr>
+      <tr><td>Generalizes to non-linear models?</td><td>No — only works for this closed form</td><td>Yes — the same optimizer trains Logistic Regression, neural networks, etc.</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s9"><span class="num">9.</span>API Reference (scikit-learn)</h2>
+  <table>
+    <thead><tr><th>Parameter</th><th>What it controls</th><th>Typical default</th></tr></thead>
+    <tbody>
+      <tr><td><code>fit_intercept</code></td><td>Whether to fit β₀ at all, or force the line through the origin.</td><td><code>True</code></td></tr>
+      <tr><td><code>positive</code></td><td>Constrain all coefficients to be non-negative — useful when negative weights are physically meaningless.</td><td><code>False</code></td></tr>
+      <tr><td><code>n_jobs</code></td><td>Parallelism for the underlying linear algebra on multi-target problems.</td><td><code>None</code></td></tr>
+    </tbody>
+  </table>
+  <p>scikit-learn's <code>LinearRegression</code> solves the Normal Equation (or a numerically stabler equivalent) directly — there's no learning rate to tune because there's no gradient descent involved at all.</p>
+
+  <h2 id="s10"><span class="num">10.</span>Worked Example</h2>
+  <pre><code>from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import r2_score, mean_squared_error
+
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+model = LinearRegression()
+model.fit(X_train, y_train)
+
+y_pred = model.predict(X_test)
+print("R²:  ", r2_score(y_test, y_pred))
+print("RMSE:", mean_squared_error(y_test, y_pred, squared=False))
+print("Coefficients:", dict(zip(X.columns, model.coef_)))
+print("Intercept:", model.intercept_)
+</code></pre>
+
+  <h2 id="s11"><span class="num">11.</span>Summary</h2>
+  <div class="summary-box">
+    <h3>The whole idea, in one paragraph</h3>
+    <p>Linear Regression fits β̂ = (XᵀX)⁻¹Xᵀy — the exact coefficients that minimize squared error — in one algebraic step, no iteration needed. Under the LINE assumptions (Linearity, Independence, Normality, Equal variance), those coefficients are not just a good fit but the statistically <i>best</i> linear unbiased estimator available. R² tells you what fraction of the target's variance the model explains; residual plots tell you whether to trust that number at all. Everything more advanced in this course — Polynomial Regression, Logistic Regression, Gradient Descent as a general optimizer — is a variation on, or a generalization of, exactly this model.</p>
+  </div>
+  <div class="pill-row">
+    <span class="pill">Ordinary Least Squares</span>
+    <span class="pill">Normal Equation</span>
+    <span class="pill">R² / RMSE / MAE</span>
+    <span class="pill">LINE Assumptions</span>
+    <span class="pill">Multicollinearity / VIF</span>
+    <span class="pill">Gauss–Markov (BLUE)</span>
+  </div>
+</div>
+</body>
+</html>

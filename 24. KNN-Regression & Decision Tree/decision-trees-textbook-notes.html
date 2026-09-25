@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Decision Trees — Reference Notes (Part 1: Categorical Splits)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#1C8C5A;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#3FBB7C;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap{max-width:860px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:680px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+  h2{font-size:1.4rem; font-weight:900; margin:48px 0 14px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px;}
+  h3{font-size:1.06rem; font-weight:800; margin:24px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:9px 12px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono);}
+  pre{background:var(--paper-2); border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.86rem; line-height:1.55;}
+  pre code{background:none; padding:0; font-size:1em;}
+  .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px;}
+  .pill{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:.82rem; font-weight:700; color:var(--ink);}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Reference Notes · Trees, Part 1</div>
+  <h1>Decision Trees — Entropy &amp; Information Gain</h1>
+  <p class="abstract">A recursive, greedy partitioning algorithm: repeatedly ask the single best yes/no question about the data, split on it, and recurse on each resulting group until every leaf is pure (or a stopping rule triggers). No distance, no coefficients — just a sequence of questions, each one chosen to remove as much uncertainty as possible. Also: KNN Regression, the one-word extension of KNN to numeric targets.</p>
+
+  <div class="related-links">
+    <a href="classwork-notes.html">📝 Classwork Notes (Day 24 session write-up)</a>
+    <a href="knn-regression-decision-trees-slides.html">🖥️ Slide Deck</a>
+    <a href="../25.%20Decision%20Tree%20Handson%20-%20Regression/decision-trees-handson-textbook-notes.html">📚 Part 2: Numeric Splits, Gini &amp; Regression Trees</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s0">KNN Regression, Briefly</a></li>
+      <li><a href="#s1">The Tree as a Recursive Partition</a></li>
+      <li><a href="#s2">Entropy</a></li>
+      <li><a href="#s3">Information Gain</a></li>
+      <li><a href="#s4">The Greedy, Recursive Algorithm (ID3-style)</a></li>
+      <li><a href="#s5">Why Greedy, Not Optimal</a></li>
+      <li><a href="#s6">The R² Parallel</a></li>
+      <li><a href="#s7">Summary</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s0"><span class="num">0.</span>KNN Regression, Briefly</h2>
+  <p>One change from KNN Classification: replace the majority vote over the K nearest neighbors' labels with the <b>mean</b> of their numeric targets.</p>
+  <div class="formula">
+    ŷ(x) = (1/K) Σ yᵢ, for the K nearest neighbors of x
+    <span class="sub">Same distance metric, same mandatory scaling, same bias-variance role for K (small K chases noise into a jagged step function; large K oversmooths toward the global mean) — see the KNN reference for the full treatment. Distance-weighted averaging (weight ∝ 1/distance) is the regression analogue of Section 6 in that reference.</span>
+  </div>
+
+  <h2 id="s1"><span class="num">1.</span>The Tree as a Recursive Partition</h2>
+  <p>A Decision Tree is, structurally, nothing more than nested if/else statements. The only hard question the algorithm has to answer, at every single node: <b>which feature, split which way, produces the two "purest" possible child groups?</b> Answering that question requires a way to measure "purity" numerically.</p>
+
+  <h2 id="s2"><span class="num">2.</span>Entropy</h2>
+  <div class="formula">
+    H(S) = −Σ pᵢ log₂(pᵢ)
+    <span class="sub">Borrowed directly from Shannon's information theory, where H(S) is interpreted as the expected number of bits needed to communicate a randomly drawn label from S. H(S)=0 when S is pure (one label, pᵢ=1, zero bits of surprise needed). H(S) is maximized (log₂(number of classes)) when labels are as evenly mixed as possible — for two classes, that maximum is exactly 1.0 at a 50/50 split.</span>
+  </div>
+
+  <h2 id="s3"><span class="num">3.</span>Information Gain</h2>
+  <div class="formula">
+    IG(S, feature) = H(S) − Σ (|Sᵥ|/|S|) · H(Sᵥ)
+    <span class="sub">H(S) is the parent node's entropy before splitting. The sum is the weighted average entropy of the child groups Sᵥ produced by splitting on that feature (weighted by what fraction of the data lands in each child). Information Gain is how much entropy the split removes — the tree, at every node, picks whichever available feature maximizes this quantity.</span>
+  </div>
+  <p>Dividing Information Gain by the parent's own entropy expresses it as a <i>percentage</i> of that node's uncertainty resolved — useful for communicating "this one question explained 72% of the confusion in this group" in plain language to a non-technical audience.</p>
+
+  <h2 id="s4"><span class="num">4.</span>The Greedy, Recursive Algorithm (ID3-style)</h2>
+  <ol>
+    <li>Compute entropy of the current node's data.</li>
+    <li>For every remaining (unused) feature, compute Information Gain if the data were split on it.</li>
+    <li>Split on the feature with the highest Information Gain — that feature becomes this node's question.</li>
+    <li>For each resulting child: if it's pure (entropy 0) or no features remain, make it a <b>leaf</b>, labeled with the majority class of the rows that reached it. Otherwise, recurse — treat the child as a new "current node" and repeat from step 1, using only the rows and features not yet consumed.</li>
+  </ol>
+  <p>This specific recipe (entropy + Information Gain) is the <b>ID3</b> algorithm, historically the first widely-used Decision Tree induction method. Modern implementations (including scikit-learn's <code>DecisionTreeClassifier</code>) generalize this into <b>CART</b> (Classification and Regression Trees), which supports both entropy and Gini impurity (Part 2, Section on Gini) and produces strictly binary splits even for multi-category features.</p>
+
+  <h2 id="s5"><span class="num">5.</span>Why Greedy, Not Optimal</h2>
+  <p>At each step, the tree picks the single best immediate split — it never looks ahead to check whether a locally worse split might enable a globally better tree two levels down. Finding the provably optimal tree over all possible split sequences is NP-hard for any non-trivial dataset, so every practical Decision Tree algorithm, including scikit-learn's, is greedy by necessity. In practice this rarely matters much — the trees produced are excellent, just not mathematically guaranteed to be the single best possible tree.</p>
+
+  <h2 id="s6"><span class="num">6.</span>The R² Parallel</h2>
+  <table>
+    <thead><tr><th>Linear Regression</th><th>Decision Tree</th></tr></thead>
+    <tbody>
+      <tr><td>SST — spread around the mean, before fitting</td><td>H(root) — entropy of the target before any split</td></tr>
+      <tr><td>SSR — spread the fitted line explains</td><td>Information Gain — confusion the split removes</td></tr>
+      <tr><td>SSE — spread left unexplained</td><td>Weighted entropy of the children — confusion remaining</td></tr>
+      <tr><td>R² = SSR/SST</td><td>IG / H(root) = fraction of uncertainty resolved</td></tr>
+    </tbody>
+  </table>
+  <p>Both start from a baseline "spread" (variance around the mean, for numbers; the overall class mix, for categories) and measure what fraction one predictor accounts for. Same underlying logic, different units.</p>
+
+  <h2 id="s7"><span class="num">7.</span>Summary</h2>
+  <div class="summary-box">
+    <h3>The whole idea, in one paragraph</h3>
+    <p>A Decision Tree greedily and recursively asks "which available feature, split which way, removes the most entropy?" — computed the same way, at every node, until every leaf is pure or a stopping rule triggers. It's the ID3 recipe, generalized by modern libraries into CART. Categorical features split cleanly on their existing categories; numeric features and the Gini alternative to entropy are exactly where Part 2 of this reference picks up.</p>
+  </div>
+  <div class="pill-row">
+    <span class="pill">Entropy</span>
+    <span class="pill">Information Gain</span>
+    <span class="pill">ID3 / CART</span>
+    <span class="pill">Greedy Recursive Partitioning</span>
+    <span class="pill">KNN Regression</span>
+  </div>
+</div>
+</body>
+</html>
