@@ -1,5 +1,101 @@
 [
   {
+    "id": "mug84hcfrfavrz",
+    "author": "Malini-Sekar",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
+    "title": "Random Forest",
+    "body": "![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mug80i166tnkez-image.jpg)",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-25T00:29:45.039Z",
+    "likes": [],
+    "comments": []
+  },
+  {
+    "id": "mue0f1r48x65v2",
+    "author": "rajeshece27",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/302352054?v=4",
+    "title": "weak learner",
+    "body": "![weak learner](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mue0edf9330thh-weak-learner.jpg)",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-23T11:18:28.768Z",
+    "likes": [],
+    "comments": []
+  },
+  {
+    "id": "mucpq0ty0tcq7c",
+    "author": "suru7373",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/223130752?v=4",
+    "title": "KNN & Feature Scaling",
+    "body": "1.\n\n![Scaling in KNN, DT & Logistic](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mucpn9wixnwi7o-scaling-in-knn-dt-logistic.jpg)\n\n2. Landed on(K=3) for \"customer campaign response prediction\" and (K=5) for \"smart building occupancy intelligence\". Selected these specific values by evaluating the Average Macro F1-score across a range of K values using cross-validation.",
+    "classTag": "24 · KNN Regression & Decision Trees",
+    "topics": [
+      "importance of feature sc"
+    ],
+    "createdAt": "2026-09-22T13:31:18.838Z",
+    "likes": [],
+    "comments": [],
+    "editedAt": "2026-09-22T13:32:11.576Z"
+  },
+  {
+    "id": "mucmvl663w87wb",
+    "author": "suru7373",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/223130752?v=4",
+    "title": "Logistic Regression or Decision Tree",
+    "body": "## **To explain your model's decision to a non-technical manager, which is easier, and why?**\n![Logistic vs Decision](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mucmvgx1krhr4t-logistic-vs-decision.jpg)",
+    "classTag": "22 · Logistic Regression",
+    "topics": [
+      "logistic v/s decision tr"
+    ],
+    "createdAt": "2026-09-22T12:11:39.630Z",
+    "likes": [
+      "ksuneeram"
+    ],
+    "comments": []
+  },
+  {
+    "id": "mucmatvep2mlsn",
+    "author": "suru7373",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/223130752?v=4",
+    "title": "Logistic Regression & interpretability",
+    "body": "![image 2bd41a2e](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mucm8fqezngej7-image-2bd41a2e.jpg)\n\n**Linear Regression** (Y = mX + c) \n**Positive Slope** (m = +5): Increasing X increases Y.\ne.g., More square footage increases house price.\n\n**Negative Slope** (m = -5): Increasing X decreases Y. \ne.g., Higher car mileage decreases car price\n\n**Logistic Regression** (z = mX + c →Sigmoid) \n**Positive Coefficient** (m = +0.8): Increasing X increases the log-odds, which increases the final probability of the target occurring. \ne.g., More hours studying increases the chance of passing. \n\n**Negative Coefficient** (m = -0.8): Increasing X decreases the log-odds, which decreases the final probability of the target occurring. \ne.g., More missed classes decreases the chance of passing.",
+    "classTag": "22 · Logistic Regression",
+    "topics": [],
+    "createdAt": "2026-09-22T11:55:31.130Z",
+    "likes": [],
+    "comments": []
+  },
+  {
+    "id": "muc3bqxxd730gq",
+    "author": "suru7373",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/223130752?v=4",
+    "title": "ROC v/s Precision Recall curve",
+    "body": "**Important Note:** Before diving into the deep end, make sure to look at the ROC Curve & AUC Score first in my article page\n\nAs a data scientist define it, \n**The Majority Class:** Whichever category fills up the bulk of your database\n**The Minority Class:** Whichever category is rare and hard to find\n95% of real-world business applications, the normal class happens to be the giant one.\nIn our case also a normal class as majority, fraud class as minority\n\nIf it is imbalanced and also the normal as majority class\n**Note:**\nTP & TN are Good Alarms: Yes! \nTP means you correctly caught the bad guy; \nTN means you correctly let a good customer pass.\nFN & FP are Bad Alarms: Yes! \nFN means a criminal escaped; \nFP means you falsely accused an innocent person.\n\nTN is the Shield in ROC: Because the negative class(Normal class) is huge in an imbalanced dataset, the enormous TN value acts exactly like a giant shield. When placed in the ROC's FPR denominator, it absorbs and dilutes the mistakes (FP), masking the model's flaws.\n\nPR has No Shield: Precision removes the TN shield entirely and forces the mistakes (FP) to face off directly against your successful catches (TP).\n\nThe Conclusion: In an imbalanced dataset, TN is vastly larger than TP (in my case, 98,010 TN vs. only 900 TP). Because TN dwarfs TP, any metric that includes TN (like ROC-AUC or standard Accuracy) will naturally be warped and look over-optimistic.\n\n## For an imbalanced hackathon dataset, which curve would you trust to pick your threshold, and why?\n\nFrom my Confusion Matrix of\"Customer campaign response prediction\":\n[5568  820]\n[409   437]\n\nTN = 5,568: Correctly identified people who will not subscribe.\nFP = 820: Mistakes where the model flagged an uninterested person as a subscriber.\nFN = 409: Real subscribers that the model missed.  \nTP = 437: Correctly caught people who want to subscribe.\n\n**1. The TN vs. FP Relationship**\nTN (5,568) is high compared to FP (820)\nFPR=FP/(FP+TN)\n=820/(820+5568)\n=0.128 (12.8 %)\n\nThe TN acts as a massive shield. It swallows up the 820 mistakes and dilutes the score down to a comfortable-looking 12.8%. If you only look at the ROC curve, you will think your false alarms are safely under control.\n\n**2. Why the PR Curve is Crucial Here (No TN Shield)**\nhe Precision-Recall curve completely ignores that giant TN (5,568) pool. Instead, it forces your mistakes (FP) to face off directly against your actual wins (TP)\n\nPrecision=TP/(TP+FP)\n=437/(437+820)\n=0.337 (34.7 %)\n\n**Conclusion:**      \nThe ROC Curve says: \"Your false alarm rate is only 12.8%. Good job!\"The PR Curve says: \"Wait! When you actually pick up the phone to call customers, only 34.7% of your calls are successful. You are wasting your budget 65.3% of the time!\"",
+    "classTag": "27 · Class Imbalance, F1 Score & SMOTE",
+    "topics": [
+      "roc v/s pr"
+    ],
+    "createdAt": "2026-09-22T03:04:21.285Z",
+    "likes": [],
+    "comments": []
+  },
+  {
+    "id": "mubxcojfqq124e",
+    "author": "suru7373",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/223130752?v=4",
+    "title": "ROC Curve & AUC Score",
+    "body": "Let's assume......!\n- 99,000 normal applications \n- 1000 fraud applications \n\nGoal: predicting fraud \n\nTP: Good job! You caught a criminal.\nFN: Bad job! A criminal got away.\nTN: Good job! You let an honest customer pass safely.\nFP: Bad job! You falsely accused an honest customer.\n\nIn case:1, \nTP=1000, FP=99000, TN=0, FN=0\n\nTPR=TP/(TP+FN)\n=1000/(1000+0)\n=1 \n\nFPR=FP/(FP+TN)\n=99000/(99000+0)\n=1 \n\nIn case:2, \nTP=900, FP=990, TN=98010, FN=100 \n\nTPR=TP/(TP+FN)  \n=900/(900+100)\n=0.90 \n\nFPR=FP/(FP+TN)\n=990/(990+98010)\n=0.01 \n\nIntro:\n\nROC is the actual graph that plots the coordinate pairs of (FPR, TPR) across all your different cases.\nAUC is the single probability score (between 0 and 1) that measures the global ranking power of the model.\n\n**1. What is the ROC curve actually plotting?**\n- Receiver Operating Characteristic(ROC)\n- The ROC curve(FPR, TPR)  is explicitly plotting the True Positive Rate (TPR) on the Y-axis against the False Positive Rate (FPR) on the X-axis across every single possible classification threshold from 1.0 down to 0.0. \n- TPR and FPR lie between 0% and 100% \n- Both the axes of the ROC curve and the final AUC score are mathematically bounded strictly between 0 and 1. \n\n**2. What does AUC tell you that accuracy/F1 doesn't?**\na) Plotting Points on the Graph. \n- Every ROC curve automatically includes the \"Do Nothing\" starting point. So we connect three points\n- Case 0 (Start): (FPR = 0.00, TPR = 0.00)\n- Case 2 (Sweet Spot): (FPR = 0.01, TPR = 0.90)\n- Case 1 (Block All): (FPR = 1.00, TPR = 1.00)\n\nb) The Geometric AUC Calculation\n- An individual case does not have its own separate AUC score. \n- You can calculate 20 different F1-scores for 20 different cases, but there is only one overall AUC score for the entire model.\n- If we calculate the exact geometric area under the straight lines connecting your cases, the graph splits into two shapes: a tiny triangle and a large trapezoid.\n- The general rule is simple: Total shapes = Number of points - 1. The very first shape is always a triangle, and all remaining shapes are trapezoids.\n\n**Area from Case 0 to Case 2 (A tiny triangle):**\nArea_1 = 1/2 *width*height = ½* 0.01*0.90 = 0.0045\n\n**Area from Case 2 to Case 1 (A large trapezoid):**\nArea_2 = (Height_1 + Height_2)/2 *width\n = (0.90 + 1.00)/2 * (1.00 - 0.01) \n= 0.95 * 0.99 \n= 0.9405\n\nc) The Final AUC Score\nTotal AUC = 0.0045 + 0.9405 = 0.945\n\n**3. How would you pick a classification threshold differently for a fraud model vs a spam filter?**\n\n**Tuning a Fraud Model:**\n**Looking at Case 1:**\nYour False Negatives are FN = 0. You caught every single thief! However, your False Positives are FP = 99,000, meaning you blocked every innocent user. This is too extreme.\n**Looking at Case 2:**\nYour False Negatives are FN = 100. This means 100 fraudsters got away with your money. But your False Positives dropped heavily to FP = 990, meaning 98,010 good customers passed through smoothly.\n\n**Tuning a Spam Filter:**\n**Looking at Case 1:** \nYour False Positives are FP = 99,000. The model deletes 99,000 completely safe, real emails from your inbox. Nobody can use this email service.\n**Looking at Case 2:**\nYour False Positives drop to FP = 990. Still, 990 important emails are missing. Your False Negatives are FN = 100 (100 spam emails slipped into the main inbox).\n\n**Fraud Strategy:** You lower the threshold to drive FN as close to 0 as possible (sacrificing FP).\n**Spam Strategy:** You raise the threshold to drive FP as close to 0 as possible (sacrificing FN).",
+    "classTag": "27 · Class Imbalance, F1 Score & SMOTE",
+    "topics": [
+      "roc curve",
+      "auc score"
+    ],
+    "createdAt": "2026-09-22T00:17:07.131Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mu88206zeruvrd",
     "author": "Smartchronon24",
     "authorAvatar": "https://avatars.githubusercontent.com/u/163743484?v=4",
@@ -8,7 +104,9 @@
     "classTag": "27 · Class Imbalance, F1 Score & SMOTE",
     "topics": [],
     "createdAt": "2026-09-19T10:05:40.091Z",
-    "likes": [],
+    "likes": [
+      "Laxminarayen"
+    ],
     "comments": []
   },
   {
@@ -20,7 +118,9 @@
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-19T09:57:35.788Z",
-    "likes": [],
+    "likes": [
+      "Laxminarayen"
+    ],
     "comments": []
   },
   {
@@ -32,7 +132,9 @@
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-19T09:51:30.837Z",
-    "likes": [],
+    "likes": [
+      "Laxminarayen"
+    ],
     "comments": []
   },
   {
@@ -44,7 +146,9 @@
     "classTag": "27 · Class Imbalance, F1 Score & SMOTE",
     "topics": [],
     "createdAt": "2026-09-19T09:48:54.724Z",
-    "likes": [],
+    "likes": [
+      "Laxminarayen"
+    ],
     "comments": []
   },
   {
@@ -56,7 +160,9 @@
     "classTag": "26 · Multiclass Classification & Softmax",
     "topics": [],
     "createdAt": "2026-09-19T09:44:37.504Z",
-    "likes": [],
+    "likes": [
+      "Laxminarayen"
+    ],
     "comments": []
   },
   {
@@ -68,7 +174,9 @@
     "classTag": "22 · Logistic Regression",
     "topics": [],
     "createdAt": "2026-09-19T09:36:53.205Z",
-    "likes": [],
+    "likes": [
+      "Laxminarayen"
+    ],
     "comments": []
   },
   {
@@ -80,7 +188,9 @@
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-16T23:52:27.448Z",
-    "likes": [],
+    "likes": [
+      "Laxminarayen"
+    ],
     "comments": []
   },
   {
@@ -92,7 +202,9 @@
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-16T23:41:58.290Z",
-    "likes": [],
+    "likes": [
+      "Laxminarayen"
+    ],
     "comments": []
   },
   {
@@ -104,7 +216,9 @@
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-16T23:05:37.936Z",
-    "likes": [],
+    "likes": [
+      "Laxminarayen"
+    ],
     "comments": []
   },
   {
@@ -116,7 +230,9 @@
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-16T06:15:18.016Z",
-    "likes": [],
+    "likes": [
+      "Laxminarayen"
+    ],
     "comments": []
   },
   {
@@ -128,7 +244,9 @@
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-15T11:35:58.376Z",
-    "likes": [],
+    "likes": [
+      "Laxminarayen"
+    ],
     "comments": []
   },
   {
@@ -140,7 +258,9 @@
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-15T04:07:08.446Z",
-    "likes": [],
+    "likes": [
+      "Laxminarayen"
+    ],
     "comments": []
   },
   {
@@ -153,7 +273,8 @@
     "topics": [],
     "createdAt": "2026-09-14T05:21:15.795Z",
     "likes": [
-      "HarishSV01"
+      "HarishSV01",
+      "Laxminarayen"
     ],
     "comments": []
   },
@@ -167,7 +288,8 @@
     "topics": [],
     "createdAt": "2026-09-14T03:39:53.388Z",
     "likes": [
-      "Malini-Sekar"
+      "Malini-Sekar",
+      "Laxminarayen"
     ],
     "comments": []
   },
@@ -182,7 +304,8 @@
     "createdAt": "2026-09-13T17:42:28.423Z",
     "likes": [
       "HarishSV01",
-      "Malini-Sekar"
+      "Malini-Sekar",
+      "Laxminarayen"
     ],
     "comments": []
   },
@@ -210,7 +333,8 @@
     "topics": [],
     "createdAt": "2026-09-12T15:09:38.018Z",
     "likes": [
-      "HarishSV01"
+      "HarishSV01",
+      "Laxminarayen"
     ],
     "comments": []
   },
@@ -224,7 +348,8 @@
     "topics": [],
     "createdAt": "2026-09-12T13:06:20.460Z",
     "likes": [
-      "HarishSV01"
+      "HarishSV01",
+      "Laxminarayen"
     ],
     "comments": []
   },
@@ -250,7 +375,9 @@
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-12T01:24:34.095Z",
-    "likes": [],
+    "likes": [
+      "Laxminarayen"
+    ],
     "comments": []
   },
   {
@@ -262,7 +389,9 @@
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-12T00:45:30.419Z",
-    "likes": [],
+    "likes": [
+      "Laxminarayen"
+    ],
     "comments": [],
     "editedAt": "2026-09-12T00:49:14.658Z"
   },
@@ -275,7 +404,9 @@
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-11T17:42:02.980Z",
-    "likes": [],
+    "likes": [
+      "Laxminarayen"
+    ],
     "comments": []
   },
   {
@@ -303,7 +434,9 @@
     "classTag": "27 · Class Imbalance, F1 Score & SMOTE",
     "topics": [],
     "createdAt": "2026-09-11T16:29:59.783Z",
-    "likes": [],
+    "likes": [
+      "Laxminarayen"
+    ],
     "comments": []
   },
   {
@@ -315,7 +448,9 @@
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-11T00:00:35.464Z",
-    "likes": [],
+    "likes": [
+      "Laxminarayen"
+    ],
     "comments": []
   },
   {
@@ -327,7 +462,9 @@
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-10T23:39:45.319Z",
-    "likes": [],
+    "likes": [
+      "Laxminarayen"
+    ],
     "comments": [],
     "editedAt": "2026-09-10T23:47:23.135Z"
   },
@@ -340,7 +477,9 @@
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-10T20:05:28.288Z",
-    "likes": [],
+    "likes": [
+      "Laxminarayen"
+    ],
     "comments": []
   },
   {
@@ -352,7 +491,9 @@
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-10T19:59:21.036Z",
-    "likes": [],
+    "likes": [
+      "Laxminarayen"
+    ],
     "comments": []
   },
   {

@@ -1,5 +1,90 @@
 [
   {
+    "id": "muawvgx95m8ufg",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Hyperparameters",
+    "body": "1. What are the key hyperparameters of Random forest algorithm?",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-21T07:15:57.933Z",
+    "likes": [
+      "J-Nirosha"
+    ],
+    "comments": [],
+    "date": "2026-09-25",
+    "editedAt": "2026-09-21T07:17:10.461Z"
+  },
+  {
+    "id": "muawte2myaut4r",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Random Forest; independence",
+    "body": "1. What if trees weren't independent?\n2. In one line, what does Bagging do to reduce variance?\n3. If Bagging trains every tree independently and in parallel, what do you think happens if each new tree instead trains after seeing the previous tree's mistakes?",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-21T07:14:20.926Z",
+    "likes": [
+      "J-Nirosha"
+    ],
+    "comments": [],
+    "date": "2026-09-24",
+    "editedAt": "2026-09-21T07:14:36.711Z"
+  },
+  {
+    "id": "muavrykkbykyyh",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "The idea of a 'weak learner'",
+    "body": "1. A single-split (single-column) Decision Tree (\"stump\") is barely better than a coin flip on its own. Why would anyone deliberately want a weak model as a building block?",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-21T06:45:14.564Z",
+    "likes": [
+      "Mukeshkanna90",
+      "asennakesavan",
+      "J-Nirosha"
+    ],
+    "comments": [],
+    "date": "2026-09-23"
+  },
+  {
+    "id": "muavpb8g90c2ni",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Random Forest & OOB",
+    "body": "1. What is the OOB score, and why is it essentially \"free\" validation?\n2. Why does Random Forest need two sources of randomness — rows and columns — instead of just one?",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-21T06:43:11.008Z",
+    "likes": [
+      "J-Nirosha",
+      "asennakesavan",
+      "Mukeshkanna90",
+      "Malini-Sekar"
+    ],
+    "comments": [],
+    "date": "2026-09-22"
+  },
+  {
+    "id": "muavokdi7jdm36",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Bagging-RF",
+    "body": "1. What is bagging, and how is it implemented in a Random Forest?\n2. How does Random Forest achieve feature randomness?",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-21T06:42:36.198Z",
+    "likes": [
+      "J-Nirosha",
+      "Mukeshkanna90",
+      "Malini-Sekar"
+    ],
+    "comments": [],
+    "date": "2026-09-21",
+    "editedAt": "2026-09-21T07:15:45.595Z"
+  },
+  {
     "id": "mu7yvb6ttvyf0s",
     "author": "Laxminarayen",
     "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
@@ -12,7 +97,10 @@
       "J-Nirosha",
       "kishorem5",
       "pepcivic-it-innovations",
-      "Mukeshkanna90"
+      "Mukeshkanna90",
+      "cuteesaranya-cloud",
+      "asennakesavan",
+      "Malini-Sekar"
     ],
     "comments": [],
     "date": "2026-09-19"
@@ -27,7 +115,10 @@
     "topics": [],
     "createdAt": "2026-09-14T10:46:02.014Z",
     "likes": [
-      "J-Nirosha"
+      "J-Nirosha",
+      "cuteesaranya-cloud",
+      "suru7373",
+      "HarishSV01"
     ],
     "comments": [],
     "date": "2026-09-18"
@@ -42,7 +133,10 @@
     "topics": [],
     "createdAt": "2026-09-14T10:45:31.013Z",
     "likes": [
-      "J-Nirosha"
+      "J-Nirosha",
+      "jimmigayatri",
+      "suru7373",
+      "priyadj309-kim"
     ],
     "comments": [],
     "date": "2026-09-17"
@@ -57,7 +151,12 @@
     "topics": [],
     "createdAt": "2026-09-14T10:44:48.333Z",
     "likes": [
-      "J-Nirosha"
+      "J-Nirosha",
+      "cuteesaranya-cloud",
+      "asennakesavan",
+      "jimmigayatri",
+      "suru7373",
+      "priyadj309-kim"
     ],
     "comments": [],
     "date": "2026-09-16",
@@ -76,7 +175,9 @@
       "Mukeshkanna90",
       "Malini-Sekar",
       "jimmigayatri",
-      "J-Nirosha"
+      "J-Nirosha",
+      "suru7373",
+      "priyadj309-kim"
     ],
     "comments": [],
     "date": "2026-09-15"
@@ -96,7 +197,11 @@
       "Malini-Sekar",
       "jimmigayatri",
       "J-Nirosha",
-      "Smartchronon24"
+      "Smartchronon24",
+      "cuteesaranya-cloud",
+      "suru7373",
+      "tomkiran-pixel",
+      "priyadj309-kim"
     ],
     "comments": [],
     "date": "2026-09-14"
@@ -116,7 +221,10 @@
       "suru7373",
       "jimmigayatri",
       "archna26",
-      "Smartchronon24"
+      "Smartchronon24",
+      "cuteesaranya-cloud",
+      "HarishSV01",
+      "priyadj309-kim"
     ],
     "comments": [],
     "date": "2026-09-13"
@@ -139,7 +247,8 @@
       "archna26",
       "suru7373",
       "jimmigayatri",
-      "HarishSV01"
+      "HarishSV01",
+      "priyadj309-kim"
     ],
     "comments": [],
     "date": "2026-09-12",
@@ -161,7 +270,9 @@
       "priyadj309-kim",
       "jimmigayatri",
       "archna26",
-      "Malini-Sekar"
+      "Malini-Sekar",
+      "cuteesaranya-cloud",
+      "suru7373"
     ],
     "comments": [],
     "date": "2026-09-11"
@@ -184,7 +295,9 @@
       "priyadj309-kim",
       "jimmigayatri",
       "archna26",
-      "Malini-Sekar"
+      "Malini-Sekar",
+      "cuteesaranya-cloud",
+      "suru7373"
     ],
     "comments": [],
     "date": "2026-09-10"
@@ -210,7 +323,8 @@
       "pepcivic-it-innovations",
       "Malini-Sekar",
       "archna26",
-      "Smartchronon24"
+      "Smartchronon24",
+      "ksuneeram"
     ],
     "comments": [],
     "date": "2026-09-09",
@@ -231,13 +345,14 @@
       "J-Nirosha",
       "Mukeshkanna90",
       "suru7373",
-      "ksuneeram",
       "Bakkiyarani",
       "cuteesaranya-cloud",
       "asennakesavan",
       "archna26",
       "Malini-Sekar",
-      "Smartchronon24"
+      "Smartchronon24",
+      "ksuneeram",
+      "tomkiran-pixel"
     ],
     "comments": [],
     "date": "2026-09-08"
@@ -271,7 +386,9 @@
       "archna26",
       "HarishSV01",
       "SadhanaBalachandran",
-      "Smartchronon24"
+      "Smartchronon24",
+      "Rams08061985",
+      "tomkiran-pixel"
     ],
     "comments": [],
     "date": "2026-09-06",
@@ -305,7 +422,8 @@
       "archna26",
       "HarishSV01",
       "Suriyakumarmd",
-      "Smartchronon24"
+      "Smartchronon24",
+      "tomkiran-pixel"
     ],
     "comments": [],
     "date": "2026-09-07"
@@ -342,7 +460,8 @@
       "HarishSV01",
       "Rams08061985",
       "SadhanaBalachandran",
-      "Smartchronon24"
+      "Smartchronon24",
+      "tomkiran-pixel"
     ],
     "comments": [],
     "date": "2026-09-05",

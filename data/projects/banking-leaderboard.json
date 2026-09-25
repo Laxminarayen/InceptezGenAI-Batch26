@@ -190,5 +190,29 @@
     "publicMacroF1": 0.7047750413043209,
     "submissionCount": 1,
     "submittedAt": "2026-09-19T20:06:02.594Z"
+  },
+  {
+    "login": "rameshinfo26",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/3961193?v=4",
+    "publicAccuracy": 0.8808997050147492,
+    "publicMacroF1": 0.7217660210466268,
+    "submissionCount": 1,
+    "submittedAt": "2026-09-21T04:34:27.019Z"
+  },
+  {
+    "login": "ravichandrankirubakaran-art",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/277615817?v=4",
+    "publicAccuracy": 0.8565634218289085,
+    "publicMacroF1": 0.7456230771957313,
+    "submissionCount": 1,
+    "submittedAt": "2026-09-21T12:44:45.772Z"
+  },
+  {
+    "login": "sakthisen",
+    "avatarUrl": "https://avatars.githubusercontent.com/u/36529222?v=4",
+    "publicAccuracy": 0.8838495575221239,
+    "publicMacroF1": 0.5996286296367984,
+    "submissionCount": 1,
+    "submittedAt": "2026-09-21T14:08:55.551Z"
   }
 ]
