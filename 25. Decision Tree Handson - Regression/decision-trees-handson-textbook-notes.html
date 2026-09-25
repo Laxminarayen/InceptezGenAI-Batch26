@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Decision Trees — Reference Notes (Part 2: Numeric Splits, Gini &amp; Regression)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#B0670C;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#E3A238;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap{max-width:860px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:680px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+  h2{font-size:1.4rem; font-weight:900; margin:48px 0 14px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px;}
+  h3{font-size:1.06rem; font-weight:800; margin:24px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:9px 12px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono);}
+  pre{background:var(--paper-2); border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.86rem; line-height:1.55;}
+  pre code{background:none; padding:0; font-size:1em;}
+  .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px;}
+  .pill{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:.82rem; font-weight:700; color:var(--ink);}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Reference Notes · Trees, Part 2</div>
+  <h1>Decision Trees — Numeric Splits, Gini &amp; Regression</h1>
+  <p class="abstract">Everything Part 1 covered (entropy, Information Gain, the greedy recursive algorithm) plus the three things categorical-only examples skip: how a tree invents a threshold for a number column, the Gini Index scikit-learn actually uses by default, and how the same recursion predicts numbers instead of classes.</p>
+
+  <div class="related-links">
+    <a href="classwork-notes.html">📝 Classwork Notes (Day 25 session write-up)</a>
+    <a href="decision-trees-part2-numeric-gini-regression-slides.html">🖥️ Slide Deck</a>
+    <a href="../24.%20KNN-Regression%20%26%20Decision%20Tree/decision-trees-textbook-notes.html">📚 Part 1: Entropy &amp; Information Gain</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">Numeric Feature Splits</a></li>
+      <li><a href="#s2">The Gini Index</a></li>
+      <li><a href="#s3">Regression Trees</a></li>
+      <li><a href="#s4">Overfitting &amp; Pruning</a></li>
+      <li><a href="#s5">Feature Importance</a></li>
+      <li><a href="#s6">One Tree vs. a Forest</a></li>
+      <li><a href="#s7">API Reference</a></li>
+      <li><a href="#s8">Worked Example</a></li>
+      <li><a href="#s9">Summary</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1"><span class="num">1.</span>Numeric Feature Splits</h2>
+  <p>A categorical column arrives pre-grouped ("Property_Area = Urban?"). A numeric column has no such ready-made groups — the tree has to search for the best threshold itself.</p>
+  <ol>
+    <li>Sort all n values of the feature.</li>
+    <li>Consider the midpoint between every pair of adjacent sorted values as a candidate threshold — n sorted values yield n−1 candidates.</li>
+    <li>For each candidate, split into "&lt; threshold" / "≥ threshold" and compute Information Gain (or Gini Gain) exactly as for a categorical split.</li>
+    <li>Keep the threshold with the highest gain.</li>
+  </ol>
+  <p>The entropy/Gini math never changes — only one extra search step (over candidate thresholds) gets bolted on. A numeric column then competes on completely equal footing with categorical columns for the title of "best split at this node."</p>
+
+  <h2 id="s2"><span class="num">2.</span>The Gini Index</h2>
+  <div class="formula">
+    Gini(S) = 1 − Σ pᵢ²
+    <span class="sub">A pure group gives Gini=0. A K-way even split gives Gini = 1 − K·(1/K)² = 1 − 1/K — for two classes, a maximum of 0.5 (vs. entropy's maximum of 1.0 for two classes). No logarithm required — just squaring and subtracting, meaningfully cheaper to compute across millions of rows and splits.</span>
+  </div>
+  <p>Entropy and Gini virtually always rank candidate splits <i>identically</i> — different absolute numbers, same decisions. This is why <code>scikit-learn</code>'s <code>DecisionTreeClassifier</code> defaults to <code>criterion='gini'</code>: cheaper, and the tree it produces is essentially the same one entropy would have produced.</p>
+
+  <h2 id="s3"><span class="num">3.</span>Regression Trees</h2>
+  <p>Swap the impurity measure from entropy/Gini (defined for categorical labels) to <b>variance</b> (defined for numeric targets), and the identical recursive algorithm predicts numbers instead of classes.</p>
+  <div class="formula">
+    Variance(S) = (1/|S|) Σ (yᵢ − ȳ)²
+    <span class="sub">A split is scored by how much it reduces the weighted average variance of the children versus the parent — the direct numeric analogue of Information Gain. Each leaf's prediction is simply the mean of the target values that landed there.</span>
+  </div>
+  <p>Because every leaf outputs one constant value, a regression tree's prediction surface is always a <b>step function</b> (a staircase in 1D) — never a smooth curve, no matter how deep the tree grows. More depth means more, narrower steps; it can approximate a smooth function arbitrarily closely, but will never actually produce a smooth line the way Linear or Polynomial Regression does.</p>
+
+  <h2 id="s4"><span class="num">4.</span>Overfitting &amp; Pruning</h2>
+  <p>An unrestricted tree can keep splitting until every leaf contains a single training row — perfect training accuracy, and badly overfit. Two families of control:</p>
+  <ul>
+    <li><b>Pre-pruning (early stopping)</b> — stop growing based on a rule checked <i>during</i> construction: <code>max_depth</code>, <code>min_samples_split</code> (minimum rows required to consider splitting a node), <code>min_samples_leaf</code> (minimum rows required to keep a leaf), <code>max_leaf_nodes</code>.</li>
+    <li><b>Post-pruning (cost-complexity pruning)</b> — grow the full tree first, then remove branches whose contribution to reducing impurity doesn't justify their added complexity, controlled by a single parameter <code>ccp_alpha</code> (larger α prunes more aggressively). Chosen via cross-validation, the same honest way as every other complexity hyperparameter in this course.</li>
+  </ul>
+
+  <h2 id="s5"><span class="num">5.</span>Feature Importance</h2>
+  <p>Summing the (weighted) impurity decrease every time a feature is used for a split, across the whole tree, gives a natural importance ranking — scikit-learn exposes this as <code>.feature_importances_</code>. The same caveat that applies to Random Forest's Mean Decrease in Impurity applies here even more strongly for a single tree: features with many distinct values get more chances to be picked as a split purely from having more candidate thresholds, which can bias raw importance scores independent of true predictive value.</p>
+
+  <h2 id="s6"><span class="num">6.</span>One Tree vs. a Forest</h2>
+  <p>Everything in this reference describes a <i>single</i> tree — and a single tree's biggest weakness is exactly what motivates the next major topic in this course: change a handful of training rows and the entire structure, from the root down, can come out completely different (see the worked example in the <a href="../28.%20Ensemble%20Learning%20-%20Random%20Forest/random-forest-textbook-notes.html">Random Forest reference</a>, Section 1). Random Forest is literally many of these trees, each grown on a bootstrapped, feature-randomized resample of the data — everything here (entropy/Gini, recursive splitting, regression via variance) still applies to every individual tree inside the forest.</p>
+
+  <h2 id="s7"><span class="num">7.</span>API Reference</h2>
+  <table>
+    <thead><tr><th>Parameter</th><th>What it controls</th><th>Typical default</th></tr></thead>
+    <tbody>
+      <tr><td><code>criterion</code></td><td><code>'gini'</code> or <code>'entropy'</code> (classifier); <code>'squared_error'</code> etc. (regressor).</td><td><code>'gini'</code></td></tr>
+      <tr><td><code>max_depth</code></td><td>Deepest a tree is allowed to grow.</td><td><code>None</code> (unlimited)</td></tr>
+      <tr><td><code>min_samples_split</code></td><td>Minimum rows at a node before splitting is even considered.</td><td>2</td></tr>
+      <tr><td><code>min_samples_leaf</code></td><td>Minimum rows required to keep a leaf.</td><td>1</td></tr>
+      <tr><td><code>max_features</code></td><td>Features considered per split (usually left at "all" for a single tree — this becomes the deliberate randomization Random Forest introduces).</td><td><code>None</code></td></tr>
+      <tr><td><code>ccp_alpha</code></td><td>Cost-complexity pruning strength (Section 4).</td><td>0.0 (no pruning)</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s8"><span class="num">8.</span>Worked Example</h2>
+  <pre><code>from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import GridSearchCV
+
+param_grid = {
+    "max_depth": [2, 3, 4, 5, None],
+    "min_samples_leaf": [1, 5, 10],
+    "criterion": ["gini", "entropy"],
+}
+grid = GridSearchCV(DecisionTreeClassifier(random_state=42), param_grid, cv=5, scoring="f1")
+grid.fit(X_train, y_train)
+
+print("Best params:", grid.best_params_)
+print("Test score:", grid.score(X_test, y_test))
+
+best_tree = grid.best_estimator_
+importances = dict(zip(X_train.columns, best_tree.feature_importances_))
+</code></pre>
+
+  <h2 id="s9"><span class="num">9.</span>Summary</h2>
+  <div class="summary-box">
+    <h3>The whole idea, in one paragraph</h3>
+    <p>A numeric column earns its place in a tree by searching over candidate thresholds, then competing on the same entropy/Information-Gain (or Gini) footing as every categorical column. Gini is entropy's cheaper, near-equivalent cousin and scikit-learn's default. Swap the impurity measure to variance and the identical recursion predicts numbers via a step-function surface instead of classes. Left unchecked, a tree overfits by construction — pre-pruning (depth/leaf-size limits) and post-pruning (cost-complexity, <code>ccp_alpha</code>) are the two standard controls, both chosen by cross-validation. And a single tree's core weakness — instability from small data changes — is precisely the problem Random Forest exists to solve.</p>
+  </div>
+  <div class="pill-row">
+    <span class="pill">Numeric Threshold Search</span>
+    <span class="pill">Gini Index</span>
+    <span class="pill">Regression Trees (Variance)</span>
+    <span class="pill">Pre- / Post-Pruning</span>
+    <span class="pill">Feature Importance</span>
+    <span class="pill">ccp_alpha</span>
+  </div>
+</div>
+</body>
+</html>

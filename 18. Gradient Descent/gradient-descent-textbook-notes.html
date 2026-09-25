@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Gradient Descent — Reference Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#B0670C;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#E3A238;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap{max-width:860px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:680px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+  h2{font-size:1.4rem; font-weight:900; margin:48px 0 14px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px;}
+  h3{font-size:1.06rem; font-weight:800; margin:24px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:9px 12px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono);}
+  pre{background:var(--paper-2); border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.86rem; line-height:1.55;}
+  pre code{background:none; padding:0; font-size:1em;}
+  .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px;}
+  .pill{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:.82rem; font-weight:700; color:var(--ink);}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Reference Notes · Optimization</div>
+  <h1>Gradient Descent</h1>
+  <p class="abstract">The general-purpose optimizer that trains almost every model that doesn't have an exact closed-form solution — Linear Regression's Normal Equation is the exception, not the rule. Iteratively nudge every parameter in the direction that most reduces a cost function, using nothing but the local slope at the current point.</p>
+
+  <div class="related-links">
+    <a href="classwork-notes.html">📝 Classwork Notes (Day 18 session write-up)</a>
+    <a href="optimization-slides.html">🖥️ Slide Deck</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">Optimization, Framed Precisely</a></li>
+      <li><a href="#s2">The Update Rule</a></li>
+      <li><a href="#s3">Deriving the Gradient (Linear Regression)</a></li>
+      <li><a href="#s4">Batch, Stochastic &amp; Mini-Batch</a></li>
+      <li><a href="#s5">The Learning Rate</a></li>
+      <li><a href="#s6">Why Feature Scaling Matters</a></li>
+      <li><a href="#s7">Convergence Criteria</a></li>
+      <li><a href="#s8">Beyond Vanilla GD</a></li>
+      <li><a href="#s9">Convex vs. Non-Convex Landscapes</a></li>
+      <li><a href="#s10">Worked Example</a></li>
+      <li><a href="#s11">Summary</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1"><span class="num">1.</span>Optimization, Framed Precisely</h2>
+  <div class="formula">
+    θ* = argmin_θ J(θ)
+    <span class="sub">Find the parameter vector θ (e.g. [β₀, β₁, …]) that minimizes a cost function J. "Fitting a model" is this statement, for every model in this course that doesn't have a closed-form shortcut.</span>
+  </div>
+  <p>For Linear Regression with squared error, J(θ) is a smooth, convex bowl — a single global minimum, approachable from any starting point. That convexity is what makes Gradient Descent provably converge to the right answer here; it is not guaranteed in general (Section 9).</p>
+
+  <h2 id="s2"><span class="num">2.</span>The Update Rule</h2>
+  <div class="formula">
+    θ ← θ − α · ∇J(θ)
+    <span class="sub">∇J(θ) — the gradient, a vector of partial derivatives, one per parameter, pointing in the direction of steepest <i>increase</i>. α — the learning rate, scaling the step size. Subtracting (not adding) the gradient is what makes this <i>descent</i>.</span>
+  </div>
+  <ol>
+    <li>Initialize θ (zeros, or small random values).</li>
+    <li>Compute ∇J(θ) at the current θ.</li>
+    <li>Update every parameter simultaneously: θ ← θ − α∇J(θ).</li>
+    <li>Repeat until a convergence criterion is met (Section 7).</li>
+  </ol>
+
+  <h2 id="s3"><span class="num">3.</span>Deriving the Gradient (Linear Regression)</h2>
+  <p>For J(β) = (1/n)Σ(yᵢ − ŷᵢ)² with ŷᵢ = β₀ + β₁xᵢ:</p>
+  <div class="formula">
+    ∂J/∂β₀ = −(2/n)Σ(yᵢ−ŷᵢ) &nbsp;&nbsp;&nbsp; ∂J/∂β₁ = −(2/n)Σ(yᵢ−ŷᵢ)xᵢ
+    <span class="sub">Both derived from one calculus fact: the derivative of (something)² is 2×(something)×(derivative of that something). β₀ shifts every prediction equally (no xᵢ factor); β₁'s shift is proportional to xᵢ, so its gradient carries an extra xᵢ term. With p features, the pattern extends to one gradient term per feature: ∂J/∂βₖ = −(2/n)Σ(yᵢ−ŷᵢ)xᵢₖ.</span>
+  </div>
+  <p>In vector form, for design matrix X and target y: <code>∇J(β) = −(2/n) Xᵀ(y − Xβ)</code> — the same "mistake × x" shape, expressed for every parameter at once.</p>
+
+  <h2 id="s4"><span class="num">4.</span>Batch, Stochastic &amp; Mini-Batch</h2>
+  <table>
+    <thead><tr><th>Variant</th><th>Gradient computed from</th><th>Tradeoff</th></tr></thead>
+    <tbody>
+      <tr><td><b>Batch GD</b></td><td>All n training rows, every step</td><td>Smooth, stable convergence; slow and memory-heavy on large datasets.</td></tr>
+      <tr><td><b>Stochastic GD (SGD)</b></td><td>One random row per step</td><td>Fast, noisy updates; the noise can help escape shallow local minima on non-convex problems, but never fully "settles."</td></tr>
+      <tr><td><b>Mini-Batch GD</b></td><td>A small random batch (e.g. 32–256 rows) per step</td><td>The practical default — most of batch GD's stability, most of SGD's speed and memory efficiency. What virtually every deep learning framework uses.</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s5"><span class="num">5.</span>The Learning Rate</h2>
+  <p>α controls step size, and picking it is mostly empirical — but the failure modes are predictable:</p>
+  <ul>
+    <li><b>Too small</b> — convergence is correct but painfully slow; many more iterations than necessary.</li>
+    <li><b>Too large</b> — each step can overshoot the minimum so badly the cost <i>increases</i> — divergence, cost exploding toward infinity instead of shrinking.</li>
+    <li><b>Learning rate schedules</b> — start large (fast early progress) and shrink α over iterations (fine-tuned settling near the minimum) — a common practical refinement not required for convex problems like Linear/Logistic Regression, but standard in deep learning.</li>
+  </ul>
+
+  <h2 id="s6"><span class="num">6.</span>Why Feature Scaling Matters</h2>
+  <p>Geometrically: unscaled features (one ranging 0–1, another 0–100,000) stretch the cost bowl into a narrow, elongated ravine. Gradient descent then has to take tiny, cautious steps along the steep direction while crawling along the shallow one — the same step size can't be right for both at once.</p>
+  <div class="note warn">Formally, this is the <b>condition number</b> of the Hessian (curvature matrix) of J — a bowl with very different curvature in different directions has a high condition number, and gradient descent's convergence rate degrades directly with it. Standardizing every feature (zero mean, unit variance) makes the bowl closer to circular, dramatically improving convergence speed — this is why every session from Polynomial Regression onward treats scaling as mandatory, not optional.</div>
+
+  <h2 id="s7"><span class="num">7.</span>Convergence Criteria</h2>
+  <ul>
+    <li><b>Gradient norm ≈ 0</b> — ‖∇J(θ)‖ below a small threshold; the surface is essentially flat in every direction.</li>
+    <li><b>Cost plateau</b> — |J(θₜ) − J(θₜ₋₁)| below a small threshold; further steps aren't meaningfully improving the fit.</li>
+    <li><b>Max iterations</b> — a hard cap, always set, so training terminates even if the other two never quite trigger.</li>
+  </ul>
+
+  <h2 id="s8"><span class="num">8.</span>Beyond Vanilla GD</h2>
+  <p>Not covered hands-on in this course, but worth knowing exist: <b>Momentum</b> (accumulate a running average of past gradients, so the optimizer keeps moving through small local bumps and dampens oscillation), <b>RMSProp</b> and <b>Adam</b> (adapt the effective learning rate per-parameter, based on the recent history of that parameter's own gradients). Adam in particular is the default optimizer in most modern deep learning — a more sophisticated descendant of exactly the update rule in Section 2.</p>
+
+  <h2 id="s9"><span class="num">9.</span>Convex vs. Non-Convex Landscapes</h2>
+  <p>Linear Regression's squared-error cost is provably convex (Section 1) — one global minimum, reachable from any starting point, which is exactly why it's the right place to <i>learn</i> gradient descent: the answer can always be checked against the exact Normal Equation solution. Logistic Regression's log loss is also convex (see that reference's derivation). Neural networks are not — their cost landscapes have many local minima and saddle points, and gradient descent (with momentum/Adam, mini-batching, and a lot of engineering) finds a <i>good</i> minimum in practice, with no guarantee it's the global one.</p>
+
+  <h2 id="s10"><span class="num">10.</span>Worked Example</h2>
+  <pre><code>import numpy as np
+
+def gradient_descent(X, y, lr=0.01, n_iter=1000):
+    n, p = X.shape
+    X_b = np.c_[np.ones(n), X]        # prepend intercept column
+    beta = np.zeros(p + 1)
+    for _ in range(n_iter):
+        y_pred = X_b @ beta
+        gradient = -(2 / n) * X_b.T @ (y - y_pred)
+        beta -= lr * gradient
+    return beta
+
+# scikit-learn's equivalent, for comparison:
+# from sklearn.linear_model import SGDRegressor
+# model = SGDRegressor(learning_rate="constant", eta0=0.01, max_iter=1000)
+</code></pre>
+
+  <h2 id="s11"><span class="num">11.</span>Summary</h2>
+  <div class="summary-box">
+    <h3>The whole idea, in one paragraph</h3>
+    <p>Gradient Descent repeats one update, <code>θ ← θ − α∇J(θ)</code>, until the gradient flattens to near zero. For Linear and Logistic Regression the cost surface is a single convex bowl, so this always converges to the true minimum — the same guarantee doesn't hold for the non-convex landscapes of deep learning, where the same update rule (usually wrapped in Adam or a similar adaptive variant) finds a good-enough minimum instead. Feature scaling and the learning rate are the two levers that separate a fast, clean convergence from a slow or divergent one.</p>
+  </div>
+  <div class="pill-row">
+    <span class="pill">Convex Optimization</span>
+    <span class="pill">Learning Rate</span>
+    <span class="pill">Batch / Stochastic / Mini-Batch</span>
+    <span class="pill">Feature Scaling</span>
+    <span class="pill">Momentum / Adam</span>
+    <span class="pill">Convergence Criteria</span>
+  </div>
+</div>
+</body>
+</html>

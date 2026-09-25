@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>K-Nearest Neighbors — Reference Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#1E6FA8;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#5FA8E0;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap{max-width:860px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:680px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+  h2{font-size:1.4rem; font-weight:900; margin:48px 0 14px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px;}
+  h3{font-size:1.06rem; font-weight:800; margin:24px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:9px 12px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono);}
+  pre{background:var(--paper-2); border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.86rem; line-height:1.55;}
+  pre code{background:none; padding:0; font-size:1em;}
+  .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px;}
+  .pill{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:.82rem; font-weight:700; color:var(--ink);}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Reference Notes · Instance-Based Learning</div>
+  <h1>K-Nearest Neighbors (KNN)</h1>
+  <p class="abstract">A lazy learner: no coefficients, no cost function, no training phase in the usual sense. Every prediction is answered fresh, by finding the K most similar stored examples and asking what happened to them.</p>
+
+  <div class="related-links">
+    <a href="classwork-notes.html">📝 Classwork Notes (Day 23 session write-up)</a>
+    <a href="knn-classification-slides.html">🖥️ Slide Deck</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">Lazy Learning, Defined</a></li>
+      <li><a href="#s2">Distance Metrics</a></li>
+      <li><a href="#s3">Why Scaling Is Mandatory</a></li>
+      <li><a href="#s4">The Algorithm</a></li>
+      <li><a href="#s5">Choosing K</a></li>
+      <li><a href="#s6">Distance-Weighted Voting</a></li>
+      <li><a href="#s7">The Curse of Dimensionality</a></li>
+      <li><a href="#s8">Computational Cost &amp; Speedups</a></li>
+      <li><a href="#s9">KNN vs. Parametric Models</a></li>
+      <li><a href="#s10">API Reference</a></li>
+      <li><a href="#s11">Worked Example</a></li>
+      <li><a href="#s12">Summary</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1"><span class="num">1.</span>Lazy Learning, Defined</h2>
+  <p>Every other model in this course is <b>eager</b>: it compresses the training data into a fixed set of parameters (β's, a tree structure) before ever seeing a new point, then discards the training data. KNN is <b>lazy</b> (instance-based): "training" is just storing the data verbatim — no compression, no optimization, no convergence. All the computation happens at prediction time.</p>
+
+  <h2 id="s2"><span class="num">2.</span>Distance Metrics</h2>
+  <div class="formula">
+    Minkowski distance: d(A,B) = ( Σ|Aᵢ−Bᵢ|^q )^(1/q)
+    <span class="sub">The general form. q=2 gives Euclidean distance (straight-line, "as the crow flies"). q=1 gives Manhattan distance (city-block, sum of absolute differences — less sensitive to any single large deviation than Euclidean). Categorical features commonly use Hamming distance instead: the count of positions where two vectors disagree.</span>
+  </div>
+  <p>The choice of metric rarely matters as much as scaling correctly (Section 3) — but it is a design decision, not a law of nature, and worth stating explicitly when reporting results.</p>
+
+  <h2 id="s3"><span class="num">3.</span>Why Scaling Is Mandatory</h2>
+  <p>Distance is a sum of squared (or absolute) differences across all features, unweighted by default. A feature spanning 18–70 contributes a term dozens of times larger than a feature spanning 1–10, for a difference of equal "importance" in either — the larger-range feature silently dominates every distance calculation. Standardizing every feature (z-score: subtract the mean, divide by the standard deviation) puts them on equal footing before distance is ever computed. Unlike Gradient Descent (where unscaled features only slow convergence), unscaled features in KNN produce <i>actively wrong</i> neighbor sets and therefore wrong predictions — there is no "it still converges eventually" fallback.</p>
+
+  <h2 id="s4"><span class="num">4.</span>The Algorithm</h2>
+  <ol>
+    <li><b>Store</b> the full training set (features + labels).</li>
+    <li>For a new point x: <b>compute distance</b> from x to every stored training point.</li>
+    <li><b>Sort</b> all training points by that distance, ascending.</li>
+    <li><b>Take the K closest.</b></li>
+    <li><b>Aggregate</b> — majority vote of their labels (classification) or mean of their targets (regression, see the KNN Regression reference).</li>
+  </ol>
+
+  <h2 id="s5"><span class="num">5.</span>Choosing K</h2>
+  <p>K controls the same bias-variance tradeoff as polynomial degree or tree depth:</p>
+  <ul>
+    <li><b>Small K</b> (e.g. K=1) — low bias, high variance. The decision boundary chases every individual point, including noise and outliers.</li>
+    <li><b>Large K</b> — high bias, low variance. Predictions smooth toward the global majority class, losing local structure.</li>
+  </ul>
+  <p>Chosen the same honest way as everywhere else: split into train/test (or k-fold cross-validation), sweep K across a reasonable range, and pick the value that minimizes held-out error — never training error, since K=1 always achieves zero training error trivially (a point's nearest neighbor is itself).</p>
+  <div class="note warn">For binary classification, prefer <b>odd</b> K to avoid tied votes. If a tie still occurs (multiclass, or an even K), common tie-breaks are: fall back to the single nearest neighbor, or use distance-weighted voting (Section 6).</div>
+
+  <h2 id="s6"><span class="num">6.</span>Distance-Weighted Voting</h2>
+  <div class="formula">
+    weight(neighbor) = 1 / distance(x, neighbor)
+    <span class="sub">Instead of every one of the K neighbors casting an equal vote, closer neighbors count for more. Softens the impact of the K-th (farthest, least relevant) neighbor without needing to shrink K itself. In scikit-learn: <code>weights='distance'</code> instead of the default <code>'uniform'</code>.</span>
+  </div>
+
+  <h2 id="s7"><span class="num">7.</span>The Curse of Dimensionality</h2>
+  <p>As the number of features grows, the volume of the feature space grows exponentially, but the number of training points stays fixed — so points become sparse, and every point's distance to every other point starts to converge toward roughly the same value. "Nearest" stops carrying much information: in very high dimensions, a query point's nearest neighbor and farthest neighbor can be almost equally far away. This is the formal reason KNN is typically applied to a modest, carefully-chosen or dimensionality-reduced feature set rather than hundreds of raw columns — a constraint parametric models like Logistic Regression face far less severely.</p>
+
+  <h2 id="s8"><span class="num">8.</span>Computational Cost &amp; Speedups</h2>
+  <table>
+    <thead><tr><th></th><th>Training</th><th>Prediction (one query)</th></tr></thead>
+    <tbody>
+      <tr><td>Brute-force KNN</td><td>O(1) — just store the data</td><td>O(n·p) — compare to every point, across p features</td></tr>
+      <tr><td>KD-Tree / Ball Tree</td><td>O(n log n) — build a spatial index once</td><td>O(log n) typical — prune large regions of the space, in low-to-moderate dimensions</td></tr>
+    </tbody>
+  </table>
+  <p>KD-Trees and Ball Trees lose their advantage in very high dimensions (the curse of dimensionality again — pruning stops being effective), at which point approximate nearest-neighbor libraries (e.g. FAISS, Annoy) trade a small amount of accuracy for large speed gains at production scale.</p>
+
+  <h2 id="s9"><span class="num">9.</span>KNN vs. Parametric Models</h2>
+  <table>
+    <thead><tr><th></th><th>KNN</th><th>Logistic Regression</th></tr></thead>
+    <tbody>
+      <tr><td>Model size</td><td>Grows with the dataset (stores it all)</td><td>Fixed — one coefficient per feature, regardless of n</td></tr>
+      <tr><td>Assumptions about the boundary</td><td>None — any shape</td><td>Linear boundary only</td></tr>
+      <tr><td>Interpretability</td><td>Low — "because these K neighbors"</td><td>High — coefficients have a direct meaning</td></tr>
+      <tr><td>Sensitive to irrelevant features</td><td>Very — every feature affects distance equally unless weighted</td><td>Less — an irrelevant feature can simply get a near-zero coefficient</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s10"><span class="num">10.</span>API Reference</h2>
+  <table>
+    <thead><tr><th>Parameter</th><th>What it controls</th><th>Typical default</th></tr></thead>
+    <tbody>
+      <tr><td><code>n_neighbors</code></td><td>K.</td><td>5</td></tr>
+      <tr><td><code>weights</code></td><td><code>'uniform'</code> or <code>'distance'</code> (Section 6).</td><td><code>'uniform'</code></td></tr>
+      <tr><td><code>metric</code></td><td>Distance function — <code>'minkowski'</code> with <code>p=2</code> is Euclidean.</td><td><code>'minkowski'</code>, <code>p=2</code></td></tr>
+      <tr><td><code>algorithm</code></td><td><code>'auto'</code>, <code>'kd_tree'</code>, <code>'ball_tree'</code>, or <code>'brute'</code> (Section 8).</td><td><code>'auto'</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s11"><span class="num">11.</span>Worked Example</h2>
+  <pre><code>from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
+from sklearn.model_selection import GridSearchCV
+
+pipe = make_pipeline(StandardScaler(), KNeighborsClassifier())
+param_grid = {"kneighborsclassifier__n_neighbors": range(1, 21, 2)}
+
+grid = GridSearchCV(pipe, param_grid, cv=5, scoring="f1")
+grid.fit(X_train, y_train)
+
+print("Best K:", grid.best_params_)
+print("Test accuracy:", grid.score(X_test, y_test))
+</code></pre>
+
+  <h2 id="s12"><span class="num">12.</span>Summary</h2>
+  <div class="summary-box">
+    <h3>The whole idea, in one paragraph</h3>
+    <p>KNN fits nothing — it stores the training set and, at prediction time, finds the K nearest points by some distance metric and votes (or averages). Feature scaling isn't a nicety here, it's a correctness requirement, because distance is the entire algorithm. K trades variance for bias exactly like every other complexity knob in this course, and is chosen the same honest way: held-out performance, not training performance. Its Achilles' heel is high dimensionality, where "nearest" quietly stops meaning anything — the reason KNN pairs best with a small, deliberate feature set rather than everything you have.</p>
+  </div>
+  <div class="pill-row">
+    <span class="pill">Lazy / Instance-Based Learning</span>
+    <span class="pill">Minkowski / Euclidean / Manhattan</span>
+    <span class="pill">Mandatory Feature Scaling</span>
+    <span class="pill">Bias-Variance via K</span>
+    <span class="pill">Curse of Dimensionality</span>
+    <span class="pill">KD-Tree / Ball Tree</span>
+  </div>
+</div>
+</body>
+</html>
