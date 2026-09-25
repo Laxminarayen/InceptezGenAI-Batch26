@@ -1,5 +1,17 @@
 [
   {
+    "id": "muh3ob69oo8zsn",
+    "author": "RamyaNaras",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/37861694?v=4",
+    "title": "What are the key hyperparameters of Random forest algorithm?",
+    "body": "The key Random Forest hyperparameters are:\n\nn_estimators: Number of trees in the forest.\nmax_depth: Maximum depth of each tree.\nmax_features: Number of randomly selected features considered at each split.\nmin_samples_split: Minimum samples required to split a node.\nmin_samples_leaf: Minimum samples required in a leaf node.\nbootstrap: Whether bootstrap sampling is used.\noob_score: Whether to compute Out-of-Bag validation score.\nrandom_state: Seed for reproducible results.\n\nAmong these, n_estimators, max_depth, and max_features are typically the most influential hyperparameters in Random Forest.",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-25T15:12:58.257Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "muh3lwk4i191hx",
     "author": "RamyaNaras",
     "authorAvatar": "https://avatars.githubusercontent.com/u/37861694?v=4",
