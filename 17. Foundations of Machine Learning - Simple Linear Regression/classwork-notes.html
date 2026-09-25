@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Classwork Notes · Foundations of Machine Learning &amp; Simple Linear Regression</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#1C8C5A;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#3FBB7C;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    -webkit-font-smoothing:antialiased; line-height:1.6;
+  }
+  .wrap{max-width:840px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 80px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.7rem,4vw,2.4rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 6px;}
+  .subtitle{color:var(--ink-soft); font-size:1rem; margin-bottom:8px;}
+  .pdf-link{
+    display:inline-flex; align-items:center; gap:8px; margin:14px 0 34px; font-size:.9rem; font-weight:700;
+    color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px;
+    padding:9px 18px; text-decoration:none;
+  }
+  .pdf-link:hover{border-color:var(--accent); color:var(--accent);}
+  h2{font-size:1.35rem; font-weight:900; margin:44px 0 14px; padding-top:16px; border-top:1px solid var(--line);}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h3{font-size:1.05rem; font-weight:800; margin:22px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{
+    background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent);
+    border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink);
+    font-size:1.02rem;
+  }
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.92rem;}
+  th, td{padding:8px 12px; text-align:center; border:1px solid var(--line);}
+  th{background:var(--paper-2); font-weight:800; font-size:.78rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  tr.hl td{background:color-mix(in srgb, var(--accent) 10%, transparent); font-weight:800;}
+  .note{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px;
+    font-size:.9rem; color:var(--ink-soft); margin:14px 0;
+  }
+  .note b{color:var(--ink);}
+  .agenda{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 20px;}
+  .agenda span{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:8px 16px;
+    font-size:.86rem; font-weight:700; color:var(--ink);
+  }
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Day 17 · Classwork Notes</div>
+  <h1>Foundations of Machine Learning &amp; Simple Linear Regression</h1>
+  <p class="subtitle">From scooping mangoes to teaching a computer to guess — the three learning paradigms, then four hours building a regression line from first principles: a flat guess, a sloped line, gradient descent's "hot and cold," and finally learning to grade the result honestly.</p>
+  <a class="pdf-link" href="ml-foundations-slides.html">🖥️ Open the slide deck</a>
+
+  <h2>Agenda</h2>
+  <div class="agenda">
+    <span>Hour 1 — The Paradigm Shift</span>
+    <span>Hour 2 — The Baseline Guess</span>
+    <span>Hour 3 — Simple Linear Regression</span>
+    <span>Hour 4 — Evaluating the Model</span>
+  </div>
+  <p>Last session: sampling and the Central Limit Theorem — scooping mangoes and polling voters to guess big truths from small peeks. Today: teach a computer to do that guessing automatically, from data alone.</p>
+
+  <h2>Hour 1 — The Paradigm Shift</h2>
+  <p>Every one of last session's tricks — sampling, averaging, guessing — was <i>you</i>, the human, doing the work. Machine Learning is what happens when you hand a computer a pile of data and let it find the pattern on its own. There are three ways it can go about that:</p>
+  <table>
+    <thead><tr><th>Paradigm</th><th>How it learns</th><th>Everyday example</th></tr></thead>
+    <tbody>
+      <tr><td><b>Supervised</b></td><td>From labeled data — every example already comes with the correct answer attached, like a teacher checking homework.</td><td>📧 Spam filter — trained on millions of emails already labeled "spam" / "not spam."</td></tr>
+      <tr><td><b>Unsupervised</b></td><td>Finds hidden patterns in unlabeled data — nobody tells it the groups beforehand; pure self-discovery.</td><td>🎬 "You might like" — groups viewers with similar taste, no one labels the clusters.</td></tr>
+      <tr><td><b>Reinforcement</b></td><td>Learning by trial and error through rewards and penalties — nobody labels the data, the machine just tries things and keeps what works.</td><td>🐭 A mouse in a maze, or DeepMind's Atari Pong agent, trained purely on the score as a reward.</td></tr>
+    </tbody>
+  </table>
+  <p>Real-estate platforms clustering listings into "Luxury Homes" or "Budget Homes" with zero labels given upfront is unsupervised learning in the wild — the algorithm finds the groups, humans just name them afterward.</p>
+
+  <h2>Hour 2 — The Baseline Guess</h2>
+  <p>Supervised learning splits into two flavors: predicting a category (Spam or Not?) or predicting a number (exact salary). Today is entirely the number version — <b>Regression</b> — and it starts from the simplest possible guess.</p>
+  <p>Setup: 42 employees at a tech company. We know each one's years of experience (X) and salary (Y). Challenge: predict Y using X.</p>
+  <p>First, forget X entirely. If a new employee joins and you must guess their salary <i>right now</i>, with zero other information, the best single number is the <b>mean</b> of all known salaries — the flat "Mean Line."</p>
+  <div class="formula">
+    Residual = Actual (Y) − Predicted (Ŷ)
+    <span class="sub">The gap between a real value and our guess. Some employees sit above the mean line, some below it.</span>
+  </div>
+  <p>Obvious next idea: sum every residual to measure total error. It fails — positive and negative residuals cancel out, so the total can look deceptively close to zero even when individual guesses are way off. That failure is exactly why every error metric that follows squares the residual first.</p>
+
+  <h2>Hour 3 — Simple Linear Regression</h2>
+  <p>The flat Mean Line treats a fresh graduate and a 15-year veteran identically — but plot X back in, and the cloud of employees isn't a random blob, it tilts: more experience, more salary. That tilt is information the Mean Line was leaving on the table.</p>
+  <div class="formula">
+    Y = β₀ + β₁X + ε
+    <span class="sub">β₀ (intercept) — where the line starts. β₁ (slope) — how steeply salary rises per year of experience. Notice the Mean Line was secretly this same formula with β₁ = 0 — a slope of nothing at all.</span>
+  </div>
+  <div class="formula">
+    Mean Squared Error (MSE) — picture each residual as the side of a square; squaring it is literally the area of that square, so big misses create big squares fast.
+  </div>
+
+  <h3>How the machine actually finds β₀ and β₁: a game of hot and cold</h3>
+  <ol>
+    <li><b>Propose a handful of nearby lines</b> — nudge β₀ and β₁ by a small random amount, a few different ways.</li>
+    <li><b>Score every candidate</b> — compute the MSE for each nudged line. No guessing about quality, just measure it.</li>
+    <li><b>Keep the warmest, discard the rest</b> — lower MSE = warmer = keep it as the new "current line." Everything else is thrown away.</li>
+    <li><b>Shrink the nudges, repeat</b> — take smaller steps each round (cooling down) so it settles instead of overshooting forever.</li>
+  </ol>
+  <p>This is <b>Gradient Descent</b> in plain English — the formal, calculus version is next session's entire topic. The line this process converges to is the <b>OLS (Ordinary Least Squares)</b> line: the mathematically-guaranteed minimum-MSE fit for the data.</p>
+
+  <h2>Hour 4 — Evaluating the Model</h2>
+  <p>A sloped line always looks fancier than a flat one — but "fancier" isn't the same as "better." Every point hides three distances, and squaring-and-summing each one across all 42 employees gives three named quantities:</p>
+  <table>
+    <thead><tr><th>Deviation</th><th>Definition</th><th>Feeds</th></tr></thead>
+    <tbody>
+      <tr><td>Total</td><td>Actual − Mean — how far this employee sits from doing nothing at all</td><td>SST</td></tr>
+      <tr><td>Explained</td><td>Predicted − Mean — what experience alone accounts for</td><td>SSR</td></tr>
+      <tr><td>Unexplained</td><td>Actual − Predicted — the leftover mistake the line still misses</td><td>SSE</td></tr>
+    </tbody>
+  </table>
+  <div class="formula">
+    R² = SSR / SST = 1 − (SSE / SST)
+    <span class="sub">The proportion of the total variation that the model actually explains. Unitless and lands between 0 and 1 — you can compare a salary model's R² to a completely different weather model's. If SSE = 0, R² = 1 (perfect fit); if SSR = 0, R² = 0 (no better than the mean).</span>
+  </div>
+  <p>R² isn't the only score in town — RMSE and MAE are built from the same residuals, combined differently. RMSE squares every error before averaging, so one huge miss can drag the whole score up; MAE treats every error equally, in a straight line.</p>
+
+  <h3>Two ways a model can lie to you</h3>
+  <ul>
+    <li><b>Underfitting</b> — forcing a rigid straight line through data that naturally bends (e.g. experience vs. salary, which rises fast early on then plateaus later — diminishing returns). Watch for residuals that aren't random anymore: a systematic curve the line is blind to.</li>
+    <li><b>Overfitting</b> — a jagged, chaotic curve that hits every single training point perfectly, but has memorized the noise, not the pattern. Complexity dial intuition: Train error keeps shrinking as complexity rises, while Test error eventually turns around and gets worse.</li>
+  </ul>
+
+  <h2>Where This Goes Next</h2>
+  <p>Real predictions rarely rely on just one feature. The same OLS idea scales up effortlessly — just add more β's: <code>Y = β₀ + β₁X₁ + β₂X₂ + β₃X₃ + … + ε</code>. Same MSE, same OLS logic, just more dimensions. That's <b>Multiple Linear Regression</b> — the next stop, followed by the formal mechanics of Gradient Descent itself.</p>
+</div>
+</body>
+</html>

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Classwork Notes · K-Nearest Neighbors (KNN)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#1E6FA8;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#5FA8E0;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    -webkit-font-smoothing:antialiased; line-height:1.6;
+  }
+  .wrap{max-width:840px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 80px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.7rem,4vw,2.4rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 6px;}
+  .subtitle{color:var(--ink-soft); font-size:1rem; margin-bottom:8px;}
+  .pdf-link{
+    display:inline-flex; align-items:center; gap:8px; margin:14px 0 34px; font-size:.9rem; font-weight:700;
+    color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px;
+    padding:9px 18px; text-decoration:none;
+  }
+  .pdf-link:hover{border-color:var(--accent); color:var(--accent);}
+  h2{font-size:1.35rem; font-weight:900; margin:44px 0 14px; padding-top:16px; border-top:1px solid var(--line);}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h3{font-size:1.05rem; font-weight:800; margin:22px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{
+    background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent);
+    border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink);
+    font-size:1.02rem;
+  }
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.92rem;}
+  th, td{padding:8px 12px; text-align:center; border:1px solid var(--line);}
+  th{background:var(--paper-2); font-weight:800; font-size:.78rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  tr.hl td{background:color-mix(in srgb, var(--accent) 10%, transparent); font-weight:800;}
+  .note{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px;
+    font-size:.9rem; color:var(--ink-soft); margin:14px 0;
+  }
+  .note b{color:var(--ink);}
+  .agenda{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 20px;}
+  .agenda span{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:8px 16px;
+    font-size:.86rem; font-weight:700; color:var(--ink);
+  }
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Day 23 · Classwork Notes</div>
+  <h1>K-Nearest Neighbors (KNN)</h1>
+  <p class="subtitle">Every algorithm so far learned a fixed formula by minimizing a cost function. Today: one with no coefficients, no cost function, and technically no training phase — it just remembers every applicant it's seen, and asks "who are the K people most like you, and what happened to them?"</p>
+  <a class="pdf-link" href="knn-classification-slides.html">🖥️ Open the slide deck</a>
+
+  <h2>Agenda</h2>
+  <div class="agenda">
+    <span>Hour 1 — Distance &amp; Lazy Learning</span>
+    <span>Hour 2 — The Full Algorithm &amp; Choosing K</span>
+    <span>Hour 3 — Evaluating Honestly</span>
+    <span>Hour 4 — Real Data &amp; Multiclass</span>
+  </div>
+
+  <h2>Hour 1 — Distance &amp; Lazy Learning</h2>
+  <p>Linear and Logistic Regression both fit a formula ahead of time by minimizing a cost function, then predict instantly forever after. KNN is a completely different family — called <b>lazy learning</b> (or instance-based learning): nothing gets learned ahead of time, all the real work happens the moment a new point shows up. One sentence, no math yet: <i>"you are the average of the K people most like you"</i> — the same idea behind a real-estate appraiser pricing a house from recent, similar sales.</p>
+  <div class="formula">
+    Euclidean distance: d(A,B) = √[(x_A−x_B)² + (y_A−y_B)²]
+    <span class="sub">Pythagoras' theorem, reused. Worked example: credit 2→5 (Δ=3), age 25→29 (Δ=4) → d = √(9+16) = √25 = 5, a perfect 3-4-5 triangle. With more features, keep adding squared differences under the root — same formula, any number of dimensions. That's the only formula in the entire algorithm.</span>
+  </div>
+  <p><b>K=1 is fragile.</b> If the single nearest neighbor happens to be an unusual point (e.g. a rejected applicant sitting in an otherwise-approved neighborhood), that one point can hijack the whole prediction. Bigger K is more stable against noise — but Hour 2 shows too big starts ignoring real local patterns. There's no free lunch, just a dial to tune.</p>
+  <p>Logistic Regression's decision boundary is always one straight line, because it comes from one linear formula. KNN's boundary has no such constraint — it bends, splits into islands, and wraps around outliers, shaped entirely by nearby data.</p>
+
+  <h2>Hour 2 — The Full Algorithm &amp; Choosing K</h2>
+  <ol>
+    <li><b>"Train" the model</b> — store every training point, exactly as-is. No iteration, no optimization, no convergence to wait for.</li>
+    <li><b>A new point arrives</b> — compute its distance to every single stored training point.</li>
+    <li><b>Sort by distance</b> — closest to farthest.</li>
+    <li><b>Take the closest K</b> — discard the rest.</li>
+    <li><b>Majority vote</b> — whichever label appears most often among those K wins.</li>
+  </ol>
+  <p>Compare this to gradient descent's five steps (guess, feel the slope, subtract, repeat, stop when flat) — KNN has no equivalent of any of them. It's a genuinely different kind of algorithm, not a variation on the old one.</p>
+  <div class="note"><b>The single most important rule in KNN: scaling isn't optional.</b> Age might range 18–70 (a span of 52); credit index might range 1–10 (a span of 9). In raw distance, a 1-year age gap and a 1-point credit gap aren't remotely comparable — age quietly dominates every calculation, and a worked hand-example can flip its own answer once features are standardized (z-scored) first. For Logistic Regression, skipping scaling just slowed gradient descent down. For KNN, skipping it gives an <i>actively wrong</i> neighbor set — a hard requirement, every time.</div>
+  <p>Euclidean (L2) distance is the default, but not the only option — Manhattan (L1) distance (<code>Σ|xᵢ−yᵢ|</code>, walking a city grid block by block) is less sensitive to outliers in any one dimension. Which one to use rarely matters as much as scaling correctly does, but it's a design decision, not a law of nature.</p>
+
+  <h3>Picking K is a measurement, not a guess</h3>
+  <p>Same discipline as choosing a polynomial degree: split into train/test once, try every reasonable K, fit on training only, score honestly on the held-out set.</p>
+  <ul>
+    <li><b>K=1</b> — perfect training accuracy, trivially (a point's own nearest neighbor is always itself). Tells you nothing about new data.</li>
+    <li><b>A well-chosen middle K</b> — training accuracy has settled, test accuracy is high, and no longer fooled by any single outlier.</li>
+    <li><b>Very large K</b> — both curves sag; with K approaching the size of the whole training set, "majority vote" barely means anything local anymore.</li>
+  </ul>
+  <p>Two practical refinements: <b>ties</b> (an even K can produce a tied vote — prefer odd K for 2-class problems, or fall back to the single nearest neighbor), and <b>distance-weighted voting</b> (let closer neighbors count for more than farther ones, instead of every one of the K votes counting equally).</p>
+  <p>"No training phase" just moves the cost to prediction time — every single prediction requires computing distance to every stored training point (n distance calculations per prediction, for n applicants). Linear/Logistic Regression pay a training cost once and predict instantly forever after; KNN pays nothing upfront and a little every single time.</p>
+
+  <h2>Hour 3 — Evaluating Honestly</h2>
+  <p>KNN has no training phase to overfit <i>during</i> — but a tiny K essentially memorizes each training point's own label, so the same discipline applies: split before doing anything, and critically, <b>fit the scaler using only the training data's mean/std</b> — computing it from the full dataset lets test information leak backward into training. The same confusion-matrix / accuracy / precision / recall / F1 toolkit from Logistic Regression applies unchanged.</p>
+  <table>
+    <thead><tr><th>Property</th><th>Logistic Regression</th><th>KNN</th></tr></thead>
+    <tbody>
+      <tr><td>Boundary shape</td><td>Always one straight line/plane</td><td>Any shape the data needs</td></tr>
+      <tr><td>"Training"</td><td>Gradient descent, iterative</td><td>Just store the data — instant</td></tr>
+      <tr><td>Prediction cost</td><td>Instant (one dot product)</td><td>Compare to every stored point</td></tr>
+      <tr><td>Interpretability</td><td>Coefficients have a clean meaning</td><td>"Because these K neighbors" — no formula to inspect</td></tr>
+      <tr><td>Feature scaling</td><td>Recommended (training speed)</td><td>Mandatory (or predictions are wrong)</td></tr>
+      <tr><td>Multiclass</td><td>Needs One-vs-Rest or Softmax</td><td>Free — just count votes among more labels</td></tr>
+    </tbody>
+  </table>
+  <p>On a dataset where the true "approve" region splits into two very different groups (young/high-credit and older/moderate-credit) around an unusual rejected outlier, Logistic Regression's single straight line genuinely can't bend around both — KNN, with no such constraint, wins the honest head-to-head comparison.</p>
+  <div class="note"><b>The curse of dimensionality.</b> With 2 features, "nearest" is intuitive. Keep adding features (salary, credit score, loan amount, zip code…) and eventually every point ends up roughly equally far from every other point — "nearest neighbor" stops meaning much. This is the main reason KNN is usually applied to a modest, carefully-chosen feature set rather than thrown at hundreds of raw columns.</div>
+
+  <h2>Hour 4 — Real Data &amp; Multiclass</h2>
+  <p>A missing value isn't just inconvenient for KNN — the distance formula is undefined the moment one coordinate is missing. The same six raw-data problems from Logistic Regression's Hour 4 (duplicates, wrong types, casing typos, impossible values, missing values, unencoded categories) all apply, but two are especially dangerous for a distance-based model:</p>
+  <ul>
+    <li><b>Categorical distance</b> — one-hot encoding Employment gives a clean side-effect: the distance between two <i>different</i> one-hot categories is always exactly √2, and between the <i>same</i> category, 0. Never encode categories as raw 1, 2, 3 for KNN — that would claim "Retired" is numerically closer to "Self-Employed" than to "Salaried," an invented ranking the data never justified.</li>
+    <li><b>Missing values</b> — median imputation, for the same outlier-robustness reason as before, but now a genuine prerequisite for the math to run at all, not just good practice.</li>
+  </ul>
+  <p>Steps 1–6 of the cleaning pipeline (duplicates → types/text → range validation → imputation → one-hot encoding → standardization) are identical to Logistic Regression's — the same raw loan file goes through the same cleaning either way. Only the final fitting step differs: "fit" for KNN just means storing the cleaned, scaled training set.</p>
+  <div class="formula">
+    Multiclass is free
+    <span class="sub">Logistic Regression needed genuinely new machinery (One-vs-Rest or Softmax) to go from 2 classes to K classes. KNN's algorithm never mentioned "2" anywhere — majority vote among neighbors works identically whether there are 2 labels or 20. Split "Approve" into "Standard" and "Premium" approval, and nothing about the algorithm changes — just tally 3 labels instead of 2.</span>
+  </div>
+  <p><b>KNN Regression</b>, previewed: the exact same five steps, but swap the majority vote for an average of the K neighbors' numeric target values. "Predict this house's price as the average of the 5 most similar recently-sold houses" is literally KNN Regression in plain English — same distance formula, same K, one word changed: vote → average.</p>
+
+  <h2>The Takeaway</h2>
+  <p>No formula was ever fit. No cost function was ever minimized. Every prediction all session came from one idea: find who's most similar, and ask what happened to them. Scaling is mandatory (not a suggestion), K is chosen by honest cross-validation (not a guess), and multiclass needed no new machinery at all — proof that "learn a formula" was never the only way to predict.</p>
+</div>
+</body>
+</html>

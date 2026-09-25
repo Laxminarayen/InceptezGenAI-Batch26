@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Classwork Notes · KNN Regression &amp; Decision Trees</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#1C8C5A;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#3FBB7C;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    -webkit-font-smoothing:antialiased; line-height:1.6;
+  }
+  .wrap{max-width:840px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 80px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.7rem,4vw,2.4rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 6px;}
+  .subtitle{color:var(--ink-soft); font-size:1rem; margin-bottom:8px;}
+  .pdf-link{
+    display:inline-flex; align-items:center; gap:8px; margin:14px 0 34px; font-size:.9rem; font-weight:700;
+    color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px;
+    padding:9px 18px; text-decoration:none;
+  }
+  .pdf-link:hover{border-color:var(--accent); color:var(--accent);}
+  h2{font-size:1.35rem; font-weight:900; margin:44px 0 14px; padding-top:16px; border-top:1px solid var(--line);}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h3{font-size:1.05rem; font-weight:800; margin:22px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{
+    background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent);
+    border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink);
+    font-size:1.02rem;
+  }
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:7px 10px; text-align:center; border:1px solid var(--line);}
+  th{background:var(--paper-2); font-weight:800; font-size:.74rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  tr.hl td{background:color-mix(in srgb, var(--accent) 10%, transparent); font-weight:800;}
+  .note{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px;
+    font-size:.9rem; color:var(--ink-soft); margin:14px 0;
+  }
+  .note b{color:var(--ink);}
+  .agenda{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 20px;}
+  .agenda span{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:8px 16px;
+    font-size:.86rem; font-weight:700; color:var(--ink);
+  }
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Day 24 · Classwork Notes</div>
+  <h1>KNN Regression &amp; Decision Trees</h1>
+  <p class="subtitle">Two new ideas, built up slowly: first, what KNN does when the answer is a number instead of a category. Then a completely different way to predict things — Decision Trees — which don't measure distance at all, they just ask good yes/no questions, one at a time, like 20 Questions. Today covers categorical splits, all the way through a complete hand-built tree; numeric splits and Gini carry over to next class.</p>
+  <a class="pdf-link" href="knn-regression-decision-trees-slides.html">🖥️ Open the slide deck</a>
+
+  <h2>Agenda</h2>
+  <div class="agenda">
+    <span>Hour 1 — KNN Regression</span>
+    <span>Hour 2 — Decision Trees, Built by Hand</span>
+  </div>
+
+  <h2>Hour 1 — KNN Regression</h2>
+  <p>Last session's KNN classifier found the K nearest applicants and let them vote. Change exactly one word — vote → average — and you get KNN Regression: find the K nearest <i>houses</i> by size, and predict this house's price as the plain average of their sale prices. This is exactly how a real-estate "comp" report works: find a handful of the most similar recently-sold houses nearby, and average what they sold for.</p>
+  <p>Worked example: a new house of size 15 (hundreds of sq ft) — find its 5 nearest neighbors by size, then average their prices. That average <i>is</i> the prediction; no formula, no coefficients.</p>
+  <p>K controls the shape of the resulting prediction curve exactly the way it controlled KNN classification's decision boundary:</p>
+  <ul>
+    <li><b>K=1</b> — chases every point; perfect on training data (a point's own nearest neighbor is itself) but jumpy and noisy on new houses.</li>
+    <li><b>A well-chosen middle K</b> — test error (mean squared error — average of (actual − predicted)², lower is better) bottoms out here: smooth enough to ignore noise, local enough to track the real curve.</li>
+    <li><b>Large K</b> — oversmoothed; too many far-away, dissimilar houses drag every average toward one flat number, and error climbs steadily.</li>
+  </ul>
+  <p>KNN never actually "understands" anything about a feature — it only ever measures distance. Hour 2 introduces a family that works completely differently: one that looks at the data and figures out the smartest possible yes/no questions to ask, in the smartest possible order.</p>
+
+  <h2>Hour 2 — Decision Trees, Built by Hand</h2>
+  <h3>Three classifiers, the same data, side by side</h3>
+  <table>
+    <thead><tr><th>Property</th><th>Logistic Regression</th><th>KNN</th><th>Decision Tree</th></tr></thead>
+    <tbody>
+      <tr><td>Boundary shape</td><td>One straight line/plane</td><td>Any shape (smooth blobs)</td><td>Any shape (rectangular blocks)</td></tr>
+      <tr><td>"Training" cost</td><td>Gradient descent, iterative</td><td>None — just store the data</td><td>Recursive splitting — fast, one pass</td></tr>
+      <tr><td>Prediction cost</td><td>Instant (one dot product)</td><td>Compare to every stored point</td><td>Walk a handful of if/else checks — instant</td></tr>
+      <tr><td>Multiclass</td><td>Needs One-vs-Rest / Softmax</td><td>Free — just count more labels</td><td>Free — just more leaf categories</td></tr>
+    </tbody>
+  </table>
+  <p>A Decision Tree's biggest edge: it's the only one of the three you can hand to a non-technical stakeholder and have them read the actual reasoning out loud — "if credit &lt; 4.5, reject; otherwise, if age &lt; 41…" No coefficients, no "K nearest neighbors" to explain. The tradeoff: deep trees overfit easily, and their boundaries are always blocky and axis-aligned — never smoothly curved like KNN's, never a clean straight line like Logistic Regression's.</p>
+  <p>A Decision Tree is, in one sentence, a pile of if/else statements. The shape was never the hard part — anyone can write an if/else. The only thing a computer has to figure out is: <i>which feature, and which threshold, belongs in that "if"?</i></p>
+
+  <h3>Entropy: a number for "how mixed up"</h3>
+  <p>Picture two bags of 12 candies, red = rejected, green = approved. An all-one-color bag has zero surprise — "what will I pull out?" has an obvious answer. A 50/50 mixed bag is totally unpredictable. <b>Entropy</b> is a number for exactly this feeling: 0 means "totally sorted," and it peaks when a group is split as evenly as possible.</p>
+  <div class="formula">
+    H(S) = −Σ pᵢ · log₂(pᵢ)
+    <span class="sub">For each label, take its share of the group, multiply by log₂ of that share, sum, and flip the sign. Worked on 26 loan applicants (12 approved, 14 rejected — nearly 50/50): H = −(0.46·log₂0.46 + 0.54·log₂0.54) ≈ 0.996, right near the maximum of 1.0 for two labels — exactly as mixed-up as two classes can be.</span>
+  </div>
+
+  <h3>Building a real tree, by hand — Kaggle's Loan Prediction columns</h3>
+  <p>A 16-row sample with mostly categorical columns (Married, Education, Self_Employed, Credit_History, Property_Area, Loan_Status) — the easiest place to practice entropy, since the groups already exist with no threshold to search for. A <b>stump</b> asks exactly one question and stops (no recursion); computing every column's stump reveals which one should go first.</p>
+  <table>
+    <thead><tr><th>Column (Root, Step 1)</th><th>Weighted entropy</th><th>Information Gain</th></tr></thead>
+    <tbody>
+      <tr><td>Married</td><td>0.894</td><td>0.106</td></tr>
+      <tr><td>Property_Area</td><td>0.937</td><td>0.063</td></tr>
+      <tr><td>Education</td><td>1.000</td><td>0.000 (perfect 50/50 tie in every branch)</td></tr>
+      <tr><td>Self_Employed</td><td>1.000</td><td>0.000 (perfect 50/50 tie in every branch)</td></tr>
+      <tr class="hl"><td>Credit_History</td><td>0.283</td><td>0.717 — the winner</td></tr>
+    </tbody>
+  </table>
+  <div class="formula">
+    Information Gain = H(parent) − weighted average of H(children)
+    <span class="sub">Credit_History alone gets 15 of 16 applicants to the correct decision from one single question — by far the best stump. It becomes the ROOT NODE: every applicant is asked this question first.</span>
+  </div>
+  <p>Splitting by Credit_History: the <code>Credit_History = 0</code> branch is already pure (7 applicants, all REJECT, entropy 0) — that branch is finished forever. The <code>Credit_History = 1</code> branch still has 9 applicants and isn't pure, so the entire stump exercise repeats on just those 9 rows (Credit_History is now constant there, so it can't help anymore).</p>
+  <p><b>Step Two</b> (9 rows left): Property_Area wins (Information Gain 0.281 vs. Married's 0.197 and Education's 0.143), splitting into Semiurban (pure, all approve) and Urban (pure, all approve) leaves, plus a still-impure Rural branch of 2 applicants. <b>Step Three</b> (2 rows left, Rural): Married is the only column left that can still split anything — Information Gain 1.000, the maximum possible — and it perfectly separates the last two applicants. Every one of the 16 applicants now sits in a pure leaf. The tree is done: three levels deep at most, five leaves total.</p>
+
+  <h3>What Information Gain really means</h3>
+  <p>Divide Information Gain by the entropy at that node, and you get the fraction of that node's confusion the question eliminates — not just "bigger is better," a literal percentage. Credit_History alone wipes out <b>71.7%</b> of all the uncertainty in the entire 16-row dataset; adding Property_Area brings cumulative resolved uncertainty to 87.5%; by the time the tree is finished, weighted entropy across all 16 applicants is exactly 0 — 100% resolved.</p>
+
+  <div class="formula">
+    The same idea as R² in Linear Regression
+    <span class="sub">SST (spread around the mean, before fitting) ↔ H(root) (entropy before any split, spread around the 50/50 baseline mix). SSR (spread the line explains) ↔ Information Gain (confusion the split removes). SSE (spread left over) ↔ weighted entropy of the children (confusion still remaining). Both start from a baseline "spread" and measure what fraction one predictor accounts for — Linear Regression calls that fraction R², a Decision Tree calls it Information Gain.</span>
+  </div>
+
+  <h2>Carrying Over to Next Class</h2>
+  <p>Cut short on purpose right after finishing a complete hand-built tree. Three things carry over:</p>
+  <ul>
+    <li><b>Numeric column splits</b> — how a tree invents its own threshold for a column like age or income, the harder cousin of today's ready-made categorical groups.</li>
+    <li><b>The Gini Index</b> — a different impurity formula, no logarithms required, and scikit-learn's default.</li>
+    <li><b>Decision Tree Regression</b> — the same recursive splitting idea, aimed at predicting a number instead of a class.</li>
+  </ul>
+
+  <h2>The Takeaway</h2>
+  <p>No formula was fit. No distance was measured. Every decision came from one repeated question: which column, split which way, removes the most confusion? — the exact same "explained fraction of a baseline spread" logic behind R², just built for categories instead of numbers.</p>
+</div>
+</body>
+</html>

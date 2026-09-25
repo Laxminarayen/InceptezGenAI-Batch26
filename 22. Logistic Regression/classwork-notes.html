@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Classwork Notes · Logistic Regression</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#C13D68;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#F17BA0;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    -webkit-font-smoothing:antialiased; line-height:1.6;
+  }
+  .wrap{max-width:840px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 80px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.7rem,4vw,2.4rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 6px;}
+  .subtitle{color:var(--ink-soft); font-size:1rem; margin-bottom:8px;}
+  .pdf-link{
+    display:inline-flex; align-items:center; gap:8px; margin:14px 0 34px; font-size:.9rem; font-weight:700;
+    color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px;
+    padding:9px 18px; text-decoration:none;
+  }
+  .pdf-link:hover{border-color:var(--accent); color:var(--accent);}
+  h2{font-size:1.35rem; font-weight:900; margin:44px 0 14px; padding-top:16px; border-top:1px solid var(--line);}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h3{font-size:1.05rem; font-weight:800; margin:22px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{
+    background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent);
+    border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink);
+    font-size:1.02rem;
+  }
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.92rem;}
+  th, td{padding:8px 12px; text-align:center; border:1px solid var(--line);}
+  th{background:var(--paper-2); font-weight:800; font-size:.78rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  tr.hl td{background:color-mix(in srgb, var(--accent) 10%, transparent); font-weight:800;}
+  .note{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px;
+    font-size:.9rem; color:var(--ink-soft); margin:14px 0;
+  }
+  .note b{color:var(--ink);}
+  .agenda{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 20px;}
+  .agenda span{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:8px 16px;
+    font-size:.86rem; font-weight:700; color:var(--ink);
+  }
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Day 22 · Classwork Notes</div>
+  <h1>Logistic Regression</h1>
+  <p class="subtitle">Binary classification, end to end, on a loan-approval example: teaching a straight line to say "probably" instead of a raw number — built, trained, evaluated honestly, and then run against the mess a real loan file actually arrives in.</p>
+  <a class="pdf-link" href="logistic-regression-slides.html">🖥️ Open the slide deck</a>
+
+  <h2>Agenda</h2>
+  <div class="agenda">
+    <span>Hour 1 — The Sigmoid Hypothesis</span>
+    <span>Hour 2 — Training with Log Loss</span>
+    <span>Hour 3 — Evaluating Honestly</span>
+    <span>Hour 4 — A Real, Messy Loan File</span>
+  </div>
+
+  <h2>Hour 1 — The Sigmoid Hypothesis</h2>
+  <p>Last session's preview showed why a plain straight line makes a bad loan officer: it swings wildly at one unusual applicant, and happily predicts a "124% chance of approval." The fix reuses the line, but wraps it.</p>
+  <div class="formula">
+    σ(z) = 1 / (1 + e<sup>−z</sup>)
+    <span class="sub">Feed it any real number z — negative, zero, huge, tiny — and it always hands back a number strictly between 0 and 1. That's the whole trick.</span>
+  </div>
+  <div class="formula">
+    hβ(x) = σ(β₀ + β₁x)
+    <span class="sub">Step 1 (familiar): compute z = β₀ + β₁x exactly as linear regression always has. Step 2 (new): pass that single number through the sigmoid. Worked example: β₀=−4, β₁=0.8, applicant at credit index 6 → z = 0.8 → p = σ(0.8) ≈ 0.690, a 69% predicted chance of approval.</span>
+  </div>
+  <p>A probability alone isn't a decision — the standard rule is predict APPROVE if p ≥ 0.5, else REJECT. Since σ(z) = 0.5 exactly when z = 0, that rule collapses to something simple: approve whenever the raw line z is positive.</p>
+  <h3>Where σ(z) actually comes from</h3>
+  <p>z isn't just "a number fed into a formula" — z <i>is</i> the log-odds, by definition. Undo the log to get odds (<code>e^z</code>), then convert odds to a probability (<code>odds/(1+odds)</code>) — do that pipeline in one line and you get exactly the sigmoid formula. That's also why β₁ has a clean reading: each extra point of credit index changes the log-odds of approval by β₁.</p>
+  <p>Adding a second feature (e.g. applicant age) doesn't change the recipe — z just grows an extra term per feature, and the decision boundary stops being a single point on a number line and becomes a full line (soon a hyperplane) cutting through feature space.</p>
+
+  <h2>Hour 2 — Training with Log Loss</h2>
+  <p>Can gradient descent reuse plain Mean Squared Error here? Almost — but plugging σ(z) into MSE produces a bumpy, multi-dip cost surface (sigmoid's own curviness leaks into it), and gradient descent can get trapped in a fake "bottom" that isn't the real best answer. The fix is a different cost function.</p>
+  <div class="formula">
+    Log loss (cross-entropy): J(β) = −(1/n) Σ [ y·log(p) + (1−y)·log(1−p) ]
+    <span class="sub">Since y is always exactly 0 or 1, one of the two terms always vanishes — leaving just the rule that applies. Being confidently wrong (p near 0 when y=1) is punished heavily; being confidently right costs almost nothing.</span>
+  </div>
+  <p>The logarithm exactly cancels the exponential sitting inside the sigmoid — turning a curvy, potentially bumpy surface into one guaranteed-smooth bowl for <i>any</i> dataset, any features. (Formally: <code>z = β₀+β₁x</code> is linear in β, and precomposing a convex function of z with an affine map stays convex; log loss's second derivative works out to <code>p(1−p)</code>, which is never negative — so the bowl-shape guarantee holds everywhere, unlike MSE, which is bounded and eventually has to flatten out and reverse curvature.)</p>
+  <div class="formula">
+    ∂J/∂βₖ = (1/n) Σ (p − y) × xₖ
+    <span class="sub">Work through the derivative of log loss and the sigmoid's own derivative cancels perfectly against the log's — landing on the exact same "mistake × x" shape as linear regression's gradient, just with p (a sigmoid output) standing in for a straight-line prediction. Same update rule, same five-step loop, nothing new to invent.</span>
+  </div>
+  <p>This is why logistic regression is taught right after linear regression: different hypothesis, different cost, identical training loop. And the same scaling warning from Hour 2 of Gradient Descent applies here too — features on wildly different scales (age 18–70 vs. loan amount ₹5,000–₹500,000) make gradient descent lurch on one axis and crawl on the other. Normalize first.</p>
+
+  <h2>Hour 3 — Evaluating Honestly</h2>
+  <p>Trained on a slightly trickier 22-applicant dataset (including one excellent-credit applicant who was still rejected — the loan dwarfed their income — and one weak-credit applicant who was still approved, backed by collateral), the model can no longer be perfect. That's exactly what makes evaluation meaningful.</p>
+  <table>
+    <thead><tr><th></th><th>Predicted Approve</th><th>Predicted Reject</th></tr></thead>
+    <tbody>
+      <tr><td><b>Actual Approve</b></td><td>True Positive (TP)</td><td>False Negative (FN)</td></tr>
+      <tr><td><b>Actual Reject</b></td><td>False Positive (FP)</td><td>True Negative (TN)</td></tr>
+    </tbody>
+  </table>
+  <div class="formula">
+    The accuracy paradox
+    <span class="sub">100 loan applications, 95 legitimate, 5 fraudulent. A "classifier" that predicts "legitimate" for everyone, never looking at the data, scores 95% accuracy — and has never once caught the fraud it exists to catch. Every fraud case is a False Negative. This is exactly why accuracy alone is dangerous on imbalanced data.</span>
+  </div>
+  <ul>
+    <li><b>Precision = TP / (TP + FP)</b> — "When we say yes, how often are we actually right?"</li>
+    <li><b>Recall = TP / (TP + FN)</b> — "Of everyone who actually deserved a yes, how many did we catch?"</li>
+  </ul>
+  <div class="formula">
+    F1 = 2 × (precision × recall) / (precision + recall)
+    <span class="sub">The harmonic mean — it refuses to let a great precision hide a terrible recall (or vice versa) the way a plain average would.</span>
+  </div>
+  <p><b>0.5 was never a law of nature.</b> Lower the decision threshold and recall rises (precision typically falls) — useful when rejecting a good applicant is the costlier mistake. Raise it and precision rises (recall falls) — useful when a bad loan slipping through is the costlier mistake. 0.5 is just the "no opinion" default, and it's only correct when both kinds of mistakes cost the same, which is rarely true in practice.</p>
+
+  <h2>Hour 4 — A Real, Messy Loan File</h2>
+  <p>Everything through Hour 3 assumed a spotless spreadsheet. Real loan files don't arrive that way. The full cleaning pipeline, in order:</p>
+  <ol>
+    <li><b>Remove exact duplicates</b> — a re-submitted form or duplicate export silently gives one applicant double the weight during training.</li>
+    <li><b>Fix types &amp; inconsistent text</b> — <code>"29"</code> (a string) → <code>29</code> (a number); <code>"salaried"</code> → <code>"Salaried"</code>, so the model doesn't treat two spellings of the same category as unrelated.</li>
+    <li><b>Validate ranges; convert impossible values to missing</b> — a credit score of 910 is impossible (valid range: 300–850) and should be flagged, not guessed at. A ₹48,000 loan on a ₹54,000 salary is unusual but not impossible — the skill is telling the two apart using a real constraint, not a gut feeling.</li>
+    <li><b>Impute remaining missing values</b> — with a small dataset, dropping rows wastes over a third of the data. <b>Median</b> imputation is the safer default: just as easy as the mean, but robust to outliers that would drag a mean off-center.</li>
+    <li><b>One-hot encode categorical features</b> — <code>z = β₀+β₁x+…</code> is arithmetic; it has no idea what to do with the word "Retired." One new binary column per category. Never encode an unordered category as 1, 2, 3 directly — that invents a false ranking the model would happily "learn" from.</li>
+    <li><b>Standardize every numeric feature</b> — age (18–100) and loan amount (up to ₹500,000+) sit on wildly different scales; z-score every column so each becomes "how many standard deviations from average," all on the same footing.</li>
+    <li><b>Train/test split</b> — the same 80/20 discipline as every model this course.</li>
+    <li><b>Fit logistic regression</b> — the exact hypothesis, cost function, and gradient descent from Hours 1–2, unchanged.</li>
+  </ol>
+  <div class="note"><b>Garbage in, garbage out.</b> Every clean number Hours 1–3 used already assumed steps 1–6 had happened. Now you know how to actually make that true.</div>
+
+  <h2>The Takeaway</h2>
+  <p>Every formula today traces back to two ideas: squash a line through σ so it's always a valid probability, and walk downhill on cross-entropy — fed by data that earned the right to be called clean. Same optimizer, same five steps as every session before this — now able to run on data as messy as the real world actually is. Logistic regression is the workhorse behind more real-world credit, fraud, and risk models than almost any other single algorithm.</p>
+</div>
+</body>
+</html>

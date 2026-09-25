@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Classwork Notes · Gradient Descent</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#B0670C;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#E3A238;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    -webkit-font-smoothing:antialiased; line-height:1.6;
+  }
+  .wrap{max-width:840px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 80px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.7rem,4vw,2.4rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 6px;}
+  .subtitle{color:var(--ink-soft); font-size:1rem; margin-bottom:8px;}
+  .pdf-link{
+    display:inline-flex; align-items:center; gap:8px; margin:14px 0 34px; font-size:.9rem; font-weight:700;
+    color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px;
+    padding:9px 18px; text-decoration:none;
+  }
+  .pdf-link:hover{border-color:var(--accent); color:var(--accent);}
+  h2{font-size:1.35rem; font-weight:900; margin:44px 0 14px; padding-top:16px; border-top:1px solid var(--line);}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h3{font-size:1.05rem; font-weight:800; margin:22px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{
+    background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent);
+    border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink);
+    font-size:1.02rem;
+  }
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.92rem;}
+  th, td{padding:8px 12px; text-align:center; border:1px solid var(--line);}
+  th{background:var(--paper-2); font-weight:800; font-size:.78rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  tr.hl td{background:color-mix(in srgb, var(--accent) 10%, transparent); font-weight:800;}
+  .note{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px;
+    font-size:.9rem; color:var(--ink-soft); margin:14px 0;
+  }
+  .note b{color:var(--ink);}
+  .agenda{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 20px;}
+  .agenda span{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:8px 16px;
+    font-size:.86rem; font-weight:700; color:var(--ink);
+  }
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Day 18 · Classwork Notes</div>
+  <h1>Gradient Descent</h1>
+  <p class="subtitle">Last time we found the best-fit line for salary vs. experience two ways — by hand, and by random "hot and cold" nudging. Both worked, but neither is how real machines do it. Today we open the hood on the algorithm that trains almost every ML model in existence.</p>
+  <a class="pdf-link" href="optimization-slides.html">🖥️ Open the slide deck</a>
+
+  <h2>Agenda</h2>
+  <div class="agenda">
+    <span>Hour 1 — The Cost Landscape</span>
+    <span>Hour 2 — The Blindfolded Hiker</span>
+    <span>Hour 3 — Deriving the Gradient</span>
+    <span>Hour 4 — Convergence &amp; Pitfalls</span>
+  </div>
+
+  <h2>Hour 1 — The Cost Landscape</h2>
+  <p>We're no longer asking "what's the salary?" — we're asking "which line is best?" That question lives in a completely different space: the <b>cost function</b> J takes the <i>parameters</i> (β₀, β₁) as input, not X.</p>
+  <div class="formula">
+    Optimization — the general problem of finding the input that makes some function's output as small (or large) as possible.
+    <span class="sub">"Fitting a line" is secretly just optimization wearing a costume.</span>
+  </div>
+  <p>Plot every possible (β₀, β₁) pair as a point on a map — the <b>cost landscape</b>. Position = a line; color = how good that line is (darker = lower cost = better fit); the star marks the exact minimum OLS computes algebraically. For simple linear regression this landscape is always a smooth, single valley — a bowl, with exactly one lowest point no matter which direction you approach from.</p>
+  <p>Why a bowl and not a V? Squaring the error (the bowl) grows faster and faster the further you move from zero error; taking the absolute value (a V) grows at a constant rate. That difference in curvature is exactly why MSE — not MAE — is what gradient descent is built to walk down smoothly.</p>
+  <div class="note">You have the luxury of a bird's-eye view of this map. A real algorithm starts at one random point and can only feel what's directly under its feet — the local slope. That's the whole problem Hour 2 solves.</div>
+
+  <h2>Hour 2 — The Blindfolded Hiker</h2>
+  <p>This is the entire idea behind Gradient Descent: you're on a foggy hillside, you can't see the valley floor, but you can feel which way is downhill by tilting your foot — one direction feels steeper-down than the other. Take a step that way. Repeat.</p>
+
+  <h3>The algorithm, in five steps</h3>
+  <ol>
+    <li><b>Start with a guess — any guess.</b> Your first guess doesn't need to be good; you'll get to correct yourself repeatedly.</li>
+    <li><b>Feel the slope.</b> One number tells you which way is downhill and how steeply.</li>
+    <li><b>Update: subtract the slope.</b> <code>new value = old value − (learning rate) × slope</code>. Exactly like a thermostat: reading "+3" (too hot) turns the dial down; "−3" (too cold) turns it up.</li>
+    <li><b>Repeat</b> — go back to step 2 with the brand-new numbers.</li>
+    <li><b>Stop when the slope is ~0.</b> Flat ground in every direction means you're standing at the bottom.</li>
+  </ol>
+
+  <h3>Worked by hand: salary vs. age, 8 real people</h3>
+  <p>Small enough to hand-compute, real enough to trust. Two passes:</p>
+  <ul>
+    <li><b>One parameter first</b> — forget age entirely, guess the same salary (β₀) for everyone. Gradient descent slides down a simple 1-D curve and lands exactly on the average.</li>
+    <li><b>Both parameters together</b> — bring age back: <code>predicted salary = β₀ + β₁ × age</code>. Every round, compute <i>both</i> slopes and update <i>both</i> numbers simultaneously — the same update rule, just applied twice. It converges almost exactly to OLS's shortcut-formula answer.</li>
+  </ul>
+  <p>The two parameters can't be solved one at a time — there's only one mistake per person, and both dials shape it together. Nudge either one and the same residuals change; it's a seesaw, not two independent problems.</p>
+  <div class="formula">
+    Gradient — the direction of steepest increase at any point (and how steep it is).
+    <span class="sub">In 1D it's the familiar slope/derivative. In 2D (β₀ and β₁ together) it becomes an arrow pointing uphill — so gradient <i>descent</i> always steps in the opposite direction of the gradient. That minus sign is the whole trick.</span>
+  </div>
+  <p>The <b>learning rate</b> (α) scales every step. Too small and convergence crawls; the right size glides smoothly into the minimum, far faster than random "hot and cold" nudging ever could.</p>
+
+  <h2>Hour 3 — Deriving the Gradient</h2>
+  <p>The gradient arrow isn't magic — it's two ordinary formulas, one per parameter, built directly from the residuals you already know.</p>
+  <ul>
+    <li><b>Nudge β₀ by a tiny amount h</b> — every prediction shifts up by exactly h, so every residual shrinks by h. The resulting rate of change works out to <code>−2 × (average residual)</code>.</li>
+    <li><b>Nudge β₁ by h instead</b> — each prediction shifts by <code>h × Xᵢ</code> (bigger shift for bigger X), so the rate of change carries an extra Xᵢ: <code>−2 × (average of residual × X)</code>.</li>
+  </ul>
+  <div class="formula">
+    Both slopes are built from residuals — that's not a coincidence.
+    <span class="sub">If the average residual is zero AND residuals no longer correlate with X, there's nothing left to improve — that's the minimum, and it's exactly where both gradient formulas hit zero.</span>
+  </div>
+  <p>The only calculus fact used anywhere in this derivation is the chain rule for a square: the derivative of (something)² is <code>2 × (something) × (derivative of that something)</code>. Everything else is bookkeeping — does this term contain β₀, or β₁, or not?</p>
+
+  <h2>Hour 4 — Convergence &amp; Pitfalls</h2>
+  <p>Three practical stopping signals, usually combined:</p>
+  <ol>
+    <li><b>Gradient ≈ 0</b> — almost flat in every direction, basically at the bottom.</li>
+    <li><b>Cost stops improving</b> — if the last step barely moved J, further steps won't help much either.</li>
+    <li><b>Max iterations</b> — a safety net so training can't run forever.</li>
+  </ol>
+  <p>If plain linear regression has an exact closed-form shortcut (OLS), why walk downhill at all? Because the shortcut only exists for a handful of models — Logistic Regression and neural networks have no such formula, and gradient descent is the general-purpose tool that works for all of them.</p>
+
+  <h3>Two ways gradient descent breaks</h3>
+  <ul>
+    <li><b>Unscaled features</b> — one raw feature in single digits and another in the thousands stretches the bowl into a narrow ravine, forcing tiny cautious steps in one direction while crawling in the other. Fix: scale features to similar ranges before training.</li>
+    <li><b>Divergence</b> — push the learning rate too far and each "step downhill" overshoots so badly it lands <i>higher</i> than where it started. Cost doesn't shrink, it explodes.</li>
+  </ul>
+  <div class="note">Linear regression's cost landscape is always convex — a single smooth valley, which is exactly why it's the right place to <i>learn</i> gradient descent: you can always verify the answer against OLS's exact shortcut. Later, on messier landscapes (neural networks!), the bowl turns bumpy — many dips, and gradient descent can get stuck in a shallow one instead of the deepest one — and you'll trust the same walking algorithm without that safety net.</div>
+
+  <h2>The Takeaway</h2>
+  <p>Fitting a line is secretly an optimization problem over a bowl-shaped landscape. Gradient descent walks downhill using only the local slope — a slope that turns out to be two simple formulas built from residuals you already understood. Same update rule, whether it's 2 parameters or 2 million: compute the slope, subtract it, repeat. Every neural network you'll ever meet is just this, running millions of times.</p>
+</div>
+</body>
+</html>
