@@ -1,5 +1,17 @@
 [
   {
+    "id": "muh3cup3n0lf7s",
+    "author": "RamyaNaras",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/37861694?v=4",
+    "title": "Bagging-RF",
+    "body": "The left out rows from bootstrapping are called Out of Bag Samples.\nOOB (Out-of-Bag) Score is an internal validation metric used by Random Forest to estimate model performance without needing a separate validation dataset.\nOOB emulates the train/validation split.\nWhy is it \"Free\" Validation?\nNormally, you split data into:\n•\tTraining set\n•\tValidation/Test set\nThis reduces the amount of data available for training.\nWith OOB:\n•\tNo separate validation set is required since it uses the left over rows from bootstrapping.\nSo Random Forest obtains a validation estimate without additional data collection or extra training cost.\n\nWhy Does Random Forest Need Two Sources of Randomness (Rows and Columns)?\nRandom Forest intentionally introduces randomness in both rows and columns to create diverse trees.\n\nWhy Both Are Needed\n\n![randomforest](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/muh3c6605q8n9b-randomforest.jpg)",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-25T15:04:03.687Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "muh2s8ax0za6eb",
     "author": "RamyaNaras",
     "authorAvatar": "https://avatars.githubusercontent.com/u/37861694?v=4",
