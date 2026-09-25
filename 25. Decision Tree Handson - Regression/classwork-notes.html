@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Classwork Notes · Decision Trees — Numeric Splits, Gini &amp; Regression</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#B0670C;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#E3A238;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    -webkit-font-smoothing:antialiased; line-height:1.6;
+  }
+  .wrap{max-width:840px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 80px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.7rem,4vw,2.4rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 6px;}
+  .subtitle{color:var(--ink-soft); font-size:1rem; margin-bottom:8px;}
+  .pdf-link{
+    display:inline-flex; align-items:center; gap:8px; margin:14px 0 34px; font-size:.9rem; font-weight:700;
+    color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px;
+    padding:9px 18px; text-decoration:none;
+  }
+  .pdf-link:hover{border-color:var(--accent); color:var(--accent);}
+  h2{font-size:1.35rem; font-weight:900; margin:44px 0 14px; padding-top:16px; border-top:1px solid var(--line);}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h3{font-size:1.05rem; font-weight:800; margin:22px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{
+    background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent);
+    border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink);
+    font-size:1.02rem;
+  }
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:7px 10px; text-align:center; border:1px solid var(--line);}
+  th{background:var(--paper-2); font-weight:800; font-size:.74rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  tr.hl td{background:color-mix(in srgb, var(--accent) 10%, transparent); font-weight:800;}
+  .note{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px;
+    font-size:.9rem; color:var(--ink-soft); margin:14px 0;
+  }
+  .note b{color:var(--ink);}
+  .agenda{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 20px;}
+  .agenda span{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:8px 16px;
+    font-size:.86rem; font-weight:700; color:var(--ink);
+  }
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Day 25 · Classwork Notes</div>
+  <h1>Decision Trees — Numeric Splits, Gini &amp; Regression</h1>
+  <p class="subtitle">Picking up exactly where the hand-built tree left off: what a tree does with a number column instead of a ready-made category, the Gini Index (entropy's cheaper cousin and scikit-learn's default), and Decision Tree Regression — the same recursive splitting, aimed at predicting a number instead of a class.</p>
+  <a class="pdf-link" href="decision-trees-part2-numeric-gini-regression-slides.html">🖥️ Open the slide deck</a>
+
+  <h2>Agenda</h2>
+  <div class="agenda">
+    <span>Numeric Splits</span>
+    <span>The Gini Index</span>
+    <span>Regression Trees</span>
+  </div>
+  <p><b>Quick recap of last class's hand-built tree:</b> Root = Credit_History (Information Gain 0.717, by far the strongest single question) → then Property_Area on the filtered "Credit_History=1" group (IG 0.281) → then Married closed out the last 2 applicants in the Rural branch (IG 1.000, perfect).</p>
+
+  <h2>Numeric Splits — Inventing the Threshold</h2>
+  <p>Every categorical column arrives pre-grouped — "Property_Area = Urban?" writes itself, the groups already exist. A column like ApplicantIncome has no such luck: it's just numbers, no ready-made buckets anywhere. The good news: the entropy math doesn't change at all. One new step gets bolted on — searching for a threshold.</p>
+  <ol>
+    <li><b>Sort by the column</b> — all values, low to high.</li>
+    <li><b>Take every gap between neighbors</b> — the midpoint between two consecutive sorted values is a candidate threshold. 16 sorted values → 15 candidate gaps.</li>
+    <li><b>Score every candidate exactly like a categorical split</b> — split into "&lt; threshold" / "≥ threshold," compute weighted entropy, compute Information Gain, keep the highest.</li>
+  </ol>
+  <p>On the Kaggle Loan Prediction data's ApplicantIncome column, the best threshold (61.5) scores Information Gain 0.219 — enough to beat Married (0.106) and Property_Area (0.063), earning second place, but still not enough to unseat Credit_History (0.717) as root. The point isn't who wins — it's that a tree treats a numeric column as just another candidate in the exact same contest, once it does the extra threshold-search step.</p>
+
+  <h2>The Gini Index — Entropy's Cheaper Cousin</h2>
+  <p>Entropy needs a logarithm. The Gini Index measures the identical "how mixed up" feeling with plain multiplication instead.</p>
+  <div class="formula">
+    Gini(S) = 1 − Σ pᵢ²
+    <span class="sub">Square each label's fraction, add the squares, subtract from 1. A pure group (p=1) gives Gini = 1 − 1² = 0. A 50/50 group gives Gini = 1 − (0.5²+0.5²) = 0.5 — its own "maximum confusion," just on a different scale than entropy's 0–1.</span>
+  </div>
+  <p>Re-scoring Credit_History with Gini gives weighted Gini 0.111 and Gini Gain 0.389 — a different number, same story: Credit_History massively reduces impurity either way. Run all five columns through both formulas and the <b>ranking is identical</b>, top to bottom — Credit_History wins, Married is #2, Property_Area is #3, Education and Self_Employed tie last with zero gain either way. Different numbers, same decisions: the normal case, not a coincidence. Both measures hit 0 at a pure group and peak at a 50/50 group; entropy peaks at 1.0, Gini peaks at 0.5, but the shape — and which splits look "good" — barely differs.</p>
+  <div class="note">This is why <code>scikit-learn</code>'s <code>DecisionTreeClassifier()</code> defaults to <code>criterion='gini'</code> — cheaper to compute, and picks essentially the same tree entropy would. <code>criterion='entropy'</code> is one keyword away if you want it.</div>
+
+  <h2>Regression Trees — One Small Change, Again</h2>
+  <p>Recall Hour 1 of the last session: KNN's one-word change from classification to regression was vote → average. The identical thing happens to Decision Trees. Instead of asking "which question un-mixes the classes the most?", a regression tree asks "which question makes the numbers inside each group most similar to each other?"</p>
+  <div class="formula">
+    Variance replaces entropy/Gini as the impurity score
+    <span class="sub">"Spread out" is measured as variance — how far each value sits from its group's own mean, squared, averaged. A good split should make each new group's numbers land much closer together than the parent group's.</span>
+  </div>
+  <p>Worked on a Kaggle-style ApplicantIncome → LoanAmount dataset (32 applicants): the whole group starts at mean $193.3k with variance 3838.2; testing a split like "is income under 55?" and comparing the resulting groups' variances is exactly the same recursive procedure as the categorical case, just scored differently.</p>
+  <p>Every leaf in a regression tree is one flat, constant prediction — its group's mean — so a regression tree's prediction is always a <b>staircase</b>, never a smooth curve. More depth means more, narrower steps. Depth plays the same role here that K played for KNN:</p>
+  <ul>
+    <li><b>Shallow (depth 1)</b> — barely asks anything; one split for the whole dataset, high error on both train and test. Underfit.</li>
+    <li><b>A well-chosen middle depth</b> — test error bottoms out; enough questions to track the real trend, not enough to chase noise.</li>
+    <li><b>Deep trees</b> — training error shrinks toward 0 as depth grows, while test error climbs back up. Classic overfitting — a tree that's memorized rather than generalized.</li>
+  </ul>
+
+  <h2>Everything That Changed, Everything That Didn't</h2>
+  <table>
+    <thead><tr><th></th><th>Classification tree</th><th>Regression tree</th></tr></thead>
+    <tbody>
+      <tr><td>Recursive splitting, try every column/threshold, keep the best, repeat</td><td colspan="2">Identical in both</td></tr>
+      <tr><td>Impurity score</td><td>Entropy or Gini</td><td>Variance</td></tr>
+      <tr><td>Leaf prediction</td><td>Majority class</td><td>Mean of the group</td></tr>
+    </tbody>
+  </table>
+
+  <h2>The Takeaway</h2>
+  <p>No formula was ever fit by a tree. No distance was ever measured. Just good questions, asked in the best order, over and over — for categories and for numbers, for splits that already exist (categorical) and splits a tree has to invent (numeric threshold search), for classification (entropy/Gini) and for regression (variance). Same recursive idea, four different flavors.</p>
+</div>
+</body>
+</html>

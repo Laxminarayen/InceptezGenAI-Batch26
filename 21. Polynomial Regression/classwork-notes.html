@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Classwork Notes · Polynomial Regression &amp; a Preview of Classification</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#8C3F73;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#E28AC7;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    -webkit-font-smoothing:antialiased; line-height:1.6;
+  }
+  .wrap{max-width:840px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 80px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.7rem,4vw,2.4rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 6px;}
+  .subtitle{color:var(--ink-soft); font-size:1rem; margin-bottom:8px;}
+  .pdf-link{
+    display:inline-flex; align-items:center; gap:8px; margin:6px 8px 0 0; font-size:.9rem; font-weight:700;
+    color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px;
+    padding:9px 18px; text-decoration:none;
+  }
+  .pdf-link:hover{border-color:var(--accent); color:var(--accent);}
+  .link-row{margin:14px 0 34px;}
+  h2{font-size:1.35rem; font-weight:900; margin:44px 0 14px; padding-top:16px; border-top:1px solid var(--line);}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h3{font-size:1.05rem; font-weight:800; margin:22px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{
+    background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent);
+    border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink);
+    font-size:1.02rem;
+  }
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.92rem;}
+  th, td{padding:8px 12px; text-align:center; border:1px solid var(--line);}
+  th{background:var(--paper-2); font-weight:800; font-size:.78rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  tr.hl td{background:color-mix(in srgb, var(--accent) 10%, transparent); font-weight:800;}
+  .note{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px;
+    font-size:.9rem; color:var(--ink-soft); margin:14px 0;
+  }
+  .note b{color:var(--ink);}
+  .agenda{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 20px;}
+  .agenda span{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:8px 16px;
+    font-size:.86rem; font-weight:700; color:var(--ink);
+  }
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Day 21 · Classwork Notes</div>
+  <h1>Polynomial Regression, and a Preview of Classification</h1>
+  <p class="subtitle">Two short stories today: first, why straight lines fall short and the one-column trick that lets the exact same linear-regression machinery draw curves — then a fast preview of what happens when the answer isn't a number at all.</p>
+  <div class="link-row">
+    <a class="pdf-link" href="polynomial-regression-slides.html">🖥️ Polynomial Regression — Slides</a>
+    <a class="pdf-link" href="classification-intro-slides.html">🖥️ Classification Preview — Slides</a>
+  </div>
+
+  <h2>Part 1 — Polynomial Regression</h2>
+  <div class="agenda">
+    <span>Hour 1 — The Limits of a Straight Ruler</span>
+    <span>Hour 2 — Bending the Line</span>
+    <span>Hour 3 — How Much to Bend?</span>
+    <span>Hour 4 — Evaluating Honestly</span>
+  </div>
+
+  <h3>Hour 1 — A straight ruler makes one unbreakable promise</h3>
+  <p>A straight line means every extra year of experience is worth the exact same raise, whether it's year 1 or year 21 — one constant slope, β₁, the whole story. Real salary data often doesn't behave that way: it climbs fast early in a career, then the raises get smaller and smaller as seniority increases — diminishing returns, a genuine curve. Force OLS's best straight line onto that shape anyway, and the residuals stop looking random — they show a clear pattern the line is blind to. That systematic pattern is the tell.</p>
+
+  <h3>Hour 2 — The one small trick: hand the model one more column</h3>
+  <p>Instead of inventing a new algorithm, hand gradient descent a second, engineered column: experience², computed rather than measured. Now there are two dials instead of one — how much a plain year is worth, and how much a "year-squared" is worth — and that second dial is exactly what lets the prediction curve.</p>
+  <div class="formula">
+    Polynomial regression is secretly still linear regression.
+    <span class="sub">To the optimizer, x² is no different from any other feature column. Same cost function, same bowl-shaped landscape (just more dimensions), same five-step gradient descent recipe — nothing new to invent.</span>
+  </div>
+  <div class="note"><b>Normalize before you fit.</b> Powers of x explode in scale — at experience = 15, x³ is 3,375 while plain x is just 15. Feed gradient descent columns on wildly different scales and it lurches in one direction while crawling in another. Normalizing every power into [0,1] first isn't optional here, it's urgent.</div>
+
+  <h3>Hour 3 — More bend isn't automatically better</h3>
+  <p>Drag the polynomial degree up and the curve chases the training dots more and more closely — right up until it doesn't help, and then actively hurts. The only honest way to catch that is a test set: split before fitting anything, fit on training data only, then score on both. A model that's great on training but bad on test isn't unlucky — that gap <i>is</i> the overfitting, measured directly.</p>
+  <div class="formula">
+    The bias-variance tradeoff
+    <span class="sub">Low degree → high bias, low variance (underfits). High degree → low bias, high variance (overfits). The sweet spot is the degree where their combined damage to test performance is smallest — a measured fact from the train/test chart, not a guess.</span>
+  </div>
+
+  <h3>Hour 4 — Nothing is free</h3>
+  <p>Even a well-chosen polynomial model carries real drawbacks:</p>
+  <ul>
+    <li><b>Extrapolation gets worse, not better</b> — a high-degree curve doesn't just keep climbing past the data's edge, it can shoot off wildly in either direction.</li>
+    <li><b>Coefficients lose their plain meaning</b> — "one more year of experience" is intuitive; "one more (year)³" isn't.</li>
+    <li><b>Choosing the degree is itself the hard part</b> — no shortcut formula exists; it takes the same train/test discipline every time.</li>
+  </ul>
+  <p>Looking ahead: instead of a strict degree cutoff, what if a model could keep lots of polynomial columns but be actively discouraged from leaning on any single one too hard? That's exactly the problem Ridge and Lasso regression are built to solve — not today's topic, but now you know what it's for.</p>
+
+  <h2>Part 2 — A Preview: What If the Answer Isn't a Number?</h2>
+  <p>Every model so far has predicted a number — salary, price. Today's short preview: the other half of machine learning, predicting a <b>category</b> — spam or not spam, pass or fail, approve the loan or not. When the answer is always one of exactly two buckets, that's <b>binary classification</b>.</p>
+
+  <h3>Can we just... use linear regression?</h3>
+  <p>Treat "passed" as 1 and "failed" as 0, fit a straight line the usual way, then predict PASS if the line's output is ≥ 0.5. On 20 well-behaved students, this hits 100% accuracy — it looks like it works.</p>
+  <div class="note"><b>Then it breaks, live.</b> Add one honest data point — a student who studied 15 hours but still failed (life happens) — and the fitted line reacts by shifting in a way that damages predictions for everyone else. And even without that outlier, step slightly outside the middle of the data and the same line predicts things like a "124% chance of passing" or a "−22% chance" — not just unusual, meaningless. A straight line has no idea it's supposed to stay inside a valid probability range.</div>
+
+  <h3>What we'd actually need</h3>
+  <ul>
+    <li><b>Always between 0 and 1</b> — every output is a legitimate probability, no exceptions, no matter how extreme x gets.</li>
+    <li><b>Resistant to outliers</b> — one weird, far-away point shouldn't be able to swing the whole model.</li>
+  </ul>
+  <p>One famous curve satisfies both at once: an S-shape that barely reacts to the outlier and never leaves the valid 0–1 range in either direction — no formula yet, no fitting algorithm yet, just the shape.</p>
+  <div class="formula">
+    Next week: Logistic Regression
+    <span class="sub">The actual formula behind the S-curve (the sigmoid function), how a probability turns into a hard decision boundary, why squared-error cost breaks down for classification and what replaces it — and yes, the exact same five-step gradient descent recipe, just walking downhill on new terrain.</span>
+  </div>
+</div>
+</body>
+</html>
