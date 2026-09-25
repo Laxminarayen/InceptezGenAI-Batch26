@@ -1,5 +1,17 @@
 [
   {
+    "id": "muh2s8ax0za6eb",
+    "author": "RamyaNaras",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/37861694?v=4",
+    "title": "Bagging - RF",
+    "body": "Bagging (Bootstrap Aggregation) is an ensemble learning technique used to improve model accuracy and reduce overfitting.\nIt works by randomly create multiple training datasets from the original dataset using sampling with replacement. \nThe training set is one of the datasets from sampling.\n\nIn Random Forest:\n•\tEach tree is trained on a different bootstrap sample of the training data.\n•\tBecause each tree sees a slightly different dataset, the trees become diverse.\n•\tThe final prediction is obtained by aggregating the outputs of all trees\n\n2. How Does Random Forest Achieve Feature Randomness?\nIn addition to bagging, Random Forest introduces feature randomness.\nProcess:\n•\tAt every split in a tree, instead of considering all available features, Random Forest randomly selects a subset of features.\n•\tThe best split is chosen only from this random subset.\nExample for Random Forest: \nBoot 1 is created with random sample rows -  R1\nBoot 2 is created with random sample roms – R2\nNow, the Feature Randomness is achieved by choosing random sample columns. This allows the trees to look at multiple different perspectives.\nExample for Feature Randomness:\nSay there are multiple attributes Age, salary, education, technical stack, experience, the RF chooses some of the attributes randomly like age, technical stack, experience. \nThe split is selected from these three features only.\nAt the next node, another random subset is chosen.\nWith feature randomness:\n•\tTrees become more diverse.\n•\tCorrelation between trees decreases.\n•\tOverall model generalization improves.\n\n![Bagging](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/muh2rwcjdifejr-bagging.jpg)",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-25T14:48:01.545Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mugrninu2w9kwi",
     "author": "Malini-Sekar",
     "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
