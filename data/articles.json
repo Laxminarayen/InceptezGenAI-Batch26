@@ -1,5 +1,17 @@
 [
   {
+    "id": "muh3lwk4i191hx",
+    "author": "RamyaNaras",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/37861694?v=4",
+    "title": "The idea of a 'weak learner'",
+    "body": "Why use a weak learner?\nA weak learner is a model that performs only slightly better than random guessing.\nFor example:\n•\tCoin flip accuracy: 50%\n•\tDecision stump accuracy: 55%\nA 55% accurate model sounds terrible on its own. However, if you create many weak learners that make different mistakes and combine them intelligently, the ensemble can become very strong.\nThe Key Idea: Diversity Matters\nSuppose you have 100 decision stumps:\n•\tEach is 55% accurate.\n•\tTheir errors are not the same.\n•\tFor a new observation:\nModel\tPrediction\nStump 1\tYes\nStump 2\tNo\nStump 3\tYes\n...\t...\nStump 100\tYes\n•\tWhen you take a majority vote, the individual errors tend to cancel out, while the correct predictions reinforce each other.\n•\tAs a result, the ensemble can achieve much higher accuracy than any individual stump.\nA weak learner is deliberately used because ensemble methods rely on combining many simple models rather than depending on a single complex one. Although a decision stump may be only slightly better than random guessing, many weak learners with diverse errors can be aggregated through voting or averaging to produce a highly accurate and robust model. The strength of the ensemble comes from the collective wisdom of multiple weak models whose errors tend to cancel out.",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-25T15:11:06.004Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "muh3cup3n0lf7s",
     "author": "RamyaNaras",
     "authorAvatar": "https://avatars.githubusercontent.com/u/37861694?v=4",
