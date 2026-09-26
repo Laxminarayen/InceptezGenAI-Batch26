@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>AdaBoost — Reference Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#C13D68;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#F17BA0;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap{max-width:860px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:680px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+  h2{font-size:1.4rem; font-weight:900; margin:48px 0 14px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px;}
+  h3{font-size:1.06rem; font-weight:800; margin:24px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:9px 12px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono);}
+  pre{background:var(--paper-2); border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.86rem; line-height:1.55;}
+  pre code{background:none; padding:0; font-size:1em;}
+  .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px;}
+  .pill{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:.82rem; font-weight:700; color:var(--ink);}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Reference Notes · Ensemble Learning</div>
+  <h1>AdaBoost</h1>
+  <p class="abstract">Adaptive Boosting: a sequence of weak learners (usually decision stumps), each trained on a reweighted version of the data that emphasizes whatever the previous ensemble got wrong, combined into one strong classifier via a confidence-weighted vote. The original boosting algorithm, and still the cleanest way to understand the whole family.</p>
+
+  <div class="related-links">
+    <a href="classwork-notes.html">📝 Classwork Notes (Day 29 session write-up)</a>
+    <a href="boosting-adaboost-slides.html">🖥️ Slide Deck</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">The Algorithm, Formally</a></li>
+      <li><a href="#s2">Where the Amount-of-Say Formula Comes From</a></li>
+      <li><a href="#s3">The Weight Update Rule</a></li>
+      <li><a href="#s4">The Final Classifier &amp; Margins</a></li>
+      <li><a href="#s5">Multiclass: SAMME</a></li>
+      <li><a href="#s6">AdaBoost vs. Gradient Boosting</a></li>
+      <li><a href="#s7">Sensitivity to Outliers &amp; Overfitting</a></li>
+      <li><a href="#s8">API Reference</a></li>
+      <li><a href="#s9">Worked Example</a></li>
+      <li><a href="#s10">Summary</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1"><span class="num">1.</span>The Algorithm, Formally</h2>
+  <p>Given n training examples (xᵢ, yᵢ) with yᵢ ∈ {−1, +1}, and initial weights wᵢ = 1/n:</p>
+  <ol>
+    <li>For t = 1 to T:
+      <ul>
+        <li>Fit a weak learner hₜ to the training data, weighted by the current wᵢ.</li>
+        <li>Compute its weighted error: errₜ = Σᵢ wᵢ · 𝟙[hₜ(xᵢ) ≠ yᵢ].</li>
+        <li>Compute its amount of say: αₜ = ½ ln((1−errₜ)/errₜ).</li>
+        <li>Update every weight: wᵢ ← wᵢ · exp(−αₜ yᵢ hₜ(xᵢ)), then renormalize so Σwᵢ = 1.</li>
+      </ul>
+    </li>
+    <li>Output the final classifier: H(x) = sign( Σₜ αₜ hₜ(x) ).</li>
+  </ol>
+  <p>The weight update in one line does exactly what the classwork example did in two: <code>exp(−αyh(x))</code> equals <code>e⁻ᵅ</code> when the prediction is correct (yh(x)=1) and <code>e⁺ᵅ</code> when it's wrong (yh(x)=−1).</p>
+
+  <h2 id="s2"><span class="num">2.</span>Where the Amount-of-Say Formula Comes From</h2>
+  <p>AdaBoost isn't an ad-hoc heuristic — it's provably equivalent to fitting an additive model by minimizing <b>exponential loss</b>, one term at a time (Friedman, Hastie &amp; Tibshirani, 2000).</p>
+  <div class="formula">
+    L(y, F(x)) = e^(−y·F(x)), &nbsp; where F(x) = Σₜ αₜhₜ(x)
+    <span class="sub">At round t, the ensemble so far is F_{t−1}. Adding a new term αh, the total loss over the training set (with the current weights wᵢ already absorbing everything from previous rounds) is Σᵢ wᵢ·e^(−αyᵢh(xᵢ)).</span>
+  </div>
+  <p>Splitting that sum into the examples h gets right (yᵢh(xᵢ)=1) and wrong (yᵢh(xᵢ)=−1):</p>
+  <div class="formula">
+    Total loss = e^(−α)·Σ_correct wᵢ + e^(α)·Σ_wrong wᵢ = e^(−α)(1−err) + e^(α)(err)
+    <span class="sub">where err = Σ_wrong wᵢ (the weighted error rate, weights already summing to 1). Taking the derivative with respect to α and setting it to zero: −e^(−α)(1−err) + e^(α)(err) = 0 ⟹ e^(2α) = (1−err)/err ⟹ α = ½ ln((1−err)/err). The formula isn't chosen for convenience — it's the exact minimizer of exponential loss at every round.</span>
+  </div>
+  <p>This framing (AdaBoost = forward stagewise additive modeling under exponential loss) is also what connects it directly to Gradient Boosting (Section 6): the same idea, generalized to any differentiable loss function.</p>
+
+  <h2 id="s3"><span class="num">3.</span>The Weight Update Rule</h2>
+  <p>After computing αₜ, every weight is rescaled and renormalized. The effect, concretely:</p>
+  <ul>
+    <li><b>Correctly classified</b> — weight shrinks by a factor of e^(−αₜ). The more confident the stump was (larger αₜ), the more its correctly-handled examples fade from focus.</li>
+    <li><b>Misclassified</b> — weight grows by a factor of e^(+αₜ). Renormalizing (dividing every weight by the new sum) keeps total weight at 1 while preserving the relative shift.</li>
+  </ul>
+  <div class="note">A weak learner with error exactly 0.5 contributes α=0 — its weight update multiplies every weight by 1, i.e. does nothing. This is consistent: a coin-flip classifier carries no information, so it shouldn't reshape the data at all.</div>
+
+  <h2 id="s4"><span class="num">4.</span>The Final Classifier &amp; Margins</h2>
+  <div class="formula">
+    H(x) = sign( Σₜ αₜ hₜ(x) )
+    <span class="sub">The raw sum before taking the sign, F(x) = Σₜ αₜhₜ(x), is called the <b>margin</b> — its magnitude reflects how confidently the ensemble is voting, not just which way. A margin of +0.043 (the classwork example) and a margin of +4.5 are both "Approve," but the second is a far more confident call.</span>
+  </div>
+  <p>Because α can be negative (Section 1, for errₜ &gt; 0.5), a weak learner doesn't need to be independently better than random to contribute usefully — its vote can be deliberately inverted. In practice, weak learners are almost always constructed to have errₜ &lt; 0.5 to begin with.</p>
+
+  <h2 id="s5"><span class="num">5.</span>Multiclass: SAMME</h2>
+  <p>The binary formula in Section 1 doesn't directly generalize to K &gt; 2 classes — a naive extension would require each weak learner to beat 50% accuracy, an increasingly easy bar as K grows (random guessing already gets 1/K). <b>SAMME</b> (Stagewise Additive Modeling using a Multiclass Exponential loss function) fixes this with a corrected amount-of-say formula:</p>
+  <div class="formula">
+    αₜ = ln((1−errₜ)/errₜ) + ln(K−1)
+    <span class="sub">The extra ln(K−1) term accounts for the easier random-guessing baseline at K classes; it reduces to the original binary formula (times 2, a scaling convention difference) when K=2. scikit-learn's <code>AdaBoostClassifier</code> uses this automatically for multiclass targets.</span>
+  </div>
+
+  <h2 id="s6"><span class="num">6.</span>AdaBoost vs. Gradient Boosting</h2>
+  <p>Both are sequential ensembles that fit new weak learners to correct previous mistakes — the difference is <i>how</i> "mistake" gets defined and used.</p>
+  <table>
+    <thead><tr><th></th><th>AdaBoost</th><th>Gradient Boosting</th></tr></thead>
+    <tbody>
+      <tr><td>What the next learner fits</td><td>The full data, reweighted toward past mistakes</td><td>The <i>residuals</i> (or, more precisely, the negative gradient of the loss) of the current ensemble</td></tr>
+      <tr><td>Loss function</td><td>Exponential loss specifically</td><td>Any differentiable loss — squared error, log loss, etc.</td></tr>
+      <tr><td>Mechanism for "amount of say"</td><td>Closed-form α (Section 2)</td><td>A learning rate (shrinkage) applied uniformly, tuned as a hyperparameter</td></tr>
+    </tbody>
+  </table>
+  <div class="note warn">Modern gradient-boosted implementations (XGBoost, LightGBM, CatBoost) are the direct descendants of this generalization, and are explicitly outside this course's syllabus — noted here only to place AdaBoost correctly in the family tree it started, since it's a very frequent "what's next" question.</div>
+
+  <h2 id="s7"><span class="num">7.</span>Sensitivity to Outliers &amp; Overfitting</h2>
+  <p>Exponential loss grows <i>much</i> faster than log loss (Logistic Regression's cost) or squared error as a prediction becomes confidently wrong — there's no ceiling on the penalty. A genuine outlier or mislabeled row that repeatedly gets misclassified accumulates weight exponentially round after round, and later weak learners can end up distorted trying to satisfy that one point at the expense of everything else. This is the direct, formal reason AdaBoost is more outlier-sensitive than Random Forest (whose bootstrap-and-average mechanism has no equivalent runaway feedback loop).</p>
+  <p>Overfitting risk grows with the number of rounds (<code>n_estimators</code>) for the same reason — eventually, enough rounds will chase down and correctly classify even pure noise. In practice, AdaBoost is more overfitting-resistant than this argument alone suggests (it often keeps improving on held-out data well past the point training error hits zero, an empirical puzzle explained by the margin theory in Section 4 — later ensembles keep growing the <i>margin</i> even after every training point is already correctly classified), but it is not immune, and cross-validating <code>n_estimators</code> remains standard practice.</p>
+
+  <h2 id="s8"><span class="num">8.</span>API Reference</h2>
+  <table>
+    <thead><tr><th>Parameter</th><th>What it controls</th><th>Typical default</th></tr></thead>
+    <tbody>
+      <tr><td><code>estimator</code></td><td>The weak learner class. A depth-1 <code>DecisionTreeClassifier</code> (a stump) by default.</td><td><code>DecisionTreeClassifier(max_depth=1)</code></td></tr>
+      <tr><td><code>n_estimators</code></td><td>Number of boosting rounds (T).</td><td>50</td></tr>
+      <tr><td><code>learning_rate</code></td><td>Shrinks each αₜ's contribution — a smaller value needs more rounds but often generalizes better.</td><td>1.0</td></tr>
+      <tr><td><code>algorithm</code></td><td><code>'SAMME'</code> (Section 5) for multiclass.</td><td><code>'SAMME'</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s9"><span class="num">9.</span>Worked Example</h2>
+  <pre><code>from sklearn.ensemble import AdaBoostClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import GridSearchCV
+
+base = DecisionTreeClassifier(max_depth=1)  # a stump
+model = AdaBoostClassifier(estimator=base, random_state=42)
+
+param_grid = {"n_estimators": [25, 50, 100, 200], "learning_rate": [0.1, 0.5, 1.0]}
+grid = GridSearchCV(model, param_grid, cv=5, scoring="f1")
+grid.fit(X_train, y_train)
+
+print("Best params:", grid.best_params_)
+print("Test score:", grid.score(X_test, y_test))
+
+# Per-stump amount of say and per-stump error, after fitting:
+best = grid.best_estimator_
+print("Estimator weights (α):", best.estimator_weights_[:5])
+print("Estimator errors:", best.estimator_errors_[:5])
+</code></pre>
+
+  <h2 id="s10"><span class="num">10.</span>Summary</h2>
+  <div class="summary-box">
+    <h3>The whole idea, in one paragraph</h3>
+    <p>AdaBoost fits weak learners (usually stumps) one at a time, each on a reweighted version of the training data that has been exponentially tilted toward the previous round's mistakes, and each earning a vote weight α = ½ln((1−err)/err) — provably the exact value that minimizes exponential loss for that round. The final prediction is the sign of the weighted sum of every stump's vote. It's more sensitive to outliers and noisy labels than Random Forest, precisely because a persistently-misclassified point's weight compounds exponentially round after round — but its core idea, sequentially correcting an ensemble's own mistakes, is the direct ancestor of the entire modern gradient-boosting family.</p>
+  </div>
+  <div class="pill-row">
+    <span class="pill">Weak Learners / Stumps</span>
+    <span class="pill">Exponential Loss</span>
+    <span class="pill">Amount of Say (α)</span>
+    <span class="pill">Sequential Reweighting</span>
+    <span class="pill">SAMME (Multiclass)</span>
+    <span class="pill">Margin Theory</span>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Classwork Notes · Boosting &amp; AdaBoost</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#C13D68;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#F17BA0;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    -webkit-font-smoothing:antialiased; line-height:1.6;
+  }
+  .wrap{max-width:840px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 80px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.7rem,4vw,2.4rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 6px;}
+  .subtitle{color:var(--ink-soft); font-size:1rem; margin-bottom:8px;}
+  .pdf-link{
+    display:inline-flex; align-items:center; gap:8px; margin:14px 0 34px; font-size:.9rem; font-weight:700;
+    color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px;
+    padding:9px 18px; text-decoration:none;
+  }
+  .pdf-link:hover{border-color:var(--accent); color:var(--accent);}
+  h2{font-size:1.35rem; font-weight:900; margin:44px 0 14px; padding-top:16px; border-top:1px solid var(--line);}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h3{font-size:1.05rem; font-weight:800; margin:22px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{
+    background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent);
+    border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink);
+    font-size:1.02rem;
+  }
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:8px 10px; text-align:center; border:1px solid var(--line);}
+  th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  tr.hl td{background:color-mix(in srgb, var(--accent) 10%, transparent); font-weight:800;}
+  tr.wrong td{background:color-mix(in srgb, #C23B3B 12%, transparent);}
+  .note{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px;
+    font-size:.9rem; color:var(--ink-soft); margin:14px 0;
+  }
+  .note b{color:var(--ink);}
+  .agenda{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 20px;}
+  .agenda span{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:8px 16px;
+    font-size:.86rem; font-weight:700; color:var(--ink);
+  }
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Day 29 · Classwork Notes</div>
+  <h1>Boosting &amp; AdaBoost</h1>
+  <p class="subtitle">Random Forest built many trees independently and averaged them. Today: the opposite instinct — build trees one after another, each one existing purely to fix what the last one got wrong. Ensemble Learning's second big idea, worked by hand on a 5-row loan dataset all the way to a final vote.</p>
+  <a class="pdf-link" href="handwritten.pdf" target="_blank">📄 Open the original handwritten notes (PDF)</a>
+
+  <h2>Agenda</h2>
+  <div class="agenda">
+    <span>Bagging vs. Boosting, recapped</span>
+    <span>Weak learners &amp; stumps</span>
+    <span>AdaBoost, by hand</span>
+    <span>The final weighted vote</span>
+    <span>AdaBoost vs. Random Forest</span>
+  </div>
+
+  <h2>Recap: Bagging, Random Forest, Proximity Matrix</h2>
+  <p>Random Forest = Bootstrapping + Aggregation. A single Decision Tree is highly sensitive to its exact training data — one specific structure, one perspective. Bagging's fix: randomness in both rows (bootstrapping) and columns, build multiple trees, aggregate their results. The trees are built <b>independently</b> — none of them know what the others are doing. (The Proximity Matrix — how often two rows land in the same leaf across the whole forest — was last session's closing idea, and stays exactly as covered then.)</p>
+
+  <h3>The analogy: two research labs</h3>
+  <table>
+    <thead><tr><th></th><th>Lab A</th><th>Lab B</th></tr></thead>
+    <tbody>
+      <tr><td><b>Structure</b></td><td>Same field, independent projects</td><td>One thread, sequential — Research 1 → Research 2</td></tr>
+      <tr><td><b>New juniors</b></td><td>Get their own independent projects</td><td>Learn from the mistakes of seniors</td></tr>
+      <tr><td><b>Strength</b></td><td>Multiple application ideas, multiple perspectives</td><td>Go deep — each step corrects the last</td></tr>
+      <tr><td><b>This is</b></td><td>Bagging</td><td>Boosting</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Boosting, Defined</h2>
+  <div class="formula">
+    Weak Model 1 → Weak Model 2 (fixes Weak Model 1's mistakes) → Weak Model 3 (fixes what's still wrong) → …
+    <span class="sub">Several weak models, built sequentially, become one strong model. Each new model exists specifically to correct the previous ensemble's errors.</span>
+  </div>
+
+  <h2>Weak Learners: An Army of Stumps</h2>
+  <p>AdaBoost's weak learner is a <b>stump</b> — a Decision Tree with exactly one split, one column, two leaves. Deliberately weak: barely better than a coin flip on its own. Every column gets its own candidate stump; whichever one has the highest Information Gain becomes the first weak learner.</p>
+
+  <h2>The Running Example: 5 Loan Applicants</h2>
+  <table>
+    <thead><tr><th>ID</th><th>Credit Score</th><th>Income ($k)</th><th>Debt</th><th>True Status</th><th>Starting Weight</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>750</td><td>70</td><td>High</td><td>Approve</td><td>0.20</td></tr>
+      <tr><td>2</td><td>680</td><td>55</td><td>Low</td><td>Approve</td><td>0.20</td></tr>
+      <tr><td>3</td><td>620</td><td>65</td><td>High</td><td>Reject</td><td>0.20</td></tr>
+      <tr><td>4</td><td>590</td><td>30</td><td>High</td><td>Reject</td><td>0.20</td></tr>
+      <tr><td>5</td><td>720</td><td>40</td><td>Low</td><td>Approve</td><td>0.20</td></tr>
+    </tbody>
+  </table>
+  <p>Every row starts equally important: 1/5 = 0.20. Weight is how much "attention" a row demands from the next weak learner.</p>
+
+  <h2>Round 1 — Stump 1: "Credit Score ≥ 700?"</h2>
+  <table>
+    <thead><tr><th>ID</th><th>Stump 1 says</th><th>True Status</th><th>Correct?</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>Approve</td><td>Approve</td><td>✅</td></tr>
+      <tr class="wrong"><td>2</td><td>Reject</td><td>Approve</td><td>❌</td></tr>
+      <tr><td>3</td><td>Reject</td><td>Reject</td><td>✅</td></tr>
+      <tr><td>4</td><td>Reject</td><td>Reject</td><td>✅</td></tr>
+      <tr><td>5</td><td>Approve</td><td>Approve</td><td>✅</td></tr>
+    </tbody>
+  </table>
+  <p>Applicant #2 has decent income and low debt but a credit score just under the cutoff — misclassified. 1 wrong out of 5 → <b>error = 0.20</b>.</p>
+
+  <h3>Amount of Say (α)</h3>
+  <div class="formula">
+    α = ½ ln( (1 − error) / error )
+    <span class="sub">For error = 0.20: α₁ = ½ ln(0.8/0.2) = ½ ln(4) ≈ 0.693. Every stump earns a vote weight based on how accurate it was — not "trust everyone equally."</span>
+  </div>
+  <p>At error = 0.5 (a coin flip), α is exactly 0 — that stump earns zero say. Below 0.5, α is positive. Above 0.5 — a stump wrong more often than right — α goes <b>negative</b>, inverting its vote (being reliably wrong is just as informative as being reliably right).</p>
+
+  <h3>Reweighting</h3>
+  <p>Misclassified rows get multiplied by e<sup>+α</sup> (bigger); correctly classified rows get multiplied by e<sup>−α</sup> (smaller), then everything is renormalized to sum to 1.</p>
+  <table>
+    <thead><tr><th>ID</th><th>Correct?</th><th>Old</th><th>× multiplier</th><th>New (unnorm.)</th><th>Normalized</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>✅</td><td>0.20</td><td>×0.5</td><td>0.10</td><td>0.125</td></tr>
+      <tr class="hl"><td>2</td><td>❌</td><td>0.20</td><td>×2.0</td><td>0.40</td><td>0.500</td></tr>
+      <tr><td>3</td><td>✅</td><td>0.20</td><td>×0.5</td><td>0.10</td><td>0.125</td></tr>
+      <tr><td>4</td><td>✅</td><td>0.20</td><td>×0.5</td><td>0.10</td><td>0.125</td></tr>
+      <tr><td>5</td><td>✅</td><td>0.20</td><td>×0.5</td><td>0.10</td><td>0.125</td></tr>
+    </tbody>
+  </table>
+  <p>Sum before normalizing = 0.80. Applicant #2 — the one mistake — now holds <b>50% of the total weight</b>, up from 20%.</p>
+
+  <h2>Round 2 — Stump 2: "Income ≥ $50k?"</h2>
+  <p>Tree 2 trains on data resampled according to the new weights — applicant #2 shows up far more often than the others.</p>
+  <table>
+    <thead><tr><th>ID</th><th>Weight entering Round 2</th><th>Stump 2 says</th><th>True Status</th><th>Correct?</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>0.125</td><td>Approve</td><td>Approve</td><td>✅</td></tr>
+      <tr class="hl"><td>2</td><td>0.500</td><td>Approve</td><td>Approve</td><td>✅ fixed!</td></tr>
+      <tr class="wrong"><td>3</td><td>0.125</td><td>Approve</td><td>Reject</td><td>❌</td></tr>
+      <tr><td>4</td><td>0.125</td><td>Reject</td><td>Reject</td><td>✅</td></tr>
+      <tr class="wrong"><td>5</td><td>0.125</td><td>Reject</td><td>Approve</td><td>❌</td></tr>
+    </tbody>
+  </table>
+  <p>Weighted error = 0.125 + 0.125 = <b>0.25</b> → α₂ = ½ ln(0.75/0.25) = ½ ln(3) ≈ <b>0.549</b>. Applicant #2 — last round's problem — is fixed. The cost: two previously-easy rows (#3, #5) are missed instead. That trade-off is what Boosting is constantly making.</p>
+
+  <h2>Round 3 — Stump 3: "Debt = Low?"</h2>
+  <p>Reweight again using α₂, resample, fit a third stump. This one misses only applicant #1 — whose weight, after two rounds of shrinking (correct both times), has fallen to just 1/12 ≈ 0.083.</p>
+  <div class="formula">
+    Error₃ = 1/12 ≈ 0.083 → α₃ = ½ ln(0.917/0.083) = ½ ln(11) ≈ 1.199
+    <span class="sub">Tiny error → huge α. Stump 3 is nearly always right on the data it was shown, so it earns an outsized vote — almost double Stump 1's, and more than double Stump 2's.</span>
+  </div>
+
+  <h2>The Final Vote</h2>
+  <div class="formula">
+    final(x) = sign( Σ αₜ hₜ(x) )
+    <span class="sub">Encode Approve as +1, Reject as −1. Every stump's vote gets scaled by its own α before summing.</span>
+  </div>
+  <p>A new applicant, #6, run through all three stumps:</p>
+  <table>
+    <thead><tr><th>Stump</th><th>Says</th><th>α</th><th>α × vote</th></tr></thead>
+    <tbody>
+      <tr><td>1 (Credit ≥ 700)</td><td>Approve (+1)</td><td>0.693</td><td>+0.693</td></tr>
+      <tr><td>2 (Income ≥ 50k)</td><td>Approve (+1)</td><td>0.549</td><td>+0.549</td></tr>
+      <tr class="wrong"><td>3 (Debt = Low)</td><td>Reject (−1)</td><td>1.199</td><td>−1.199</td></tr>
+      <tr class="hl"><td colspan="3">Sum</td><td>+0.043</td></tr>
+    </tbody>
+  </table>
+  <p>Positive, barely — final prediction: <b>Approve</b>. Even though Stump 3 individually had the highest confidence (highest α), it's outvoted by the combined weight of Stumps 1 and 2. No single stump ever has the final word — the sum does.</p>
+
+  <h2>AdaBoost vs. Random Forest</h2>
+  <table>
+    <thead><tr><th>Property</th><th>AdaBoost</th><th>Random Forest</th></tr></thead>
+    <tbody>
+      <tr><td>How trees are built</td><td>Sequentially</td><td>Independently</td></tr>
+      <tr><td>Focus</td><td>Misclassified rows, explicitly</td><td>No explicit focus — random resampling</td></tr>
+      <tr><td>Sensitivity to noise/outliers</td><td>More sensitive</td><td>Less sensitive</td></tr>
+      <tr><td>Parallelizable?</td><td>Harder — each tree needs the last one's mistakes</td><td>Easy — trees don't depend on each other</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Rapid-Fire FAQ</h2>
+  <ol>
+    <li><b>Why "Adaptive"?</b> Misclassified samples get more weight — the algorithm adapts to its own mistakes, round by round.</li>
+    <li><b>What's the weak learner?</b> A stump — a Decision Tree with a single split.</li>
+    <li><b>Can it use deeper trees?</b> Yes, but it causes overfitting. Stumps are the standard choice on purpose.</li>
+    <li><b>How does it re-focus each round?</b> Exponential increase for wrong rows, exponential decrease for right ones.</li>
+    <li><b>How's the final prediction made?</b> sign(Σ αₜ hₜ(x)) — every stump's vote, weighted by its own amount of say.</li>
+    <li><b>Sensitive to outliers?</b> Yes — an outlier gets misclassified repeatedly, its weight balloons, and later stumps can over-focus on it.</li>
+    <li><b>Can it overfit?</b> Yes — enough rounds chasing enough noisy points will eventually memorize them.</li>
+  </ol>
+
+  <div class="note">Want the formal exponential-loss derivation, the multiclass (SAMME) extension, and a scikit-learn <code>AdaBoostClassifier</code> hyperparameter table? See <a href="adaboost-textbook-notes.html">AdaBoost — Reference Notes</a>.</div>
+</div>
+</body>
+</html>
