@@ -1,5 +1,85 @@
 [
   {
+    "id": "muh8kufd5dvmqq",
+    "author": "RamyaNaras",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/37861694?v=4",
+    "title": "Bagging vs Boosting",
+    "body": "1. What if trees weren’t independent?\nRandom Forest relies on trees being diverse and weakly correlated. The less correlated the trees are, the more effective the averaging becomes.\nCorrelated trees → similar errors → little variance reduction.\n\n2. In one line, what does Bagging do to reduce variance?\nBagging reduces variance by averaging the predictions of many independently trained models.\n\n3. If Bagging trains every tree independently and in parallel, what happens if each new tree instead trains after seeing the previous tree's mistakes?\nTrees become dependent on previous trees.\nTraining becomes sequential, not parallel.\nThe ensemble focuses on reducing bias rather than primarily reducing variance.",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-25T17:30:14.665Z",
+    "likes": [
+      "Laxminarayen"
+    ],
+    "comments": []
+  },
+  {
+    "id": "muh3ob69oo8zsn",
+    "author": "RamyaNaras",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/37861694?v=4",
+    "title": "What are the key hyperparameters of Random forest algorithm?",
+    "body": "The key Random Forest hyperparameters are:\n\nn_estimators: Number of trees in the forest.\nmax_depth: Maximum depth of each tree.\nmax_features: Number of randomly selected features considered at each split.\nmin_samples_split: Minimum samples required to split a node.\nmin_samples_leaf: Minimum samples required in a leaf node.\nbootstrap: Whether bootstrap sampling is used.\noob_score: Whether to compute Out-of-Bag validation score.\nrandom_state: Seed for reproducible results.\n\nAmong these, n_estimators, max_depth, and max_features are typically the most influential hyperparameters in Random Forest.",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-25T15:12:58.257Z",
+    "likes": [
+      "Laxminarayen"
+    ],
+    "comments": []
+  },
+  {
+    "id": "muh3lwk4i191hx",
+    "author": "RamyaNaras",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/37861694?v=4",
+    "title": "The idea of a 'weak learner'",
+    "body": "Why use a weak learner?\nA weak learner is a model that performs only slightly better than random guessing.\nFor example:\n•\tCoin flip accuracy: 50%\n•\tDecision stump accuracy: 55%\nA 55% accurate model sounds terrible on its own. However, if you create many weak learners that make different mistakes and combine them intelligently, the ensemble can become very strong.\nThe Key Idea: Diversity Matters\nSuppose you have 100 decision stumps:\n•\tEach is 55% accurate.\n•\tTheir errors are not the same.\n•\tFor a new observation:\nModel\tPrediction\nStump 1\tYes\nStump 2\tNo\nStump 3\tYes\n...\t...\nStump 100\tYes\n•\tWhen you take a majority vote, the individual errors tend to cancel out, while the correct predictions reinforce each other.\n•\tAs a result, the ensemble can achieve much higher accuracy than any individual stump.\nA weak learner is deliberately used because ensemble methods rely on combining many simple models rather than depending on a single complex one. Although a decision stump may be only slightly better than random guessing, many weak learners with diverse errors can be aggregated through voting or averaging to produce a highly accurate and robust model. The strength of the ensemble comes from the collective wisdom of multiple weak models whose errors tend to cancel out.",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-25T15:11:06.004Z",
+    "likes": [],
+    "comments": []
+  },
+  {
+    "id": "muh3cup3n0lf7s",
+    "author": "RamyaNaras",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/37861694?v=4",
+    "title": "Bagging-RF",
+    "body": "The left out rows from bootstrapping are called Out of Bag Samples.\nOOB (Out-of-Bag) Score is an internal validation metric used by Random Forest to estimate model performance without needing a separate validation dataset.\nOOB emulates the train/validation split.\nWhy is it \"Free\" Validation?\nNormally, you split data into:\n•\tTraining set\n•\tValidation/Test set\nThis reduces the amount of data available for training.\nWith OOB:\n•\tNo separate validation set is required since it uses the left over rows from bootstrapping.\nSo Random Forest obtains a validation estimate without additional data collection or extra training cost.\n\nWhy Does Random Forest Need Two Sources of Randomness (Rows and Columns)?\nRandom Forest intentionally introduces randomness in both rows and columns to create diverse trees.\n\nWhy Both Are Needed\n\n![randomforest](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/muh3c6605q8n9b-randomforest.jpg)",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-25T15:04:03.687Z",
+    "likes": [
+      "Laxminarayen"
+    ],
+    "comments": []
+  },
+  {
+    "id": "muh2s8ax0za6eb",
+    "author": "RamyaNaras",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/37861694?v=4",
+    "title": "Bagging - RF",
+    "body": "Bagging (Bootstrap Aggregation) is an ensemble learning technique used to improve model accuracy and reduce overfitting.\nIt works by randomly create multiple training datasets from the original dataset using sampling with replacement. \nThe training set is one of the datasets from sampling.\n\nIn Random Forest:\n•\tEach tree is trained on a different bootstrap sample of the training data.\n•\tBecause each tree sees a slightly different dataset, the trees become diverse.\n•\tThe final prediction is obtained by aggregating the outputs of all trees\n\n2. How Does Random Forest Achieve Feature Randomness?\nIn addition to bagging, Random Forest introduces feature randomness.\nProcess:\n•\tAt every split in a tree, instead of considering all available features, Random Forest randomly selects a subset of features.\n•\tThe best split is chosen only from this random subset.\nExample for Random Forest: \nBoot 1 is created with random sample rows -  R1\nBoot 2 is created with random sample roms – R2\nNow, the Feature Randomness is achieved by choosing random sample columns. This allows the trees to look at multiple different perspectives.\nExample for Feature Randomness:\nSay there are multiple attributes Age, salary, education, technical stack, experience, the RF chooses some of the attributes randomly like age, technical stack, experience. \nThe split is selected from these three features only.\nAt the next node, another random subset is chosen.\nWith feature randomness:\n•\tTrees become more diverse.\n•\tCorrelation between trees decreases.\n•\tOverall model generalization improves.\n\n![Bagging](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/muh2rwcjdifejr-bagging.jpg)",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-25T14:48:01.545Z",
+    "likes": [],
+    "comments": []
+  },
+  {
+    "id": "mugrninu2w9kwi",
+    "author": "Malini-Sekar",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
+    "title": "Random Forest - OOB",
+    "body": "![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mugrn48ikvaqrk-image.jpg)",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-25T09:36:25.914Z",
+    "likes": [
+      "RamyaNaras"
+    ],
+    "comments": []
+  },
+  {
     "id": "mug84hcfrfavrz",
     "author": "Malini-Sekar",
     "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
@@ -20,7 +100,9 @@
     "classTag": "",
     "topics": [],
     "createdAt": "2026-09-23T11:18:28.768Z",
-    "likes": [],
+    "likes": [
+      "Malini-Sekar"
+    ],
     "comments": []
   },
   {
@@ -63,7 +145,9 @@
     "classTag": "22 · Logistic Regression",
     "topics": [],
     "createdAt": "2026-09-22T11:55:31.130Z",
-    "likes": [],
+    "likes": [
+      "RamyaNarasimhan"
+    ],
     "comments": []
   },
   {
