@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Streamlit Public Deployment — Step-by-Step Guide</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#1E6FA8;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#5FA8E0;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap{max-width:860px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:680px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+  h2{font-size:1.4rem; font-weight:900; margin:48px 0 14px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px;}
+  h3{font-size:1.06rem; font-weight:800; margin:24px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .step-list > li{margin-bottom:14px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:9px 12px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono);}
+  pre{background:var(--paper-2); border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.86rem; line-height:1.55;}
+  pre code{background:none; padding:0; font-size:1em;}
+  .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px;}
+  .pill{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:.82rem; font-weight:700; color:var(--ink);}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0;}
+  .checklist{list-style:none; padding-left:0;}
+  .checklist li{padding-left:30px; position:relative;}
+  .checklist li::before{content:"☐"; position:absolute; left:0; color:var(--accent); font-size:1.1em;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Guide · Ensemble Learning &amp; Random Forest</div>
+  <h1>Streamlit Public Deployment</h1>
+  <p class="abstract">Your Random Forest app already runs on your own laptop (see the local Setup &amp; Run guide). This guide takes the exact same folder and puts it on the public internet, with a real URL you can share with anyone — no server administration required. The whole path is: GitHub account → GitHub Desktop → push your files → Streamlit Community Cloud reads your repo and hosts it for you.</p>
+
+  <div class="related-links">
+    <a href="classwork-notes.html">📝 Classwork Notes</a>
+    <a href="random-forest-textbook-notes.html">📚 Textbook Notes: Random Forest</a>
+    <a href="Streamlit%20Setup%20and%20run.pdf">📄 Streamlit Setup &amp; Run (local)</a>
+    <a href="StreamlitApp/app.py">🖥️ StreamlitApp/app.py</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">What You Need Before You Start</a></li>
+      <li><a href="#s2">Step 1 — Create a GitHub Repository</a></li>
+      <li><a href="#s3">Step 2 — Install GitHub Desktop</a></li>
+      <li><a href="#s4">Step 3 — Clone the Repository</a></li>
+      <li><a href="#s5">Step 4 — Copy Your App Files In</a></li>
+      <li><a href="#s6">Step 5 — Commit &amp; Push (No Command Line)</a></li>
+      <li><a href="#s7">Step 6 — Deploy on Streamlit Community Cloud</a></li>
+      <li><a href="#s8">Step 7 — Update Your Live App Later</a></li>
+      <li><a href="#s9">Troubleshooting</a></li>
+      <li><a href="#s10">Summary</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1"><span class="num">1.</span>What You Need Before You Start</h2>
+  <ul class="checklist">
+    <li>A free <b>GitHub</b> account (github.com) — this is where your code will live publicly.</li>
+    <li>A free <b>Streamlit Community Cloud</b> account (share.streamlit.io) — sign in with the same GitHub account, no separate password needed.</li>
+    <li>Your working <code>StreamlitApp</code> folder from class, containing at minimum: <code>app.py</code>, <code>requirements.txt</code>, and every <code>.joblib</code>/<code>.json</code> file <code>app.py</code> loads.</li>
+  </ul>
+  <div class="note"><b>Why a separate deployment step at all?</b> Running <code>streamlit run app.py</code> locally only serves the app to your own machine, on your own network. Streamlit Community Cloud is a server that stays online permanently and gives you a public <code>https://…streamlit.app</code> link — that's the entire difference between "I can see it" and "anyone can see it."</div>
+
+  <h2 id="s2"><span class="num">2.</span>Step 1 — Create a GitHub Repository</h2>
+  <ol class="step-list">
+    <li>Go to <b>github.com</b> and sign in.</li>
+    <li>Click the <b>+</b> icon (top right) → <b>New repository</b>.</li>
+    <li>Give it a name, e.g. <code>predictive-maintenance-app</code>.</li>
+    <li>Set visibility to <b>Public</b>. <span style="color:var(--ink-faint)">Streamlit Community Cloud's free tier deploys from public repos.</span></li>
+    <li>Leave "Add a README" unchecked — you'll be pushing your own files in shortly.</li>
+    <li>Click <b>Create repository</b>. GitHub will show you an empty repo with a URL like <code>github.com/&lt;your-username&gt;/predictive-maintenance-app</code> — keep this page open.</li>
+  </ol>
+
+  <h2 id="s3"><span class="num">3.</span>Step 2 — Install GitHub Desktop</h2>
+  <ol class="step-list">
+    <li>Go to <b>desktop.github.com</b> and download the installer for your OS (Mac or Windows).</li>
+    <li>Install and open it, then sign in with the same GitHub account from Step 1 when prompted.</li>
+  </ol>
+  <div class="note">GitHub Desktop exists so you never have to type a single <code>git</code> command — every action in this guide (clone, commit, push) is a button click in this app.</div>
+
+  <h2 id="s4"><span class="num">4.</span>Step 3 — Clone the Repository</h2>
+  <ol class="step-list">
+    <li>In GitHub Desktop: <b>File → Clone Repository</b>.</li>
+    <li>Under the <b>GitHub.com</b> tab, find and select the repo you just created (<code>predictive-maintenance-app</code>).</li>
+    <li>Choose a <b>Local Path</b> — a folder on your computer where the repo will live, e.g. <code>Documents/predictive-maintenance-app</code>.</li>
+    <li>Click <b>Clone</b>. GitHub Desktop downloads the (currently empty) repo to that folder.</li>
+  </ol>
+
+  <h2 id="s5"><span class="num">5.</span>Step 4 — Copy Your App Files In</h2>
+  <p>Using Finder/File Explorer, copy the <i>contents</i> of your class <code>StreamlitApp</code> folder directly into the local repo folder you just cloned (not the folder itself — the files should sit at the top level, alongside where <code>.git</code> lives).</p>
+  <div class="formula">
+    predictive-maintenance-app/
+    <span class="sub">├── app.py<br>├── requirements.txt<br>├── rf_model.joblib<br>├── scaler.joblib<br>└── metadata_rfs.json</span>
+  </div>
+  <div class="note warn"><b>Check your file paths first.</b> <code>app.py</code> must load files by <i>relative</i> name — <code>joblib.load('rf_model.joblib')</code> — never by an absolute path like <code>/Users/you/Documents/.../rf_model.joblib</code>. An absolute path only exists on your own laptop; Streamlit Cloud's servers don't have it, and the app will crash on load. (The class <code>StreamlitApp/app.py</code> already does this correctly — it's only something to double check if you've edited the file.)</div>
+
+  <h2 id="s6"><span class="num">6.</span>Step 5 — Commit &amp; Push (No Command Line)</h2>
+  <ol class="step-list">
+    <li>Switch back to <b>GitHub Desktop</b>. It automatically detects every new file you copied in, listed under "Changes."</li>
+    <li>At the bottom left, type a commit message, e.g. <code>Add Streamlit app files</code>.</li>
+    <li>Click <b>Commit to main</b>.</li>
+    <li>Click <b>Push origin</b> (top toolbar) to upload the commit to GitHub.</li>
+    <li>Refresh the repo's page on github.com — your files should now be visible there.</li>
+  </ol>
+  <div class="note">This is the exact same commit → push workflow used in the command line (<code>git add</code>, <code>git commit</code>, <code>git push</code>) — GitHub Desktop just wraps it in buttons.</div>
+
+  <h2 id="s7"><span class="num">7.</span>Step 6 — Deploy on Streamlit Community Cloud</h2>
+  <ol class="step-list">
+    <li>Go to <b>share.streamlit.io</b> and sign in with GitHub.</li>
+    <li>Click <b>Create app</b> (or <b>New app</b>).</li>
+    <li>Choose <b>"Deploy a public app from GitHub"</b>.</li>
+    <li>Pick your repository (<code>predictive-maintenance-app</code>), branch (<code>main</code>), and the <b>main file path</b> — <code>app.py</code>.</li>
+    <li>Click <b>Deploy</b>. Streamlit Cloud clones your repo, reads <code>requirements.txt</code>, installs those packages, and starts your app — the build log streams live on screen and typically finishes in 1–3 minutes.</li>
+    <li>Once it says your app is live, you'll get a public URL: <code>https://&lt;something&gt;.streamlit.app</code>. That link works for anyone, anywhere — no login required to view it.</li>
+  </ol>
+
+  <h2 id="s8"><span class="num">8.</span>Step 7 — Update Your Live App Later</h2>
+  <p>Your live app is wired directly to the <code>main</code> branch of your GitHub repo. To change anything about the app after deployment:</p>
+  <ol class="step-list">
+    <li>Edit the file locally (e.g. <code>app.py</code>) in the cloned folder.</li>
+    <li>In GitHub Desktop: commit the change, then push.</li>
+    <li>Streamlit Cloud detects the new push automatically and redeploys within a minute or two — no need to visit share.streamlit.io again.</li>
+  </ol>
+
+  <h2 id="s9"><span class="num">9.</span>Troubleshooting</h2>
+  <table>
+    <thead><tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr></thead>
+    <tbody>
+      <tr><td><code>ModuleNotFoundError</code> in the build log</td><td>A package <code>app.py</code> imports isn't listed in <code>requirements.txt</code></td><td>Add the missing package name (one per line) to <code>requirements.txt</code>, commit, push — Streamlit Cloud reinstalls automatically.</td></tr>
+      <tr><td><code>FileNotFoundError</code> for a <code>.joblib</code>/<code>.json</code> file</td><td>An absolute local path was left in the code, or the file wasn't actually pushed to GitHub</td><td>Use relative filenames only (Section 5); confirm the file is visible in the GitHub repo's file list on github.com.</td></tr>
+      <tr><td>Push rejected / "file too large"</td><td>GitHub blocks individual files over 100&nbsp;MB (and warns at 50&nbsp;MB) — some trained model files get close to this</td><td>Re-save the model with a lighter compression (<code>joblib.dump(model, 'f.joblib', compress=3)</code>), or reduce model size (e.g. fewer trees / lower <code>max_depth</code>).</td></tr>
+      <tr><td>App builds but shows a blank/grey page</td><td>Usually a runtime exception thrown after the page partially loads</td><td>Open the app on share.streamlit.io and check the "Manage app" logs panel — it shows the same traceback you'd see locally.</td></tr>
+      <tr><td>Repository not showing up in Streamlit Cloud's picker</td><td>Streamlit's GitHub connection hasn't been granted access to that repo</td><td>On share.streamlit.io, go to Settings → Linked accounts → GitHub → "Manage access" and grant it.</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s10"><span class="num">10.</span>Summary</h2>
+  <div class="summary-box">
+    <h3>The whole idea, in one paragraph</h3>
+    <p>A Streamlit app that only runs on your laptop isn't deployed yet — it's just running. Deployment means putting the exact same files somewhere that stays online without your laptop: push the <code>StreamlitApp</code> folder to a public GitHub repo (via GitHub Desktop, no command line needed), then point Streamlit Community Cloud at that repo's <code>app.py</code>. Streamlit Cloud handles the server, the Python environment, and the public URL — every future update is just another commit and push away.</p>
+  </div>
+  <div class="pill-row">
+    <span class="pill">GitHub Repository</span>
+    <span class="pill">GitHub Desktop</span>
+    <span class="pill">Clone / Commit / Push</span>
+    <span class="pill">requirements.txt</span>
+    <span class="pill">Streamlit Community Cloud</span>
+    <span class="pill">Relative File Paths</span>
+  </div>
+</div>
+</body>
+</html>
