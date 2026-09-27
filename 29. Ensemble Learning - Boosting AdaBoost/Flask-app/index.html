@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Predictive Maintenance — Live Prediction</title>
+<style>
+  body { font-family: -apple-system, Arial, sans-serif; max-width: 480px; margin: 40px auto; padding: 0 16px; color: #20283A; }
+  h1 { font-size: 1.3rem; }
+  label { display: block; font-size: .85rem; font-weight: 700; margin-top: 12px; }
+  input, select { width: 100%; padding: 8px; margin-top: 4px; box-sizing: border-box; font-size: 1rem; }
+  button { margin-top: 20px; padding: 10px 20px; font-weight: 700; cursor: pointer; }
+  #result { margin-top: 20px; padding: 14px; border-radius: 8px; display: none; }
+  #result.failure { background: #FBE7E7; color: #C23B3B; display: block; }
+  #result.ok { background: #E7F5EC; color: #1C8C5A; display: block; }
+</style>
+</head>
+<body>
+
+  <h1>Predictive Maintenance — Will this machine fail?</h1>
+  <p>This form is the "consumer" of our API. It never touches the model directly — it only sends numbers to <code>/predict</code> and displays whatever JSON comes back.</p>
+
+  <form id="predict-form">
+    {% for col in raw_numeric_cols %}
+    <label for="{{ col }}">{{ col }}</label>
+    <input type="number" step="any" id="{{ col }}" required />
+    {% endfor %}
+
+    <label for="machine_type">Machine Type</label>
+    <select id="machine_type">
+      <option value="L">L — Low</option>
+      <option value="M">M — Medium</option>
+      <option value="H">H — High</option>
+    </select>
+
+    <button type="submit">Predict</button>
+  </form>
+
+  <div id="result"></div>
+
+<script>
+  const form = document.getElementById('predict-form');
+  const resultBox = document.getElementById('result');
+  const numericCols = {{ raw_numeric_cols | tojson }};
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    // 1. Collect the form values into the same shape the API expects.
+    const payload = { machine_type: document.getElementById('machine_type').value };
+    numericCols.forEach(col => { payload[col] = document.getElementById(col).value; });
+
+    // 2. Call the API. This is the entire "consuming an API from HTML" idea:
+    //    a POST request with a JSON body, and a JSON response back.
+    const response = await fetch('/predict', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await response.json();
+
+    // 3. Show whatever the API said, without needing to reload the page.
+    resultBox.className = data.prediction === 'Failure' ? 'failure' : 'ok';
+    resultBox.textContent = `${data.prediction} — failure probability: ${(data.failure_probability * 100).toFixed(1)}%`;
+  });
+</script>
+
+</body>
+</html>
