@@ -1,5 +1,20 @@
 [
   {
+    "id": "mummoclhquv534",
+    "author": "suru7373",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/223130752?v=4",
+    "title": "Random Forest(Bagging)",
+    "body": "**Random Forest Algorithm:**\n![Baggig vS Boosting, RF & HyperParameter in RF](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mummnzm6inpi1l-baggig-vs-boosting-rf-hyperparameter.jpg)",
+    "classTag": "27 · Class Imbalance, F1 Score & SMOTE",
+    "topics": [
+      "about rf",
+      "hyperparameters in rando"
+    ],
+    "createdAt": "2026-09-29T12:03:43.685Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "muh8kufd5dvmqq",
     "author": "RamyaNaras",
     "authorAvatar": "https://avatars.githubusercontent.com/u/37861694?v=4",
