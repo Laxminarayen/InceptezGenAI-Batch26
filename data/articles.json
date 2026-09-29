@@ -5,14 +5,15 @@
     "authorAvatar": "https://avatars.githubusercontent.com/u/223130752?v=4",
     "title": "Random Forest & OOB",
     "body": "![OOB in RF](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mumpzx3xag6l9m-oob-in-rf.jpg)\n\n![Necessary of Dual Randomness(column & Row)](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mumq0bf5sy0j5t-necessary-of-dual-randomness-column-ro.jpg)",
-    "classTag": "",
+    "classTag": "27 · Class Imbalance, F1 Score & SMOTE",
     "topics": [
       "oob in rf",
       "necessary of dual random"
     ],
     "createdAt": "2026-09-29T13:38:13.606Z",
     "likes": [],
-    "comments": []
+    "comments": [],
+    "editedAt": "2026-09-29T13:38:34.801Z"
   },
   {
     "id": "mummoclhquv534",
