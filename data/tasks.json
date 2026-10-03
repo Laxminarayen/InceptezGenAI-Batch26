@@ -1,5 +1,56 @@
 [
   {
+    "id": "muni9vvnp8j4oe",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Other Boosting algos",
+    "body": "1. What are other boosting algorithms that are famous?\n2. Can you check the Gradient Boosting Machine? (Self-read)",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-30T02:48:16.547Z",
+    "likes": [],
+    "comments": [],
+    "date": "2026-10-02",
+    "editedAt": "2026-10-01T02:58:20.479Z"
+  },
+  {
+    "id": "muni7x0boyp0vq",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Boosting",
+    "body": "1. What is boosting, and what are the steps in which AdaBoost performes the charactersitics of Boosting",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-30T02:46:44.699Z",
+    "likes": [
+      "priyadj309-kim",
+      "J-Nirosha",
+      "RamyaNarasimhan"
+    ],
+    "comments": [],
+    "date": "2026-10-01"
+  },
+  {
+    "id": "muni4bnaz1sbxe",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "What is amount of Say?",
+    "body": "1. How is \"adaptive\" error fixing handled in Ada boost?",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-09-30T02:43:57.046Z",
+    "likes": [
+      "J-Nirosha",
+      "priyadj309-kim",
+      "Uganderb",
+      "kishorem5",
+      "asennakesavan",
+      "RamyaNarasimhan"
+    ],
+    "comments": [],
+    "date": "2026-09-30"
+  },
+  {
     "id": "muawvgx95m8ufg",
     "author": "Laxminarayen",
     "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
@@ -11,7 +62,11 @@
     "likes": [
       "J-Nirosha",
       "RamyaNaras",
-      "Malini-Sekar"
+      "Malini-Sekar",
+      "priyadj309-kim",
+      "Mukeshkanna90",
+      "jimmigayatri",
+      "kishorem5"
     ],
     "comments": [],
     "date": "2026-09-25",
@@ -30,7 +85,12 @@
       "J-Nirosha",
       "asennakesavan",
       "RamyaNaras",
-      "Malini-Sekar"
+      "Malini-Sekar",
+      "priyadj309-kim",
+      "Uganderb",
+      "Mukeshkanna90",
+      "jimmigayatri",
+      "kishorem5"
     ],
     "comments": [],
     "date": "2026-09-24",
@@ -50,7 +110,10 @@
       "asennakesavan",
       "J-Nirosha",
       "Malini-Sekar",
-      "RamyaNaras"
+      "RamyaNaras",
+      "priyadj309-kim",
+      "Uganderb",
+      "jimmigayatri"
     ],
     "comments": [],
     "date": "2026-09-23"
@@ -69,7 +132,12 @@
       "asennakesavan",
       "Mukeshkanna90",
       "Malini-Sekar",
-      "RamyaNaras"
+      "RamyaNaras",
+      "priyadj309-kim",
+      "suru7373",
+      "Uganderb",
+      "jimmigayatri",
+      "Shyamala-lab"
     ],
     "comments": [],
     "date": "2026-09-22"
@@ -88,7 +156,12 @@
       "Mukeshkanna90",
       "Malini-Sekar",
       "ksuneeram",
-      "RamyaNaras"
+      "RamyaNaras",
+      "jimmigayatri",
+      "priyadj309-kim",
+      "suru7373",
+      "Uganderb",
+      "cuteesaranya-cloud"
     ],
     "comments": [],
     "date": "2026-09-21",
@@ -111,7 +184,11 @@
       "cuteesaranya-cloud",
       "asennakesavan",
       "Malini-Sekar",
-      "ksuneeram"
+      "ksuneeram",
+      "Uganderb",
+      "priyadj309-kim",
+      "suru7373",
+      "jimmigayatri"
     ],
     "comments": [],
     "date": "2026-09-19"
@@ -129,7 +206,8 @@
       "J-Nirosha",
       "cuteesaranya-cloud",
       "suru7373",
-      "HarishSV01"
+      "HarishSV01",
+      "jimmigayatri"
     ],
     "comments": [],
     "date": "2026-09-18"
@@ -147,7 +225,9 @@
       "J-Nirosha",
       "jimmigayatri",
       "suru7373",
-      "priyadj309-kim"
+      "priyadj309-kim",
+      "cuteesaranya-cloud",
+      "Uganderb"
     ],
     "comments": [],
     "date": "2026-09-17"
@@ -167,7 +247,8 @@
       "asennakesavan",
       "jimmigayatri",
       "suru7373",
-      "priyadj309-kim"
+      "priyadj309-kim",
+      "Uganderb"
     ],
     "comments": [],
     "date": "2026-09-16",
@@ -189,7 +270,8 @@
       "J-Nirosha",
       "suru7373",
       "priyadj309-kim",
-      "ksuneeram"
+      "ksuneeram",
+      "Uganderb"
     ],
     "comments": [],
     "date": "2026-09-15"
@@ -214,7 +296,8 @@
       "suru7373",
       "tomkiran-pixel",
       "priyadj309-kim",
-      "ksuneeram"
+      "ksuneeram",
+      "Uganderb"
     ],
     "comments": [],
     "date": "2026-09-14"
@@ -286,7 +369,8 @@
       "Malini-Sekar",
       "cuteesaranya-cloud",
       "suru7373",
-      "ksuneeram"
+      "ksuneeram",
+      "Uganderb"
     ],
     "comments": [],
     "date": "2026-09-11"
@@ -339,7 +423,8 @@
       "Malini-Sekar",
       "archna26",
       "Smartchronon24",
-      "ksuneeram"
+      "ksuneeram",
+      "Uganderb"
     ],
     "comments": [],
     "date": "2026-09-09",
