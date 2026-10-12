@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>K-Means Clustering · Unsupervised Learning</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+
+    --c-why:#3B6E63; --c-concept:#9C5A14; --c-mech:#1F8A6F; --c-eval:#6B4FA0;
+
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+
+    --accent: var(--c-why);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+      --c-why:#79C0AE; --c-concept:#E3A238; --c-mech:#4FC9A3; --c-eval:#B49AE0;
+      --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+      --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+    --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+    --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+    --c-why:#79C0AE; --c-concept:#E3A238; --c-mech:#4FC9A3; --c-eval:#B49AE0;
+    --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+    --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+  }
+  :root[data-theme="light"]{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+    --c-why:#3B6E63; --c-concept:#9C5A14; --c-mech:#1F8A6F; --c-eval:#6B4FA0;
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    overflow:hidden; -webkit-font-smoothing:antialiased;
+  }
+  body[data-section="why"]{--accent:var(--c-why);}
+  body[data-section="concept"]{--accent:var(--c-concept);}
+  body[data-section="mech"]{--accent:var(--c-mech);}
+  body[data-section="eval"]{--accent:var(--c-eval);}
+
+  h1,h2,h3,p{margin:0;}
+  h1,h2,h3{text-wrap:balance; letter-spacing:-0.01em;}
+  ::selection{background:var(--accent); color:#fff;}
+
+  .eyebrow{font-size:.74rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  .slide h1{font-size:clamp(1.7rem,3.2vw,2.9rem); font-weight:800; color:var(--ink);}
+  .slide h2{font-size:clamp(1.2rem,1.8vw,1.6rem); font-weight:800; color:var(--ink);}
+  .body-text{font-size:clamp(1rem,1.25vw,1.2rem); font-weight:500; line-height:1.6; color:var(--ink-soft);}
+  .body-text b, .body-text strong{color:var(--ink); font-weight:800;}
+  .tabular{font-variant-numeric:tabular-nums;}
+
+  .chrome-top{position:fixed; top:0; left:0; right:0; height:52px; z-index:50; display:flex; align-items:center; justify-content:space-between; padding:0 20px; pointer-events:none;}
+  .chrome-top > *{pointer-events:auto;}
+  .hour-badge{font-size:.72rem; font-weight:800; letter-spacing:.12em; color:var(--ink-faint); background:var(--paper-2); border:1px solid var(--line); padding:6px 12px; border-radius:999px;}
+  .chapter-chip{display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:700; color:var(--ink-soft); background:var(--paper-2); border:1px solid var(--line); padding:6px 14px 6px 8px; border-radius:999px;}
+  .chapter-chip .num{display:inline-flex; align-items:center; justify-content:center; width:20px;height:20px; border-radius:50%; background:var(--accent); color:#fff; font-size:.68rem; font-weight:800;}
+  .icon-btn{width:36px;height:36px; border-radius:50%; border:1px solid var(--line); background:var(--paper-2); color:var(--ink); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;}
+  .icon-btn:hover{background:var(--paper-3);}
+  .icon-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  .deck{position:absolute; inset:0; top:52px; bottom:64px;}
+  .slide{position:absolute; inset:0; display:none; flex-direction:column; padding:clamp(18px,3vw,40px) clamp(24px,5vw,80px); overflow:auto;}
+  .slide.active{display:flex;}
+  .slide-inner{display:flex; flex-direction:column; gap:clamp(12px,1.8vh,20px); max-width:1360px; width:100%; margin:0 auto; flex:1; min-height:0;}
+
+  .chrome-bottom{position:fixed; left:0; right:0; bottom:0; height:64px; z-index:50; display:flex; align-items:center; gap:14px; padding:0 clamp(14px,3vw,32px); background:linear-gradient(0deg, var(--paper) 60%, transparent);}
+  .nav-btn{width:40px;height:40px;border-radius:50%; border:1px solid var(--line); background:var(--paper-2); color:var(--ink); font-size:1.2rem; cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center;}
+  .nav-btn:hover:not(:disabled){background:var(--accent); color:#fff; border-color:transparent;}
+  .nav-btn:disabled{opacity:.35; cursor:default;}
+  .progress{flex:1; display:flex; align-items:center; gap:5px; overflow-x:auto; scrollbar-width:none;}
+  .progress::-webkit-scrollbar{display:none;}
+  .dot{width:9px;height:9px;border-radius:50%; background:var(--paper-3); border:none; cursor:pointer; flex:none; transition:transform .15s ease;}
+  .dot.gap{width:14px; height:2px; border-radius:1px; background:transparent; cursor:default;}
+  .dot.active{transform:scale(1.5);}
+  .slide-counter{font-size:.8rem; font-weight:700; color:var(--ink-faint); flex:none; white-space:nowrap;}
+
+  .split{display:grid; grid-template-columns:1.05fr 1.35fr; gap:clamp(20px,4vw,52px); align-items:center; flex:1; min-height:0;}
+  @media (max-width:920px){ .split{grid-template-columns:1fr; overflow:auto;} }
+  .split.reverse{grid-template-columns:1.35fr 1.05fr;}
+  .split.even{grid-template-columns:1fr 1fr;}
+  .stack{display:flex; flex-direction:column; gap:12px; min-height:0;}
+  .center-col{display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:16px; flex:1;}
+  .visual-box{background:var(--surface-canvas); border:1px solid var(--line); border-radius:24px; padding:14px; box-shadow:var(--shadow); min-height:0; display:flex; flex-direction:column; gap:8px;}
+
+  .vocab-card{border-left:5px solid var(--accent); background:var(--paper-2); border-radius:14px; padding:12px 18px; display:flex; flex-direction:column; gap:4px;}
+  .vocab-term{font-size:1rem; font-weight:900; letter-spacing:.04em; color:var(--accent);}
+  .vocab-def{font-size:1rem; color:var(--ink); font-weight:600; line-height:1.4;}
+
+  .console{display:flex; flex-wrap:wrap; gap:14px 26px; align-items:center; background:var(--paper-2); border:1px solid var(--line); border-radius:20px; padding:16px 20px;}
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field label{font-size:.76rem; font-weight:800; color:var(--ink-soft); letter-spacing:.03em;}
+  .field .val{color:var(--accent); font-weight:900;}
+  input[type="range"]{width:220px; accent-color:var(--accent);}
+
+  .btn{font:inherit; font-size:.92rem; font-weight:800; border:1px solid var(--line); border-radius:999px; padding:11px 20px; cursor:pointer; background:var(--paper-3); color:var(--ink); transition:transform .12s ease, box-shadow .12s ease; white-space:nowrap;}
+  .btn:hover{transform:translateY(-1px);}
+  .btn-primary{background:var(--accent); color:#fff; border-color:transparent; box-shadow:0 8px 18px -8px var(--accent);}
+
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px;}
+  .stat-tile{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:12px 14px;}
+  .stat-tile .label{font-size:.7rem; font-weight:800; color:var(--ink-faint); letter-spacing:.05em; text-transform:uppercase;}
+  .stat-tile .value{font-size:1.35rem; font-weight:900; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .stat-tile.accent .value{color:var(--accent);}
+
+  .card{background:var(--paper-2); border:1px solid var(--line); border-radius:18px; padding:18px 20px;}
+  .card-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px;}
+  .card .ico{font-size:1.8rem;}
+  .card h3{font-size:1.02rem; margin-top:8px;}
+  .card p{font-size:.92rem; color:var(--ink-soft); margin-top:4px; line-height:1.45;}
+
+  .banner{border-radius:14px; padding:12px 16px; font-weight:800; font-size:.92rem; display:flex; align-items:center; gap:10px;}
+  .banner.warn{background:color-mix(in srgb, var(--warn) 18%, var(--paper-2)); color:var(--warn);}
+  .banner.good{background:color-mix(in srgb, var(--good) 18%, var(--paper-2)); color:var(--good);}
+  .banner.bad{background:color-mix(in srgb, var(--bad) 18%, var(--paper-2)); color:var(--bad);}
+  .banner.info{background:var(--paper-3); color:var(--ink); font-weight:600; align-items:flex-start;}
+
+  .roadmap{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  .roadmap .stop{background:var(--paper-2); border-radius:18px; padding:16px 10px; text-align:center; border-top:5px solid var(--stop-color, var(--accent));}
+  .roadmap .stop .ico{font-size:2rem;}
+  .roadmap .stop .t{font-size:.8rem; font-weight:800; margin-top:6px;}
+  @media (max-width:920px){ .roadmap{grid-template-columns:repeat(2,1fr);} }
+
+  .kicker-big{font-size:clamp(2.2rem,5.6vw,3.9rem); font-weight:900; letter-spacing:-0.02em;}
+  .glow{color:var(--accent);}
+
+  .rule-list{display:flex; flex-direction:column; gap:12px;}
+  .rule{display:flex; gap:14px; align-items:flex-start; border-radius:14px; padding:6px 8px; margin:-6px -8px;}
+  .rule .n{width:34px;height:34px;border-radius:50%; background:var(--accent); color:#fff; font-weight:900; display:flex; align-items:center; justify-content:center; flex:none;}
+  .rule .t h3{font-size:1rem;}
+  .rule .t p{font-size:.92rem; color:var(--ink-soft); margin-top:2px;}
+
+  .table-wrap{border:1px solid var(--line); border-radius:14px; overflow:hidden; overflow-x:auto;}
+  .data-table{width:100%; border-collapse:collapse; font-size:.86rem;}
+  .data-table th,.data-table td{padding:8px 10px; text-align:center; font-variant-numeric:tabular-nums;}
+  .data-table thead th{background:var(--paper-3); color:var(--ink-soft); font-weight:800; font-size:.72rem; letter-spacing:.03em; text-transform:uppercase;}
+  .data-table tbody tr{border-top:1px solid var(--line);}
+  .data-table tbody tr.hl-row{background:color-mix(in srgb, var(--accent) 12%, transparent); font-weight:800;}
+  .data-table tbody tr.wrong-row{background:color-mix(in srgb, var(--bad) 14%, transparent);}
+
+  .footnote{font-size:.82rem; color:var(--ink-faint); font-weight:600;}
+
+  /* scatter demo */
+  .scatter{position:relative; width:100%; aspect-ratio:4/3; background:var(--surface-canvas); border-radius:14px; overflow:hidden;}
+  .scatter .pt{position:absolute; width:14px; height:14px; margin:-7px; border-radius:50%; border:2px solid var(--paper);}
+  .scatter .ct{position:absolute; width:18px; height:18px; margin:-9px; transform:rotate(45deg); border:3px solid var(--ink);}
+  .scatter .lbl{position:absolute; font-size:.68rem; font-weight:800; color:var(--ink); transform:translate(8px,-18px);}
+
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+</style>
+</head>
+<body data-section="why">
+  <div class="chrome-top">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="hour-badge" id="hourBadge">K-MEANS CLUSTERING</div>
+      <div class="chapter-chip" id="chapterChip" style="display:none;">
+        <span class="num" id="chapterNum">1</span>
+        <span id="chapterLabel">—</span>
+      </div>
+    </div>
+    <button class="icon-btn" id="themeToggle" title="Toggle light / dark">🌗</button>
+  </div>
+
+  <main class="deck" id="deck">
+
+    <!-- ============ S0 — TITLE / ROADMAP ============ -->
+    <section class="slide" data-section="why" id="s0">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Unsupervised Learning · K-Means Clustering</div>
+        <h1 class="kicker-big">What if nobody<br/><span class="glow">told you the answer</span>?</h1>
+        <p class="body-text" style="max-width:760px;">Every algorithm so far — Linear/Logistic Regression, KNN, Decision Trees, Random Forest, AdaBoost — had a label, y, to learn from. Today there is no y. Just rows of numbers, and a question: do these rows fall into natural groups on their own?</p>
+        <div class="roadmap" style="width:100%; margin-top:6px;">
+          <div class="stop" style="--stop-color:var(--c-why);"><div class="ico">🏷️</div><div class="t">1 · Supervised vs. Unsupervised</div></div>
+          <div class="stop" style="--stop-color:var(--c-concept);"><div class="ico">🎯</div><div class="t">2 · What K-Means Does</div></div>
+          <div class="stop" style="--stop-color:var(--c-mech);"><div class="ico">📐</div><div class="t">3 · K-Means, By Hand</div></div>
+          <div class="stop" style="--stop-color:var(--c-eval);"><div class="ico">🔢</div><div class="t">4 · Choosing K &amp; FAQ</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 1 — SUPERVISED VS UNSUPERVISED                             -->
+    <!-- ================================================================= -->
+
+    <section class="slide" data-section="why" id="sW1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Recap · Every Algorithm Before Today</div>
+        <h1>Supervised ML: X <span class="glow">and</span> a target y</h1>
+        <p class="body-text">Regression, Classification, every ensemble we've covered — all of them were given X (features) <b>and</b> y (the target / label) during training. The entire job was to learn a mapping from X to y, then check the prediction against the real answer.</p>
+        <div class="vocab-card">
+          <div class="vocab-term">Supervised Learning</div>
+          <div class="vocab-def">X₁, X₂, X₃, X₄ … → y (target / label). A "supervisor" — the true label — exists in the training data to check your work against.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="why" id="sW2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">The Setup · Retail Customer Segmentation</div>
+          <h1>A shopping mall has <span class="glow">Age, Income, Spending</span> — and no segment column</h1>
+          <p class="body-text">Marketing wants "Personalized Marketing" — different campaigns for different kinds of customers. But the data has no "Segment" column to learn from. Nobody has ever labeled which customer belongs to which group.</p>
+        </div>
+        <div class="card-grid" style="grid-column:1/-1;">
+          <div class="card"><div class="ico">👤</div><h3>Person A</h3><p>Age 18, Income $5k, Spending Score 5 — low income, low spend.</p></div>
+          <div class="card"><div class="ico">👤</div><h3>Person B</h3><p>Age 29, Income $200k, Spending Score 70 — mid-high income, mid-high spend.</p></div>
+          <div class="card"><div class="ico">👤</div><h3>Person C</h3><p>Age 50, Income $600k, Spending Score 50 — high income, moderate spend.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="why" id="sW3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">How Do I Annotate This Data?</div>
+        <h1>Two options — one doesn't <span class="glow">scale</span></h1>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>Manually sit and annotate</h3><p>A human reads every row and assigns a segment by eye. Slow, subjective, and falls apart past a few hundred rows.</p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>Use a grouping algorithm</h3><p>Let an algorithm find the buckets automatically, from the numbers alone — no pre-existing labels required. This is <b>Clustering</b>.</p></div></div>
+        </div>
+        <div class="banner info">Goal: no pre-existing labels exist, and the algorithm is obliged to create groupings / patterns from the data automatically — "natural groups of customers," discovered, not defined in advance.</div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 2 — WHAT K-MEANS DOES                                      -->
+    <!-- ================================================================= -->
+
+    <section class="slide" data-section="concept" id="sC1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Unsupervised Learning, Defined</div>
+        <h1>Find the <span class="glow">natural pattern</span>, with no answer key</h1>
+        <div class="vocab-card">
+          <div class="vocab-term">Clustering</div>
+          <div class="vocab-def">Group data points so that points in the same group are similar to each other, and different from points in other groups — entirely from the structure of X, with no y to supervise it.</div>
+        </div>
+        <p class="body-text">K-Means is the most common clustering algorithm: pick a number of groups, K, and let the algorithm find K centers that best explain the data's natural structure.</p>
+      </div>
+    </section>
+
+    <section class="slide" data-section="concept" id="sC2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">The Core Idea</div>
+          <h1>Every point joins its <span class="glow">nearest centroid</span></h1>
+          <p class="body-text">A <b>centroid</b> is an imaginary "center of mass" for a group — not a real data point, just the average position of everyone currently assigned to it. K-Means alternates between two questions: "which centroid is each point closest to?" and "given these members, where should the centroid actually sit?"</p>
+        </div>
+        <div class="visual-box">
+          <div class="scatter" id="conceptScatter"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="concept" id="sC3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">The Algorithm, Step by Step</div>
+        <h1>Four steps, <span class="glow">repeated</span> until nothing moves</h1>
+        <div class="rule-list">
+          <div class="rule"><div class="n">1</div><div class="t"><h3>Choose K</h3><p>Decide how many clusters to look for. (Section 4 covers how.)</p></div></div>
+          <div class="rule"><div class="n">2</div><div class="t"><h3>Initialize K centroids randomly</h3><p>Drop K random points into the feature space as starting centers.</p></div></div>
+          <div class="rule"><div class="n">3</div><div class="t"><h3>Assign every point to its nearest centroid</h3><p>Measured by Euclidean distance (Section 3) — whichever centroid is closest "wins" that point.</p></div></div>
+          <div class="rule"><div class="n">4</div><div class="t"><h3>Update each centroid to the mean of its members, repeat</h3><p>Recompute each centroid as the average position of everyone now assigned to it, then go back to step 3. Stop when centroids stop moving, or a maximum iteration count is reached.</p></div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 3 — K-MEANS, BY HAND                                       -->
+    <!-- ================================================================= -->
+
+    <section class="slide" data-section="mech" id="sM1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Measuring "Closest" · Euclidean Distance</div>
+          <h1>d = <span class="glow">√( (x₂−x₁)² + (y₂−y₁)² )</span></h1>
+          <p class="body-text">The straight-line distance between two points. Drag the two points below (Income, Spending) and watch the distance update live — this is exactly what K-Means computes, for every point against every centroid, at every iteration.</p>
+          <div class="console">
+            <div class="field"><label>Point A — Income = <span class="val" id="axLabel">25</span></label><input type="range" id="axSlider" min="0" max="100" value="25"></div>
+            <div class="field"><label>Point A — Spending = <span class="val" id="ayLabel">80</span></label><input type="range" id="aySlider" min="0" max="100" value="80"></div>
+            <div class="field"><label>Point B — Income = <span class="val" id="bxLabel">90</span></label><input type="range" id="bxSlider" min="0" max="100" value="90"></div>
+            <div class="field"><label>Point B — Spending = <span class="val" id="byLabel">15</span></label><input type="range" id="bySlider" min="0" max="100" value="15"></div>
+          </div>
+        </div>
+        <div class="visual-box">
+          <div class="scatter" id="distScatter"></div>
+          <div class="vocab-card">
+            <div class="vocab-term">Distance = <span id="distLabel">91.92</span></div>
+            <div class="vocab-def">Smaller distance = more similar. K-Means assigns each point to whichever centroid minimizes this number.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="mech" id="sM2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Worked Example · 4 Customers, K = 2</div>
+        <h1>Start with centroids at <span class="glow">C1 and C4</span></h1>
+        <p class="body-text">Four customers (Income, Spending): C1=(25,80), C2=(90,15), C3=(85,88), C4=(30,20). Initialize 2 centroids at C1 and C4, then measure every point's distance to both.</p>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Customer</th><th>Dist. to Centroid A (C1)</th><th>Dist. to Centroid B (C4)</th><th>Assigned to</th></tr></thead>
+            <tbody>
+              <tr class="hl-row"><td>C1 (25, 80)</td><td>0.00</td><td>60.21</td><td>A</td></tr>
+              <tr class="wrong-row"><td>C2 (90, 15)</td><td>91.92</td><td>60.21</td><td>B</td></tr>
+              <tr><td>C3 (85, 88)</td><td>60.53</td><td>87.46</td><td>A</td></tr>
+              <tr class="hl-row"><td>C4 (30, 20)</td><td>60.21</td><td>0.00</td><td>B</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="banner good">✓ Cluster A = {C1, C3}. Cluster B = {C2, C4}. Every point joined whichever starting centroid it was numerically closer to.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="mech" id="sM3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Update Step · Recompute Each Centroid</div>
+        <h1>New centroid = <span class="glow">mean of its members</span></h1>
+        <div class="stat-grid">
+          <div class="stat-tile"><div class="label">Centroid A — mean of C1, C3</div><div class="value tabular">(55.0, 84.0)</div></div>
+          <div class="stat-tile accent"><div class="label">Centroid B — mean of C2, C4</div><div class="value tabular">(60.0, 17.5)</div></div>
+        </div>
+        <p class="body-text">Income: A = (25+85)/2 = 55. Spending: A = (80+88)/2 = 84. Same arithmetic for B. The centroids physically moved toward their members — and because they moved, re-running the assignment step (back to Section 3, step 3) could reshuffle who belongs where. K-Means repeats this assign → update loop until nothing changes.</p>
+      </div>
+    </section>
+
+    <section class="slide" data-section="mech" id="sM4">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Convergence</div>
+        <h1 class="kicker-big">Repeat until the centroids <span class="glow">stop moving</span></h1>
+        <p class="body-text" style="max-width:680px;">Each full round (assign → update) is one iteration. Centroids typically swing a lot in iteration 1, then settle into smaller and smaller adjustments. K-Means has converged once an iteration produces zero reassignments — or, in practice, once <code>max_iter</code> is reached.</p>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 4 — CHOOSING K & FAQ                                       -->
+    <!-- ================================================================= -->
+
+    <section class="slide" data-section="eval" id="sE1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">The One Hyperparameter That Matters Most</div>
+          <h1>Nobody tells you <span class="glow">K</span> — you have to choose it</h1>
+          <p class="body-text">Unlike supervised learning, there's no accuracy score to tune K against — there's no ground truth. In practice: trial-and-error across a reasonable range (commonly K = 3 to 12), watching how much "error" drops as K grows. Drag K below and watch <b>inertia</b> — the sum of squared distances from every point to its own centroid — fall. This is the real Mall Customer dataset.</p>
+          <div class="console">
+            <div class="field"><label>K = <span class="val" id="kLabel">5</span></label><input type="range" id="kSlider" min="1" max="10" value="5" step="1"></div>
+          </div>
+        </div>
+        <div class="visual-box">
+          <div id="elbowChart" style="padding:10px;"></div>
+          <div class="vocab-card">
+            <div class="vocab-term">Inertia = <span id="inertiaLabel">75350.8</span></div>
+            <div class="vocab-def" id="elbowNote">The "elbow" — where adding another K stops reducing inertia by much — is a common rule of thumb for picking K.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">The Real Result · Mall Customer Segmentation, K = 5</div>
+        <h1>Five groups, <span class="glow">found automatically</span></h1>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Segment</th><th>Customers</th><th>Avg. Age</th><th>Avg. Income ($k)</th><th>Avg. Spend Score</th></tr></thead>
+            <tbody>
+              <tr><td>Older, Low-Income, Low-Spend</td><td>23</td><td>45.2</td><td>26.3</td><td>20.9</td></tr>
+              <tr><td>Mid-Income, Moderate-Spend</td><td>79</td><td>43.1</td><td>55.3</td><td>49.6</td></tr>
+              <tr class="hl-row"><td>High-Income, High-Spend</td><td>39</td><td>32.7</td><td>86.5</td><td>82.1</td></tr>
+              <tr><td>High-Income, Low-Spend</td><td>36</td><td>40.7</td><td>87.8</td><td>17.6</td></tr>
+              <tr><td>Young, Low-Income, High-Spend</td><td>23</td><td>25.5</td><td>26.3</td><td>78.6</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="footnote">These 5 group names were written by a human <i>after</i> looking at what K-Means found — the algorithm itself only ever produced cluster numbers 0–4. Interpreting the clusters is always a manual step.</p>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Head to Head</div>
+        <h1>K-Means <span class="glow">vs.</span> other clustering families</h1>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Property</th><th>K-Means</th><th>Hierarchical</th><th>DBSCAN</th></tr></thead>
+            <tbody>
+              <tr><td>Must choose K upfront?</td><td>Yes</td><td>No — cut the dendrogram anywhere</td><td>No — density finds its own clusters</td></tr>
+              <tr><td>Cluster shape</td><td>Roughly spherical / convex</td><td>Flexible</td><td>Any shape</td></tr>
+              <tr><td>Handles outliers</td><td>Poorly — every point is forced into a cluster</td><td>Moderate</td><td>Well — outliers are labeled "noise," not forced in</td></tr>
+              <tr><td>Scales to large data</td><td>Well</td><td>Poorly (expensive pairwise distances)</td><td>Moderate</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE4">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Rapid Fire</div>
+        <h1>Six questions, <span class="glow">answered</span></h1>
+        <div class="card-grid">
+          <div class="card"><div class="ico">🏷️</div><h3>Is there a "right" K?</h3><p>No ground truth exists — K is chosen via the elbow method, domain knowledge, or trial and error.</p></div>
+          <div class="card"><div class="ico">🎲</div><h3>Why random initialization?</h3><p>Bad luck on starting centroids can land in a poor local optimum — scikit-learn re-runs with multiple random starts (<code>n_init</code>) and keeps the best.</p></div>
+          <div class="card"><div class="ico">📏</div><h3>Does feature scale matter?</h3><p>Yes, a lot — Euclidean distance is dominated by whichever feature has the largest numeric range, so features are typically scaled first.</p></div>
+          <div class="card"><div class="ico">🔤</div><h3>What about categorical columns?</h3><p>Euclidean distance doesn't make sense for categories — Hierarchical Clustering is often preferred when categorical features are present.</p></div>
+          <div class="card"><div class="ico">🚀</div><h3>Can this be deployed?</h3><p>Yes — exactly like Random Forest: <code>joblib.dump</code> the fitted model, then serve new predictions through Flask or Streamlit.</p></div>
+          <div class="card" style="border-top:5px solid var(--accent);"><div class="ico">⚠️</div><h3>Biggest limitation?</h3><p>Assumes clusters are round and similar in size — real-world groups (e.g. elongated or nested shapes) can fool it badly.</p></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="chrome-bottom">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous slide">‹</button>
+    <div class="progress" id="progress"></div>
+    <div class="slide-counter"><span id="curNum" class="tabular">1</span> / <span id="totalNum" class="tabular">—</span></div>
+    <button class="nav-btn" id="nextBtn" aria-label="Next slide">›</button>
+  </nav>
+
+<script>
+"use strict";
+
+const $  = (sel, el=document) => el.querySelector(sel);
+const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+const clamp = (v,lo,hi) => Math.max(lo, Math.min(hi,v));
+const fmt = (v,d=2) => Number(v).toFixed(d);
+
+const slideEls = $$('.slide');
+let cur = 0;
+
+const CHAPTERS = {
+  why:     { num:1, label:'Supervised vs. Unsupervised' },
+  concept: { num:2, label:'What K-Means Does' },
+  mech:    { num:3, label:'K-Means, By Hand' },
+  eval:    { num:4, label:'Choosing K &amp; FAQ' },
+};
+
+const onEnter = {};
+const onLeave = {};
+
+function buildDots(){
+  const wrap = $('#progress');
+  wrap.innerHTML = '';
+  let lastSection = null;
+  slideEls.forEach((s, i) => {
+    const sec = s.dataset.section;
+    if(lastSection !== null && sec !== lastSection){
+      const gap = document.createElement('span');
+      gap.className = 'dot gap';
+      wrap.appendChild(gap);
+    }
+    const b = document.createElement('button');
+    b.className = 'dot';
+    b.setAttribute('aria-label', 'Go to slide ' + (i+1));
+    b.addEventListener('click', () => goTo(i));
+    wrap.appendChild(b);
+    lastSection = sec;
+  });
+}
+
+function goTo(i){
+  i = clamp(i, 0, slideEls.length-1);
+  const leaveFn = onLeave[slideEls[cur].id];
+  if(leaveFn) leaveFn();
+  slideEls[cur].classList.remove('active');
+  cur = i;
+  const s = slideEls[cur];
+  s.classList.add('active');
+  document.body.dataset.section = s.dataset.section;
+
+  const chip = $('#chapterChip');
+  const meta = CHAPTERS[s.dataset.section];
+  if(meta){
+    chip.style.display = 'flex';
+    $('#chapterNum').textContent = meta.num;
+    $('#chapterLabel').innerHTML = meta.label;
+  } else {
+    chip.style.display = 'none';
+  }
+
+  $('#curNum').textContent = cur+1;
+  $('#prevBtn').disabled = cur === 0;
+  $('#nextBtn').disabled = cur === slideEls.length-1;
+
+  $$('.dot:not(.gap)', $('#progress')).forEach((d,idx)=> d.classList.toggle('active', idx===cur));
+
+  const fn = onEnter[s.id];
+  if(fn) requestAnimationFrame(fn);
+}
+
+function next(){ if(cur < slideEls.length-1) goTo(cur+1); }
+function prev(){ if(cur > 0) goTo(cur-1); }
+
+$('#nextBtn').addEventListener('click', next);
+$('#prevBtn').addEventListener('click', prev);
+window.addEventListener('keydown', e => {
+  if(e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+  else if(e.key === 'ArrowLeft'){ e.preventDefault(); prev(); }
+});
+
+const themeBtn = $('#themeToggle');
+function applyStoredTheme(){
+  const t = localStorage.getItem('sv-theme-kmeans');
+  if(t) document.documentElement.setAttribute('data-theme', t);
+}
+applyStoredTheme();
+themeBtn.addEventListener('click', () => {
+  const now = document.documentElement.getAttribute('data-theme');
+  const dark = now ? now === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const nextTheme = dark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', nextTheme);
+  localStorage.setItem('sv-theme-kmeans', nextTheme);
+});
+
+/* =========================== concept scatter (static illustration) =========================== */
+function renderConceptScatter(){
+  const box = $('#conceptScatter');
+  box.innerHTML = '';
+  const groups = [
+    { color: 'var(--c-why)',  cx: 25, cy: 75, pts: [[20,70],[28,80],[18,78],[30,72]] },
+    { color: 'var(--c-eval)', cx: 75, cy: 25, pts: [[70,20],[80,30],[72,18],[78,28]] },
+  ];
+  groups.forEach(g => {
+    g.pts.forEach(([x,y]) => {
+      const p = document.createElement('div');
+      p.className = 'pt';
+      p.style.left = x + '%'; p.style.top = (100-y) + '%';
+      p.style.background = g.color;
+      box.appendChild(p);
+    });
+    const c = document.createElement('div');
+    c.className = 'ct';
+    c.style.left = g.cx + '%'; c.style.top = (100-g.cy) + '%';
+    c.style.background = g.color;
+    box.appendChild(c);
+  });
+}
+onEnter['sC2'] = renderConceptScatter;
+
+/* =========================== distance calculator demo =========================== */
+function renderDistance(){
+  const ax = parseFloat($('#axSlider').value), ay = parseFloat($('#aySlider').value);
+  const bx = parseFloat($('#bxSlider').value), by = parseFloat($('#bySlider').value);
+  $('#axLabel').textContent = ax; $('#ayLabel').textContent = ay;
+  $('#bxLabel').textContent = bx; $('#byLabel').textContent = by;
+  const d = Math.sqrt((bx-ax)**2 + (by-ay)**2);
+  $('#distLabel').textContent = fmt(d);
+
+  const box = $('#distScatter');
+  box.innerHTML = '';
+  const pa = document.createElement('div'); pa.className = 'pt';
+  pa.style.left = ax + '%'; pa.style.top = (100-ay) + '%'; pa.style.background = 'var(--c-why)';
+  const la = document.createElement('div'); la.className = 'lbl'; la.textContent = 'A';
+  la.style.left = ax + '%'; la.style.top = (100-ay) + '%';
+  const pb = document.createElement('div'); pb.className = 'pt';
+  pb.style.left = bx + '%'; pb.style.top = (100-by) + '%'; pb.style.background = 'var(--c-eval)';
+  const lb = document.createElement('div'); lb.className = 'lbl'; lb.textContent = 'B';
+  lb.style.left = bx + '%'; lb.style.top = (100-by) + '%';
+  box.appendChild(pa); box.appendChild(la); box.appendChild(pb); box.appendChild(lb);
+}
+onEnter['sM1'] = renderDistance;
+['axSlider','aySlider','bxSlider','bySlider'].forEach(id => $('#'+id).addEventListener('input', renderDistance));
+
+/* =========================== elbow curve demo (real inertia values, k=1..10) =========================== */
+const INERTIA = {1:308812.8, 2:212840.2, 3:143342.8, 4:104366.2, 5:75350.8, 6:58300.4, 7:51133.0, 8:44640.0, 9:40809.8, 10:37128.0};
+function renderElbow(){
+  const k = parseInt($('#kSlider').value, 10);
+  $('#kLabel').textContent = k;
+  $('#inertiaLabel').textContent = INERTIA[k].toLocaleString();
+
+  const chart = $('#elbowChart');
+  const maxI = INERTIA[1];
+  const bars = Object.keys(INERTIA).map(kk => {
+    const h = (INERTIA[kk] / maxI) * 100;
+    const active = Number(kk) === k;
+    return `<div style="flex:1; display:flex; flex-direction:column; align-items:center; gap:4px;">
+      <div style="width:100%; height:120px; display:flex; align-items:flex-end;">
+        <div style="width:100%; height:${h}%; background:${active ? 'var(--accent)' : 'var(--paper-3)'}; border-radius:4px 4px 0 0;"></div>
+      </div>
+      <div style="font-size:.68rem; font-weight:800; color:${active ? 'var(--accent)' : 'var(--ink-faint)'};">${kk}</div>
+    </div>`;
+  }).join('');
+  chart.innerHTML = `<div style="display:flex; gap:6px; align-items:flex-end;">${bars}</div>`;
+
+  const note = $('#elbowNote');
+  if(k <= 2) note.textContent = 'Inertia is still falling steeply — too few clusters to capture the real structure.';
+  else if(k <= 5) note.textContent = 'Around here the drop starts flattening — the "elbow" most analysts would pick for this dataset.';
+  else note.textContent = 'Diminishing returns — more clusters, but each one barely reduces inertia further.';
+}
+onEnter['sE1'] = renderElbow;
+$('#kSlider').addEventListener('input', renderElbow);
+
+/* =========================== init =========================== */
+buildDots();
+$('#totalNum').textContent = slideEls.length;
+const deepLinkSlide = parseInt(new URLSearchParams(location.search).get('slide'), 10);
+goTo(Number.isFinite(deepLinkSlide) ? deepLinkSlide-1 : 0);
+</script>
+</body>
+</html>
