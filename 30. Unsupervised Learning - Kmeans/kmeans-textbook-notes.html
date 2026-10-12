@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>K-Means Clustering — Reference Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#1F8A6F;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#4FC9A3;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap{max-width:860px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:680px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+  h2{font-size:1.4rem; font-weight:900; margin:48px 0 14px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px;}
+  h3{font-size:1.06rem; font-weight:800; margin:24px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:9px 12px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono);}
+  pre{background:var(--paper-2); border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.86rem; line-height:1.55;}
+  pre code{background:none; padding:0; font-size:1em;}
+  .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px;}
+  .pill{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:.82rem; font-weight:700; color:var(--ink);}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Reference Notes · Unsupervised Learning</div>
+  <h1>K-Means Clustering</h1>
+  <p class="abstract">The default algorithm for partitioning unlabeled data into K groups: pick K centroids, assign every point to its nearest one, move each centroid to the mean of its assigned points, and repeat until nothing changes. Simple, fast, and the right first tool to reach for whenever there's no target column to learn from.</p>
+
+  <div class="related-links">
+    <a href="classwork-notes.html">📝 Classwork Notes (Day 30 session write-up)</a>
+    <a href="kmeans-clustering-slides.html">🖥️ Slide Deck</a>
+    <a href="KMeansClustering.ipynb">📓 Notebook: Mall Customer Segmentation</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">Supervised vs. Unsupervised Learning</a></li>
+      <li><a href="#s2">The Algorithm, Formally</a></li>
+      <li><a href="#s3">Distance Metrics</a></li>
+      <li><a href="#s4">Choosing K: The Elbow Method &amp; Silhouette Score</a></li>
+      <li><a href="#s5">Feature Scaling Matters</a></li>
+      <li><a href="#s6">Initialization &amp; Local Optima</a></li>
+      <li><a href="#s7">K-Means vs. Hierarchical vs. DBSCAN</a></li>
+      <li><a href="#s8">Limitations</a></li>
+      <li><a href="#s9">API Reference</a></li>
+      <li><a href="#s10">Worked Example</a></li>
+      <li><a href="#s11">Summary</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1"><span class="num">1.</span>Supervised vs. Unsupervised Learning</h2>
+  <p>Every algorithm up to this point — Linear/Logistic Regression, KNN, Decision Trees, Random Forest, AdaBoost — is <b>supervised</b>: training data includes both features (X) and a target (y), and the model's entire job is to learn a mapping from one to the other, checked against the true y.</p>
+  <p><b>Unsupervised learning</b> removes y entirely. There is no "correct answer" in the training data — only X. The task becomes: find useful structure in the data on its own. <b>Clustering</b> is the most common unsupervised task: partition the rows into groups such that rows in the same group are more similar to each other than to rows in other groups.</p>
+  <div class="note">There is no accuracy score in clustering, because there is nothing to be "correct" against. Every evaluation method in this chapter (inertia, silhouette score) measures internal consistency of the groups found — not agreement with ground truth, because none exists.</div>
+
+  <h2 id="s2"><span class="num">2.</span>The Algorithm, Formally</h2>
+  <p>Given n points and a chosen K, K-Means (Lloyd's algorithm) proceeds:</p>
+  <ol>
+    <li><b>Initialize</b> K centroids, μ₁ … μ_K (randomly, or via <code>k-means++</code>, Section 6).</li>
+    <li><b>Assignment step:</b> for every point xᵢ, assign it to the cluster whose centroid is closest: <code>c(xᵢ) = argmin_k ‖xᵢ − μ_k‖²</code>.</li>
+    <li><b>Update step:</b> recompute each centroid as the mean of the points currently assigned to it: <code>μ_k = (1/|S_k|) Σ_{x∈S_k} x</code>.</li>
+    <li><b>Repeat</b> steps 2–3 until no point changes cluster (convergence), or <code>max_iter</code> is reached.</li>
+  </ol>
+  <div class="formula">
+    Objective (Inertia / WCSS): J = Σₖ Σ_{x∈S_k} ‖x − μ_k‖²
+    <span class="sub">K-Means minimizes the total within-cluster sum of squared distances. Each step of the algorithm (assignment, then update) never increases J — which is exactly why it's guaranteed to converge, though not necessarily to the global minimum (Section 6).</span>
+  </div>
+
+  <h2 id="s3"><span class="num">3.</span>Distance Metrics</h2>
+  <p>K-Means almost always uses <b>Euclidean distance</b>: for 2D points, d = √((x₂−x₁)² + (y₂−y₁)²), generalizing to any number of dimensions by summing squared differences across every feature.</p>
+  <div class="note">Euclidean distance implicitly assumes clusters are spherical (round) in the feature space — it penalizes distance equally in every direction. This single assumption is the root cause of most of K-Means' limitations (Section 8).</div>
+
+  <h2 id="s4"><span class="num">4.</span>Choosing K: The Elbow Method &amp; Silhouette Score</h2>
+  <p>K is a hyperparameter the analyst must choose — there's no way to "fit" it from the data the way a model fits its weights. Two common techniques:</p>
+  <h3>Elbow Method</h3>
+  <p>Fit K-Means for a range of K values and plot inertia (J) against K. Inertia always decreases as K increases (more clusters can only reduce total distance), but the rate of decrease slows sharply past the "true" number of clusters — the elbow. On the Mall Customer dataset (200 rows, Age/Income/Spending Score):</p>
+  <table>
+    <thead><tr><th>K</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th></tr></thead>
+    <tbody>
+      <tr><td><b>Inertia</b></td><td>308,813</td><td>212,840</td><td>143,343</td><td>104,366</td><td>75,351</td><td>58,300</td><td>51,133</td><td>44,640</td><td>40,810</td><td>37,128</td></tr>
+    </tbody>
+  </table>
+  <p>The drop from K=4→5 (≈28%) is noticeably larger than K=6→7 (≈12%) or later steps — consistent with K=5 being a reasonable elbow for this dataset.</p>
+  <h3>Silhouette Score</h3>
+  <div class="formula">
+    s(i) = (b(i) − a(i)) / max(a(i), b(i))
+    <span class="sub">a(i) = average distance from point i to other points in its own cluster (cohesion). b(i) = average distance from i to points in the nearest other cluster (separation). s(i) ranges from −1 (likely misassigned) to +1 (well-clustered); the mean silhouette score across all points is often used alongside the elbow method to cross-check a choice of K.</span>
+  </div>
+
+  <h2 id="s5"><span class="num">5.</span>Feature Scaling Matters</h2>
+  <p>Because the algorithm is driven entirely by Euclidean distance, a feature with a numerically larger range dominates the distance calculation regardless of its actual importance. Annual Income ($15k–$140k) would swamp Spending Score (1–100) if left unscaled. <b>Standardizing features (zero mean, unit variance) before clustering is standard practice</b> — exactly the same <code>StandardScaler</code> pattern used for KNN (Class 23) and Logistic Regression (Class 22).</p>
+
+  <h2 id="s6"><span class="num">6.</span>Initialization &amp; Local Optima</h2>
+  <p>K-Means is only guaranteed to converge, not to find the <i>global</i> best split — a poor random choice of starting centroids can lock the algorithm into a worse local optimum. Two mitigations, both standard in scikit-learn:</p>
+  <ul>
+    <li><b><code>k-means++</code> initialization</b> (the default) — spreads initial centroids apart deliberately instead of placing them fully at random, which empirically converges faster and to better solutions.</li>
+    <li><b><code>n_init</code></b> — re-run the entire algorithm this many times with different random seeds and keep whichever run achieved the lowest inertia.</li>
+  </ul>
+
+  <h2 id="s7"><span class="num">7.</span>K-Means vs. Hierarchical vs. DBSCAN</h2>
+  <table>
+    <thead><tr><th>Property</th><th>K-Means</th><th>Hierarchical</th><th>DBSCAN</th></tr></thead>
+    <tbody>
+      <tr><td>Must choose K upfront?</td><td>Yes</td><td>No — cut the dendrogram at any height</td><td>No — density determines cluster count</td></tr>
+      <tr><td>Cluster shape it finds well</td><td>Roughly spherical / convex</td><td>Flexible, depends on linkage</td><td>Arbitrary shape</td></tr>
+      <tr><td>Outlier handling</td><td>Poor — every point forced into a cluster</td><td>Moderate</td><td>Strong — outliers labeled as noise, not forced in</td></tr>
+      <tr><td>Scales to large n</td><td>Good (roughly linear)</td><td>Poor (pairwise distance matrix, O(n²))</td><td>Moderate</td></tr>
+      <tr><td>Works with categorical features</td><td>Poorly (Euclidean distance needs numeric features)</td><td>Better, with an appropriate distance metric</td><td>Poorly, same reason as K-Means</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s8"><span class="num">8.</span>Limitations</h2>
+  <ul>
+    <li><b>Assumes round, similarly-sized clusters.</b> Elongated, nested, or very differently-sized natural groups are frequently split incorrectly.</li>
+    <li><b>Sensitive to outliers.</b> A centroid's position is the mean of its members — a single extreme point can pull it noticeably off-center.</li>
+    <li><b>Requires choosing K in advance,</b> with no ground truth to validate the choice against.</li>
+    <li><b>Only works cleanly on numeric features</b> — categorical columns need to be re-encoded or a different algorithm (Hierarchical Clustering, Section 7) entirely.</li>
+  </ul>
+
+  <h2 id="s9"><span class="num">9.</span>API Reference</h2>
+  <table>
+    <thead><tr><th>Parameter</th><th>What it controls</th><th>Typical default</th></tr></thead>
+    <tbody>
+      <tr><td><code>n_clusters</code></td><td>K — the number of clusters to find.</td><td>8 (scikit-learn default; always set explicitly)</td></tr>
+      <tr><td><code>init</code></td><td>Centroid initialization strategy.</td><td><code>'k-means++'</code></td></tr>
+      <tr><td><code>n_init</code></td><td>Number of independent runs with different seeds; best (lowest-inertia) run is kept.</td><td>10</td></tr>
+      <tr><td><code>max_iter</code></td><td>Maximum assign/update iterations per run before stopping.</td><td>300</td></tr>
+      <tr><td><code>random_state</code></td><td>Seed for reproducibility.</td><td><code>None</code></td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s10"><span class="num">10.</span>Worked Example</h2>
+  <pre><code>import pandas as pd
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans
+
+features = ['Age', 'Annual Income (k$)', 'Spending Score (1-100)']
+X = df[features].to_numpy()
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+
+kmeans = KMeans(n_clusters=5, init='k-means++', n_init=10, random_state=42)
+df['cluster'] = kmeans.fit_predict(X_scaled)
+
+print("Inertia:", kmeans.inertia_)
+print("Centroids (scaled space):", kmeans.cluster_centers_)
+
+# Interpret each cluster after fitting — K-Means never names groups itself:
+summary = df.groupby('cluster')[features].mean().round(1)
+print(summary)
+</code></pre>
+  <div class="note warn">The classwork notebook fits on <i>unscaled</i> features for simplicity (Age, Income, and Spending Score happen to be on roughly comparable scales for this dataset) — but scaling first, as above, is the correct default whenever feature ranges differ meaningfully.</div>
+
+  <h2 id="s11"><span class="num">11.</span>Summary</h2>
+  <div class="summary-box">
+    <h3>The whole idea, in one paragraph</h3>
+    <p>K-Means partitions unlabeled data into K groups by alternating two simple steps: assign every point to its nearest centroid, then move each centroid to the mean of its current members — repeating until nothing changes. It minimizes total within-cluster squared distance (inertia), is sensitive to feature scale and initialization (mitigated with scaling and <code>k-means++</code>/<code>n_init</code>), and assumes roughly round, similarly-sized clusters. Choosing K itself has no ground truth to check against — the elbow method and silhouette score are the standard heuristics, not guarantees.</p>
+  </div>
+  <div class="pill-row">
+    <span class="pill">Unsupervised Learning</span>
+    <span class="pill">Centroids</span>
+    <span class="pill">Euclidean Distance</span>
+    <span class="pill">Inertia / WCSS</span>
+    <span class="pill">Elbow Method</span>
+    <span class="pill">Silhouette Score</span>
+    <span class="pill">k-means++</span>
+  </div>
+</div>
+</body>
+</html>

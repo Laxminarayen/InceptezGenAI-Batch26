@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Classwork Notes · K-Means Clustering</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#1F8A6F;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#4FC9A3;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    -webkit-font-smoothing:antialiased; line-height:1.6;
+  }
+  .wrap{max-width:840px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 80px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.7rem,4vw,2.4rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 6px;}
+  .subtitle{color:var(--ink-soft); font-size:1rem; margin-bottom:8px;}
+  .pdf-link{
+    display:inline-flex; align-items:center; gap:8px; margin:14px 0 34px; font-size:.9rem; font-weight:700;
+    color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px;
+    padding:9px 18px; text-decoration:none;
+  }
+  .pdf-link:hover{border-color:var(--accent); color:var(--accent);}
+  h2{font-size:1.35rem; font-weight:900; margin:44px 0 14px; padding-top:16px; border-top:1px solid var(--line);}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h3{font-size:1.05rem; font-weight:800; margin:22px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{
+    background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent);
+    border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink);
+    font-size:1.02rem;
+  }
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:8px 10px; text-align:center; border:1px solid var(--line);}
+  th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  tr.hl td{background:color-mix(in srgb, var(--accent) 10%, transparent); font-weight:800;}
+  tr.wrong td{background:color-mix(in srgb, #C23B3B 12%, transparent);}
+  .note{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px;
+    font-size:.9rem; color:var(--ink-soft); margin:14px 0;
+  }
+  .note b{color:var(--ink);}
+  .agenda{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 20px;}
+  .agenda span{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:8px 16px;
+    font-size:.86rem; font-weight:700; color:var(--ink);
+  }
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.92em;}
+  pre{background:var(--paper-2); border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.86rem; line-height:1.55;}
+  pre code{background:none; padding:0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Day 30 · Classwork Notes</div>
+  <h1>Unsupervised Learning: K-Means Clustering</h1>
+  <p class="subtitle">Every algorithm so far learned from a target column, y. Today that column doesn't exist. K-Means finds natural groups in retail customer data — Age, Income, Spending — using nothing but distance between points, worked by hand on a 4-point example and then run for real on 200 mall customers.</p>
+  <a class="pdf-link" href="Classwork-HandwrittenNotes.pdf" target="_blank">📄 Open the original handwritten notes (PDF)</a>
+
+  <h2>Agenda</h2>
+  <div class="agenda">
+    <span>Supervised vs. Unsupervised, recapped</span>
+    <span>Retail Customer Segmentation</span>
+    <span>The K-Means algorithm</span>
+    <span>A 4-point worked example</span>
+    <span>Choosing K</span>
+    <span>Notebook: Mall Customer Segmentation</span>
+  </div>
+
+  <h2>Recap: Supervised ML, Ensemble Learning</h2>
+  <p>Supervised ML = X (X₁, X₂, X₃, X₄…) with a target/label, y. AdaBoost, Random Forest, and every earlier algorithm all had that y to check predictions against. (Checklist items noted but <b>not covered today</b>: Stacking/Voting, FastAPI, XGBoost/GBM, Naive Bayes — flagged for a future session, "AutoML" mentioned as tomorrow's topic.)</p>
+
+  <h2>Today's Problem: Retail Customer Segmentation</h2>
+  <p>A shopping mall has Age, Annual Income, and Spending Score for its customers, and wants <b>personalized marketing</b> — different campaigns for different kinds of shoppers. There is no "Segment" column to learn from.</p>
+  <h3>How do I annotate this data?</h3>
+  <ol>
+    <li><b>Manually sit and annotate</b> — a human reads every row and assigns a group by eye. Doesn't scale.</li>
+    <li><b>Use a grouping algorithm</b> — find the buckets automatically from the numbers alone, with no pre-existing labels. This is <b>Clustering</b>.</li>
+  </ol>
+  <div class="note"><b>The goal, stated precisely:</b> no pre-existing labels exist, and the algorithm must create groupings/patterns from the data automatically — "natural groups of customers," discovered rather than defined in advance.</div>
+
+  <h2>K-Means, the Algorithm</h2>
+  <ol>
+    <li><b>Choose K</b> — the number of clusters to look for.</li>
+    <li><b>Initialize K centroids randomly</b> — K random starting points in the feature space.</li>
+    <li><b>Assign every point to its nearest centroid</b> — measured by Euclidean distance: d = √((x₂−x₁)² + (y₂−y₁)²).</li>
+    <li><b>Update each centroid to the mean of its current members</b>, then repeat step 3. Stop when centroids no longer move, or a maximum number of iterations is reached.</li>
+  </ol>
+
+  <h2>Worked Example: 4 Customers, K = 2</h2>
+  <p>Four customers, (Income, Spending): C1 = (25, 80), C2 = (90, 15), C3 = (85, 88), C4 = (30, 20). Initialize 2 centroids at C1 and C4.</p>
+  <table>
+    <thead><tr><th>Customer</th><th>Dist. to Centroid A (C1)</th><th>Dist. to Centroid B (C4)</th><th>Assigned</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td>C1 (25, 80)</td><td>0.00</td><td>60.21</td><td>A</td></tr>
+      <tr class="wrong"><td>C2 (90, 15)</td><td>91.92</td><td>60.21</td><td>B</td></tr>
+      <tr><td>C3 (85, 88)</td><td>60.53</td><td>87.46</td><td>A</td></tr>
+      <tr class="hl"><td>C4 (30, 20)</td><td>60.21</td><td>0.00</td><td>B</td></tr>
+    </tbody>
+  </table>
+  <p>Cluster A = {C1, C3}, Cluster B = {C2, C4} — every point joined whichever starting centroid it was numerically closer to.</p>
+
+  <h3>Update step</h3>
+  <div class="formula">
+    New Centroid A = mean(C1, C3) = ( (25+85)/2, (80+88)/2 ) = (55.0, 84.0)
+    <span class="sub">New Centroid B = mean(C2, C4) = ( (90+30)/2, (15+20)/2 ) = (60.0, 17.5). The centroids move toward their members; re-running the assignment step could now reshuffle who belongs where. K-Means repeats assign → update until nothing changes.</span>
+  </div>
+
+  <h2>Choosing K</h2>
+  <p>There's no accuracy score to tune K against — no ground truth exists for "correct" clusters. In practice, K is chosen by trial and error across a reasonable range (commonly K = 3 to 12), watching how <b>inertia</b> (sum of squared distances from every point to its own centroid) drops as K grows — the "elbow," where that drop flattens out, is a common rule of thumb.</p>
+  <table>
+    <thead><tr><th>K</th><th>1</th><th>2</th><th>3</th><th>4</th><th>5</th><th>6</th><th>7</th><th>8</th><th>9</th><th>10</th></tr></thead>
+    <tbody>
+      <tr><td><b>Inertia</b></td><td>308,813</td><td>212,840</td><td>143,343</td><td>104,366</td><td class="hl">75,351</td><td>58,300</td><td>51,133</td><td>44,640</td><td>40,810</td><td>37,128</td></tr>
+    </tbody>
+  </table>
+  <p>(Computed on the real Mall Customer dataset. The drop noticeably flattens from K≈5 onward — consistent with choosing K=5 for the segmentation below.)</p>
+
+  <h2>Notebook: Mall Customer Segmentation (K = 5)</h2>
+  <p>Features used: Age, Annual Income (k$), Spending Score (1–100). <code>KMeans(n_clusters=5, random_state=42, n_init=10)</code> fit on 200 customers, then each cluster was interpreted and named by hand afterward:</p>
+  <table>
+    <thead><tr><th>Segment</th><th>Customers</th><th>Avg. Age</th><th>Avg. Income ($k)</th><th>Avg. Spend Score</th></tr></thead>
+    <tbody>
+      <tr><td>Older, Low-Income, Low-Spend</td><td>23</td><td>45.2</td><td>26.3</td><td>20.9</td></tr>
+      <tr><td>Mid-Income, Moderate-Spend</td><td>79</td><td>43.1</td><td>55.3</td><td>49.6</td></tr>
+      <tr class="hl"><td>High-Income, High-Spend</td><td>39</td><td>32.7</td><td>86.5</td><td>82.1</td></tr>
+      <tr><td>High-Income, Low-Spend</td><td>36</td><td>40.7</td><td>87.8</td><td>17.6</td></tr>
+      <tr><td>Young, Low-Income, High-Spend</td><td>23</td><td>25.5</td><td>26.3</td><td>78.6</td></tr>
+    </tbody>
+  </table>
+  <p>K-Means itself only ever outputs cluster numbers 0–4 — the segment names above are a manual interpretation step, done after looking at each group's averages.</p>
+
+  <h3>Serialization &amp; prediction</h3>
+  <pre><code>model_bundle = {
+    'model': kmeans,
+    'features': features,
+    'cluster_labels': cluster_labels,
+    'cluster_summary': summary.to_dict(orient='records'),
+    'training_ranges': {...}
+}
+joblib.dump(model_bundle, 'model_bundle.joblib')
+
+# later:
+saved = joblib.load('model_bundle.joblib')
+example = [[30, 90, 85]]  # Age, Income, Spending Score
+cluster_id = saved['model'].predict(example)[0]</code></pre>
+  <p>Same deployment pattern as Random Forest (Class 28) — <code>predict()</code> on a fitted, serialized model, ready to wrap in a Flask or Streamlit app.</p>
+
+  <h2>Practical Roadmap (mentioned, upcoming)</h2>
+  <ol>
+    <li>Practical implementation — already done in today's notebook.</li>
+    <li>Wrap the model in a Flask app.</li>
+    <li>Deploy to GCP.</li>
+    <li>Deploy to a remote server.</li>
+  </ol>
+
+  <div class="note">Want the formal distance-metric discussion, the elbow method and silhouette score in depth, a Hierarchical/DBSCAN comparison, and a scikit-learn <code>KMeans</code> hyperparameter table? See <a href="kmeans-textbook-notes.html">K-Means Clustering — Reference Notes</a>.</div>
+</div>
+</body>
+</html>
