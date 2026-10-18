@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Retail Customer Segmentation</title>
+    <style>
+        :root {
+            font-family: Arial, Helvetica, sans-serif;
+            color: #1f2937;
+            background: #f5f7fb;
+        }
+        * { box-sizing: border-box; }
+        body { margin: 0; }
+        .wrap {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 36px 20px 60px;
+        }
+        h1 { margin-bottom: 8px; }
+        .subtitle { color: #6b7280; margin-top: 0; }
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 22px;
+            margin-top: 28px;
+        }
+        .card {
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 14px;
+            padding: 22px;
+            box-shadow: 0 8px 24px rgba(0,0,0,.05);
+        }
+        label {
+            display: block;
+            font-weight: 700;
+            margin-top: 14px;
+            margin-bottom: 6px;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            border: 0;
+            border-radius: 8px;
+            background: #111827;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .result {
+            background: #ecfdf5;
+            border-left: 5px solid #10b981;
+            padding: 16px;
+            border-radius: 8px;
+        }
+        .error {
+            background: #fef2f2;
+            border-left: 5px solid #ef4444;
+            padding: 14px;
+            border-radius: 8px;
+        }
+        .big { font-size: 24px; font-weight: 800; margin: 6px 0; }
+        .muted { color: #6b7280; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 14px;
+            font-size: 14px;
+        }
+        th, td {
+            text-align: left;
+            padding: 10px 8px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        th { background: #f8fafc; }
+        .full { margin-top: 22px; }
+        code {
+            background: #f3f4f6;
+            padding: 2px 5px;
+            border-radius: 4px;
+        }
+        @media (max-width: 760px) {
+            .grid { grid-template-columns: 1fr; }
+            table { font-size: 12px; }
+        }
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <h1>Retail Customer Segmentation</h1>
+    <p class="subtitle">
+        K-Means demo using Age, Annual Income and Spending Score.
+    </p>
+
+    <div class="grid">
+        <div class="card">
+            <h2>Customer details</h2>
+            <form method="post">
+                <label for="age">Age</label>
+                <input
+                    id="age" name="age" type="number" step="1"
+                    min="{{ training_ranges['Age'][0] }}"
+                    max="{{ training_ranges['Age'][1] }}"
+                    value="{{ form_values.age }}" required>
+
+                <label for="income">Annual Income (k$)</label>
+                <input
+                    id="income" name="income" type="number" step="0.1"
+                    min="{{ training_ranges['Annual Income (k$)'][0] }}"
+                    max="{{ training_ranges['Annual Income (k$)'][1] }}"
+                    value="{{ form_values.income }}" required>
+
+                <label for="spending">Spending Score (1-100)</label>
+                <input
+                    id="spending" name="spending" type="number" step="0.1"
+                    min="{{ training_ranges['Spending Score (1-100)'][0] }}"
+                    max="{{ training_ranges['Spending Score (1-100)'][1] }}"
+                    value="{{ form_values.spending }}" required>
+
+                <button type="submit">Predict customer segment</button>
+            </form>
+        </div>
+
+        <div class="card">
+            <h2>Prediction</h2>
+
+            {% if error %}
+                <div class="error">{{ error }}</div>
+            {% elif prediction %}
+                <div class="result">
+                    <div class="muted">Predicted segment</div>
+                    <div class="big">{{ prediction.segment }}</div>
+                    <div>Cluster ID: <strong>{{ prediction.cluster_id }}</strong></div>
+                </div>
+
+                <h3>Nearest cluster centroid</h3>
+                <p>Age: <strong>{{ prediction.center_age }}</strong></p>
+                <p>Income: <strong>{{ prediction.center_income }} k$</strong></p>
+                <p>Spending score: <strong>{{ prediction.center_spending }}</strong></p>
+            {% else %}
+                <p class="muted">
+                    Enter a customer's values and submit the form.
+                </p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="card full">
+        <h2>Segments learned from the training data</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Cluster</th>
+                    <th>Business label</th>
+                    <th>Customers</th>
+                    <th>Avg age</th>
+                    <th>Avg income</th>
+                    <th>Avg spending</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for row in cluster_summary %}
+                <tr>
+                    <td>{{ row.Cluster }}</td>
+                    <td>{{ row.Segment }}</td>
+                    <td>{{ row.Customers }}</td>
+                    <td>{{ row.Avg_Age }}</td>
+                    <td>{{ row.Avg_Income }}</td>
+                    <td>{{ row.Avg_Spending }}</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        <p class="muted">
+            K-Means creates numeric clusters. The business labels were assigned afterward
+            by inspecting the cluster centroids in the notebook.
+        </p>
+    </div>
+</div>
+</body>
+</html>
