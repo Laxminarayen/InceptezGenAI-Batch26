@@ -99,6 +99,7 @@ a { color: inherit; }
 .topbar-nav {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 4px;
   flex: 1;
 }
@@ -113,6 +114,8 @@ a { color: inherit; }
   font-weight: 600;
   color: var(--text-dim);
   text-decoration: none;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .topbar-link svg { flex-shrink: 0; }

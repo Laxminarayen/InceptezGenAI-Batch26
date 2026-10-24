@@ -55,11 +55,15 @@
   .algo-status.none{color:var(--st-none); background:var(--st-none-bg);}
 
   .algo-actions{display:flex; align-items:center; gap:8px; flex:none; flex-wrap:wrap; justify-content:flex-end;}
-  .algo-link{font-size:.75rem; font-weight:800; text-decoration:none; white-space:nowrap;
-    padding:5px 11px; border-radius:999px; border:1px solid var(--border); background:var(--bg-elev-2); color:var(--text);}
+  .algo-yt-slot{display:inline-flex; align-items:center; gap:4px;}
+  .algo-link{font-family:inherit; font-size:.75rem; font-weight:800; text-decoration:none; white-space:nowrap;
+    padding:5px 11px; border-radius:999px; border:1px solid var(--border); background:var(--bg-elev-2); color:var(--text);
+    cursor:pointer; line-height:1.3;}
   .algo-link:hover{border-color:var(--accent); color:var(--accent);}
   .algo-link.yt.empty{color:var(--text-dim); border-style:dashed; font-weight:700;}
   .algo-link.yt.empty:hover{color:var(--accent); border-color:var(--accent);}
+  .algo-link.yt-edit{padding:5px 9px; color:var(--text-dim);}
+  .algo-link.yt-edit:hover{color:var(--accent); border-color:var(--accent);}
   @media (max-width:560px){
     .algo-row{flex-direction:column; align-items:flex-start; gap:8px;}
     .algo-actions{justify-content:flex-start;}
@@ -320,41 +324,100 @@
 <script src="assets/auth.js"></script>
 <script src="assets/forum.js"></script>
 <script>
-  // Build per-row actions: a Notes link (when data-notes is set) and a
-  // YouTube revision slot. To add a revision video, set data-yt="<url>"
-  // on that algo-row; leave it empty to show the "add link" placeholder.
-  document.querySelectorAll('.algo-row').forEach(function (row) {
-    var status = row.querySelector('.algo-status');
-    var actions = document.createElement('div');
-    actions.className = 'algo-actions';
+  // Build per-row actions: a Notes link (when data-notes is set) and an
+  // editable YouTube revision slot.
+  //
+  // The revision link is click-to-edit: clicking "▶ Add revision link"
+  // (or the ✎ next to an existing one) prompts for a URL and saves it in
+  // this browser (localStorage) so it shows immediately. The published
+  // default lives in each row's data-yt attribute; a saved value overrides
+  // it, and clearing the prompt reverts to the data-yt default.
+  (function () {
+    var LS_PREFIX = 'algo-yt:';
 
-    var notes = (row.dataset.notes || '').trim();
-    if (notes) {
-      var n = document.createElement('a');
-      n.className = 'algo-link notes';
-      n.href = notes; n.target = '_blank'; n.rel = 'noopener';
-      n.textContent = '📄 Notes';
-      actions.appendChild(n);
+    function keyFor(row) {
+      var nameEl = row.querySelector('.algo-name');
+      return (nameEl ? nameEl.textContent : '').trim();
+    }
+    function readSaved(key) {
+      try { return (localStorage.getItem(LS_PREFIX + key) || '').trim(); }
+      catch (e) { return ''; }
+    }
+    function writeSaved(key, val) {
+      try {
+        if (val) localStorage.setItem(LS_PREFIX + key, val);
+        else localStorage.removeItem(LS_PREFIX + key);
+      } catch (e) { /* private mode / blocked storage — ignore */ }
     }
 
-    var yt = (row.dataset.yt || '').trim();
-    var y = document.createElement('a');
-    if (yt) {
-      y.className = 'algo-link yt';
-      y.href = yt; y.target = '_blank'; y.rel = 'noopener';
-      y.textContent = '▶ Revision';
-    } else {
-      y.className = 'algo-link yt empty';
-      y.href = '#';
-      y.title = 'Add a YouTube revision link via data-yt on this row';
-      y.textContent = '▶ Add revision link';
-      y.addEventListener('click', function (e) { e.preventDefault(); });
-    }
-    actions.appendChild(y);
+    document.querySelectorAll('.algo-row').forEach(function (row) {
+      var status = row.querySelector('.algo-status');
+      var key = keyFor(row);
+      var defaultYt = (row.dataset.yt || '').trim();
 
-    if (status) actions.appendChild(status);
-    row.appendChild(actions);
-  });
+      var actions = document.createElement('div');
+      actions.className = 'algo-actions';
+
+      var notes = (row.dataset.notes || '').trim();
+      if (notes) {
+        var n = document.createElement('a');
+        n.className = 'algo-link notes';
+        n.href = notes; n.target = '_blank'; n.rel = 'noopener';
+        n.textContent = '📄 Notes';
+        actions.appendChild(n);
+      }
+
+      var slot = document.createElement('span');
+      slot.className = 'algo-yt-slot';
+      actions.appendChild(slot);
+
+      function promptForUrl(current) {
+        var entered = window.prompt(
+          'Paste the YouTube revision link for "' + key + '"\n(leave blank to clear):',
+          current || ''
+        );
+        if (entered === null) return;            // cancelled
+        entered = entered.trim();
+        if (entered && !/^https?:\/\//i.test(entered)) {
+          entered = 'https://' + entered;        // tolerate a bare URL
+        }
+        writeSaved(key, entered);
+        render();
+      }
+
+      function render() {
+        slot.innerHTML = '';
+        var url = readSaved(key) || defaultYt;
+        if (url) {
+          var a = document.createElement('a');
+          a.className = 'algo-link yt';
+          a.href = url; a.target = '_blank'; a.rel = 'noopener';
+          a.textContent = '▶ Revision';
+          var edit = document.createElement('button');
+          edit.type = 'button';
+          edit.className = 'algo-link yt-edit';
+          edit.title = 'Edit revision link';
+          edit.textContent = '✎';
+          edit.addEventListener('click', function () { promptForUrl(readSaved(key) || defaultYt); });
+          slot.appendChild(a);
+          slot.appendChild(edit);
+        } else {
+          var add = document.createElement('button');
+          add.type = 'button';
+          add.className = 'algo-link yt empty';
+          add.title = 'Add a YouTube revision link';
+          add.textContent = '▶ Add revision link';
+          add.addEventListener('click', function () { promptForUrl(''); });
+          slot.appendChild(add);
+        }
+      }
+
+      render();
+
+      if (status) actions.appendChild(status);
+      row.appendChild(actions);
+    });
+  })();
 </script>
 </body>
 </html>
