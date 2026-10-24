@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Neural Networks I — Reference Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#6B4FA0;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#B49AE0;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap{max-width:860px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:680px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+  h2{font-size:1.4rem; font-weight:900; margin:48px 0 14px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px;}
+  h3{font-size:1.06rem; font-weight:800; margin:24px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:9px 12px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono);}
+  pre{background:var(--paper-2); border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.86rem; line-height:1.55;}
+  pre code{background:none; padding:0; font-size:1em;}
+  .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px;}
+  .pill{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:.82rem; font-weight:700; color:var(--ink);}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Reference Notes · Deep Learning</div>
+  <h1>Neural Networks I</h1>
+  <p class="abstract">The foundations of deep learning: why learned representations beat hand-crafted features at scale, what a single neuron computes, why an activation function is the one ingredient that makes a network more powerful than a linear model, and how neurons compose into layers. The groundwork for everything that follows — backpropagation, deep architectures, and ultimately transformers.</p>
+
+  <div class="related-links">
+    <a href="classwork-notes.html">📝 Classwork Notes (Day 31 session write-up)</a>
+    <a href="neural-networks-slides.html">🖥️ Slide Deck</a>
+    <a href="NeuralNetworks.pdf">📄 Handwritten Notes (PDF)</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">Rule-Based → ML → Deep Learning</a></li>
+      <li><a href="#s2">The Feature-Explosion Argument</a></li>
+      <li><a href="#s3">The Neuron, Formally</a></li>
+      <li><a href="#s4">Why a Linear Neuron Isn't Enough</a></li>
+      <li><a href="#s5">Activation Functions</a></li>
+      <li><a href="#s6">The Salary Neuron, Worked</a></li>
+      <li><a href="#s7">From Neuron to Network</a></li>
+      <li><a href="#s8">Universal Approximation</a></li>
+      <li><a href="#s9">How Weights Are Learned (Preview)</a></li>
+      <li><a href="#s10">ML vs. Deep Learning: When to Use Which</a></li>
+      <li><a href="#s11">Summary</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1"><span class="num">1.</span>Rule-Based → ML → Deep Learning</h2>
+  <p>Three generations of "intelligent" systems, each removing a layer of human effort:</p>
+  <table>
+    <thead><tr><th>Approach</th><th>Who defines the logic</th><th>Breaks down when…</th></tr></thead>
+    <tbody>
+      <tr><td><b>Rule-Based</b></td><td>A human hand-writes if/else rules.</td><td>Patterns become too numerous or subtle to enumerate — the <b>Rule Explosion</b> problem (spam detection needs thousands of brittle, conflicting rules).</td></tr>
+      <tr><td><b>Machine Learning</b></td><td>Human designs the <i>features</i>; the model learns the mapping from labelled examples.</td><td>The right features are themselves hard to design — e.g. raw pixels, audio, text.</td></tr>
+      <tr><td><b>Deep Learning</b></td><td>The model learns both the features (representations) <i>and</i> the mapping, through trained layers.</td><td>Data is small and already well-structured — classical ML is often better there (Section 10).</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s2"><span class="num">2.</span>The Feature-Explosion Argument</h2>
+  <p>Traditional ML <i>can</i> model non-linearity — through polynomial features, tree splits, or kernels. The cost is a combinatorial blow-up in the number of hand-constructed features. For a degree-2 polynomial expansion of <code>d</code> inputs:</p>
+  <div class="formula">
+    #features = 1 (bias) + d (linear) + d (squares) + C(d, 2) (pairwise cross-terms)
+    <span class="sub">d = 100 → 1 + 100 + 100 + 4,950 = 5,151. &nbsp; d = 1,000 → 1 + 1,000 + 1,000 + 499,500 = 501,501.</span>
+  </div>
+  <p>The number of pairwise interactions grows as roughly d²/2. For images (millions of pixels) or text (large vocabularies), this is hopeless. Deep learning sidesteps it by <b>learning</b> which non-linear combinations matter, through trainable layers, instead of pre-materialising all of them.</p>
+
+  <h2 id="s3"><span class="num">3.</span>The Neuron, Formally</h2>
+  <p>A neuron is the smallest computational unit of a network. Given inputs x₁…x_n, it computes a weighted sum (an affine transform) and then applies an activation:</p>
+  <div class="formula">
+    z = Σᵢ wᵢxᵢ + b = w₁x₁ + w₂x₂ + … + w_nx_n + b &nbsp;;&nbsp; a = f(z)
+    <span class="sub">wᵢ = weights (multiplicative learnable parameters), b = bias (additive learnable parameter), f = activation function. The pre-activation z is often called the "logit" or "weighted sum"; a is the neuron's output / activation.</span>
+  </div>
+  <p>The weights say how much each input matters; the bias shifts the threshold at which the neuron becomes active, letting it respond even when every input is zero.</p>
+
+  <h2 id="s4"><span class="num">4.</span>Why a Linear Neuron Isn't Enough</h2>
+  <p>Without an activation (or with a linear one), a neuron computes z = Wx + b — the equation of a line / plane, with the weights as slopes. The deeper problem: <b>a stack of purely linear layers collapses into a single linear layer.</b> If layer 2 computes W₂(W₁x + b₁) + b₂, that equals (W₂W₁)x + (W₂b₁ + b₂) — still just one affine map. No matter how many linear layers you stack, you can only ever represent a straight line.</p>
+  <div class="note warn"><b>On Polynomial Regression:</b> y = w₁x + w₂x² breaks linearity with respect to the <i>input</i> x, but is still linear with respect to the learned <i>parameters</i> w₁, w₂ (treat x² as a second feature). So it remains a <b>linear model</b>, fit by the same least-squares machinery. A neural network, by contrast, is non-linear in its parameters — which is exactly what the activation function buys.</div>
+
+  <h2 id="s5"><span class="num">5.</span>Activation Functions</h2>
+  <p>The activation function f is the sole source of non-linearity in a neural network. It is applied after each hidden layer's affine transform.</p>
+  <table>
+    <thead><tr><th>Activation</th><th>Formula</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><b>ReLU</b></td><td>max(0, z)</td><td>The default for hidden layers. Cheap, sparse, avoids vanishing gradients for z &gt; 0. Can "die" if stuck at z &lt; 0.</td></tr>
+      <tr><td><b>Sigmoid</b></td><td>1 / (1 + e⁻ᶻ)</td><td>Squashes to (0, 1). Used for binary output probabilities; saturates and vanishes gradients in deep hidden stacks.</td></tr>
+      <tr><td><b>Tanh</b></td><td>(eᶻ − e⁻ᶻ)/(eᶻ + e⁻ᶻ)</td><td>Squashes to (−1, 1); zero-centred, often preferred over sigmoid for hidden layers historically.</td></tr>
+      <tr><td><b>Softmax</b></td><td>e^{zⱼ} / Σₖ e^{zₖ}</td><td>Multiclass output layer — turns a vector of logits into a probability distribution (same function met in Logistic Regression, Class 26).</td></tr>
+    </tbody>
+  </table>
+  <p>ReLU — Rectified Linear Unit — is the workhorse: negative pre-activations are clamped to 0, positive ones pass through unchanged. That single bend is enough to build arbitrarily complex piecewise-linear functions when many are combined.</p>
+
+  <h2 id="s6"><span class="num">6.</span>The Salary Neuron, Worked</h2>
+  <p>Base model (linear neuron): Salary = 20,000 + 5,000·x, where x = years of experience. Bias b = 20,000 (a fresher's salary), weight w = 5,000 (per-year raise). It fits perfectly for x ≤ 3, but real salaries jump faster afterward. One ReLU term fixes it:</p>
+  <div class="formula">
+    Salary = 20,000 + 5,000·x + 10,000·ReLU(x − 3)
+    <span class="sub">The ReLU term contributes 0 while x ≤ 3, then adds 10,000·(x−3), bending the curve upward exactly where the data does.</span>
+  </div>
+  <table>
+    <thead><tr><th>x (experience)</th><th>Linear only</th><th>+ ReLU term</th><th>Actual</th></tr></thead>
+    <tbody>
+      <tr><td>0</td><td>₹20k</td><td>₹20k</td><td>₹20k</td></tr>
+      <tr><td>3</td><td>₹35k</td><td>₹35k</td><td>₹35k</td></tr>
+      <tr><td>4</td><td>₹40k</td><td>₹50k</td><td>₹50k</td></tr>
+      <tr><td>5</td><td>₹45k</td><td>₹65k</td><td>₹65k</td></tr>
+    </tbody>
+  </table>
+  <p>Vocabulary alignment: the affine part z = Wx + b is the same object as the familiar y = mx + c, with W ↔ m (multiplicative/slope) and b ↔ c (additive/intercept). The activation f(z) is the new, non-linear piece.</p>
+
+  <h2 id="s7"><span class="num">7.</span>From Neuron to Network</h2>
+  <p>A <b>hidden layer</b> is a collection of neurons that all read the same inputs in parallel; their outputs become the inputs to the next layer. The salary curve above can be reproduced by a 2-neuron hidden layer feeding a single output neuron:</p>
+  <pre><code>h1 = ReLU(5*x + 20)     # hidden neuron 1
+h2 = ReLU(1*x - 3)      # hidden neuron 2
+S  = 1*h1 + 10*h2 + 0   # output neuron (linear combination)
+
+# at x = 5:
+# h1 = ReLU(45) = 45,  h2 = ReLU(2) = 2
+# S  = 1*45 + 10*2 = 65   -> ₹65k   (matches the actual)</code></pre>
+  <p>The architecture is: <b>Input layer</b> (raw features) → one or more <b>Hidden layers</b> (each neuron = affine + activation) → <b>Output layer</b> (the prediction ŷ). Global behaviour emerges from the additive and multiplicative mixing of input features across many neurons.</p>
+
+  <h2 id="s8"><span class="num">8.</span>Universal Approximation</h2>
+  <p>The reason this matters: the <b>Universal Approximation Theorem</b> states that a feed-forward network with a single hidden layer containing enough neurons, and a non-linear activation, can approximate any continuous function on a bounded domain to arbitrary accuracy. Intuitively, each ReLU neuron contributes one "bend," and summing enough bends traces out any shape. The activation is non-negotiable — remove it and the whole network reduces to a single line (Section 4), approximating only linear functions.</p>
+
+  <h2 id="s9"><span class="num">9.</span>How Weights Are Learned (Preview)</h2>
+  <p>In the salary example the weights and biases were given. In practice they are <b>learned by optimization</b>: define a loss (e.g. squared error for regression, cross-entropy for classification), then adjust every weight and bias to reduce it. The algorithm that computes how to adjust each parameter is <b>backpropagation</b> — the chain rule applied layer by layer, feeding <b>gradient descent</b> (Class 18). That mechanism is the subject of the next session; the key idea here is only that the parameters are fit from data, not hand-set.</p>
+
+  <h2 id="s10"><span class="num">10.</span>ML vs. Deep Learning: When to Use Which</h2>
+  <table>
+    <thead><tr><th></th><th>Traditional ML (e.g. Random Forest)</th><th>Deep Learning</th></tr></thead>
+    <tbody>
+      <tr><td>Best data type</td><td>Structured / tabular (rows &amp; columns)</td><td>Unstructured: images, language, speech, high-dimensional raw signals</td></tr>
+      <tr><td>Feature engineering</td><td>Human-designed features</td><td>Learned representations</td></tr>
+      <tr><td>Data needed</td><td>Works with modest datasets</td><td>Typically needs large datasets</td></tr>
+      <tr><td>Interpretability</td><td>Higher (feature importance, tree paths)</td><td>Lower (a "black box," though tooling exists)</td></tr>
+      <tr><td>Compute cost</td><td>Lower</td><td>Higher (often GPUs)</td></tr>
+    </tbody>
+  </table>
+  <div class="note">"Is deep learning always better?" — No. On structured tabular problems, Random Forest / gradient-boosted trees frequently match or beat neural networks, train faster, and explain themselves more readily. Deep learning's advantage shows up precisely where feature design by hand is infeasible.</div>
+
+  <h2 id="s11"><span class="num">11.</span>Summary</h2>
+  <div class="summary-box">
+    <h3>The whole idea, in one paragraph</h3>
+    <p>Deep learning replaces hand-crafted features with representations learned through trained layers, which is the only tractable approach once inputs are high-dimensional and unstructured (the degree-2 feature count on 1,000 inputs is already 501,501). Its atom is the neuron: an affine transform z = Wx + b followed by a non-linear activation f. The activation is essential — without it, any stack of layers collapses to a single line. ReLU, max(0, z), is the standard choice; one ReLU term was enough to bend a linear salary model to fit real data, and a few neurons in a hidden layer reproduce the same curve. In real networks the weights and biases are learned by backpropagation and gradient descent — the next session's topic.</p>
+  </div>
+  <div class="pill-row">
+    <span class="pill">Neuron</span>
+    <span class="pill">Weighted Sum (Affine)</span>
+    <span class="pill">Bias</span>
+    <span class="pill">Activation Function</span>
+    <span class="pill">ReLU</span>
+    <span class="pill">Hidden Layer</span>
+    <span class="pill">Universal Approximation</span>
+    <span class="pill">Backpropagation</span>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Classwork Notes · Neural Networks I</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#6B4FA0;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#B49AE0;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    -webkit-font-smoothing:antialiased; line-height:1.6;
+  }
+  .wrap{max-width:840px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 80px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.7rem,4vw,2.4rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 6px;}
+  .subtitle{color:var(--ink-soft); font-size:1rem; margin-bottom:8px;}
+  .pdf-link{
+    display:inline-flex; align-items:center; gap:8px; margin:14px 0 34px; font-size:.9rem; font-weight:700;
+    color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px;
+    padding:9px 18px; text-decoration:none;
+  }
+  .pdf-link:hover{border-color:var(--accent); color:var(--accent);}
+  h2{font-size:1.35rem; font-weight:900; margin:44px 0 14px; padding-top:16px; border-top:1px solid var(--line);}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h3{font-size:1.05rem; font-weight:800; margin:22px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{
+    background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent);
+    border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink);
+    font-size:1.02rem;
+  }
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:8px 10px; text-align:center; border:1px solid var(--line);}
+  th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  tr.hl td{background:color-mix(in srgb, var(--accent) 10%, transparent); font-weight:800;}
+  tr.wrong td{background:color-mix(in srgb, #C23B3B 12%, transparent);}
+  .note{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px;
+    font-size:.9rem; color:var(--ink-soft); margin:14px 0;
+  }
+  .note b{color:var(--ink);}
+  .agenda{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 20px;}
+  .agenda span{
+    background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:8px 16px;
+    font-size:.86rem; font-weight:700; color:var(--ink);
+  }
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.92em;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Day 31 · Classwork Notes</div>
+  <h1>Neural Networks I: From Traditional ML to Deep Learning</h1>
+  <p class="subtitle">The transition session. Everything so far learned from human-engineered features; today we meet the idea that learns its own — the neuron — and build a tiny network by hand, salary by salary, that bends where a straight line can't. This is the road to ChatGPT and GenAI, started at the smallest possible unit.</p>
+  <a class="pdf-link" href="NeuralNetworks.pdf" target="_blank">📄 Open the original handwritten notes (PDF)</a>
+
+  <h2>Agenda</h2>
+  <div class="agenda">
+    <span>Rule-based vs. ML vs. Deep Learning</span>
+    <span>Why Deep Learning?</span>
+    <span>The neuron &amp; weighted sum</span>
+    <span>Activation functions &amp; ReLU</span>
+    <span>Neuron → hidden layer → network</span>
+    <span>Interview questions</span>
+  </div>
+
+  <h2>The Big Picture: Traditional ML → Deep Learning → ChatGPT</h2>
+  <p>A model is a <b>mathematical mapping</b> from X (input) to y (output) — it tries to remember / memorise patterns in new data, and learn useful <b>representations</b>. The field progresses in three stages:</p>
+  <table>
+    <thead><tr><th>Approach</th><th>How it works</th><th>Example</th></tr></thead>
+    <tbody>
+      <tr><td><b>Rule-Based Systems</b></td><td>A human writes predefined rules (if/else) that produce the output</td><td>If colour red &amp; shape roundish → Apple, else → Banana</td></tr>
+      <tr><td><b>Machine Learning</b></td><td>Give it examples; it learns the patterns → a learned model</td><td>Spam detection from labelled emails</td></tr>
+      <tr class="hl"><td><b>Deep Learning</b></td><td>The model learns useful features itself, through trained layers</td><td>Language, images, speech</td></tr>
+    </tbody>
+  </table>
+  <p>Three foundations under all of this: (1) <b>Python</b> — the tool/language we code these algorithms with; (2) <b>Statistics &amp; Probability</b> — the mathematical foundation; (3) <b>Artificial Intelligence</b> — the umbrella.</p>
+
+  <h2>Why Rules Don't Scale: The Rule Explosion Problem</h2>
+  <p>Consider spam detection with hand-written rules: flag "FREE", flag "Congrats! You've won a free iPhone", flag "AIRTEL". But "Inceptez — join free session tomorrow" is <b>NOT</b> spam. How many rules should you write — 10? 100? 10,000?</p>
+  <div class="note"><b>Rule Explosion Problem:</b> the possibility of patterns becomes hard to describe, and the number of rules grows without bound. The ML fix: stop writing rules, show the system <b>examples</b>, and let it learn the patterns into a learned model.</div>
+
+  <h2>Why Do We Need Deep Learning?</h2>
+  <p>Traditional ML <i>can</i> learn non-linear patterns — via Polynomial features, Decision Trees, Random Forests, and SVM kernels. The problem is the <b>feature explosion</b> when you force non-linearity in by hand:</p>
+  <div class="formula">
+    Degree-2 polynomial features on 1000 inputs = 1 + 1000 + 1000 + C(1000, 2) = 501,501 features
+    <span class="sub">Bias (1) + linear terms (1000) + squared terms (1000) + cross-terms C(1000,2)=499,500. The hand-crafted feature space blows up to half a million columns. (For 100 inputs it's already 5,151.)</span>
+  </div>
+  <p>Deep Learning's answer: <b>introduce and learn useful non-linear representations through trained layers</b>, rather than manually specifying every pattern of features.</p>
+
+  <h3>When I have Random Forest (which also does feature importance), why Deep Learning?</h3>
+  <ul>
+    <li><b>RF shines on structured data</b> — rows and columns in tables. Often the right first choice there.</li>
+    <li><b>When data has bigger complexity</b> — language, images, speech, millions of pixels/words — RF struggles: RF with millions of raw features is slow, and because each tree doesn't look at previous trees, genuinely complex patterns can be hard to capture.</li>
+  </ul>
+
+  <h2>The Neuron: The Smallest Unit</h2>
+  <p>A neural network is built from <b>neurons</b>. A neuron takes input features, computes one <b>weighted sum</b> plus a bias, and passes on the result:</p>
+  <div class="formula">
+    z = w₁x₁ + w₂x₂ + w₃x₃ + b
+    <span class="sub">Weights (w₁, w₂, w₃) = how much each input matters (multiplicative learnable parameters). Inputs (x₁, x₂, x₃) = feature columns. Bias (b) = an adjustable threshold / shift (additive learnable parameter).</span>
+  </div>
+
+  <h2>A Friendly Neuron: Predicting Salary</h2>
+  <p>Model: <b>Salary = 20,000 + 5,000 × experience</b>. A fresher (experience = 0) earns the base ₹20,000 — that's the bias b. Each year adds ₹5,000 — that's the weight w. For 0–3 years, the straight line fits perfectly:</p>
+  <table>
+    <thead><tr><th>Experience</th><th>Linear model (20k + 5k·x)</th><th>Actual</th></tr></thead>
+    <tbody>
+      <tr><td>0</td><td>₹20k</td><td>₹20k</td></tr>
+      <tr><td>1</td><td>₹25k</td><td>₹25k</td></tr>
+      <tr><td>2</td><td>₹30k</td><td>₹30k</td></tr>
+      <tr><td>3</td><td>₹35k</td><td>₹35k</td></tr>
+      <tr class="wrong"><td>4</td><td>₹40k</td><td>₹50k</td></tr>
+      <tr class="wrong"><td>5</td><td>₹45k</td><td>₹65k</td></tr>
+    </tbody>
+  </table>
+  <p><b>The one disadvantage: this system is linear.</b> z = w₁x₁ + w₂x₂ + b is just the equation of a straight line (w₁, w₂ are slopes). It can never bend to catch the jump at 4+ years.</p>
+  <div class="note"><b>Aside — is Polynomial Regression linear?</b> It breaks linearity w.r.t. the <i>input</i>, but stays linear w.r.t. the <i>learned parameters</i>: y = w₁x + w₂x² is linear in w₁, w₂ (treat x² as just another feature z₂). So it is <b>still a linear model</b>. A neural network is a genuinely non-linear model.</div>
+
+  <h2>The Missing Ingredient: Activation Functions</h2>
+  <p>To bend the line, a neuron applies a non-linear <b>activation function</b> f to its weighted sum: ŷ = f(z). This is the single thing that introduces non-linearity into a neural network.</p>
+  <div class="formula">
+    ReLU (Rectified Linear Unit): a = ReLU(z) = max(0, z)
+    <span class="sub">The most common activation. Negative inputs → 0; positive inputs pass through unchanged.</span>
+  </div>
+
+  <h3>ReLU by hand (z = x − 3)</h3>
+  <table>
+    <thead><tr><th>Experience x</th><th>Weighted sum z = x − 3</th><th>ReLU output = max(0, z)</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>−2</td><td>0</td></tr>
+      <tr><td>2</td><td>−1</td><td>0</td></tr>
+      <tr><td>3</td><td>0</td><td>0</td></tr>
+      <tr class="hl"><td>4</td><td>1</td><td>1</td></tr>
+      <tr class="hl"><td>5</td><td>2</td><td>2</td></tr>
+    </tbody>
+  </table>
+  <p>ReLU stays silent (0) until x crosses 3, then switches on — that "switch-on" is the kink a straight line could never make.</p>
+
+  <h3>The full salary neuron</h3>
+  <div class="formula">
+    Salary = 20,000 + 5,000·x + 10,000·ReLU(x − 3)
+    <span class="sub">The single ReLU term adds nothing for x ≤ 3, then bends the curve upward, catching the ₹50k and ₹65k jumps.</span>
+  </div>
+  <table>
+    <thead><tr><th>Experience</th><th>Linear only</th><th>With ReLU term</th><th>Actual</th></tr></thead>
+    <tbody>
+      <tr><td>3</td><td>₹35k</td><td>₹35k</td><td>₹35k</td></tr>
+      <tr class="hl"><td>4</td><td>₹40k</td><td>₹40k + 10k·ReLU(1) = ₹50k</td><td>₹50k ✓</td></tr>
+      <tr class="hl"><td>5</td><td>₹45k</td><td>₹45k + 10k·ReLU(2) = ₹65k</td><td>₹65k ✓</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Affine, Then Non-Linear: The Vocabulary</h2>
+  <table>
+    <thead><tr><th>Old notation</th><th>Neuron notation</th><th>Role</th></tr></thead>
+    <tbody>
+      <tr><td>y = mx + c (affine)</td><td>z = Wx + b</td><td>The linear / affine part</td></tr>
+      <tr><td>m (slope)</td><td>W (weight)</td><td>Multiplicative learnable parameter</td></tr>
+      <tr><td>c (intercept)</td><td>b (bias)</td><td>Additive learnable parameter</td></tr>
+      <tr class="hl"><td>— (none)</td><td>ŷ = f(z)</td><td>Activation — adds the non-linearity</td></tr>
+    </tbody>
+  </table>
+  <p>A single neuron = an affine transform (Wx + b) followed by a non-linear activation f. Stack many of these and you get a neural network.</p>
+
+  <h2>From Neuron to Network: The Hidden Layer</h2>
+  <p>A <b>hidden layer</b> is a collection of neurons. The same salary curve, built as a 2-neuron hidden layer feeding one output neuron, at experience = 5:</p>
+  <table>
+    <thead><tr><th>Unit</th><th>Computation</th><th>Output</th></tr></thead>
+    <tbody>
+      <tr><td>Hidden neuron h₁</td><td>ReLU(5·5 + 20)</td><td>45</td></tr>
+      <tr><td>Hidden neuron h₂</td><td>ReLU(1·5 − 3)</td><td>2</td></tr>
+      <tr class="hl"><td>Output neuron S</td><td>1·h₁ + 10·h₂ + 0 = 45 + 20</td><td>₹65k ✓</td></tr>
+    </tbody>
+  </table>
+  <p>Same ₹65k answer — now produced by a mini-network. Global behaviour emerges from additive &amp; multiplicative mixing of input features across neurons.</p>
+  <div class="note"><b>How are the weights set?</b> In this example they were handed to us. In a real network, all weights and biases are <b>learnt via optimization</b> — the algorithm is <b>backpropagation</b> (next session). Architecture: <b>Input layer</b> (features) → <b>Hidden layer(s)</b> (neurons, each affine + activation) → <b>Output layer</b> (ŷ).</div>
+
+  <h2>The Seven Terms</h2>
+  <ol>
+    <li><b>Neuron</b> — smallest unit; one weighted sum + bias.</li>
+    <li><b>Weights</b> — multiplicative learnable parameters.</li>
+    <li><b>Bias</b> — additive learnable parameter / threshold shift.</li>
+    <li><b>Activation Function</b> — the non-linearity added after each hidden layer (e.g. ReLU).</li>
+    <li><b>Affine</b> — the Wx + b part (= mx + c).</li>
+    <li><b>Neural Network</b> — many neurons wired across layers.</li>
+    <li><b>Hidden Layer</b> — a collection of neurons between input and output.</li>
+  </ol>
+
+  <h2>Interview Questions</h2>
+  <ol>
+    <li><b>What is the difference between ML &amp; DL? Are DL systems always better?</b> No. DL wins on raw complexity (images, language, speech). On structured tabular data, traditional ML (e.g. Random Forest) is often better, faster, and more interpretable.</li>
+    <li><b>Is Polynomial Regression linear?</b> Yes — non-linear w.r.t. the input, but linear w.r.t. the learned parameters, so it's still a linear <i>model</i>. (Difference between Polynomial and a Neural Network: the NN is a genuinely non-linear model.)</li>
+    <li><b>What introduces non-linearity in a neural network?</b> The <b>activation function</b> — the non-linearity added after each hidden layer.</li>
+  </ol>
+
+  <div class="note">Want the formal treatment — the universal approximation idea, a full catalogue of activation functions (ReLU / sigmoid / tanh / softmax), why stacked linear layers collapse, and a preview of backpropagation &amp; gradient descent for networks? See <a href="neural-networks-textbook-notes.html">Neural Networks I — Reference Notes</a>.</div>
+</div>
+</body>
+</html>

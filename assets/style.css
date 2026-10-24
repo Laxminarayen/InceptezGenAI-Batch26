@@ -13,6 +13,8 @@
   --stats-soft: rgba(242, 178, 99, 0.14);
   --ml: #e58bd0;
   --ml-soft: rgba(229, 139, 208, 0.14);
+  --deeplearning: #7cc5ff;
+  --deeplearning-soft: rgba(124, 197, 255, 0.14);
   --radius: 14px;
   --shadow: 0 8px 24px rgba(0, 0, 0, 0.28);
   --topbar-h: 64px;
@@ -274,6 +276,7 @@ a { color: inherit; }
 .nav-group[data-group="python"] .dot { background: var(--python); }
 .nav-group[data-group="stats"] .dot { background: var(--stats); }
 .nav-group[data-group="ml"] .dot { background: var(--ml); }
+.nav-group[data-group="deeplearning"] .dot { background: var(--deeplearning); }
 .nav-group[data-group="projects"] .dot { background: var(--projects); }
 
 .nav-link {
@@ -371,6 +374,7 @@ a { color: inherit; }
 .group-section[data-group="python"] .group-heading h2 { color: var(--python); }
 .group-section[data-group="stats"] .group-heading h2 { color: var(--stats); }
 .group-section[data-group="ml"] .group-heading h2 { color: var(--ml); }
+.group-section[data-group="deeplearning"] .group-heading h2 { color: var(--deeplearning); }
 
 .card-grid {
   display: grid;
@@ -427,6 +431,7 @@ a { color: inherit; }
 .group-section[data-group="python"] .date-badge { background: var(--python-soft); color: var(--python); }
 .group-section[data-group="stats"] .date-badge { background: var(--stats-soft); color: var(--stats); }
 .group-section[data-group="ml"] .date-badge { background: var(--ml-soft); color: var(--ml); }
+.group-section[data-group="deeplearning"] .date-badge { background: var(--deeplearning-soft); color: var(--deeplearning); }
 
 .card-primary {
   display: flex;

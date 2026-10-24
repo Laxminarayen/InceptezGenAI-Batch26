@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Neural Networks I · From Traditional ML to Deep Learning</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+
+    --c-why:#3B6E63; --c-concept:#B0670C; --c-mech:#1E6FA8; --c-eval:#6B4FA0;
+
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+
+    --accent: var(--c-why);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+      --c-why:#79C0AE; --c-concept:#E3A238; --c-mech:#5FA8E0; --c-eval:#B49AE0;
+      --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+      --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+    --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+    --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+    --c-why:#79C0AE; --c-concept:#E3A238; --c-mech:#5FA8E0; --c-eval:#B49AE0;
+    --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+    --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+  }
+  :root[data-theme="light"]{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+    --c-why:#3B6E63; --c-concept:#B0670C; --c-mech:#1E6FA8; --c-eval:#6B4FA0;
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; font-family:var(--font); background:var(--paper); color:var(--ink);
+    overflow:hidden; -webkit-font-smoothing:antialiased;
+  }
+  body[data-section="why"]{--accent:var(--c-why);}
+  body[data-section="concept"]{--accent:var(--c-concept);}
+  body[data-section="mech"]{--accent:var(--c-mech);}
+  body[data-section="eval"]{--accent:var(--c-eval);}
+
+  h1,h2,h3,p{margin:0;}
+  h1,h2,h3{text-wrap:balance; letter-spacing:-0.01em;}
+  ::selection{background:var(--accent); color:#fff;}
+
+  .eyebrow{font-size:.74rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  .slide h1{font-size:clamp(1.7rem,3.2vw,2.9rem); font-weight:800; color:var(--ink);}
+  .slide h2{font-size:clamp(1.2rem,1.8vw,1.6rem); font-weight:800; color:var(--ink);}
+  .body-text{font-size:clamp(1rem,1.25vw,1.2rem); font-weight:500; line-height:1.6; color:var(--ink-soft);}
+  .body-text b, .body-text strong{color:var(--ink); font-weight:800;}
+  .tabular{font-variant-numeric:tabular-nums;}
+
+  .chrome-top{position:fixed; top:0; left:0; right:0; height:52px; z-index:50; display:flex; align-items:center; justify-content:space-between; padding:0 20px; pointer-events:none;}
+  .chrome-top > *{pointer-events:auto;}
+  .hour-badge{font-size:.72rem; font-weight:800; letter-spacing:.12em; color:var(--ink-faint); background:var(--paper-2); border:1px solid var(--line); padding:6px 12px; border-radius:999px;}
+  .chapter-chip{display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:700; color:var(--ink-soft); background:var(--paper-2); border:1px solid var(--line); padding:6px 14px 6px 8px; border-radius:999px;}
+  .chapter-chip .num{display:inline-flex; align-items:center; justify-content:center; width:20px;height:20px; border-radius:50%; background:var(--accent); color:#fff; font-size:.68rem; font-weight:800;}
+  .icon-btn{width:36px;height:36px; border-radius:50%; border:1px solid var(--line); background:var(--paper-2); color:var(--ink); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;}
+  .icon-btn:hover{background:var(--paper-3);}
+  .icon-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  .deck{position:absolute; inset:0; top:52px; bottom:64px;}
+  .slide{position:absolute; inset:0; display:none; flex-direction:column; padding:clamp(18px,3vw,40px) clamp(24px,5vw,80px); overflow:auto;}
+  .slide.active{display:flex;}
+  .slide-inner{display:flex; flex-direction:column; gap:clamp(12px,1.8vh,20px); max-width:1360px; width:100%; margin:0 auto; flex:1; min-height:0;}
+
+  .chrome-bottom{position:fixed; left:0; right:0; bottom:0; height:64px; z-index:50; display:flex; align-items:center; gap:14px; padding:0 clamp(14px,3vw,32px); background:linear-gradient(0deg, var(--paper) 60%, transparent);}
+  .nav-btn{width:40px;height:40px;border-radius:50%; border:1px solid var(--line); background:var(--paper-2); color:var(--ink); font-size:1.2rem; cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center;}
+  .nav-btn:hover:not(:disabled){background:var(--accent); color:#fff; border-color:transparent;}
+  .nav-btn:disabled{opacity:.35; cursor:default;}
+  .progress{flex:1; display:flex; align-items:center; gap:5px; overflow-x:auto; scrollbar-width:none;}
+  .progress::-webkit-scrollbar{display:none;}
+  .dot{width:9px;height:9px;border-radius:50%; background:var(--paper-3); border:none; cursor:pointer; flex:none; transition:transform .15s ease;}
+  .dot.gap{width:14px; height:2px; border-radius:1px; background:transparent; cursor:default;}
+  .dot.active{transform:scale(1.5);}
+  .slide-counter{font-size:.8rem; font-weight:700; color:var(--ink-faint); flex:none; white-space:nowrap;}
+
+  .split{display:grid; grid-template-columns:1.05fr 1.35fr; gap:clamp(20px,4vw,52px); align-items:center; flex:1; min-height:0;}
+  @media (max-width:920px){ .split{grid-template-columns:1fr; overflow:auto;} }
+  .split.reverse{grid-template-columns:1.35fr 1.05fr;}
+  .split.even{grid-template-columns:1fr 1fr;}
+  .stack{display:flex; flex-direction:column; gap:12px; min-height:0;}
+  .center-col{display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:16px; flex:1;}
+  .visual-box{background:var(--surface-canvas); border:1px solid var(--line); border-radius:24px; padding:14px; box-shadow:var(--shadow); min-height:0; display:flex; flex-direction:column; gap:8px;}
+
+  .vocab-card{border-left:5px solid var(--accent); background:var(--paper-2); border-radius:14px; padding:12px 18px; display:flex; flex-direction:column; gap:4px;}
+  .vocab-term{font-size:1rem; font-weight:900; letter-spacing:.04em; color:var(--accent);}
+  .vocab-def{font-size:1rem; color:var(--ink); font-weight:600; line-height:1.4;}
+
+  .console{display:flex; flex-wrap:wrap; gap:14px 26px; align-items:center; background:var(--paper-2); border:1px solid var(--line); border-radius:20px; padding:16px 20px;}
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field label{font-size:.76rem; font-weight:800; color:var(--ink-soft); letter-spacing:.03em;}
+  .field .val{color:var(--accent); font-weight:900;}
+  input[type="range"]{width:220px; accent-color:var(--accent);}
+
+  .btn{font:inherit; font-size:.92rem; font-weight:800; border:1px solid var(--line); border-radius:999px; padding:11px 20px; cursor:pointer; background:var(--paper-3); color:var(--ink); transition:transform .12s ease, box-shadow .12s ease; white-space:nowrap;}
+  .btn:hover{transform:translateY(-1px);}
+  .btn-primary{background:var(--accent); color:#fff; border-color:transparent; box-shadow:0 8px 18px -8px var(--accent);}
+
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:10px;}
+  .stat-tile{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:12px 14px;}
+  .stat-tile .label{font-size:.7rem; font-weight:800; color:var(--ink-faint); letter-spacing:.05em; text-transform:uppercase;}
+  .stat-tile .value{font-size:1.35rem; font-weight:900; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .stat-tile.accent .value{color:var(--accent);}
+
+  .card{background:var(--paper-2); border:1px solid var(--line); border-radius:18px; padding:18px 20px;}
+  .card-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(210px,1fr)); gap:14px;}
+  .card .ico{font-size:1.8rem;}
+  .card h3{font-size:1.02rem; margin-top:8px;}
+  .card p{font-size:.92rem; color:var(--ink-soft); margin-top:4px; line-height:1.45;}
+
+  .banner{border-radius:14px; padding:12px 16px; font-weight:800; font-size:.92rem; display:flex; align-items:center; gap:10px;}
+  .banner.warn{background:color-mix(in srgb, var(--warn) 18%, var(--paper-2)); color:var(--warn);}
+  .banner.good{background:color-mix(in srgb, var(--good) 18%, var(--paper-2)); color:var(--good);}
+  .banner.bad{background:color-mix(in srgb, var(--bad) 18%, var(--paper-2)); color:var(--bad);}
+  .banner.info{background:var(--paper-3); color:var(--ink); font-weight:600; align-items:flex-start;}
+
+  .roadmap{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  .roadmap .stop{background:var(--paper-2); border-radius:18px; padding:16px 10px; text-align:center; border-top:5px solid var(--stop-color, var(--accent));}
+  .roadmap .stop .ico{font-size:2rem;}
+  .roadmap .stop .t{font-size:.8rem; font-weight:800; margin-top:6px;}
+  @media (max-width:920px){ .roadmap{grid-template-columns:repeat(2,1fr);} }
+
+  .kicker-big{font-size:clamp(2.2rem,5.6vw,3.9rem); font-weight:900; letter-spacing:-0.02em;}
+  .glow{color:var(--accent);}
+
+  .rule-list{display:flex; flex-direction:column; gap:12px;}
+  .rule{display:flex; gap:14px; align-items:flex-start; border-radius:14px; padding:6px 8px; margin:-6px -8px;}
+  .rule .n{width:34px;height:34px;border-radius:50%; background:var(--accent); color:#fff; font-weight:900; display:flex; align-items:center; justify-content:center; flex:none;}
+  .rule .t h3{font-size:1rem;}
+  .rule .t p{font-size:.92rem; color:var(--ink-soft); margin-top:2px;}
+
+  .table-wrap{border:1px solid var(--line); border-radius:14px; overflow:hidden; overflow-x:auto;}
+  .data-table{width:100%; border-collapse:collapse; font-size:.86rem;}
+  .data-table th,.data-table td{padding:8px 10px; text-align:center; font-variant-numeric:tabular-nums;}
+  .data-table thead th{background:var(--paper-3); color:var(--ink-soft); font-weight:800; font-size:.72rem; letter-spacing:.03em; text-transform:uppercase;}
+  .data-table tbody tr{border-top:1px solid var(--line);}
+  .data-table tbody tr.hl-row{background:color-mix(in srgb, var(--accent) 12%, transparent); font-weight:800;}
+  .data-table tbody tr.wrong-row{background:color-mix(in srgb, var(--bad) 14%, transparent);}
+
+  .footnote{font-size:.82rem; color:var(--ink-faint); font-weight:600;}
+
+  /* ReLU salary demo */
+  .relu-chart{width:100%; aspect-ratio:3/2; background:var(--surface-canvas); border-radius:14px;}
+
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+</style>
+</head>
+<body data-section="why">
+  <div class="chrome-top">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="hour-badge" id="hourBadge">NEURAL NETWORKS · I</div>
+      <div class="chapter-chip" id="chapterChip" style="display:none;">
+        <span class="num" id="chapterNum">1</span>
+        <span id="chapterLabel">—</span>
+      </div>
+    </div>
+    <button class="icon-btn" id="themeToggle" title="Toggle light / dark">🌗</button>
+  </div>
+
+  <main class="deck" id="deck">
+
+    <!-- ============ S0 — TITLE / ROADMAP ============ -->
+    <section class="slide" data-section="why" id="s0">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Deep Learning · Neural Networks, Part 1</div>
+        <h1 class="kicker-big">Traditional ML → <span class="glow">Deep Learning</span> → ChatGPT</h1>
+        <p class="body-text" style="max-width:780px;">Every model so far learned predictive relationships from features that <b>humans designed and selected</b>. Today the model starts learning its own features — and the whole road to ChatGPT and GenAI runs straight through the idea we build from scratch now: a single neuron.</p>
+        <div class="roadmap" style="width:100%; margin-top:6px;">
+          <div class="stop" style="--stop-color:var(--c-why);"><div class="ico">🧩</div><div class="t">1 · Why Deep Learning?</div></div>
+          <div class="stop" style="--stop-color:var(--c-concept);"><div class="ico">⚡</div><div class="t">2 · The Neuron</div></div>
+          <div class="stop" style="--stop-color:var(--c-mech);"><div class="ico">📈</div><div class="t">3 · Non-Linearity &amp; ReLU</div></div>
+          <div class="stop" style="--stop-color:var(--c-eval);"><div class="ico">🕸️</div><div class="t">4 · Neuron → Network</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 1 — WHY DEEP LEARNING                                      -->
+    <!-- ================================================================= -->
+
+    <section class="slide" data-section="why" id="sW1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Three Ways to Build an "Intelligent" System</div>
+        <h1>Rule-based → Machine Learning → <span class="glow">Deep Learning</span></h1>
+        <div class="card-grid">
+          <div class="card"><div class="ico">📜</div><h3>Rule-Based Systems</h3><p>A human writes the rules: <i>if colour is red and shape is roundish → Apple, else → Banana.</i> Predefined rules produce the output. Works — until the patterns get hard to describe.</p></div>
+          <div class="card"><div class="ico">🤖</div><h3>Machine Learning</h3><p>Instead of rules, give it <b>examples</b> and let it learn the patterns. Human-engineered features → a learned model (classification / regression).</p></div>
+          <div class="card" style="border-top:5px solid var(--accent);"><div class="ico">🧠</div><h3>Deep Learning</h3><p>The model learns <b>useful features itself</b>, through trained layers, instead of a human specifying every pattern.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="why" id="sW2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Why Rules Don't Scale · The Spam Example</div>
+          <h1>The <span class="glow">Rule Explosion</span> problem</h1>
+          <p class="body-text">To catch spam with hand-written rules: flag "FREE", flag "Congrats! You won a free iPhone", flag "AIRTEL"… but "Inceptez — join free session tomorrow" is <b>not</b> spam. How many rules should you write — 10? 100? 10,000?</p>
+        </div>
+        <div class="stack">
+          <div class="banner bad">🚩 Rule Explosion: the number of rules needed grows without bound, and they start contradicting each other.</div>
+          <div class="vocab-card">
+            <div class="vocab-term">The ML fix</div>
+            <div class="vocab-def">Don't write rules. Show the system labelled examples of spam / not-spam and let it <b>learn the patterns</b> — a learned model, not a predefined rulebook.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="why" id="sW3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">But Traditional ML Can Already Do Non-Linearity…</div>
+          <h1>So <span class="glow">why</span> do we need Deep Learning?</h1>
+          <p class="body-text">Yes — ML models <i>can</i> learn non-linear patterns, via Polynomial features, Decision Trees, Random Forests, SVM kernels. The problem is what happens to the <b>feature count</b> when you force non-linearity in by hand.</p>
+        </div>
+        <div class="stack">
+          <div class="banner warn">📐 Degree-2 polynomial features on 1000 inputs = 1 + 1000 + 1000 + C(1000,2) = <b>501,501</b> features. The hand-crafted feature space explodes.</div>
+          <div class="vocab-card">
+            <div class="vocab-term">Deep Learning's answer</div>
+            <div class="vocab-def">Introduce &amp; learn useful non-linear representations <b>through trained layers</b>, rather than manually specifying every pattern of features.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="why" id="sW4">
+      <div class="slide-inner stack">
+        <div class="eyebrow">When I Have Random Forest (Which Also Finds Features)… Why DL?</div>
+        <h1>Structured tables → RF. <span class="glow">Images, language, speech</span> → Deep Learning.</h1>
+        <div class="card-grid">
+          <div class="card"><div class="ico">🗂️</div><h3>Random Forest shines on structured data</h3><p>When features are structured — rows and columns in a table — RF is excellent and often the right first choice.</p></div>
+          <div class="card"><div class="ico">🖼️</div><h3>DL shines on raw complexity</h3><p>When the data has bigger complexity — language, images, speech, millions of pixels or words — RF struggles. DL learns the representation itself.</p></div>
+        </div>
+        <div class="banner info">RF with millions of raw features → prohibitively slow, and because each tree doesn't look at previous trees, genuinely complex patterns can be hard to capture. Deep Learning was built for exactly this regime.</div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 2 — THE NEURON                                             -->
+    <!-- ================================================================= -->
+
+    <section class="slide" data-section="concept" id="sC1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">The Smallest Unit</div>
+        <h1>A neural network is built from <span class="glow">neurons</span></h1>
+        <div class="vocab-card">
+          <div class="vocab-term">Neuron</div>
+          <div class="vocab-def">The smallest unit of a neural network. It takes input features, computes one <b>weighted sum</b> plus a bias, and passes the result on. That's it — everything else is many of these, wired together.</div>
+        </div>
+        <div class="formula-row" style="margin-top:6px;">
+          <div class="banner info" style="font-size:1.05rem;">z = w₁x₁ + w₂x₂ + w₃x₃ + <b>b</b> &nbsp;— a weighted sum of inputs, plus an adjustable bias.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="concept" id="sC2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Anatomy of the Weighted Sum</div>
+          <h1>Weights, inputs, <span class="glow">and a bias</span></h1>
+          <p class="body-text">z = w₁x₁ + w₂x₂ + w₃x₃ + b</p>
+        </div>
+        <div class="card-grid" style="grid-column:1/-1;">
+          <div class="card"><div class="ico">⚖️</div><h3>Weights (w₁, w₂, w₃)</h3><p>How much each input feature matters — the <b>multiplicative</b> learnable parameters. These are learned from data.</p></div>
+          <div class="card"><div class="ico">📊</div><h3>Inputs (x₁, x₂, x₃)</h3><p>The input feature columns — e.g. years of experience, for a salary model.</p></div>
+          <div class="card"><div class="ico">➕</div><h3>Bias (b)</h3><p>An adjustable threshold / shift — the <b>additive</b> learnable parameter. Lets the neuron fire even when all inputs are zero.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="concept" id="sC3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">A Friendly Neuron · Predicting Salary</div>
+          <h1>Salary = <span class="glow">20,000 + 5,000 × experience</span></h1>
+          <p class="body-text">A fresher (experience = 0) earns the base ₹20,000 — that's the bias, b. Each extra year adds ₹5,000 — that's the weight, w. For 0–3 years, this straight line fits the real salaries perfectly.</p>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Experience</th><th>Linear model</th><th>Actual</th></tr></thead>
+            <tbody>
+              <tr><td>0</td><td>₹20k</td><td>₹20k</td></tr>
+              <tr><td>1</td><td>₹25k</td><td>₹25k</td></tr>
+              <tr><td>2</td><td>₹30k</td><td>₹30k</td></tr>
+              <tr><td>3</td><td>₹35k</td><td>₹35k</td></tr>
+              <tr class="wrong-row"><td>4</td><td>₹40k</td><td>₹50k</td></tr>
+              <tr class="wrong-row"><td>5</td><td>₹45k</td><td>₹65k</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="concept" id="sC4">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">The One Disadvantage</div>
+        <h1 class="kicker-big">This neuron is <span class="glow">linear</span></h1>
+        <p class="body-text" style="max-width:680px;">z = w₁x₁ + w₂x₂ + b is just the equation of a straight line (or plane) — w₁, w₂ are slopes. It can never bend to fit the jump at 4+ years. (Polynomial Regression breaks linearity w.r.t. the input, but stays linear w.r.t. the learned parameters — so y = w₁x + w₂x² is <i>still</i> a linear model.) To bend, a neuron needs one more ingredient.</p>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 3 — NON-LINEARITY & ReLU                                   -->
+    <!-- ================================================================= -->
+
+    <section class="slide" data-section="mech" id="sM1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">The Missing Ingredient</div>
+        <h1>The <span class="glow">Activation Function</span></h1>
+        <div class="vocab-card">
+          <div class="vocab-term">Activation Function</div>
+          <div class="vocab-def">A non-linear function f applied to the neuron's weighted sum z. ŷ = f(z). This is the single thing that introduces non-linearity into a neural network — the key idea that separates it from a plain linear model.</div>
+        </div>
+        <div class="vocab-card">
+          <div class="vocab-term">ReLU — Rectified Linear Unit</div>
+          <div class="vocab-def">The most common activation: ReLU(z) = max(0, z). Negative inputs become 0; positive inputs pass through unchanged. Dead simple, and enough to bend the line.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="mech" id="sM2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">ReLU, By Hand · a = ReLU(z) = max(0, z)</div>
+        <h1>Take z = <span class="glow">x − 3</span> and push it through ReLU</h1>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Experience x</th><th>Weighted sum z = x − 3</th><th>ReLU output = max(0, z)</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>−2</td><td>0</td></tr>
+              <tr><td>2</td><td>−1</td><td>0</td></tr>
+              <tr><td>3</td><td>0</td><td>0</td></tr>
+              <tr class="hl-row"><td>4</td><td>1</td><td>1</td></tr>
+              <tr class="hl-row"><td>5</td><td>2</td><td>2</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="banner good">✓ ReLU stays silent (0) until x crosses 3, then switches on. That "switch-on" is the kink a straight line could never make.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="mech" id="sM3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Try It · The Full Salary Neuron</div>
+          <h1>Salary = 20,000 + 5,000x + <span class="glow">10,000 · ReLU(x − 3)</span></h1>
+          <p class="body-text">Drag experience and watch the orange (non-linear) model bend away from the green (plain linear) one exactly at x = 3 — catching the ₹50k and ₹65k jumps the straight line missed. One ReLU term is all it took.</p>
+          <div class="console">
+            <div class="field"><label>Experience = <span class="val" id="expLabel">5</span> yrs</label><input type="range" id="expSlider" min="0" max="8" value="5" step="1"></div>
+          </div>
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">Linear only</div><div class="value tabular" id="linVal">₹45k</div></div>
+            <div class="stat-tile accent"><div class="label">With ReLU</div><div class="value tabular" id="nlVal">₹65k</div></div>
+          </div>
+        </div>
+        <div class="visual-box">
+          <canvas class="relu-chart" id="reluChart" width="600" height="400"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="mech" id="sM4">
+      <div class="slide-inner stack">
+        <div class="eyebrow">The Vocabulary, Lined Up</div>
+        <h1>Affine, then <span class="glow">non-linear</span></h1>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Old notation</th><th>Neuron notation</th><th>Role</th></tr></thead>
+            <tbody>
+              <tr><td>y = mx + c &nbsp;(affine)</td><td>z = Wx + b</td><td>The linear / affine part</td></tr>
+              <tr><td>m &nbsp;(slope)</td><td>W &nbsp;(weight)</td><td>Multiplicative learnable parameter</td></tr>
+              <tr><td>c &nbsp;(intercept)</td><td>b &nbsp;(bias)</td><td>Additive learnable parameter</td></tr>
+              <tr class="hl-row"><td>— &nbsp;(none)</td><td>ŷ = f(z)</td><td>Activation — adds the non-linearity</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="banner info">A single neuron = an affine transform (Wx + b) followed by a non-linear activation f. Stack many of these and you get a neural network.</div>
+      </div>
+    </section>
+
+    <!-- ================================================================= -->
+    <!-- SECTION 4 — NEURON TO NETWORK                                      -->
+    <!-- ================================================================= -->
+
+    <section class="slide" data-section="eval" id="sE1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">From One Neuron to a Hidden Layer</div>
+        <h1>A <span class="glow">Hidden Layer</span> = a collection of neurons</h1>
+        <p class="body-text">The same salary curve, built as a tiny 2-neuron hidden layer feeding an output neuron. Each hidden neuron is its own affine + ReLU; the output neuron mixes them.</p>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>At experience = 5</th><th>Computation</th><th>Output</th></tr></thead>
+            <tbody>
+              <tr><td>Hidden neuron h₁</td><td>ReLU(5·5 + 20)</td><td>45</td></tr>
+              <tr><td>Hidden neuron h₂</td><td>ReLU(1·5 − 3)</td><td>2</td></tr>
+              <tr class="hl-row"><td>Output neuron S</td><td>1·h₁ + 10·h₂ + 0 = 45 + 20</td><td>₹65k ✓</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="banner good">✓ Same ₹65k answer — now produced by a mini-network. Global behaviour emerges from additive &amp; multiplicative mixing of input features across neurons.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">How Do the Weights Get Set?</div>
+          <h1>Learned via <span class="glow">backpropagation</span></h1>
+          <p class="body-text">In our salary example the weights and biases were handed to us. In a real network, all of the weights and biases are <b>learnt via optimization</b> — the algorithm is called <b>backpropagation</b>. (The full mechanics are the next session.)</p>
+        </div>
+        <div class="vocab-card">
+          <div class="vocab-term">The architecture, named</div>
+          <div class="vocab-def"><b>Input layer</b> (features) → one or more <b>Hidden layers</b> (collections of neurons, each affine + activation) → <b>Output layer</b> (the prediction, ŷ).</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">The Seven Terms</div>
+        <h1>Everything in one <span class="glow">vocabulary list</span></h1>
+        <div class="card-grid">
+          <div class="card"><div class="ico">⚡</div><h3>1 · Neuron</h3><p>Smallest unit — one weighted sum + bias.</p></div>
+          <div class="card"><div class="ico">⚖️</div><h3>2 · Weights</h3><p>Multiplicative learnable parameters.</p></div>
+          <div class="card"><div class="ico">➕</div><h3>3 · Bias</h3><p>Additive learnable parameter / threshold shift.</p></div>
+          <div class="card"><div class="ico">📈</div><h3>4 · Activation Function</h3><p>The non-linearity added after each hidden layer (e.g. ReLU).</p></div>
+          <div class="card"><div class="ico">📐</div><h3>5 · Affine</h3><p>The Wx + b part — a linear/affine transform.</p></div>
+          <div class="card"><div class="ico">🕸️</div><h3>6 · Neural Network</h3><p>Many neurons wired across layers.</p></div>
+          <div class="card" style="border-top:5px solid var(--accent);"><div class="ico">🧱</div><h3>7 · Hidden Layer</h3><p>A collection of neurons between input and output.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE4">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Interview Questions</div>
+        <h1>Three you'll be <span class="glow">asked</span></h1>
+        <div class="card-grid">
+          <div class="card"><div class="ico">❓</div><h3>ML vs DL — is DL always better?</h3><p>No. DL wins on raw complexity (images, language, speech). On structured tabular data, traditional ML (e.g. Random Forest) is often better, faster, and more interpretable.</p></div>
+          <div class="card"><div class="ico">❓</div><h3>Is Polynomial Regression linear?</h3><p>Yes — it's non-linear w.r.t. the input, but linear w.r.t. the learned parameters, so it's still a linear <i>model</i>. A neural network is a genuinely non-linear model.</p></div>
+          <div class="card"><div class="ico">❓</div><h3>What introduces non-linearity in a NN?</h3><p>The <b>activation function</b> — the non-linearity added after each hidden layer. Without it, stacked layers collapse back into one linear transform.</p></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="chrome-bottom">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous slide">‹</button>
+    <div class="progress" id="progress"></div>
+    <div class="slide-counter"><span id="curNum" class="tabular">1</span> / <span id="totalNum" class="tabular">—</span></div>
+    <button class="nav-btn" id="nextBtn" aria-label="Next slide">›</button>
+  </nav>
+
+<script>
+"use strict";
+
+const $  = (sel, el=document) => el.querySelector(sel);
+const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+const clamp = (v,lo,hi) => Math.max(lo, Math.min(hi,v));
+
+const slideEls = $$('.slide');
+let cur = 0;
+
+const CHAPTERS = {
+  why:     { num:1, label:'Why Deep Learning?' },
+  concept: { num:2, label:'The Neuron' },
+  mech:    { num:3, label:'Non-Linearity &amp; ReLU' },
+  eval:    { num:4, label:'Neuron → Network' },
+};
+
+const onEnter = {};
+const onLeave = {};
+
+function buildDots(){
+  const wrap = $('#progress');
+  wrap.innerHTML = '';
+  let lastSection = null;
+  slideEls.forEach((s, i) => {
+    const sec = s.dataset.section;
+    if(lastSection !== null && sec !== lastSection){
+      const gap = document.createElement('span');
+      gap.className = 'dot gap';
+      wrap.appendChild(gap);
+    }
+    const b = document.createElement('button');
+    b.className = 'dot';
+    b.setAttribute('aria-label', 'Go to slide ' + (i+1));
+    b.addEventListener('click', () => goTo(i));
+    wrap.appendChild(b);
+    lastSection = sec;
+  });
+}
+
+function goTo(i){
+  i = clamp(i, 0, slideEls.length-1);
+  const leaveFn = onLeave[slideEls[cur].id];
+  if(leaveFn) leaveFn();
+  slideEls[cur].classList.remove('active');
+  cur = i;
+  const s = slideEls[cur];
+  s.classList.add('active');
+  document.body.dataset.section = s.dataset.section;
+
+  const chip = $('#chapterChip');
+  const meta = CHAPTERS[s.dataset.section];
+  if(meta){
+    chip.style.display = 'flex';
+    $('#chapterNum').textContent = meta.num;
+    $('#chapterLabel').innerHTML = meta.label;
+  } else {
+    chip.style.display = 'none';
+  }
+
+  $('#curNum').textContent = cur+1;
+  $('#prevBtn').disabled = cur === 0;
+  $('#nextBtn').disabled = cur === slideEls.length-1;
+
+  $$('.dot:not(.gap)', $('#progress')).forEach((d,idx)=> d.classList.toggle('active', idx===cur));
+
+  const fn = onEnter[s.id];
+  if(fn) requestAnimationFrame(fn);
+}
+
+function next(){ if(cur < slideEls.length-1) goTo(cur+1); }
+function prev(){ if(cur > 0) goTo(cur-1); }
+
+$('#nextBtn').addEventListener('click', next);
+$('#prevBtn').addEventListener('click', prev);
+window.addEventListener('keydown', e => {
+  if(e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next(); }
+  else if(e.key === 'ArrowLeft'){ e.preventDefault(); prev(); }
+});
+
+const themeBtn = $('#themeToggle');
+function applyStoredTheme(){
+  const t = localStorage.getItem('sv-theme-nn1');
+  if(t) document.documentElement.setAttribute('data-theme', t);
+}
+applyStoredTheme();
+themeBtn.addEventListener('click', () => {
+  const now = document.documentElement.getAttribute('data-theme');
+  const dark = now ? now === 'dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const nextTheme = dark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', nextTheme);
+  localStorage.setItem('sv-theme-nn1', nextTheme);
+});
+
+/* =========================== M3 — ReLU salary demo =========================== */
+const relu = z => Math.max(0, z);
+const linSalary = x => 20000 + 5000*x;                       // plain linear neuron
+const nlSalary  = x => 20000 + 5000*x + 10000*relu(x-3);     // + one ReLU term
+
+function cssVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+
+function drawChart(){
+  const cv = $('#reluChart');
+  if(!cv) return;
+  const ctx = cv.getContext('2d');
+  const W = cv.width, H = cv.height;
+  ctx.clearRect(0,0,W,H);
+
+  const padL = 56, padB = 36, padT = 18, padR = 16;
+  const x0 = padL, x1 = W - padR, y0 = H - padB, y1 = padT;
+  const xMax = 8, yMax = 90000;
+  const sx = x => x0 + (x/xMax)*(x1-x0);
+  const sy = v => y0 - (v/yMax)*(y0-y1);
+
+  const ink = cssVar('--ink-soft') || '#4E5670';
+  const faint = cssVar('--ink-faint') || '#7C7A63';
+  const good = cssVar('--good') || '#1C8C5A';
+  const accent = cssVar('--c-mech') || '#1E6FA8';
+
+  // axes
+  ctx.strokeStyle = faint; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(x0,y1); ctx.lineTo(x0,y0); ctx.lineTo(x1,y0); ctx.stroke();
+  ctx.fillStyle = faint; ctx.font = '12px -apple-system, Arial';
+  ctx.textAlign = 'center';
+  for(let x=0; x<=xMax; x+=2){ ctx.fillText(x, sx(x), y0+18); }
+  ctx.textAlign = 'right';
+  for(let v=0; v<=yMax; v+=30000){ ctx.fillText('₹'+(v/1000)+'k', x0-8, sy(v)+4); }
+
+  // linear line (green)
+  ctx.strokeStyle = good; ctx.lineWidth = 2.5;
+  ctx.beginPath();
+  for(let x=0; x<=xMax; x+=0.1){ const px=sx(x), py=sy(linSalary(x)); x===0?ctx.moveTo(px,py):ctx.lineTo(px,py); }
+  ctx.stroke();
+
+  // non-linear curve (accent) — has a kink at x=3
+  ctx.strokeStyle = accent; ctx.lineWidth = 3;
+  ctx.beginPath();
+  for(let x=0; x<=xMax; x+=0.1){ const px=sx(x), py=sy(nlSalary(x)); x===0?ctx.moveTo(px,py):ctx.lineTo(px,py); }
+  ctx.stroke();
+
+  // current experience marker
+  const xc = parseInt($('#expSlider').value, 10);
+  ctx.setLineDash([4,4]); ctx.strokeStyle = faint; ctx.lineWidth = 1;
+  ctx.beginPath(); ctx.moveTo(sx(xc), y0); ctx.lineTo(sx(xc), sy(nlSalary(xc))); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = accent;
+  ctx.beginPath(); ctx.arc(sx(xc), sy(nlSalary(xc)), 5, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = good;
+  ctx.beginPath(); ctx.arc(sx(xc), sy(linSalary(xc)), 4, 0, Math.PI*2); ctx.fill();
+}
+
+function renderRelu(){
+  const x = parseInt($('#expSlider').value, 10);
+  $('#expLabel').textContent = x;
+  $('#linVal').textContent = '₹' + (linSalary(x)/1000) + 'k';
+  $('#nlVal').textContent  = '₹' + (nlSalary(x)/1000)  + 'k';
+  drawChart();
+}
+onEnter['sM3'] = renderRelu;
+$('#expSlider').addEventListener('input', renderRelu);
+
+/* =========================== init =========================== */
+buildDots();
+$('#totalNum').textContent = slideEls.length;
+const deepLinkSlide = parseInt(new URLSearchParams(location.search).get('slide'), 10);
+goTo(Number.isFinite(deepLinkSlide) ? deepLinkSlide-1 : 0);
+</script>
+</body>
+</html>
