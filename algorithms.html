@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Algorithms List — Inceptez Batch 26 Class Forum</title>
+<meta name="description" content="The full map of Machine Learning and Deep Learning algorithms for Inceptez GenAI Batch 26, colour-coded by whether each is already taught, good to know, or not required in the current Data Science landscape." />
+<link rel="stylesheet" href="assets/style.css" />
+<style>
+  :root{
+    --st-taught:#3fbb7c; --st-taught-bg:rgba(63,187,124,.15);
+    --st-good:#f2b263;   --st-good-bg:rgba(242,178,99,.15);
+    --st-none:#e36868;   --st-none-bg:rgba(227,104,104,.13);
+  }
+  @media (prefers-color-scheme: light){
+    :root{
+      --st-taught:#1C8C5A; --st-taught-bg:rgba(28,140,90,.12);
+      --st-good:#B0670C;   --st-good-bg:rgba(176,103,12,.12);
+      --st-none:#C23B3B;   --st-none-bg:rgba(194,59,59,.10);
+    }
+  }
+
+  .algo-legend{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 8px;}
+  .legend-item{display:inline-flex; align-items:center; gap:8px; font-size:.84rem; font-weight:700;
+    background:var(--bg-elev); border:1px solid var(--border); border-radius:999px; padding:7px 14px; color:var(--text);}
+  .legend-dot{width:11px; height:11px; border-radius:50%; flex:none;}
+  .legend-dot.taught{background:var(--st-taught);}
+  .legend-dot.good{background:var(--st-good);}
+  .legend-dot.none{background:var(--st-none);}
+
+  .algo-block{margin-bottom:30px;}
+  .algo-block > h3{font-size:1.02rem; font-weight:800; margin:22px 0 10px; color:var(--text);
+    display:flex; align-items:center; gap:10px;}
+  .algo-block > h3 .tag{font-size:.7rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase;
+    color:var(--text-dim); background:var(--bg-elev); border:1px solid var(--border); border-radius:999px; padding:3px 10px;}
+  .subhead{font-size:.74rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--text-dim); margin:18px 0 8px;}
+
+  .algo-list{display:flex; flex-direction:column; gap:8px;}
+  .algo-row{display:flex; align-items:center; justify-content:space-between; gap:14px;
+    background:var(--bg-elev); border:1px solid var(--border); border-left:4px solid var(--row-color);
+    border-radius:12px; padding:12px 16px;}
+  .algo-row[data-status="taught"]{--row-color:var(--st-taught);}
+  .algo-row[data-status="good"]{--row-color:var(--st-good);}
+  .algo-row[data-status="none"]{--row-color:var(--st-none);}
+  .algo-main{display:flex; flex-direction:column; gap:3px; min-width:0;}
+  .algo-name{font-size:.98rem; font-weight:800; color:var(--text);}
+  .algo-name a{color:var(--accent); text-decoration:none;}
+  .algo-name a:hover{text-decoration:underline;}
+  .algo-desc{font-size:.85rem; color:var(--text-dim); line-height:1.45;}
+  .algo-status{font-size:.75rem; font-weight:800; letter-spacing:.02em; white-space:nowrap; flex:none;
+    padding:5px 12px; border-radius:999px; text-align:center;}
+  .algo-status.taught{color:var(--st-taught); background:var(--st-taught-bg);}
+  .algo-status.good{color:var(--st-good); background:var(--st-good-bg);}
+  .algo-status.none{color:var(--st-none); background:var(--st-none-bg);}
+  @media (max-width:560px){
+    .algo-row{flex-direction:column; align-items:flex-start; gap:8px;}
+  }
+
+  .algo-note{background:var(--bg-elev); border:1px solid var(--border); border-radius:12px;
+    padding:14px 18px; font-size:.9rem; color:var(--text-dim); line-height:1.55; margin:12px 0 4px;}
+  .algo-note b{color:var(--text);}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <a class="topbar-brand" href="index.html">
+    <span class="topbar-logo">🎓</span>
+    <span>
+      <span class="topbar-title">Inceptez Batch 26</span>
+      <span class="topbar-subtitle">Class Forum</span>
+    </span>
+  </a>
+  <nav class="topbar-nav">
+    <a class="topbar-link" href="index.html">🏠 Home</a>
+    <a class="topbar-link" href="questions.html">💬 Questions</a>
+    <a class="topbar-link" href="issues.html">🐛 Issues</a>
+    <a class="topbar-link" href="notes.html">📝 Notes</a>
+    <a class="topbar-link" href="articles.html">✍️ Articles</a>
+    <a class="topbar-link" href="tasks.html">📅 Daily Tasks</a>
+    <a class="topbar-link" href="projects.html">🏆 Projects</a>
+    <a class="topbar-link is-active" href="algorithms.html">🧮 Algorithms</a>
+    <a class="topbar-link topbar-github" href="https://github.com/Laxminarayen/InceptezGenAI-Batch26" target="_blank" rel="noopener">
+      <svg viewBox="0 0 16 16" width="15" height="15" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path></svg>
+      GitHub
+    </a>
+  </nav>
+  <button id="like-btn" class="like-btn" type="button" title="Like it? Click to star it on GitHub (opens a new tab to confirm).">
+    <svg class="like-icon" viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 .25a.75.75 0 01.673.418l1.882 3.815 4.21.612a.75.75 0 01.416 1.279l-3.046 2.97.719 4.192a.75.75 0 01-1.088.791L8 12.347l-3.766 1.98a.75.75 0 01-1.088-.79l.72-4.194L.818 6.374a.75.75 0 01.416-1.28l4.21-.611L7.327.668A.75.75 0 018 .25z"></path></svg>
+    <span class="like-text">Star</span>
+    <span class="like-count" id="star-count">···</span>
+  </button>
+  <div id="auth-slot" class="auth-slot"></div>
+</header>
+<div class="layout">
+  <aside class="sidebar">
+    <div class="brand">
+      <span class="title">Algorithms List</span>
+      <span class="subtitle">ML &amp; DL landscape map</span>
+    </div>
+    <nav>
+      <div class="nav-group" data-group="ml">
+        <div class="nav-group-title"><span class="dot"></span>Traditional ML</div>
+        <a class="nav-link" href="#supervised-regression">Supervised · Regression</a>
+        <a class="nav-link" href="#supervised-classification">Supervised · Classification</a>
+        <a class="nav-link" href="#unsupervised">Unsupervised</a>
+      </div>
+      <div class="nav-group" data-group="deeplearning">
+        <div class="nav-group-title"><span class="dot"></span>Deep Learning</div>
+        <a class="nav-link" href="#deep-learning">Neural Networks</a>
+      </div>
+    </nav>
+  </aside>
+
+  <main class="main">
+    <header class="page-header">
+      <h1>Algorithms List</h1>
+      <p>
+        The full map of algorithms across our course — colour-coded by where each one sits in the
+        current Data Science &amp; ML landscape: what we've already <b>taught</b>, what's <b>good to know</b>,
+        and what's <b>not required</b> today. Taught items link to their class materials.
+      </p>
+      <div class="algo-legend">
+        <span class="legend-item"><span class="legend-dot taught"></span>Already taught</span>
+        <span class="legend-item"><span class="legend-dot good"></span>Good to know</span>
+        <span class="legend-item"><span class="legend-dot none"></span>Not required (current landscape)</span>
+      </div>
+    </header>
+
+    <!-- ===================== TRADITIONAL ML ===================== -->
+    <section class="group-section" data-group="ml" id="traditional-ml">
+      <div class="group-heading">
+        <h2>Traditional Machine Learning</h2>
+        <span class="count">Supervised &amp; Unsupervised</span>
+      </div>
+      <p class="group-desc">Models that learn predictive relationships from human-engineered features.</p>
+
+      <!-- Supervised: Regression -->
+      <div class="algo-block" id="supervised-regression">
+        <h3>Supervised Learning <span class="tag">Regression</span></h3>
+        <p class="group-desc" style="margin:0 0 10px;">Predict a continuous number (price, salary, temperature).</p>
+        <div class="algo-list">
+          <div class="algo-row" data-status="taught">
+            <div class="algo-main">
+              <span class="algo-name"><a href="index.html#c17">Linear Regression</a></span>
+              <span class="algo-desc">Fit a straight line / plane. The foundation of regression and of the neuron itself.</span>
+            </div>
+            <span class="algo-status taught">Taught · Class 17–20</span>
+          </div>
+          <div class="algo-row" data-status="taught">
+            <div class="algo-main">
+              <span class="algo-name"><a href="index.html#c21">Polynomial Regression</a></span>
+              <span class="algo-desc">Adds powers of the input to bend the line — still a linear model in its parameters.</span>
+            </div>
+            <span class="algo-status taught">Taught · Class 21</span>
+          </div>
+          <div class="algo-row" data-status="taught">
+            <div class="algo-main">
+              <span class="algo-name"><a href="index.html#c24">KNN Regression</a></span>
+              <span class="algo-desc">Predict from the average of the k nearest neighbours by distance.</span>
+            </div>
+            <span class="algo-status taught">Taught · Class 24</span>
+          </div>
+          <div class="algo-row" data-status="taught">
+            <div class="algo-main">
+              <span class="algo-name"><a href="index.html#c25">Decision Tree Regression</a></span>
+              <span class="algo-desc">Split the feature space into regions; predict each region's mean.</span>
+            </div>
+            <span class="algo-status taught">Taught · Class 24–25</span>
+          </div>
+          <div class="algo-row" data-status="taught">
+            <div class="algo-main">
+              <span class="algo-name"><a href="index.html#c28">Random Forest Regression</a></span>
+              <span class="algo-desc">An ensemble of decision trees (bagging), averaged for a stable prediction.</span>
+            </div>
+            <span class="algo-status taught">Taught · Class 28</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Supervised: Classification -->
+      <div class="algo-block" id="supervised-classification">
+        <h3>Supervised Learning <span class="tag">Classification</span></h3>
+        <p class="group-desc" style="margin:0 0 10px;">Predict a category / label (spam vs not, approve vs reject).</p>
+        <div class="algo-list">
+          <div class="algo-row" data-status="taught">
+            <div class="algo-main">
+              <span class="algo-name"><a href="index.html#c22">Logistic Regression</a></span>
+              <span class="algo-desc">Linear model + sigmoid → class probability. The classification workhorse.</span>
+            </div>
+            <span class="algo-status taught">Taught · Class 22</span>
+          </div>
+          <div class="algo-row" data-status="taught">
+            <div class="algo-main">
+              <span class="algo-name"><a href="index.html#c23">K-Nearest Neighbors (KNN)</a></span>
+              <span class="algo-desc">Vote of the k closest points, by Euclidean / Manhattan / Mahalanobis / Cosine distance.</span>
+            </div>
+            <span class="algo-status taught">Taught · Class 23</span>
+          </div>
+          <div class="algo-row" data-status="taught">
+            <div class="algo-main">
+              <span class="algo-name"><a href="index.html#c24">Decision Tree</a></span>
+              <span class="algo-desc">Recursive if/else splits on features chosen by information gain / Gini.</span>
+            </div>
+            <span class="algo-status taught">Taught · Class 24–25</span>
+          </div>
+          <div class="algo-row" data-status="taught">
+            <div class="algo-main">
+              <span class="algo-name"><a href="index.html#c28">Random Forest (Bagging)</a></span>
+              <span class="algo-desc">Many independent trees on bootstrapped data, aggregated by majority vote.</span>
+            </div>
+            <span class="algo-status taught">Taught · Class 28</span>
+          </div>
+          <div class="algo-row" data-status="taught">
+            <div class="algo-main">
+              <span class="algo-name"><a href="index.html#c29">AdaBoost (Boosting)</a></span>
+              <span class="algo-desc">Sequential weak stumps, each fixing the last one's mistakes via reweighting.</span>
+            </div>
+            <span class="algo-status taught">Taught · Class 29</span>
+          </div>
+          <div class="algo-row" data-status="good">
+            <div class="algo-main">
+              <span class="algo-name">Gradient Boosting (GBM)</span>
+              <span class="algo-desc">Boosting generalised to any differentiable loss by fitting residuals. Not in our syllabus.</span>
+            </div>
+            <span class="algo-status good">Good to know</span>
+          </div>
+          <div class="algo-row" data-status="good">
+            <div class="algo-main">
+              <span class="algo-name">XGBoost</span>
+              <span class="algo-desc">The industrial-strength gradient boosting library — a frequent Kaggle winner on tabular data.</span>
+            </div>
+            <span class="algo-status good">Good to know</span>
+          </div>
+          <div class="algo-row" data-status="good">
+            <div class="algo-main">
+              <span class="algo-name">Support Vector Machine (SVM)</span>
+              <span class="algo-desc">Maximum-margin classifier; kernels add non-linearity. Advanced ML — good to know.</span>
+            </div>
+            <span class="algo-status good">Good to know</span>
+          </div>
+          <div class="algo-row" data-status="none">
+            <div class="algo-main">
+              <span class="algo-name">Naive Bayes</span>
+              <span class="algo-desc">Probabilistic classifier assuming feature independence. Rarely the right tool today.</span>
+            </div>
+            <span class="algo-status none">Not required</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Unsupervised -->
+      <div class="algo-block" id="unsupervised">
+        <h3>Unsupervised Learning <span class="tag">Clustering</span></h3>
+        <p class="group-desc" style="margin:0 0 10px;">Find structure with no labels — group similar points together.</p>
+        <div class="algo-list">
+          <div class="algo-row" data-status="taught">
+            <div class="algo-main">
+              <span class="algo-name"><a href="index.html#c30">K-Means Clustering</a></span>
+              <span class="algo-desc">Partition points into K groups by nearest centroid; the default clustering algorithm.</span>
+            </div>
+            <span class="algo-status taught">Taught · Class 30</span>
+          </div>
+          <div class="algo-row" data-status="good">
+            <div class="algo-main">
+              <span class="algo-name">Hierarchical Clustering</span>
+              <span class="algo-desc">Builds a tree of clusters (Agglomerative / DIANA) — useful when K is unknown or features are categorical.</span>
+            </div>
+            <span class="algo-status good">Good to know</span>
+          </div>
+          <div class="algo-row" data-status="good">
+            <div class="algo-main">
+              <span class="algo-name">DBSCAN</span>
+              <span class="algo-desc">Density-based clustering that finds arbitrary shapes and labels outliers as noise.</span>
+            </div>
+            <span class="algo-status good">Good to know</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===================== DEEP LEARNING ===================== -->
+    <section class="group-section" data-group="deeplearning" id="deep-learning">
+      <div class="group-heading">
+        <h2>Deep Learning</h2>
+        <span class="count">Neural Networks</span>
+      </div>
+      <p class="group-desc">Models that learn their own features through trained layers of neurons.</p>
+      <div class="algo-block">
+        <div class="algo-list">
+          <div class="algo-row" data-status="taught">
+            <div class="algo-main">
+              <span class="algo-name"><a href="index.html#c31">Multi-Layer Perceptron (MLP)</a></span>
+              <span class="algo-desc">A feedforward neural network — input → hidden layers of neurons (affine + activation) → output. The architecture we're currently learning, and the foundation of all deep learning.</span>
+            </div>
+            <span class="algo-status taught">Currently teaching · Class 31</span>
+          </div>
+        </div>
+      </div>
+      <div class="algo-note">
+        <b>Where this is heading:</b> the MLP is the base unit. Specialised architectures build on it —
+        <b>CNNs</b> for images, <b>RNNs / LSTMs</b> for sequences, and <b>Transformers</b> for language,
+        which are what power modern GenAI and ChatGPT. Our agenda has always been <b>Traditional ML → Deep Learning → GenAI</b>;
+        this section grows as we cover each one.
+      </div>
+    </section>
+
+    <p class="footer-note">Inceptez GenAI Batch 26 · Status reflects our course coverage and the current Data Science landscape.</p>
+  </main>
+</div>
+
+<script src="assets/auth.js"></script>
+<script src="assets/forum.js"></script>
+</body>
+</html>
