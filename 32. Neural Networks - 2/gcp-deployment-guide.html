@@ -181,31 +181,61 @@ gh repo create SalaryNetApp --public --source=. --push</code></pre>
   <div class="note good"><b>Our example repo</b> is <code>https://github.com/Laxminarayen/SalaryNetApp.git</code> — the clone command in Step 6 uses it. When you make your own, swap in your repo URL.</div>
 
   <h2 id="s4"><span class="num">4</span>Create the GCP VM (e2-small) &amp; allow traffic</h2>
-  <p>A <b>Compute Engine VM</b> is a computer you rent from Google, running 24/7 in a data centre. Go to the Google Cloud Console, use the search bar at the top, type <b>VM instances</b>, and click <b>Create instance</b>.</p>
+  <p>A <b>Compute Engine VM</b> is a computer you rent from Google, running 24/7 in a data centre. Go to the Google Cloud Console, use the search bar at the top, type <b>VM instances</b>, and click <b>Create instance</b>. The "Create an instance" page has a <b>left-hand menu of sections</b> — Machine configuration, OS and storage, Data protection, Networking, … You'll touch three of them, in order.</p>
 
   <div class="shot">
     <div class="shot-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">console.cloud.google.com → Compute Engine → Create an instance</span></div>
-    <div class="shot-body">
-      <div class="field-row"><span class="lbl">Name</span><span class="val pick">salarynet-vm</span></div>
-      <div class="field-row"><span class="lbl">Region</span><span class="val pick">asia-south1 (Mumbai)</span></div>
-      <div class="field-row"><span class="lbl">Zone</span><span class="val">asia-south1-a</span></div>
-      <div class="field-row"><span class="lbl">Machine series</span><span class="val pick">E2</span></div>
-      <div class="field-row"><span class="lbl">Machine type</span><span class="val pick">e2-small &nbsp;(2 vCPU · 2 GB)</span></div>
-      <div class="field-row"><span class="lbl">Boot disk / OS</span><span class="val">Debian 12 &nbsp;(or Ubuntu)</span></div>
-      <div class="field-row"><span class="lbl">Firewall</span><span class="val"><span class="chk"><span class="box">✓</span>Allow HTTP</span> &nbsp; <span class="chk"><span class="box">✓</span>Allow HTTPS</span></span></div>
+    <div class="shot-body" style="display:flex; gap:0; padding:0;">
+      <div style="flex:none; width:180px; border-right:1px solid var(--line); padding:12px 10px; font-size:.8rem;">
+        <div style="font-weight:800; color:var(--accent); padding:6px 8px; border-radius:6px; background:color-mix(in srgb,var(--accent) 12%, transparent);">● Machine configuration</div>
+        <div style="padding:6px 8px; color:var(--ink-faint);">○ OS and storage</div>
+        <div style="padding:6px 8px; color:var(--ink-faint);">○ Data protection</div>
+        <div style="font-weight:800; color:var(--accent); padding:6px 8px; border-radius:6px; background:color-mix(in srgb,var(--accent) 12%, transparent);">● Networking</div>
+        <div style="padding:6px 8px; color:var(--ink-faint);">○ Observability</div>
+        <div style="padding:6px 8px; color:var(--ink-faint);">○ Security</div>
+        <div style="padding:6px 8px; color:var(--ink-faint);">○ Advanced</div>
+      </div>
+      <div style="flex:1; padding:14px 16px;">
+        <div class="field-row"><span class="lbl">Name</span><span class="val pick">salarynet-vm</span></div>
+        <div class="field-row"><span class="lbl">Region</span><span class="val pick">asia-south1 (Mumbai)</span></div>
+        <div class="field-row"><span class="lbl">Zone</span><span class="val">Any</span></div>
+        <div class="field-row"><span class="lbl">Series &nbsp;(General purpose)</span><span class="val pick">E2</span></div>
+        <div class="field-row"><span class="lbl">Machine type</span><span class="val pick">e2-small</span></div>
+      </div>
     </div>
   </div>
-  <div class="shot-cap">↑ The "Create an instance" screen — pick these exact values, then scroll down and click the blue <span class="fake-btn" style="padding:3px 10px; font-size:.72rem;">Create</span> button.</div>
+  <div class="shot-cap">↑ The <b>Machine configuration</b> section. The <b>Allow HTTP / HTTPS</b> tick-boxes are <u>not</u> here — they live under the <b>Networking</b> section (highlighted above). Set your machine type here, then click <b>Networking</b>.</div>
 
+  <h3>4a · Machine configuration</h3>
   <ul>
     <li><b>Name:</b> anything — e.g. <code>salarynet-vm</code>.</li>
-    <li><b>Region:</b> pick one near you (<code>asia-south1</code> = Mumbai) for low latency.</li>
-    <li><b>Machine type:</b> series <b>E2</b>, type <b>e2-small</b> (2 GB RAM) — plenty for this tiny model, and cheap.</li>
-    <li><b>Boot disk:</b> <b>Debian</b> or <b>Ubuntu</b> (our commands use <code>apt-get</code>).</li>
-    <li>Under <b>Firewall</b>, tick <b>Allow HTTP traffic</b> and <b>Allow HTTPS traffic</b>.</li>
-    <li>Click <b>Create</b> and wait ~30 seconds for the green tick.</li>
+    <li><b>Region:</b> pick one near you (<code>asia-south1</code> = Mumbai); <b>Zone:</b> leave as <b>Any</b> (Google picks one).</li>
+    <li>Under <b>General purpose</b>, set <b>Series = E2</b> and <b>Machine type = e2-small</b> (2 vCPU · 2 GB). The default is often <code>e2-medium</code> — change it down to <b>e2-small</b> to save money; it's plenty for this tiny model.</li>
   </ul>
-  <div class="note warn"><b>Those tick-boxes only open ports 80 and 443.</b> Our app runs on port <b>8080</b>, which is <i>not</i> opened by them. We open 8080 ourselves in Step 5 — this is the step most people miss, and the usual reason the site won't load later.</div>
+
+  <h3>4b · OS and storage</h3>
+  <ul>
+    <li>Click <b>OS and storage</b> in the left menu. The default boot disk — <b>Debian</b> (or Ubuntu) — is exactly what we want (our commands use <code>apt-get</code>). Leave it as is.</li>
+  </ul>
+
+  <h3>4c · Networking — this is where "Allow HTTP/HTTPS" lives</h3>
+  <ul>
+    <li>Click <b>Networking</b> in the left menu.</li>
+    <li>Under the <b>Firewall</b> heading, tick <span class="chk"><span class="box">✓</span>Allow HTTP traffic</span> and <span class="chk"><span class="box">✓</span>Allow HTTPS traffic</span>.</li>
+  </ul>
+  <div class="shot">
+    <div class="shot-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">Create an instance → Networking → Firewall</span></div>
+    <div class="shot-body">
+      <div style="font-weight:800; color:var(--ink); margin-bottom:6px;">Firewall</div>
+      <div style="color:var(--ink-faint); font-size:.84rem; margin-bottom:8px;">Add tags and firewall rules to allow specific network traffic from the Internet</div>
+      <div class="chk" style="margin:6px 0;"><span class="box">✓</span>Allow HTTP traffic</div>
+      <div class="chk" style="margin:6px 0;"><span class="box">✓</span>Allow HTTPS traffic</div>
+    </div>
+  </div>
+  <div class="shot-cap">↑ The <b>Firewall</b> block inside the <b>Networking</b> section. Tick both, then scroll down and click the blue <span class="fake-btn" style="padding:3px 10px; font-size:.72rem;">Create</span> button. Wait ~30 seconds for the green tick.</div>
+
+  <div class="note warn"><b>Those two tick-boxes only open ports 80 and 443.</b> Our app runs on port <b>8080</b>, which is <i>not</i> opened by them. We open 8080 ourselves in Step 5 — this is the step most people miss, and the usual reason the site won't load later.</div>
+  <div class="note tip"><b>Tip — the cost estimate</b> on the right of the Create page updates live (an e2-small is roughly US$0.02/hour). You only pay while the VM is <i>running</i>, so remember to <b>Stop</b> it when class is over (Step 8).</div>
 
   <h2 id="s5"><span class="num">5</span>Open port 8080 &amp; tag the VM</h2>
   <p>Do this in <span class="term-badge shell">CLOUD SHELL</span> — the <code>&gt;_</code> icon at the top-right of the Console. It runs as <i>you</i>, so it's allowed to change firewall rules. (The VM's own SSH terminal is <b>not</b> — see the warning below.)</p>
