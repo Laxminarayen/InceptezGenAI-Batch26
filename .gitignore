@@ -1,6 +1,12 @@
 .DS_Store
 .ipynb_checkpoints/
 __pycache__/
+# Python virtual environments — can be 200MB+; the VM/host builds its own
+venv/
+.venv/
+env/
+ENV/
+*.egg-info/
 worker/.dev.vars
 worker/node_modules/
 worker/private-data/
