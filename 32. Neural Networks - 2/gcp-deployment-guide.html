@@ -161,12 +161,20 @@ venv/bin/python app.py                      <span class="cmt"># 3. run the app u
 
   <h2 id="s3"><span class="num">3</span>Push the project to GitHub</h2>
   <p>We put the project on GitHub so the cloud VM can simply <b>clone</b> it — no copying files by hand. The trained <code>salary_net.pth</code> is committed too, so the server never retrains.</p>
+  <div class="note danger"><b>⚠️ First, never push the <code>venv/</code> folder.</b> A virtual environment with PyTorch inside is <b>200&nbsp;MB or more</b> — GitHub will reject or choke on it, and the VM doesn't need it anyway (it builds its own in Step 6). Before <code>git add</code>, create a <code>.gitignore</code> file so git skips it:
+  <pre style="margin-top:8px;"><span class="tag local">LOCAL</span><code><span class="cmt"># .gitignore — put this file in your project folder</span>
+venv/
+.venv/
+__pycache__/</code></pre>
+  </div>
+  <p>Then initialise the repo and push. Notice we add files <b>by name</b> (not <code>git add .</code>) — another safe way to be sure the venv never sneaks in:</p>
   <pre><span class="tag local">LOCAL</span><code>git init
-git add model.py app.py requirements.txt salary_net.pth
+git add .gitignore model.py app.py requirements.txt salary_net.pth
+git status                 <span class="cmt"># check the list: NO venv/ should appear</span>
 git commit -m "SalaryNet app"
 <span class="cmt"># create a PUBLIC repo and push (GitHub CLI):</span>
 gh repo create SalaryNetApp --public --source=. --push</code></pre>
-  <div class="note"><b>Keep the venv out of git.</b> Add a <code>.gitignore</code> with <code>venv/</code> and <code>__pycache__/</code> — the big virtual-environment folder should never be committed; the VM builds its own fresh one.</div>
+  <div class="note good"><b>Why this matters:</b> the repo should hold only your <i>source</i> (a few KB) — <code>model.py</code>, <code>app.py</code>, <code>requirements.txt</code>, and the tiny <code>salary_net.pth</code>. The heavy packages are rebuilt on the VM from <code>requirements.txt</code>, so there's no reason to ship them. If you ever see a huge upload or a "file too large" error, a <code>venv/</code> almost certainly slipped in.</div>
   <div class="note good"><b>Our example repo</b> is <code>https://github.com/Laxminarayen/SalaryNetApp.git</code> — the clone command in Step 6 uses it. When you make your own, swap in your repo URL.</div>
 
   <h2 id="s4"><span class="num">4</span>Create the GCP VM (e2-small) &amp; allow traffic</h2>
