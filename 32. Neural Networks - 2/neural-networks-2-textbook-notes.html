@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Neural Networks II — Reference Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#6B4FA0;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#B49AE0;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap{max-width:860px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:680px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+  h2{font-size:1.4rem; font-weight:900; margin:48px 0 14px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px;}
+  h3{font-size:1.06rem; font-weight:800; margin:24px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:9px 12px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono);}
+  pre{background:#10141c; color:#dfe6f2; border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.86rem; line-height:1.55; font-family:var(--mono);}
+  pre code{background:none; padding:0; font-size:1em; color:inherit;}
+  pre .cmt{color:#7f8aa0;}
+  .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px;}
+  .pill{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:.82rem; font-weight:700; color:var(--ink);}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Reference Notes · Deep Learning</div>
+  <h1>Neural Networks II — Backpropagation &amp; Training</h1>
+  <p class="abstract">How a network learns its own weights: the forward pass produces a prediction and a loss; backpropagation applies the chain rule to hand every parameter its gradient; gradient descent nudges each one downhill. Then the engineering that makes it real — PyTorch's autograd, saving the state_dict, serving with Flask, and deploying to a cloud VM.</p>
+
+  <div class="related-links">
+    <a href="classwork-notes.html">📝 Classwork Notes (Day 32 session write-up)</a>
+    <a href="neural-networks-2-slides.html">🖥️ Slide Deck</a>
+    <a href="gcp-deployment-guide.html">🚀 GCP Deployment Guide</a>
+    <a href="NeuralNetworks.ipynb">📓 Notebook: SalaryNet (PyTorch)</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">The Forward Pass</a></li>
+      <li><a href="#s2">The Loss, and Why It Must Be Differentiable</a></li>
+      <li><a href="#s3">Gradients: The Core Idea</a></li>
+      <li><a href="#s4">Backpropagation &amp; the Chain Rule</a></li>
+      <li><a href="#s5">The Worked Example, End to End</a></li>
+      <li><a href="#s6">Gradient Descent &amp; the Learning Rate</a></li>
+      <li><a href="#s7">Optimizers: SGD, Momentum, Adam</a></li>
+      <li><a href="#s8">Epoch, Batch, Iteration</a></li>
+      <li><a href="#s9">PyTorch: Autograd &amp; the Training Loop</a></li>
+      <li><a href="#s10">Saving &amp; Serving the Model</a></li>
+      <li><a href="#s11">Summary</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1"><span class="num">1.</span>The Forward Pass</h2>
+  <p>The forward pass runs the current weights through the network, left to right, to produce a prediction. For SalaryNet (1 input → 2 hidden ReLU neurons → 1 output):</p>
+  <div class="formula">
+    h₁ = ReLU(w₁x + b₁), &nbsp; h₂ = ReLU(w₂x + b₂), &nbsp; ŷ = v₁h₁ + v₂h₂ + c
+    <span class="sub">With w₁=4, b₁=20, w₂=1, b₂=−3, v₁=1, v₂=10, c=0 and x=5: h₁=ReLU(40)=40, h₂=ReLU(2)=2, ŷ = 40 + 20 + 0 = 60.</span>
+  </div>
+
+  <h2 id="s2"><span class="num">2.</span>The Loss, and Why It Must Be Differentiable</h2>
+  <p>The loss collapses "how wrong is the prediction" into one number to minimise. For regression we use squared error:</p>
+  <div class="formula">
+    L = ½(ŷ − y)²  &nbsp;→&nbsp; L = ½(60 − 65)² = 12.5
+    <span class="sub">Squaring removes sign and penalises large misses super-linearly. The ½ cancels the exponent's 2 on differentiation, keeping ∂L/∂ŷ = (ŷ − y) clean.</span>
+  </div>
+  <div class="note warn"><b>Loss vs. metric.</b> Training minimises a <b>loss</b> (MSE, cross-entropy) — chosen to be smooth and differentiable so an optimizer can follow its slope. A <b>metric</b> (Accuracy = (TP+TN)/(TP+TN+FP+FN), F1) is for humans to read; accuracy is piecewise-constant, so ∂Accuracy/∂w is zero almost everywhere and cannot drive learning. "That which is not differentiable cannot go through" backprop.</div>
+
+  <h2 id="s3"><span class="num">3.</span>Gradients: The Core Idea</h2>
+  <p>A gradient ∂L/∂θ answers: <i>how does the loss change when I make a small change to parameter θ, holding everything else fixed?</i></p>
+  <ul>
+    <li><b>Positive gradient</b> → increasing θ increases loss → move θ <i>down</i>.</li>
+    <li><b>Negative gradient</b> → increasing θ decreases loss → move θ <i>up</i>.</li>
+    <li><b>Magnitude</b> → how much this one parameter is responsible for the current error.</li>
+  </ul>
+  <p>The model "learns by parameter update using (1) the loss." Gradients are produced by differentiation, which is precisely why the loss is designed to be differentiable (Section 2).</p>
+
+  <h2 id="s4"><span class="num">4.</span>Backpropagation &amp; the Chain Rule</h2>
+  <p>Backpropagation sends the loss backwards through the network, computing each parameter's gradient by multiplying the local derivatives along the path the signal took forward — the <b>chain rule</b>. For a first-hidden-layer weight:</p>
+  <div class="formula">
+    ∂L/∂w₁ = ∂L/∂ŷ · ∂ŷ/∂h₁ · ∂h₁/∂z₁ · ∂z₁/∂w₁
+    <span class="sub">Read right-to-left as the error flows back: how the weighted sum z₁ changes with w₁ (= x), how h₁ changes with z₁ (ReLU′), how ŷ changes with h₁ (= v₁), how L changes with ŷ (= ŷ−y). Each factor is one link in the chain.</span>
+  </div>
+  <p>Output-layer parameters are shorter chains: ∂L/∂v₁ = ∂L/∂ŷ · ∂ŷ/∂v₁ = (ŷ−y)·h₁. The key property: backpropagation <b>measures the contribution of each parameter towards the loss</b>, efficiently, in one backward sweep — no matter how many layers.</p>
+  <div class="note"><b>ReLU's derivative</b> is 1 for z &gt; 0 and 0 for z &lt; 0. So a hidden neuron whose pre-activation is negative (its ReLU output is 0) passes <i>zero</i> gradient back through that path — it is "switched off" for that example, both forward and backward.</div>
+
+  <h2 id="s5"><span class="num">5.</span>The Worked Example, End to End</h2>
+  <p>Forward gave ŷ = 60, y = 65, so ∂L/∂ŷ = ŷ − y = −5. Propagating back (ReLU′ = 1 since both z₁=40 and z₂=2 are positive):</p>
+  <table>
+    <thead><tr><th>Parameter</th><th>Chain</th><th>Gradient</th></tr></thead>
+    <tbody>
+      <tr><td>w₁</td><td>(−5)(v₁=1)(1)(x=5)</td><td>−25</td></tr>
+      <tr><td>b₁</td><td>(−5)(1)(1)(1)</td><td>−5</td></tr>
+      <tr><td>w₂</td><td>(−5)(v₂=10)(1)(x=5)</td><td>−250</td></tr>
+      <tr><td>b₂</td><td>(−5)(10)(1)(1)</td><td>−50</td></tr>
+      <tr><td>v₁</td><td>(−5)(h₁=40)</td><td>−200</td></tr>
+      <tr><td>v₂</td><td>(−5)(h₂=2)</td><td>−10</td></tr>
+      <tr><td>c</td><td>(−5)(1)</td><td>−5</td></tr>
+    </tbody>
+  </table>
+  <p>With η = 0.0001, each θ_new = θ_old − η·grad gives w₁=4.0025, b₁=20.0005, w₂=1.025, b₂=−2.995, v₁=1.02, v₂=10.001, c=0.0005. Re-running the forward pass: h₁=40.013, h₂=2.13, ŷ ≈ <b>62.12</b> — the prediction moved from 60 toward the target 65, and the loss dropped. Three thousand such steps converge it onto ₹65k.</p>
+
+  <h2 id="s6"><span class="num">6.</span>Gradient Descent &amp; the Learning Rate</h2>
+  <div class="formula">
+    θ<sub>new</sub> = θ<sub>old</sub> − η · ∂L/∂θ
+    <span class="sub">η (eta) is the learning rate — the step size. Too small: training crawls. Too large: steps overshoot the minimum and the loss can oscillate or diverge. It is the most important hyperparameter to tune.</span>
+  </div>
+  <p>Gradient descent repeatedly takes a step opposite to the gradient (downhill on the loss surface). Each full "forward → loss → backprop → step" is one update.</p>
+
+  <h2 id="s7"><span class="num">7.</span>Optimizers: SGD, Momentum, Adam</h2>
+  <table>
+    <thead><tr><th>Optimizer</th><th>Idea</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td><b>SGD</b></td><td>Plain update θ − η·grad, on each batch.</td><td>Simple; sensitive to η and to feature scaling.</td></tr>
+      <tr><td><b>SGD + Momentum</b></td><td>Accumulate a velocity of past gradients to push through flat spots.</td><td>Faster, smoother descent than plain SGD.</td></tr>
+      <tr><td><b>Adam</b></td><td>Per-parameter adaptive step sizes from running averages of the gradient and its square.</td><td>The common default; robust across problems. Used in SalaryNet (<code>lr=0.02</code>).</td></tr>
+    </tbody>
+  </table>
+  <p>(The deeper comparison of gradient-descent variants is the next session's topic; here Adam is simply "the method that decides how big each weight's nudge is.")</p>
+
+  <h2 id="s8"><span class="num">8.</span>Epoch, Batch, Iteration</h2>
+  <table>
+    <thead><tr><th>Term</th><th>Meaning</th><th>Example (1000 rows, batch 100)</th></tr></thead>
+    <tbody>
+      <tr><td><b>Epoch</b></td><td>One full pass over the entire dataset.</td><td>All 1000 rows seen once.</td></tr>
+      <tr><td><b>Batch</b></td><td>Rows processed together before one update.</td><td>100 rows per batch → 10 batches.</td></tr>
+      <tr><td><b>Iteration</b></td><td>One optimizer step (one batch).</td><td>10 iterations = 1 epoch.</td></tr>
+    </tbody>
+  </table>
+  <div class="note"><b>Batch size is a bias/variance-of-the-gradient knob.</b> Batch=1 (stochastic): noisy, sensitive updates where every row's pattern counts — SE = ½(ŷ−y)². Mini-batch (e.g. 100): a smoothed estimate, the practical default. Full-batch: one exact update per epoch over all N rows — MSE = (1/2N)Σ(ŷ−y)². SalaryNet trains full-batch on all 11 rows.</div>
+
+  <h2 id="s9"><span class="num">9.</span>PyTorch: Autograd &amp; the Training Loop</h2>
+  <p>Frameworks like PyTorch (and TensorFlow) run on GPUs and provide <b>autograd</b>: <code>loss.backward()</code> computes every gradient in Section 5 automatically by recording the forward operations. You never hand-derive the chain rule again.</p>
+  <pre><code>loss_fn   = nn.MSELoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.02)
+
+for epoch in range(3000):
+    pred = model(X)              <span class="cmt"># forward pass</span>
+    loss = loss_fn(pred, y)      <span class="cmt"># compute loss</span>
+    optimizer.zero_grad()        <span class="cmt"># clear last step's grads (they accumulate otherwise)</span>
+    loss.backward()              <span class="cmt"># backprop: fills every .grad</span>
+    optimizer.step()             <span class="cmt"># apply θ = θ - η·grad</span></code></pre>
+  <div class="note"><b>Why <code>zero_grad()</code>?</b> PyTorch <i>accumulates</i> gradients into <code>.grad</code> by default (useful for some advanced cases). Without clearing them each step, this batch's gradients would add on top of last batch's — a "factory reset" before each <code>backward()</code> keeps the step correct.</div>
+
+  <h2 id="s10"><span class="num">10.</span>Saving &amp; Serving the Model</h2>
+  <p>Save only the learned weights (the <b>state_dict</b>), not the whole object — portable and small:</p>
+  <pre><code>torch.save(model.state_dict(), "salary_net.pth")   <span class="cmt"># save</span>
+
+<span class="cmt"># later, in the app:</span>
+model = SalaryNet()
+model.load_state_dict(torch.load("salary_net.pth", map_location="cpu"))
+model.eval()                                        <span class="cmt"># inference mode</span></code></pre>
+  <p>A Flask app loads the model <b>once at startup</b> and serves predictions on port 8080 (web form <code>/</code>, JSON <code>/api/predict</code>, <code>/health</code>). Wrapping inference in <code>with torch.no_grad():</code> skips gradient tracking — faster and lighter, since we're predicting, not training. From there: push to GitHub, create a GCP <b>e2-small</b> VM, open port 8080 (firewall rule + network tag in Cloud Shell), SSH in, install git &amp; venv, clone and run. The full step-by-step is in the <a href="gcp-deployment-guide.html">GCP Deployment Guide</a>.</p>
+
+  <h2 id="s11"><span class="num">11.</span>Summary</h2>
+  <div class="summary-box">
+    <h3>The whole idea, in one paragraph</h3>
+    <p>A network learns by repeating a loop: a <b>forward pass</b> produces a prediction, a differentiable <b>loss</b> measures the error, <b>backpropagation</b> applies the chain rule to give every parameter its gradient (its share of the blame), and an <b>optimizer step</b> nudges each parameter downhill by η·gradient. One pass over the data is an epoch; one step over a batch is an iteration. PyTorch's autograd computes all gradients from <code>loss.backward()</code>, Adam decides each nudge, and once trained we save the <code>state_dict</code>, serve it with Flask on port 8080, and deploy it to a Google Cloud VM for the world to use.</p>
+  </div>
+  <div class="pill-row">
+    <span class="pill">Forward Pass</span>
+    <span class="pill">Loss (MSE)</span>
+    <span class="pill">Gradient</span>
+    <span class="pill">Chain Rule</span>
+    <span class="pill">Backpropagation</span>
+    <span class="pill">Learning Rate η</span>
+    <span class="pill">Adam</span>
+    <span class="pill">Epoch / Batch / Iteration</span>
+    <span class="pill">state_dict</span>
+  </div>
+</div>
+</body>
+</html>

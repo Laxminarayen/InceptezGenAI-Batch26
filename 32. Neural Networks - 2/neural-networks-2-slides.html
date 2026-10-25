@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Neural Networks II · Backpropagation &amp; Training</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+
+    --c-why:#3B6E63; --c-concept:#B0670C; --c-mech:#1E6FA8; --c-eval:#6B4FA0;
+
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+
+    --accent: var(--c-why);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+      --c-why:#79C0AE; --c-concept:#E3A238; --c-mech:#5FA8E0; --c-eval:#B49AE0;
+      --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+      --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+    --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+    --line: rgba(239,233,218,.14); --surface-canvas:#10131C;
+    --c-why:#79C0AE; --c-concept:#E3A238; --c-mech:#5FA8E0; --c-eval:#B49AE0;
+    --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+    --shadow: 0 10px 30px -12px rgba(0,0,0,.6);
+  }
+  :root[data-theme="light"]{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+    --c-why:#3B6E63; --c-concept:#B0670C; --c-mech:#1E6FA8; --c-eval:#6B4FA0;
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); overflow:hidden; -webkit-font-smoothing:antialiased; }
+  body[data-section="why"]{--accent:var(--c-why);}
+  body[data-section="concept"]{--accent:var(--c-concept);}
+  body[data-section="mech"]{--accent:var(--c-mech);}
+  body[data-section="eval"]{--accent:var(--c-eval);}
+
+  h1,h2,h3,p{margin:0;}
+  h1,h2,h3{text-wrap:balance; letter-spacing:-0.01em;}
+  ::selection{background:var(--accent); color:#fff;}
+
+  .eyebrow{font-size:.74rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  .slide h1{font-size:clamp(1.7rem,3.2vw,2.9rem); font-weight:800; color:var(--ink);}
+  .slide h2{font-size:clamp(1.2rem,1.8vw,1.6rem); font-weight:800; color:var(--ink);}
+  .body-text{font-size:clamp(1rem,1.25vw,1.2rem); font-weight:500; line-height:1.6; color:var(--ink-soft);}
+  .body-text b, .body-text strong{color:var(--ink); font-weight:800;}
+  .tabular{font-variant-numeric:tabular-nums;}
+
+  .chrome-top{position:fixed; top:0; left:0; right:0; height:52px; z-index:50; display:flex; align-items:center; justify-content:space-between; padding:0 20px; pointer-events:none;}
+  .chrome-top > *{pointer-events:auto;}
+  .hour-badge{font-size:.72rem; font-weight:800; letter-spacing:.12em; color:var(--ink-faint); background:var(--paper-2); border:1px solid var(--line); padding:6px 12px; border-radius:999px;}
+  .chapter-chip{display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:700; color:var(--ink-soft); background:var(--paper-2); border:1px solid var(--line); padding:6px 14px 6px 8px; border-radius:999px;}
+  .chapter-chip .num{display:inline-flex; align-items:center; justify-content:center; width:20px;height:20px; border-radius:50%; background:var(--accent); color:#fff; font-size:.68rem; font-weight:800;}
+  .icon-btn{width:36px;height:36px; border-radius:50%; border:1px solid var(--line); background:var(--paper-2); color:var(--ink); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;}
+  .icon-btn:hover{background:var(--paper-3);}
+  .icon-btn:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+
+  .deck{position:absolute; inset:0; top:52px; bottom:64px;}
+  .slide{position:absolute; inset:0; display:none; flex-direction:column; padding:clamp(18px,3vw,40px) clamp(24px,5vw,80px); overflow:auto;}
+  .slide.active{display:flex;}
+  .slide-inner{display:flex; flex-direction:column; gap:clamp(12px,1.8vh,20px); max-width:1360px; width:100%; margin:0 auto; flex:1; min-height:0;}
+
+  .chrome-bottom{position:fixed; left:0; right:0; bottom:0; height:64px; z-index:50; display:flex; align-items:center; gap:14px; padding:0 clamp(14px,3vw,32px); background:linear-gradient(0deg, var(--paper) 60%, transparent);}
+  .nav-btn{width:40px;height:40px;border-radius:50%; border:1px solid var(--line); background:var(--paper-2); color:var(--ink); font-size:1.2rem; cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center;}
+  .nav-btn:hover:not(:disabled){background:var(--accent); color:#fff; border-color:transparent;}
+  .nav-btn:disabled{opacity:.35; cursor:default;}
+  .progress{flex:1; display:flex; align-items:center; gap:5px; overflow-x:auto; scrollbar-width:none;}
+  .progress::-webkit-scrollbar{display:none;}
+  .dot{width:9px;height:9px;border-radius:50%; background:var(--paper-3); border:none; cursor:pointer; flex:none; transition:transform .15s ease;}
+  .dot.gap{width:14px; height:2px; border-radius:1px; background:transparent; cursor:default;}
+  .dot.active{transform:scale(1.5);}
+  .slide-counter{font-size:.8rem; font-weight:700; color:var(--ink-faint); flex:none; white-space:nowrap;}
+
+  .split{display:grid; grid-template-columns:1.05fr 1.35fr; gap:clamp(20px,4vw,52px); align-items:center; flex:1; min-height:0;}
+  @media (max-width:920px){ .split{grid-template-columns:1fr; overflow:auto;} }
+  .split.reverse{grid-template-columns:1.35fr 1.05fr;}
+  .stack{display:flex; flex-direction:column; gap:12px; min-height:0;}
+  .center-col{display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:16px; flex:1;}
+  .visual-box{background:var(--surface-canvas); border:1px solid var(--line); border-radius:24px; padding:14px; box-shadow:var(--shadow); min-height:0; display:flex; flex-direction:column; gap:8px;}
+
+  .vocab-card{border-left:5px solid var(--accent); background:var(--paper-2); border-radius:14px; padding:12px 18px; display:flex; flex-direction:column; gap:4px;}
+  .vocab-term{font-size:1rem; font-weight:900; letter-spacing:.04em; color:var(--accent);}
+  .vocab-def{font-size:1rem; color:var(--ink); font-weight:600; line-height:1.4;}
+
+  .console{display:flex; flex-wrap:wrap; gap:14px 26px; align-items:center; background:var(--paper-2); border:1px solid var(--line); border-radius:20px; padding:16px 20px;}
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field label{font-size:.76rem; font-weight:800; color:var(--ink-soft); letter-spacing:.03em;}
+  .field .val{color:var(--accent); font-weight:900;}
+  input[type="range"]{width:240px; accent-color:var(--accent);}
+
+  .btn{font:inherit; font-size:.92rem; font-weight:800; border:1px solid var(--line); border-radius:999px; padding:11px 20px; cursor:pointer; background:var(--paper-3); color:var(--ink); transition:transform .12s ease; white-space:nowrap;}
+  .btn:hover{transform:translateY(-1px);}
+  .btn-primary{background:var(--accent); color:#fff; border-color:transparent; box-shadow:0 8px 18px -8px var(--accent);}
+
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px;}
+  .stat-tile{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:12px 14px;}
+  .stat-tile .label{font-size:.7rem; font-weight:800; color:var(--ink-faint); letter-spacing:.05em; text-transform:uppercase;}
+  .stat-tile .value{font-size:1.35rem; font-weight:900; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .stat-tile.accent .value{color:var(--accent);}
+
+  .card{background:var(--paper-2); border:1px solid var(--line); border-radius:18px; padding:18px 20px;}
+  .card-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px;}
+  .card .ico{font-size:1.8rem;}
+  .card h3{font-size:1.02rem; margin-top:8px;}
+  .card p{font-size:.92rem; color:var(--ink-soft); margin-top:4px; line-height:1.45;}
+
+  .banner{border-radius:14px; padding:12px 16px; font-weight:800; font-size:.92rem; display:flex; align-items:center; gap:10px;}
+  .banner.warn{background:color-mix(in srgb, var(--warn) 18%, var(--paper-2)); color:var(--warn);}
+  .banner.good{background:color-mix(in srgb, var(--good) 18%, var(--paper-2)); color:var(--good);}
+  .banner.bad{background:color-mix(in srgb, var(--bad) 18%, var(--paper-2)); color:var(--bad);}
+  .banner.info{background:var(--paper-3); color:var(--ink); font-weight:600; align-items:flex-start;}
+
+  .roadmap{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  .roadmap .stop{background:var(--paper-2); border-radius:18px; padding:16px 10px; text-align:center; border-top:5px solid var(--stop-color, var(--accent));}
+  .roadmap .stop .ico{font-size:2rem;}
+  .roadmap .stop .t{font-size:.8rem; font-weight:800; margin-top:6px;}
+  @media (max-width:920px){ .roadmap{grid-template-columns:repeat(2,1fr);} }
+
+  .kicker-big{font-size:clamp(2.2rem,5.6vw,3.9rem); font-weight:900; letter-spacing:-0.02em;}
+  .glow{color:var(--accent);}
+
+  .flow{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center;}
+  .flow .node{background:var(--paper-2); border:1px solid var(--line); border-radius:12px; padding:10px 16px; font-weight:800; font-size:.9rem;}
+  .flow .node.hl{border-color:var(--accent); color:var(--accent);}
+  .flow .arrow{color:var(--accent); font-size:1.3rem; font-weight:900;}
+  .flow.back .arrow{color:var(--bad);}
+
+  .table-wrap{border:1px solid var(--line); border-radius:14px; overflow:hidden; overflow-x:auto;}
+  .data-table{width:100%; border-collapse:collapse; font-size:.86rem;}
+  .data-table th,.data-table td{padding:8px 10px; text-align:center; font-variant-numeric:tabular-nums;}
+  .data-table thead th{background:var(--paper-3); color:var(--ink-soft); font-weight:800; font-size:.72rem; letter-spacing:.03em; text-transform:uppercase;}
+  .data-table tbody tr{border-top:1px solid var(--line);}
+  .data-table tbody tr.hl-row{background:color-mix(in srgb, var(--accent) 12%, transparent); font-weight:800;}
+
+  .footnote{font-size:.82rem; color:var(--ink-faint); font-weight:600;}
+  pre{background:#10141c; color:#dfe6f2; border-radius:12px; padding:14px 16px; overflow-x:auto; font-size:.82rem; line-height:1.55; font-family:ui-monospace,Menlo,monospace; margin:0;}
+  pre .cmt{color:#7f8aa0;}
+
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+</style>
+</head>
+<body data-section="why">
+  <div class="chrome-top">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="hour-badge" id="hourBadge">NEURAL NETWORKS · II</div>
+      <div class="chapter-chip" id="chapterChip" style="display:none;">
+        <span class="num" id="chapterNum">1</span>
+        <span id="chapterLabel">—</span>
+      </div>
+    </div>
+    <button class="icon-btn" id="themeToggle" title="Toggle light / dark">🌗</button>
+  </div>
+
+  <main class="deck" id="deck">
+
+    <!-- S0 TITLE -->
+    <section class="slide" data-section="why" id="s0">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Deep Learning · Neural Networks, Part 2</div>
+        <h1 class="kicker-big">How does a network<br/><span class="glow">actually learn?</span></h1>
+        <p class="body-text" style="max-width:780px;">Last time we built a neuron by hand and set its weights ourselves. Today: the network sets its own weights — by making a guess, measuring how wrong it is, and flowing that error <i>backwards</i> to nudge every parameter. That's <b>backpropagation</b>. Then we take the trained net to production: PyTorch → Flask → Google Cloud.</p>
+        <div class="roadmap" style="width:100%; margin-top:6px;">
+          <div class="stop" style="--stop-color:var(--c-why);"><div class="ico">➡️</div><div class="t">1 · Forward Pass &amp; Loss</div></div>
+          <div class="stop" style="--stop-color:var(--c-concept);"><div class="ico">⬅️</div><div class="t">2 · Backpropagation</div></div>
+          <div class="stop" style="--stop-color:var(--c-mech);"><div class="ico">🎚️</div><div class="t">3 · The Update &amp; Epochs</div></div>
+          <div class="stop" style="--stop-color:var(--c-eval);"><div class="ico">🚀</div><div class="t">4 · PyTorch → Flask → GCP</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 1 — FORWARD PASS & LOSS ===== -->
+    <section class="slide" data-section="why" id="sW1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Recap · The Salary Network</div>
+        <h1>One input, <span class="glow">two hidden neurons</span>, one output</h1>
+        <p class="body-text">Experience <b>x</b> → two hidden neurons (each an affine step + ReLU) → an output neuron that mixes them. ŷ = v₁·h₁ + v₂·h₂ + c, where h₁ = ReLU(w₁x + b₁) and h₂ = ReLU(w₂x + b₂).</p>
+        <div class="flow">
+          <span class="node">x = experience</span>
+          <span class="arrow">→</span>
+          <span class="node">h₁, h₂ (ReLU)</span>
+          <span class="arrow">→</span>
+          <span class="node hl">ŷ = salary</span>
+        </div>
+        <div class="banner info">Hyperparameters we choose: the <b>number of hidden neurons / layers</b> and the <b>choice of non-linearity</b> (ReLU here). The weights themselves are <i>learned</i> — that's today's story.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="why" id="sW2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">The Forward Pass</div>
+          <h1>Make a guess for <span class="glow">x = 5 years</span></h1>
+          <p class="body-text">Plug the current weights through the network, left to right. With w₁=4, b₁=20, w₂=1, b₂=−3, v₁=1, v₂=10, c=0:</p>
+          <div class="banner good">ŷ = 1·(40) + 10·(2) + 0 = <b>60</b> &nbsp;(i.e. ₹60k)</div>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Step</th><th>Computation</th><th>Value</th></tr></thead>
+            <tbody>
+              <tr><td>h₁ = ReLU(w₁x + b₁)</td><td>ReLU(4·5 + 20)</td><td>40</td></tr>
+              <tr><td>h₂ = ReLU(w₂x + b₂)</td><td>ReLU(1·5 − 3)</td><td>2</td></tr>
+              <tr class="hl-row"><td>ŷ = v₁h₁ + v₂h₂ + c</td><td>1·40 + 10·2 + 0</td><td>60</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="why" id="sW3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">The Loss · "How wrong were we?"</div>
+        <h1>L = ½(ŷ − y)² = <span class="glow">12.5</span></h1>
+        <p class="body-text">The real salary for 5 years is ₹65k, but we guessed ₹60k. The loss turns that gap into a single number we can shrink:</p>
+        <div class="banner bad">L = ½ (60 − 65)² = ½ (−5)² = ½ · 25 = <b>12.5</b></div>
+        <div class="banner info"><b>Why squared, and why halved?</b> Squaring makes the error always positive and punishes big misses more. The ½ is a convenience — it cancels the 2 when we differentiate, keeping the math clean. This is <b>MSE</b> (mean squared error) for a single row.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="why" id="sW4">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Loss vs. Metric · Don't Confuse Them</div>
+          <h1>The model learns from the <span class="glow">loss</span>, not the metric</h1>
+          <p class="body-text">A <b>metric</b> (accuracy, F1) is a human-readable score. But accuracy is a step function — flat, then a jump — so its gradient is zero almost everywhere. You can't descend a staircase of zeros.</p>
+        </div>
+        <div class="stack">
+          <div class="vocab-card"><div class="vocab-term">Loss</div><div class="vocab-def">Differentiable by design (MSE, log-loss). The optimizer can compute its slope and follow it downhill.</div></div>
+          <div class="vocab-card"><div class="vocab-term">Metric</div><div class="vocab-def">Human quantification of performance (Accuracy, F1). Often <i>not</i> differentiable — can't train on it directly.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 2 — BACKPROPAGATION ===== -->
+    <section class="slide" data-section="concept" id="sC1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Two Directions of Information Flow</div>
+        <h1>Forward to guess, <span class="glow">backward to learn</span></h1>
+        <div class="flow" style="margin:6px 0;">
+          <span class="node">Input</span><span class="arrow">→</span><span class="node">Hidden</span><span class="arrow">→</span><span class="node">Output</span><span class="arrow">→</span><span class="node hl">Loss ✓</span>
+        </div>
+        <div class="flow back">
+          <span class="node hl">Input-side grads</span><span class="arrow">←</span><span class="node">Hidden grads</span><span class="arrow">←</span><span class="node">Output grads</span><span class="arrow">←</span><span class="node">Loss</span>
+        </div>
+        <div class="banner info"><b>Forward pass:</b> data flows in, a prediction and loss come out. <b>Backward pass (backpropagation):</b> the loss flows back, handing each parameter its share of the blame — its <b>gradient</b>.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="concept" id="sC2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">What Is a Gradient?</div>
+          <h1>"If I nudge this <span class="glow">one weight</span>, how does the loss change?"</h1>
+          <p class="body-text">A gradient ∂L/∂w is the slope of the loss with respect to one parameter, holding the others fixed. Its <b>sign</b> tells you which way to move, its <b>size</b> tells you how much this parameter is to blame.</p>
+        </div>
+        <div class="stack">
+          <div class="banner bad">+ gradient → increasing this param <i>increases</i> loss → so decrease it.</div>
+          <div class="banner good">− gradient → increasing this param <i>decreases</i> loss → so increase it.</div>
+          <div class="vocab-card"><div class="vocab-term">Why the loss must be differentiable</div><div class="vocab-def">Gradients come from differentiation. Accuracy isn't differentiable — it can't "go through." The loss is chosen precisely so it can.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="concept" id="sC3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">The Chain Rule · One Weight's Blame</div>
+        <h1>∂L/∂w₁ = <span class="glow">∂L/∂ŷ · ∂ŷ/∂h₁ · ∂h₁/∂z₁ · ∂z₁/∂w₁</span></h1>
+        <p class="body-text">The error reaches w₁ by passing back through every step it took forward. Each factor answers one small question:</p>
+        <div class="card-grid">
+          <div class="card"><div class="ico">💰</div><h3>∂L/∂ŷ</h3><p>How does loss change w.r.t. the predicted salary? = ŷ − y = <b>−5</b>.</p></div>
+          <div class="card"><div class="ico">🔗</div><h3>∂ŷ/∂h₁</h3><p>How does the output change w.r.t. this hidden neuron? = v₁ = <b>1</b>.</p></div>
+          <div class="card"><div class="ico">⚡</div><h3>∂h₁/∂z₁</h3><p>ReLU's slope: <b>1</b> if z₁&gt;0, else 0. Here z₁=40 → <b>1</b>.</p></div>
+          <div class="card"><div class="ico">📊</div><h3>∂z₁/∂w₁</h3><p>How does the weighted sum change w.r.t. w₁? = x = <b>5</b>.</p></div>
+        </div>
+        <div class="banner bad">∂L/∂w₁ = (−5)·(1)·(1)·(5) = <b>−25</b></div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="concept" id="sC4">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Every Parameter's Gradient</div>
+        <h1>Backprop measures <span class="glow">each parameter's contribution</span> to the loss</h1>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Parameter</th><th>Current value</th><th>Gradient ∂L/∂θ</th><th>Reads as</th></tr></thead>
+            <tbody>
+              <tr><td>w₁</td><td>4</td><td>−25</td><td>(−5)(1)(1)(5)</td></tr>
+              <tr><td>b₁</td><td>20</td><td>−5</td><td>(−5)(1)(1)(1)</td></tr>
+              <tr><td>w₂</td><td>1</td><td>−250</td><td>(−5)(10)(1)(5)</td></tr>
+              <tr><td>b₂</td><td>−3</td><td>−50</td><td>(−5)(10)(1)(1)</td></tr>
+              <tr><td>v₁</td><td>1</td><td>−200</td><td>(−5)(h₁=40)</td></tr>
+              <tr><td>v₂</td><td>10</td><td>−10</td><td>(−5)(h₂=2)</td></tr>
+              <tr><td>c</td><td>0</td><td>−5</td><td>(−5)(1)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="footnote">All gradients are negative → every parameter should increase a little to pull ŷ up from 60 toward 65. w₂ (grad −250) is blamed most.</p>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 3 — THE UPDATE & EPOCHS ===== -->
+    <section class="slide" data-section="mech" id="sM1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">The Parameter Update · Gradient Descent</div>
+          <h1>θ<sub>new</sub> = θ<sub>old</sub> − <span class="glow">η · ∂L/∂θ</span></h1>
+          <p class="body-text">Take one small step <i>downhill</i>: subtract the gradient, scaled by the <b>learning rate</b> η. Drag η and watch the updated w₂ and the new prediction move. Too small = crawls; too big = overshoots.</p>
+          <div class="console">
+            <div class="field"><label>Learning rate η = <span class="val" id="lrLabel">0.0001</span></label><input type="range" id="lrSlider" min="0" max="100" value="10"></div>
+          </div>
+        </div>
+        <div class="visual-box">
+          <div class="stat-grid">
+            <div class="stat-tile"><div class="label">w₂ before</div><div class="value">1.000</div></div>
+            <div class="stat-tile accent"><div class="label">w₂ after</div><div class="value" id="w2after">1.025</div></div>
+            <div class="stat-tile"><div class="label">ŷ before</div><div class="value">60.0</div></div>
+            <div class="stat-tile accent"><div class="label">ŷ after</div><div class="value" id="yhatAfter">62.1</div></div>
+          </div>
+          <div class="banner info" id="lrNote" style="margin-top:4px;">A tiny η = 0.0001 nudges w₂ from 1 to 1.025 — ŷ creeps from 60 toward the target 65. One step of 3000.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="mech" id="sM2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">One Step, With Our lr = 0.0001</div>
+        <h1>Every weight nudges up, ŷ moves <span class="glow">60 → 62.1</span></h1>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Parameter</th><th>Before</th><th>Gradient</th><th>After = before − η·grad</th></tr></thead>
+            <tbody>
+              <tr><td>w₁</td><td>4</td><td>−25</td><td>4.0025</td></tr>
+              <tr><td>b₁</td><td>20</td><td>−5</td><td>20.0005</td></tr>
+              <tr><td>w₂</td><td>1</td><td>−250</td><td>1.025</td></tr>
+              <tr><td>b₂</td><td>−3</td><td>−50</td><td>−2.995</td></tr>
+              <tr><td>v₁</td><td>1</td><td>−200</td><td>1.02</td></tr>
+              <tr><td>v₂</td><td>10</td><td>−10</td><td>10.001</td></tr>
+              <tr><td>c</td><td>0</td><td>−5</td><td>0.0005</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="banner good">New forward pass: h₁=40.013, h₂=2.13, ŷ ≈ <b>62.12</b>. Loss fell from 12.5. Repeat ~3000 times and ŷ lands on ₹65k.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="mech" id="sM3">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">The Training Loop</div>
+        <h1 class="kicker-big">Guess → Measure → <span class="glow">Blame</span> → Nudge</h1>
+        <div class="flow" style="margin-top:6px;">
+          <span class="node">Input data</span><span class="arrow">→</span>
+          <span class="node">Forward pass</span><span class="arrow">→</span>
+          <span class="node">Loss</span><span class="arrow">→</span>
+          <span class="node hl">Backprop</span><span class="arrow">→</span>
+          <span class="node">Optimizer step</span>
+        </div>
+        <p class="body-text" style="max-width:720px;">These five steps are one iteration. Do them over and over and the loss shrinks until the predictions match reality. In PyTorch it's literally five lines inside a <code>for</code> loop.</p>
+      </div>
+    </section>
+
+    <section class="slide" data-section="mech" id="sM4">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Epoch vs. Batch vs. Iteration</div>
+        <h1>Three words people <span class="glow">mix up</span></h1>
+        <div class="card-grid">
+          <div class="card"><div class="ico">🔁</div><h3>Epoch</h3><p>One complete pass through the <b>entire</b> dataset. 1000 rows seen once = 1 epoch.</p></div>
+          <div class="card"><div class="ico">📦</div><h3>Batch</h3><p>A chunk of rows processed together before one update. 1000 rows in batches of 100 = 10 batches.</p></div>
+          <div class="card" style="border-top:5px solid var(--accent);"><div class="ico">👣</div><h3>Iteration</h3><p>One optimizer step — one batch's worth. 10 batches → 10 iterations = 1 epoch.</p></div>
+        </div>
+        <div class="banner info"><b>Per-row</b> (batch=1): sensitive, every row's pattern counts — SE = ½(ŷ−y)². <b>Mini-batch</b>: smoothed over e.g. 100 rows. <b>Full-batch</b>: one update per epoch over all N rows — MSE = (1/2N)Σ(ŷ−y)². Our tiny SalaryNet uses full-batch (all 11 rows at once).</div>
+      </div>
+    </section>
+
+    <!-- ===== SECTION 4 — PYTORCH → FLASK → GCP ===== -->
+    <section class="slide" data-section="eval" id="sE1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">In PyTorch · The Five Lines</div>
+          <h1>The loop, <span class="glow">in real code</span></h1>
+          <p class="body-text">PyTorch computes every gradient for you — <code>loss.backward()</code> does the entire chain rule across the whole network. You never hand-derive it again.</p>
+          <div class="vocab-card"><div class="vocab-term">zero_grad()</div><div class="vocab-def">"Factory reset" — clears last step's gradients so they don't accumulate.</div></div>
+        </div>
+        <pre><code><span class="cmt"># one epoch = one pass over X</span>
+for epoch in range(3000):
+    pred = model(X)              <span class="cmt"># forward</span>
+    loss = loss_fn(pred, y)      <span class="cmt"># measure</span>
+
+    optimizer.zero_grad()        <span class="cmt"># reset</span>
+    loss.backward()              <span class="cmt"># backprop</span>
+    optimizer.step()             <span class="cmt"># nudge</span>
+
+loss_fn   = nn.MSELoss()
+optimizer = torch.optim.Adam(
+    model.parameters(), lr=0.02)</code></pre>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Save the Trained Brain</div>
+        <h1>Ship the <span class="glow">state_dict</span>, not the object</h1>
+        <pre style="max-width:760px;"><code>torch.save(model.state_dict(), "salary_net.pth")   <span class="cmt"># just the learned weights</span></code></pre>
+        <p class="body-text">We save only the <b>weights</b> (the state_dict), not the whole Python object. The app rebuilds the same <code>SalaryNet</code> class and pours these numbers back in. This is the portable, standard way to ship a model — a few KB file that any machine with <code>model.py</code> can load.</p>
+        <div class="banner good">✓ Trained once in Jupyter → saved to a file → loaded forever after, no retraining.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Serve It · Flask</div>
+          <h1>From a file to a <span class="glow">website &amp; API</span></h1>
+          <p class="body-text">A trained model in a file helps no one. Flask loads the model <b>once at startup</b> and answers requests on port 8080 — a web form at <code>/</code>, a JSON API at <code>/api/predict</code>, and <code>/health</code> for the cloud to check it's alive.</p>
+        </div>
+        <pre><code>model = load_model()   <span class="cmt"># once, at startup</span>
+
+@app.route("/api/predict",
+           methods=["POST"])
+def predict_api():
+    exp = request.get_json()["experience"]
+    x = torch.tensor([[float(exp)]])
+    with torch.no_grad():
+        s = model(x).item() * 1000
+    return jsonify(salary=s)
+
+<span class="cmt"># app.run(host="0.0.0.0", port=8080)</span></code></pre>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE4">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Deploy It · Google Cloud</div>
+        <h1>Four moves to put it <span class="glow">on the internet</span></h1>
+        <div class="card-grid">
+          <div class="card"><div class="ico">💻</div><h3>1 · Create an e2-small VM</h3><p>A small rented computer. Tick Allow HTTP/HTTPS at creation.</p></div>
+          <div class="card"><div class="ico">🔓</div><h3>2 · Open port 8080</h3><p>In <b>Cloud Shell</b>: a firewall rule for tcp:8080, plus tag the VM <code>salarynet</code>.</p></div>
+          <div class="card"><div class="ico">⚙️</div><h3>3 · SSH, clone, run</h3><p>In <b>VM SSH</b>: apt-get git + venv, <code>git clone</code>, build venv, <code>python app.py</code>.</p></div>
+          <div class="card" style="border-top:5px solid var(--accent);"><div class="ico">🌍</div><h3>4 · Visit it</h3><p><code>http://EXTERNAL_IP:8080</code> — live for the whole world.</p></div>
+        </div>
+        <div class="banner warn">⚠️ The #1 gotcha: the Allow-HTTP tick only opens ports 80/443. Port <b>8080</b> needs its own firewall rule <i>and</i> the matching <code>salarynet</code> tag on the VM. Full handholding in the Deployment Guide.</div>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="chrome-bottom">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous slide">‹</button>
+    <div class="progress" id="progress"></div>
+    <div class="slide-counter"><span id="curNum" class="tabular">1</span> / <span id="totalNum" class="tabular">—</span></div>
+    <button class="nav-btn" id="nextBtn" aria-label="Next slide">›</button>
+  </nav>
+
+<script>
+"use strict";
+const $  = (sel, el=document) => el.querySelector(sel);
+const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+const clamp = (v,lo,hi) => Math.max(lo, Math.min(hi,v));
+
+const slideEls = $$('.slide');
+let cur = 0;
+
+const CHAPTERS = {
+  why:     { num:1, label:'Forward Pass &amp; Loss' },
+  concept: { num:2, label:'Backpropagation' },
+  mech:    { num:3, label:'The Update &amp; Epochs' },
+  eval:    { num:4, label:'PyTorch → Flask → GCP' },
+};
+const onEnter = {};
+
+function buildDots(){
+  const wrap = $('#progress'); wrap.innerHTML = '';
+  let last = null;
+  slideEls.forEach((s, i) => {
+    if(last !== null && s.dataset.section !== last){
+      const g = document.createElement('span'); g.className = 'dot gap'; wrap.appendChild(g);
+    }
+    const b = document.createElement('button');
+    b.className = 'dot'; b.setAttribute('aria-label','Go to slide '+(i+1));
+    b.addEventListener('click', () => goTo(i)); wrap.appendChild(b);
+    last = s.dataset.section;
+  });
+}
+function goTo(i){
+  i = clamp(i, 0, slideEls.length-1);
+  slideEls[cur].classList.remove('active');
+  cur = i;
+  const s = slideEls[cur];
+  s.classList.add('active');
+  document.body.dataset.section = s.dataset.section;
+  const chip = $('#chapterChip'), meta = CHAPTERS[s.dataset.section];
+  if(meta){ chip.style.display='flex'; $('#chapterNum').textContent=meta.num; $('#chapterLabel').innerHTML=meta.label; }
+  else chip.style.display='none';
+  $('#curNum').textContent = cur+1;
+  $('#prevBtn').disabled = cur===0;
+  $('#nextBtn').disabled = cur===slideEls.length-1;
+  $$('.dot:not(.gap)', $('#progress')).forEach((d,idx)=> d.classList.toggle('active', idx===cur));
+  const fn = onEnter[s.id]; if(fn) requestAnimationFrame(fn);
+}
+function next(){ if(cur<slideEls.length-1) goTo(cur+1); }
+function prev(){ if(cur>0) goTo(cur-1); }
+$('#nextBtn').addEventListener('click', next);
+$('#prevBtn').addEventListener('click', prev);
+window.addEventListener('keydown', e => {
+  if(e.key==='ArrowRight'||e.key===' '){ e.preventDefault(); next(); }
+  else if(e.key==='ArrowLeft'){ e.preventDefault(); prev(); }
+});
+
+const themeBtn = $('#themeToggle');
+(function(){ const t = localStorage.getItem('sv-theme-nn2'); if(t) document.documentElement.setAttribute('data-theme', t); })();
+themeBtn.addEventListener('click', () => {
+  const now = document.documentElement.getAttribute('data-theme');
+  const dark = now ? now==='dark' : window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const nt = dark ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', nt);
+  localStorage.setItem('sv-theme-nn2', nt);
+});
+
+/* M1 — learning-rate update demo. slider 0..100 maps to lr 0..0.0004 */
+const relu = z => Math.max(0, z);
+function forwardYhat(w2){
+  // only w2 moves in this demo; others at their post-step values would differ,
+  // but to isolate the lr effect we move ALL params by the same lr on their grads.
+  return null;
+}
+function renderLr(){
+  const sVal = parseInt($('#lrSlider').value, 10);     // 0..100
+  const lr = (sVal/100) * 0.0004;                       // 0 .. 0.0004
+  $('#lrLabel').textContent = lr.toFixed(6);
+  // grads from the worked example
+  const g = { w1:-25, b1:-5, w2:-250, b2:-50, v1:-200, v2:-10, c:-5 };
+  const p0 = { w1:4, b1:20, w2:1, b2:-3, v1:1, v2:10, c:0 };
+  const p = {};
+  for(const k in p0){ p[k] = p0[k] - lr*g[k]; }
+  const x = 5;
+  const h1 = relu(p.w1*x + p.b1);
+  const h2 = relu(p.w2*x + p.b2);
+  const yhat = p.v1*h1 + p.v2*h2 + p.c;
+  $('#w2after').textContent = p.w2.toFixed(3);
+  $('#yhatAfter').textContent = yhat.toFixed(1);
+  const note = $('#lrNote');
+  if(sVal === 0) note.textContent = 'η = 0 → no movement at all. The network never learns.';
+  else if(lr <= 0.00012) note.textContent = 'Small η: a gentle, safe nudge — ŷ creeps toward the target 65 over many steps.';
+  else if(lr <= 0.00028) note.textContent = 'Larger η: ŷ jumps further each step — faster, but risk of overshooting 65.';
+  else note.textContent = 'η too big: ŷ overshoots past 65 in a single step — training can diverge.';
+}
+onEnter['sM1'] = renderLr;
+$('#lrSlider').addEventListener('input', renderLr);
+
+buildDots();
+$('#totalNum').textContent = slideEls.length;
+const dl = parseInt(new URLSearchParams(location.search).get('slide'), 10);
+goTo(Number.isFinite(dl) ? dl-1 : 0);
+</script>
+</body>
+</html>

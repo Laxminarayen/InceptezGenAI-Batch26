@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Classwork Notes · Neural Networks II</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#6B4FA0;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#B49AE0;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.6; }
+  .wrap{max-width:840px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 80px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.7rem,4vw,2.4rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 6px;}
+  .subtitle{color:var(--ink-soft); font-size:1rem; margin-bottom:8px;}
+  .pdf-link{display:inline-flex; align-items:center; gap:8px; margin:14px 10px 34px 0; font-size:.9rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .pdf-link:hover{border-color:var(--accent); color:var(--accent);}
+  h2{font-size:1.35rem; font-weight:900; margin:44px 0 14px; padding-top:16px; border-top:1px solid var(--line);}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h3{font-size:1.05rem; font-weight:800; margin:22px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:8px 10px; text-align:center; border:1px solid var(--line);}
+  th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  tr.hl td{background:color-mix(in srgb, var(--accent) 10%, transparent); font-weight:800;}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .agenda{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 20px;}
+  .agenda span{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:8px 16px; font-size:.86rem; font-weight:700; color:var(--ink);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.92em; font-family:var(--mono);}
+  pre{background:#10141c; color:#dfe6f2; border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.85rem; line-height:1.55; font-family:var(--mono);}
+  pre code{background:none; padding:0;}
+  pre .cmt{color:#7f8aa0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Day 32 · Classwork Notes</div>
+  <h1>Neural Networks II: Backpropagation &amp; Deployment</h1>
+  <p class="subtitle">Last session we set a neuron's weights by hand. Today the network sets its own — forward pass to guess, a loss to measure the error, backpropagation to blame each weight, and an optimizer step to nudge them. Then we take the trained SalaryNet to production: PyTorch → Flask → a live Google Cloud VM.</p>
+  <a class="pdf-link" href="NeuralNet2-Backpropagation.pdf" target="_blank">📄 Handwritten notes (PDF)</a>
+  <a class="pdf-link" href="SalaryNet_Teaching_Guide.pdf" target="_blank">📄 SalaryNet Teaching Guide (PDF)</a>
+
+  <h2>Agenda</h2>
+  <div class="agenda">
+    <span>Implement SalaryNet in PyTorch</span>
+    <span>Forward pass &amp; loss</span>
+    <span>Backpropagation by hand</span>
+    <span>The parameter update</span>
+    <span>Epoch / batch / iteration</span>
+    <span>Package in Flask</span>
+    <span>Deploy to a GCP VM</span>
+  </div>
+
+  <h2>Recap: The Salary Network</h2>
+  <p>One input (experience x), a hidden layer of two neurons (each affine + ReLU), one output neuron that mixes them. The weights that were set by hand last time are what the network will now <b>learn</b>.</p>
+  <div class="formula">
+    ŷ = v₁·h₁ + v₂·h₂ + c, &nbsp; where &nbsp; h₁ = ReLU(w₁x + b₁), &nbsp; h₂ = ReLU(w₂x + b₂)
+    <span class="sub">Hyperparameters we choose: number of hidden neurons / layers, and the choice of non-linearity (ReLU). Everything else is learned.</span>
+  </div>
+
+  <h2>Forward Pass: Make a Guess (x = 5)</h2>
+  <p>With w₁=4, b₁=20, w₂=1, b₂=−3, v₁=1, v₂=10, c=0:</p>
+  <table>
+    <thead><tr><th>Step</th><th>Computation</th><th>Value</th></tr></thead>
+    <tbody>
+      <tr><td>h₁ = ReLU(w₁x + b₁)</td><td>ReLU(4·5 + 20)</td><td>40</td></tr>
+      <tr><td>h₂ = ReLU(w₂x + b₂)</td><td>ReLU(1·5 − 3)</td><td>2</td></tr>
+      <tr class="hl"><td>ŷ = v₁h₁ + v₂h₂ + c</td><td>1·40 + 10·2 + 0</td><td>60</td></tr>
+    </tbody>
+  </table>
+  <p>The network guesses ₹60k. The real salary for 5 years is ₹65k.</p>
+
+  <h2>The Loss: How Wrong Were We?</h2>
+  <div class="formula">
+    L = ½(ŷ − y)² = ½(60 − 65)² = ½(−5)² = 12.5
+    <span class="sub">Squaring makes the error positive and punishes big misses; the ½ cancels the 2 when differentiating. This is MSE for one row.</span>
+  </div>
+  <div class="note"><b>Loss vs. Metric.</b> The model learns from the <b>loss</b> (differentiable, e.g. MSE / log-loss), not from a <b>metric</b> (Accuracy, F1). A metric is a human-readable score but is often not differentiable — its gradient is zero almost everywhere, so you can't descend it. "That which is not differentiable cannot go through."</div>
+
+  <h2>Backpropagation: Two Directions of Information Flow</h2>
+  <p><b>Forward prop:</b> Input → Hidden → Output → Loss. <b>Backward prop:</b> Loss → output gradients → hidden-layer gradients → input-side gradients. Backpropagation measures the <b>contribution of each parameter towards the loss</b>.</p>
+  <h3>What is a gradient?</h3>
+  <p>∂L/∂w = "how does my loss change when I make a small change to a particular weight, holding the others fixed?" A <b>positive</b> gradient means increasing that weight increases loss (so decrease it); a <b>negative</b> gradient means increasing it decreases loss (so increase it). Gradients come from <b>differentiation</b> — which is exactly why the loss must be differentiable.</p>
+
+  <h3>The chain rule for w₁</h3>
+  <div class="formula">
+    ∂L/∂w₁ = ∂L/∂ŷ · ∂ŷ/∂h₁ · ∂h₁/∂z₁ · ∂z₁/∂w₁ = (−5)·(1)·(1)·(5) = −25
+    <span class="sub">∂L/∂ŷ = ŷ−y = −5 (how loss changes w.r.t. predicted salary). ∂ŷ/∂h₁ = v₁ = 1 (how output changes w.r.t. the hidden neuron). ∂h₁/∂z₁ = 1 (ReLU slope, since z₁=40&gt;0). ∂z₁/∂w₁ = x = 5 (how the weighted sum changes w.r.t. w₁).</span>
+  </div>
+
+  <h3>Every parameter's gradient</h3>
+  <table>
+    <thead><tr><th>Parameter</th><th>Current value</th><th>Gradient ∂L/∂θ</th></tr></thead>
+    <tbody>
+      <tr><td>w₁</td><td>4</td><td>−25</td></tr>
+      <tr><td>b₁</td><td>20</td><td>−5</td></tr>
+      <tr><td>w₂</td><td>1</td><td>−250</td></tr>
+      <tr><td>b₂</td><td>−3</td><td>−50</td></tr>
+      <tr><td>v₁</td><td>1</td><td>−200</td></tr>
+      <tr><td>v₂</td><td>10</td><td>−10</td></tr>
+      <tr><td>c</td><td>0</td><td>−5</td></tr>
+    </tbody>
+  </table>
+  <p>All negative → every parameter should increase slightly to pull ŷ up from 60 toward 65. (Output grads: ∂L/∂v₁ = (ŷ−y)·h₁ = −5·40 = −200; ∂L/∂v₂ = −5·2 = −10; ∂L/∂c = −5.)</p>
+
+  <h2>The Parameter Update: Gradient Descent</h2>
+  <div class="formula">
+    θ<sub>new</sub> = θ<sub>old</sub> − η · (∂L/∂θ)
+    <span class="sub">η is the learning rate (step size). We used η = 0.0001. Subtracting a negative gradient nudges each parameter up.</span>
+  </div>
+  <table>
+    <thead><tr><th>Parameter</th><th>Before</th><th>Gradient</th><th>After = before − 0.0001·grad</th></tr></thead>
+    <tbody>
+      <tr><td>w₁</td><td>4</td><td>−25</td><td>4.0025</td></tr>
+      <tr><td>b₁</td><td>20</td><td>−5</td><td>20.0005</td></tr>
+      <tr><td>w₂</td><td>1</td><td>−250</td><td>1.025</td></tr>
+      <tr><td>b₂</td><td>−3</td><td>−50</td><td>−2.995</td></tr>
+      <tr><td>v₁</td><td>1</td><td>−200</td><td>1.02</td></tr>
+      <tr><td>v₂</td><td>10</td><td>−10</td><td>10.001</td></tr>
+      <tr><td>c</td><td>0</td><td>−5</td><td>0.0005</td></tr>
+    </tbody>
+  </table>
+  <p>New forward pass: h₁ = ReLU(4.0025·5 + 20.0005) = 40.013, h₂ = ReLU(1.025·5 − 2.995) = 2.13, ŷ = 1.02·40.013 + 10.001·2.13 + 0.0005 ≈ <b>62.12</b>. The loss fell from 12.5. Repeat the loop ~3000 times and ŷ lands on ₹65k.</p>
+
+  <h2>Epoch / Batch / Iteration</h2>
+  <ul>
+    <li><b>Epoch</b> — one complete pass through the entire dataset (all rows seen once).</li>
+    <li><b>Batch</b> — a chunk of rows processed together before one update. 1000 rows in batches of 100 → 10 batches.</li>
+    <li><b>Iteration</b> — one optimizer step (one batch's worth). 10 batches → 10 iterations = 1 epoch.</li>
+  </ul>
+  <div class="note"><b>Per-row</b> (batch=1): sensitive optimizer, every row's pattern counts — SE = ½(ŷ−y)². <b>Mini-batch</b>: a little smoothed (e.g. 100 rows). <b>Full-batch</b>: one update per epoch over all N rows — MSE = (1/2N)Σ(ŷ−y)². Our tiny SalaryNet trains full-batch on all 11 rows at once.</div>
+
+  <h2>SalaryNet in PyTorch</h2>
+  <p>Why PyTorch (or TensorFlow)? They let us use GPUs efficiently and compute every gradient automatically — <code>loss.backward()</code> runs the entire chain rule for us.</p>
+  <pre><code>class SalaryNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.hidden = nn.Linear(1, 2)   <span class="cmt"># 1 input -> 2 hidden (h1, h2)</span>
+        self.relu   = nn.ReLU()         <span class="cmt"># activation</span>
+        self.output = nn.Linear(2, 1)   <span class="cmt"># 2 hidden -> 1 output</span>
+    def forward(self, x):
+        h = self.relu(self.hidden(x))   <span class="cmt"># weighted sum -> ReLU</span>
+        return self.output(h)
+
+loss_fn   = nn.MSELoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=0.02)
+
+for epoch in range(3000):
+    pred = model(X)              <span class="cmt"># 1. forward (guess)</span>
+    loss = loss_fn(pred, y)      <span class="cmt"># 2. measure error</span>
+    optimizer.zero_grad()        <span class="cmt"># 3. reset old gradients (factory reset)</span>
+    loss.backward()              <span class="cmt"># 4. backprop (how to improve)</span>
+    optimizer.step()             <span class="cmt"># 5. nudge the weights</span>
+
+torch.save(model.state_dict(), "salary_net.pth")   <span class="cmt"># save just the weights</span></code></pre>
+  <p>By default PyTorch initialises weights randomly; in class we copied in sensible starting weights to trace the math. <code>Adam</code> is the optimizer (it decides each nudge); <code>lr=0.02</code> is the learning rate. We save only the <b>state_dict</b> — the learned numbers — not the whole Python object, because that's the portable way to ship a model.</p>
+
+  <h2>Package in Flask &amp; Deploy to GCP</h2>
+  <p>The trained model is loaded <b>once at startup</b> by a small Flask app (<code>app.py</code>) that serves a web form at <code>/</code>, a JSON API at <code>/api/predict</code>, and <code>/health</code> for the cloud to check it's alive — all on port <b>8080</b>. Then we push to GitHub and deploy on a Google Cloud <b>e2-small</b> VM: create the VM, open port 8080 with a firewall rule and the <code>salarynet</code> tag (in Cloud Shell), then SSH in, install git + venv, clone, and run.</p>
+  <div class="note"><b>Full click-by-click handholding</b> — creating the VM, Cloud Shell vs VM SSH, the port-8080 firewall rule, the network tag, SSH install &amp; clone, opening the live site, and every troubleshooting case — is in the <a href="gcp-deployment-guide.html">Deploy to Google Cloud — Step by Step</a> guide.</div>
+
+  <div class="note">Want the formal chain-rule derivation, optimizers (SGD / Adam) in depth, batch-size trade-offs, and the full PyTorch + state_dict reference? See <a href="neural-networks-2-textbook-notes.html">Neural Networks II — Reference Notes</a>.</div>
+</div>
+</body>
+</html>

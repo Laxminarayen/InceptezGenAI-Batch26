@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Deploy to Google Cloud — Step by Step</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#1E6FA8;
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40;
+      --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E;
+      --line: rgba(239,233,218,.16); --accent:#5FA8E0;
+      --good:#3FBB7C; --warn:#E3A238; --bad:#E36868;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap{max-width:880px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:720px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 30px;}
+  .related-links a{display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:30px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px;}
+  .toc li{margin-bottom:6px;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.94rem;}
+  .toc a:hover{color:var(--accent);}
+  h2{font-size:1.4rem; font-weight:900; margin:46px 0 14px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:16px;}
+  h2 .num{display:inline-flex; align-items:center; justify-content:center; min-width:30px; height:30px; padding:0 8px; border-radius:8px; background:var(--accent); color:#fff; font-size:.95rem; margin-right:10px; vertical-align:middle;}
+  h3{font-size:1.08rem; font-weight:800; margin:24px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:7px;}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono); color:var(--ink);}
+  pre{position:relative; background:#10141c; color:#dfe6f2; border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:10px 0 16px; font-size:.86rem; line-height:1.6; font-family:var(--mono);}
+  pre code{background:none; padding:0; color:inherit; font-size:1em;}
+  pre .cmt{color:#7f8aa0;}
+  pre .tag{position:absolute; top:0; right:0; font-family:var(--font); font-size:.64rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; padding:4px 10px; border-bottom-left-radius:8px;}
+  pre .tag.shell{background:#2f6db0; color:#fff;}
+  pre .tag.ssh{background:#8a5a1a; color:#fff;}
+  pre .tag.local{background:#3a7d55; color:#fff;}
+
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:9px 12px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.92rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--warn); background:color-mix(in srgb, var(--warn) 9%, var(--paper-2));}
+  .note.danger{border-left:4px solid var(--bad); background:color-mix(in srgb, var(--bad) 9%, var(--paper-2));}
+  .note.good{border-left:4px solid var(--good); background:color-mix(in srgb, var(--good) 9%, var(--paper-2));}
+  .note.tip{border-left:4px solid var(--accent);}
+
+  /* console mockups (stand-ins for screenshots) */
+  .shot{border:1px solid var(--line); border-radius:12px; overflow:hidden; margin:14px 0 18px; box-shadow:0 8px 24px -14px rgba(0,0,0,.4);}
+  .shot-bar{display:flex; align-items:center; gap:8px; background:var(--paper-3); padding:9px 14px; border-bottom:1px solid var(--line); font-size:.8rem; font-weight:700; color:var(--ink-soft);}
+  .shot-bar .dot{width:10px; height:10px; border-radius:50%;}
+  .shot-bar .r{background:#e36868;} .shot-bar .y{background:#e3b038;} .shot-bar .g{background:#4caf72;}
+  .shot-bar .url{margin-left:10px; font-weight:600; font-family:var(--mono); font-size:.76rem; color:var(--ink-faint);}
+  .shot-body{padding:16px 18px; background:var(--surface,#fff); background:var(--paper); font-size:.9rem;}
+  .shot-body .field-row{display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px dashed var(--line);}
+  .shot-body .field-row:last-child{border-bottom:none;}
+  .shot-body .lbl{color:var(--ink-faint); font-weight:700;}
+  .shot-body .val{color:var(--ink); font-weight:800; font-family:var(--mono); text-align:right;}
+  .shot-body .val.pick{color:var(--accent);}
+  .shot-cap{font-size:.8rem; color:var(--ink-faint); font-style:italic; margin:-10px 0 18px; padding-left:4px;}
+  .fake-btn{display:inline-block; background:var(--accent); color:#fff; font-weight:800; font-size:.82rem; padding:7px 16px; border-radius:7px; margin-top:4px;}
+  .chk{display:inline-flex; align-items:center; gap:7px; font-weight:700; color:var(--ink); margin:3px 0;}
+  .chk .box{width:16px; height:16px; border-radius:4px; background:var(--accent); color:#fff; display:inline-flex; align-items:center; justify-content:center; font-size:.7rem; flex:none;}
+
+  .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 8px;}
+  .pill{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:.82rem; font-weight:700; color:var(--ink);}
+  .term-badge{display:inline-block; font-size:.66rem; font-weight:800; letter-spacing:.05em; text-transform:uppercase; padding:3px 9px; border-radius:6px; margin-right:6px;}
+  .term-badge.shell{background:color-mix(in srgb,#2f6db0 20%, var(--paper-2)); color:var(--accent);}
+  .term-badge.ssh{background:color-mix(in srgb,var(--warn) 20%, var(--paper-2)); color:var(--warn);}
+  .term-badge.local{background:color-mix(in srgb,var(--good) 20%, var(--paper-2)); color:var(--good);}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Class 32 · Deployment Guide</div>
+  <h1>Deploy Your Model to Google Cloud</h1>
+  <p class="abstract">A hold-your-hand, click-by-click walkthrough: take the neural network you trained and saved in Jupyter, wrap it in a Flask web app, put it on a Google Cloud virtual machine, and open it to the whole internet on port 8080. No prior cloud experience assumed — every button, every command, in order.</p>
+
+  <div class="related-links">
+    <a href="classwork-notes.html">📝 Classwork Notes</a>
+    <a href="neural-networks-2-textbook-notes.html">📚 Textbook Notes: Backpropagation</a>
+    <a href="SalaryNet_Teaching_Guide.pdf">📄 SalaryNet Teaching Guide (PDF)</a>
+    <a href="salarynet/app.py">🖥️ app.py</a>
+  </div>
+
+  <div class="note tip"><b>Two terminals — never mix them up.</b> This is the #1 source of confusion, so we label every command box:
+    <div class="pill-row" style="margin-top:8px;">
+      <span class="pill"><span class="term-badge local">LOCAL</span> your own laptop</span>
+      <span class="pill"><span class="term-badge shell">CLOUD SHELL</span> the <code>&gt;_</code> icon, top-right of the GCP Console — runs as <i>you</i>, can change firewall rules</span>
+      <span class="pill"><span class="term-badge ssh">VM SSH</span> the <b>SSH</b> button next to your VM — runs <i>inside</i> the VM, installs &amp; runs the app, <b>cannot</b> change firewall rules</span>
+    </div>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">The journey — 8 steps</div>
+    <ol>
+      <li><a href="#s0">Before you start — the big picture</a></li>
+      <li><a href="#s1">Step 1 · Save the trained model from Jupyter</a></li>
+      <li><a href="#s2">Step 2 · Set up the Flask app in a virtual environment (locally)</a></li>
+      <li><a href="#s3">Step 3 · Push the project to GitHub</a></li>
+      <li><a href="#s4">Step 4 · Create the GCP VM (e2-small) &amp; allow traffic</a></li>
+      <li><a href="#s5">Step 5 · Open port 8080 &amp; tag the VM (Cloud Shell)</a></li>
+      <li><a href="#s6">Step 6 · SSH in, install git &amp; venv, clone, run</a></li>
+      <li><a href="#s7">Step 7 · Open your live site in the browser</a></li>
+      <li><a href="#s8">Step 8 · Stop the VM · Troubleshooting</a></li>
+    </ol>
+  </div>
+
+  <div class="note"><b>About the screenshots:</b> the boxes below styled like browser/console windows are faithful <i>mock-ups</i> of what each GCP screen shows — the exact field names, values to pick, and buttons to click. Follow them against the real console and they will match what you see.</div>
+
+  <h2 id="s0">The big picture</h2>
+  <p>Four stages, and this guide walks all four: <b>train &amp; save</b> the model in a notebook → <b>serve</b> it with Flask → <b>push</b> it to GitHub → <b>deploy</b> it on a Google Cloud VM that the whole internet can reach.</p>
+  <div class="note"><b>Analogy:</b> training is practising past papers. Saving the model is writing down everything you learned. Serving with Flask is opening a help desk where people can ask questions. Deploying to the cloud is moving that help desk into a building the whole world can visit, 24/7.</div>
+
+  <h2 id="s1"><span class="num">1</span>Save the trained model from Jupyter</h2>
+  <p>In the training notebook, once the loss has shrunk and the predictions look good, save the learned weights to a file. We save only the <b>state_dict</b> (the learned numbers), not the whole Python object — it's the portable, standard way to ship a model.</p>
+  <pre><span class="tag local">Jupyter</span><code>torch.save(model.state_dict(), "salary_net.pth")   <span class="cmt"># just the weights</span></code></pre>
+  <p>This produces <code>salary_net.pth</code> — a small file (a few KB for our tiny net). The Flask app will rebuild the same <code>SalaryNet</code> class and pour these weights back in, so the server never has to retrain.</p>
+  <div class="note good"><b>Why state_dict and not the whole model?</b> Saving only the weights means the file doesn't depend on your exact folder layout or Python session. Anyone with <code>model.py</code> can recreate the network and load these numbers.</div>
+
+  <h2 id="s2"><span class="num">2</span>Set up the Flask app in a virtual environment</h2>
+  <p>Do this on <span class="term-badge local">LOCAL</span> your laptop first, to confirm everything runs before touching the cloud. A <b>virtual environment (venv)</b> is a private box of Python packages for just this project, so it never clashes with anything else on your machine.</p>
+  <p>Your project folder has these files (the app you'll deploy):</p>
+  <table>
+    <thead><tr><th>File</th><th>What it does</th></tr></thead>
+    <tbody>
+      <tr><td><code>model.py</code></td><td>Defines the <code>SalaryNet</code> network + a <code>load_model()</code> helper. Shared by notebook and app.</td></tr>
+      <tr><td><code>salary_net.pth</code></td><td>The saved, trained weights from Step 1.</td></tr>
+      <tr><td><code>app.py</code></td><td>The Flask web app — loads the model once at startup and serves predictions on port 8080.</td></tr>
+      <tr><td><code>requirements.txt</code></td><td>The exact packages needed: <code>torch</code> and <code>flask</code>.</td></tr>
+    </tbody>
+  </table>
+  <pre><span class="tag local">LOCAL</span><code>python3 -m venv venv                       <span class="cmt"># 1. create the private box</span>
+venv/bin/pip install -r requirements.txt    <span class="cmt"># 2. fill it from the list</span>
+venv/bin/python app.py                      <span class="cmt"># 3. run the app using that box</span></code></pre>
+  <p>When you see <code>Running on http://0.0.0.0:8080</code>, open <b>http://localhost:8080</b> in your browser. You should get the Salary Predictor form. Test the API too:</p>
+  <pre><span class="tag local">LOCAL</span><code>curl -X POST http://localhost:8080/api/predict \
+  -H 'Content-Type: application/json' \
+  -d '{"experience": 5}'
+<span class="cmt"># -> {"experience": 5, "salary": 65000}</span></code></pre>
+  <div class="note tip"><b>The app listens on <code>0.0.0.0:8080</code></b> (see the last line of <code>app.py</code>). <code>0.0.0.0</code> means "accept connections from any network interface" — essential on the cloud, where the request comes from the internet, not from inside the machine.</div>
+
+  <h2 id="s3"><span class="num">3</span>Push the project to GitHub</h2>
+  <p>We put the project on GitHub so the cloud VM can simply <b>clone</b> it — no copying files by hand. The trained <code>salary_net.pth</code> is committed too, so the server never retrains.</p>
+  <pre><span class="tag local">LOCAL</span><code>git init
+git add model.py app.py requirements.txt salary_net.pth
+git commit -m "SalaryNet app"
+<span class="cmt"># create a PUBLIC repo and push (GitHub CLI):</span>
+gh repo create SalaryNetApp --public --source=. --push</code></pre>
+  <div class="note"><b>Keep the venv out of git.</b> Add a <code>.gitignore</code> with <code>venv/</code> and <code>__pycache__/</code> — the big virtual-environment folder should never be committed; the VM builds its own fresh one.</div>
+  <div class="note good"><b>Our example repo</b> is <code>https://github.com/Laxminarayen/SalaryNetApp.git</code> — the clone command in Step 6 uses it. When you make your own, swap in your repo URL.</div>
+
+  <h2 id="s4"><span class="num">4</span>Create the GCP VM (e2-small) &amp; allow traffic</h2>
+  <p>A <b>Compute Engine VM</b> is a computer you rent from Google, running 24/7 in a data centre. Go to the Google Cloud Console, use the search bar at the top, type <b>VM instances</b>, and click <b>Create instance</b>.</p>
+
+  <div class="shot">
+    <div class="shot-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">console.cloud.google.com → Compute Engine → Create an instance</span></div>
+    <div class="shot-body">
+      <div class="field-row"><span class="lbl">Name</span><span class="val pick">salarynet-vm</span></div>
+      <div class="field-row"><span class="lbl">Region</span><span class="val pick">asia-south1 (Mumbai)</span></div>
+      <div class="field-row"><span class="lbl">Zone</span><span class="val">asia-south1-a</span></div>
+      <div class="field-row"><span class="lbl">Machine series</span><span class="val pick">E2</span></div>
+      <div class="field-row"><span class="lbl">Machine type</span><span class="val pick">e2-small &nbsp;(2 vCPU · 2 GB)</span></div>
+      <div class="field-row"><span class="lbl">Boot disk / OS</span><span class="val">Debian 12 &nbsp;(or Ubuntu)</span></div>
+      <div class="field-row"><span class="lbl">Firewall</span><span class="val"><span class="chk"><span class="box">✓</span>Allow HTTP</span> &nbsp; <span class="chk"><span class="box">✓</span>Allow HTTPS</span></span></div>
+    </div>
+  </div>
+  <div class="shot-cap">↑ The "Create an instance" screen — pick these exact values, then scroll down and click the blue <span class="fake-btn" style="padding:3px 10px; font-size:.72rem;">Create</span> button.</div>
+
+  <ul>
+    <li><b>Name:</b> anything — e.g. <code>salarynet-vm</code>.</li>
+    <li><b>Region:</b> pick one near you (<code>asia-south1</code> = Mumbai) for low latency.</li>
+    <li><b>Machine type:</b> series <b>E2</b>, type <b>e2-small</b> (2 GB RAM) — plenty for this tiny model, and cheap.</li>
+    <li><b>Boot disk:</b> <b>Debian</b> or <b>Ubuntu</b> (our commands use <code>apt-get</code>).</li>
+    <li>Under <b>Firewall</b>, tick <b>Allow HTTP traffic</b> and <b>Allow HTTPS traffic</b>.</li>
+    <li>Click <b>Create</b> and wait ~30 seconds for the green tick.</li>
+  </ul>
+  <div class="note warn"><b>Those tick-boxes only open ports 80 and 443.</b> Our app runs on port <b>8080</b>, which is <i>not</i> opened by them. We open 8080 ourselves in Step 5 — this is the step most people miss, and the usual reason the site won't load later.</div>
+
+  <h2 id="s5"><span class="num">5</span>Open port 8080 &amp; tag the VM</h2>
+  <p>Do this in <span class="term-badge shell">CLOUD SHELL</span> — the <code>&gt;_</code> icon at the top-right of the Console. It runs as <i>you</i>, so it's allowed to change firewall rules. (The VM's own SSH terminal is <b>not</b> — see the warning below.)</p>
+
+  <h3>5a · Create a firewall rule for port 8080</h3>
+  <p>This rule lets anyone on the internet (<code>0.0.0.0/0</code>) reach port 8080 on any VM that carries the network tag <code>salarynet</code>.</p>
+  <pre><span class="tag shell">CLOUD SHELL</span><code>gcloud compute firewall-rules create allow-8080 \
+  --allow tcp:8080 \
+  --target-tags salarynet \
+  --source-ranges 0.0.0.0/0</code></pre>
+
+  <h3>5b · Put the <code>salarynet</code> tag ON the VM</h3>
+  <p>The rule only applies to VMs that carry the tag. A brand-new VM does <b>not</b> have it, so we add it. First list your VMs to find the <b>zone</b>, then tag it.</p>
+  <pre><span class="tag shell">CLOUD SHELL</span><code>gcloud compute instances list          <span class="cmt"># note the ZONE column</span>
+
+gcloud compute instances add-tags salarynet-vm \
+  --zone=asia-south1-a --tags=salarynet</code></pre>
+  <p>You can also do this in the Console UI: <b>VM instances → click your VM → Edit → Network tags → add <code>salarynet</code> → Save</b>.</p>
+
+  <div class="note danger"><b>This is the single most common reason the website won't open.</b> The firewall rule can exist and the app can be running — but with no matching <code>salarynet</code> tag on the VM, Google silently blocks port 8080. Verify the tag landed:
+  <pre style="margin-top:8px;"><span class="tag shell">CLOUD SHELL</span><code>gcloud compute instances describe salarynet-vm \
+  --zone=asia-south1-a --format="value(tags.items)"
+<span class="cmt"># -> salarynet</span></code></pre></div>
+  <div class="note warn"><b>If you run a <code>gcloud</code> firewall/tag command inside the VM SSH window</b> you'll get <i>"Request had insufficient authentication scopes."</i> The VM isn't allowed to change firewall rules. Use <span class="term-badge shell">CLOUD SHELL</span>.</div>
+
+  <h2 id="s6"><span class="num">6</span>SSH in, install git &amp; venv, clone, run</h2>
+  <p>Back in <b>VM instances</b>, click the <b>SSH</b> button next to your VM. A black terminal window opens — this is <span class="term-badge ssh">VM SSH</span>, running <i>inside</i> the rented computer. Run these one at a time.</p>
+
+  <div class="shot">
+    <div class="shot-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">SSH-in-browser — salarynet-vm</span></div>
+    <div class="shot-body" style="font-family:var(--mono); font-size:.82rem; color:var(--ink-soft);">
+      yourname@salarynet-vm:~$ <span style="color:var(--ink);">sudo apt-get update</span><br>
+      yourname@salarynet-vm:~$ <span style="color:var(--ink);">git clone https://github.com/...</span><br>
+      yourname@salarynet-vm:~$ <span style="color:var(--ink);">venv/bin/python app.py</span><br>
+      <span style="color:var(--good);">* Running on http://0.0.0.0:8080</span>
+    </div>
+  </div>
+  <div class="shot-cap">↑ The in-browser SSH terminal you get from the <b>SSH</b> button. Everything below runs here.</div>
+
+  <h3>6a · Update the VM &amp; install git + venv</h3>
+  <pre><span class="tag ssh">VM SSH</span><code>sudo apt-get update
+sudo apt-get install -y git python3-venv</code></pre>
+  <p><code>sudo</code> means "run as administrator"; <code>apt-get update</code> refreshes the list of installable software; then we install <b>git</b> (to clone our repo) and <b>python3-venv</b> (to build the virtual environment).</p>
+
+  <h3>6b · Clone your repo from GitHub</h3>
+  <pre><span class="tag ssh">VM SSH</span><code>git clone https://github.com/Laxminarayen/SalaryNetApp.git
+cd SalaryNetApp</code></pre>
+
+  <h3>6c · Build the venv, install packages, run the app</h3>
+  <p>The <code>pip install</code> downloads PyTorch, so give it a minute or two.</p>
+  <pre><span class="tag ssh">VM SSH</span><code>python3 -m venv venv
+venv/bin/pip install -r requirements.txt
+venv/bin/python app.py</code></pre>
+  <p>When you see <b><code>Running on http://0.0.0.0:8080</code></b>, the app is live. <b>Leave this window open</b> — closing it stops the app. Stop the app any time with <b>Ctrl+C</b>.</p>
+  <div class="note">A harmless <i>"Failed to initialize NumPy"</i> warning may appear — ignore it, the app still works. Before leaving the terminal, you can confirm the app answers locally: <code>curl http://localhost:8080/health</code> should print <code>{"status":"ok"}</code>.</div>
+
+  <h2 id="s7"><span class="num">7</span>Open your live site in the browser</h2>
+  <p>Find the VM's <b>External IP</b> in the <b>VM instances</b> list (e.g. <code>34.171.128.177</code>), then visit it on port 8080.</p>
+  <div class="shot">
+    <div class="shot-bar"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span><span class="url">http://34.171.128.177:8080</span></div>
+    <div class="shot-body">
+      <div style="font-weight:900; font-size:1.1rem; color:var(--ink);">Salary Predictor</div>
+      <p style="margin:6px 0;">A tiny neural network that guesses salary from years of experience.</p>
+      <div class="field-row"><span class="lbl">Years of experience</span><span class="val">5</span></div>
+      <span class="fake-btn">Predict</span>
+      <div style="margin-top:12px; font-weight:900; color:var(--good);">Predicted salary: Rs 65,000</div>
+    </div>
+  </div>
+  <div class="shot-cap">↑ Your deployed app, reachable by anyone on the internet.</div>
+  <div class="note warn"><b>Three things people get wrong here:</b> use <code>http://</code> <b>not</b> <code>https://</code> (we set up no certificate); keep the <b>:8080</b> on the end (browsers hide it otherwise); and use the <b>External</b> IP, not the internal <code>10.x.x.x</code> one.</div>
+
+  <h2 id="s8"><span class="num">8</span>Stop the VM · Troubleshooting</h2>
+  <div class="note danger"><b>Stop the VM when class is over</b> so it stops costing money: <b>VM instances → tick your VM → Stop</b>. Starting it again later gives a <i>new</i> External IP. (Stopping does not delete anything — your files stay on the disk.)</div>
+
+  <h3>"The app runs, but the website won't open"</h3>
+  <p>Almost always the firewall tag. Work through these in order:</p>
+  <ol>
+    <li><span class="term-badge ssh">VM SSH</span> <code>curl http://localhost:8080/health</code> → if it prints <code>{"status":"ok"}</code>, the app is fine; it's a network issue (keep going).</li>
+    <li><span class="term-badge shell">CLOUD SHELL</span> confirm the VM carries the <code>salarynet</code> tag (Step 5b). Missing tag = the usual bug.</li>
+    <li><span class="term-badge shell">CLOUD SHELL</span> confirm the rule exists: <code>gcloud compute firewall-rules describe allow-8080</code></li>
+    <li>In the browser: <code>http://</code>, the <code>:8080</code> suffix, and the <b>External</b> IP.</li>
+  </ol>
+
+  <h3>"Port 8080 is in use by another program"</h3>
+  <p>An older copy of the app is still holding the port. See what it is, then stop it:</p>
+  <pre><span class="tag ssh">VM SSH</span><code>sudo ss -ltnp 'sport = :8080'     <span class="cmt"># what is holding 8080?</span>
+sudo pkill -9 -f app.py            <span class="cmt"># if it's python app.py</span>
+sudo fuser -k 8080/tcp             <span class="cmt"># last resort: free the port</span></code></pre>
+
+  <h3>"I killed it but it keeps coming back"</h3>
+  <p>A leftover <b>systemd</b> service with <code>Restart=always</code> is relaunching it. Find and remove it:</p>
+  <pre><span class="tag ssh">VM SSH</span><code>systemctl list-units --type=service | grep -i -E 'salary|gunicorn'
+sudo systemctl stop salarynet
+sudo systemctl disable salarynet
+sudo rm /etc/systemd/system/salarynet.service
+sudo systemctl daemon-reload</code></pre>
+
+  <h3>"insufficient authentication scopes"</h3>
+  <p>You ran a <code>gcloud</code> firewall/tag command inside <span class="term-badge ssh">VM SSH</span>. Those must run in <span class="term-badge shell">CLOUD SHELL</span> instead.</p>
+
+  <h3>To update the app later</h3>
+  <pre><span class="tag ssh">VM SSH</span><code>cd SalaryNetApp
+git pull
+venv/bin/python app.py</code></pre>
+
+  <div class="summary-box">
+    <h3>The whole journey, in one breath</h3>
+    <p>Save the weights in Jupyter (<code>state_dict</code> → <code>salary_net.pth</code>) → wrap the model in Flask and test it in a local <code>venv</code> on port 8080 → push the project to a public GitHub repo → create an <b>e2-small</b> VM with HTTP/HTTPS allowed → in <b>Cloud Shell</b>, open port 8080 with a firewall rule and tag the VM <code>salarynet</code> → in <b>VM SSH</b>, <code>apt-get</code> install git &amp; venv, clone the repo, build the venv, run <code>app.py</code> → open <code>http://EXTERNAL_IP:8080</code>. Stop the VM when you're done.</p>
+  </div>
+  <div class="pill-row">
+    <span class="pill">e2-small VM</span>
+    <span class="pill">Cloud Shell vs VM SSH</span>
+    <span class="pill">Firewall rule · port 8080</span>
+    <span class="pill">Network tag</span>
+    <span class="pill">venv</span>
+    <span class="pill">git clone</span>
+    <span class="pill">External IP</span>
+  </div>
+</div>
+</body>
+</html>
