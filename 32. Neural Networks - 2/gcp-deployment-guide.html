@@ -161,11 +161,14 @@ venv/bin/python app.py                      <span class="cmt"># 3. run the app u
 
   <h2 id="s3"><span class="num">3</span>Push the project to GitHub</h2>
   <p>We put the project on GitHub so the cloud VM can simply <b>clone</b> it — no copying files by hand. The trained <code>salary_net.pth</code> is committed too, so the server never retrains.</p>
-  <div class="note danger"><b>⚠️ First, never push the <code>venv/</code> folder.</b> A virtual environment with PyTorch inside is <b>200&nbsp;MB or more</b> — GitHub will reject or choke on it, and the VM doesn't need it anyway (it builds its own in Step 6). Before <code>git add</code>, create a <code>.gitignore</code> file so git skips it:
-  <pre style="margin-top:8px;"><span class="tag local">LOCAL</span><code><span class="cmt"># .gitignore — put this file in your project folder</span>
+  <div class="note danger"><b>⚠️ First, never push the <code>venv/</code> folder.</b> A virtual environment with PyTorch inside is <b>200&nbsp;MB or more</b> — GitHub will reject or choke on it, and the VM doesn't need it anyway (it builds its own in Step 6). Create a <code>.gitignore</code> so git skips it. Copy-paste this one command — it writes the file for you:
+  <pre style="margin-top:8px;"><span class="tag local">LOCAL</span><code>cat > .gitignore &lt;&lt;'EOF'
 venv/
 .venv/
-__pycache__/</code></pre>
+__pycache__/
+*.egg-info/
+EOF</code></pre>
+  <span style="font-size:.86rem;">That <code>cat &gt; file &lt;&lt;'EOF' … EOF</code> pattern (a "heredoc") creates <code>.gitignore</code> and fills it with everything up to the line that just says <code>EOF</code>. Works the same on macOS, Linux, and inside the VM. Check it worked with <code>cat .gitignore</code>.</span>
   </div>
   <p>Then initialise the repo and push. Notice we add files <b>by name</b> (not <code>git add .</code>) — another safe way to be sure the venv never sneaks in:</p>
   <pre><span class="tag local">LOCAL</span><code>git init
