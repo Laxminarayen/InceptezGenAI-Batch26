@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Activation Functions &amp; Gradient Descent — Reference Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#6B4FA0;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.16); --accent:#B49AE0; }
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap{max-width:860px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:680px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+  h2{font-size:1.4rem; font-weight:900; margin:48px 0 14px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px;}
+  h3{font-size:1.06rem; font-weight:800; margin:24px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:9px 12px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono);}
+  pre{background:#10141c; color:#dfe6f2; border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.86rem; line-height:1.55; font-family:var(--mono);}
+  pre code{background:none; padding:0; font-size:1em; color:inherit;}
+  pre .cmt{color:#7f8aa0;}
+  .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px;}
+  .pill{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:.82rem; font-weight:700; color:var(--ink);}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Reference Notes · Deep Learning</div>
+  <h1>Activation Functions &amp; Gradient Descent</h1>
+  <p class="abstract">The activation function is the only source of non-linearity in a network; its shape decides whether gradients flow or die. Gradient descent is how the network moves downhill on its loss; its batch size decides how smooth and how frequent each step is. This chapter catalogues both and explains the trade-offs that lead to Adam.</p>
+
+  <div class="related-links">
+    <a href="classwork-notes.html">📝 Classwork Notes (Day 33 session write-up)</a>
+    <a href="activation-functions-gradient-descent-slides.html">🖥️ Slide Deck</a>
+    <a href="../32.%20Neural%20Networks%20-%202/neural-networks-2-textbook-notes.html">📚 Backpropagation (Class 32)</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">Why Activation Functions Exist</a></li>
+      <li><a href="#s2">ReLU &amp; the Dead-Neuron Problem</a></li>
+      <li><a href="#s3">Leaky ReLU &amp; ELU</a></li>
+      <li><a href="#s4">Sigmoid &amp; Tanh</a></li>
+      <li><a href="#s5">Saturation, Range &amp; Vanishing Gradients</a></li>
+      <li><a href="#s6">Choosing an Activation</a></li>
+      <li><a href="#s7">Gradient Descent &amp; the Learning Rate</a></li>
+      <li><a href="#s8">Full-Batch, SGD &amp; Mini-Batch</a></li>
+      <li><a href="#s9">Toward Adaptive Optimisers (Adam)</a></li>
+      <li><a href="#s10">In PyTorch</a></li>
+      <li><a href="#s11">Summary</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1"><span class="num">1.</span>Why Activation Functions Exist</h2>
+  <p>A neuron's pre-activation z = Wx + b is <b>affine</b> — a line/plane with W as slope and b as intercept. Affine maps have two properties: points stay on the same line, and parallel lines stay parallel. Crucially, <b>composing affine maps gives another affine map</b>: W₂(W₁x + b₁) + b₂ = (W₂W₁)x + (W₂b₁ + b₂). So any stack of purely linear layers collapses into a single line — no matter how deep.</p>
+  <div class="formula">
+    a = f(Wx + b), &nbsp; f non-linear
+    <span class="sub">The activation f is the only thing that breaks the collapse. The weighted sum combines information; f transforms it, letting the network represent curves, kinks, and interactions a single line cannot.</span>
+  </div>
+  <div class="note warn"><b>Polynomial regression is still linear.</b> y = w₁x + w₂x² is non-linear in x but linear in the parameters w₁, w₂ (treat x² as a feature). It is fit by the same least-squares machinery and is a linear <i>model</i> — unlike a network, which is non-linear in its parameters precisely because of f.</div>
+
+  <h2 id="s2"><span class="num">2.</span>ReLU &amp; the Dead-Neuron Problem</h2>
+  <div class="formula">
+    ReLU(z) = max(0, z) &nbsp;;&nbsp; ReLU′(z) = 1 if z &gt; 0, else 0
+    <span class="sub">Range [0, +∞). The default hidden-layer activation: cheap, sparse, and — for z &gt; 0 — passes gradients through undiminished, which avoids the vanishing-gradient issue sigmoids suffer.</span>
+  </div>
+  <p><b>The dead-neuron problem:</b> because ReLU′(z) = 0 for z &lt; 0, a neuron stuck in the negative region outputs 0 <i>and</i> receives 0 gradient. If a large update pushes its weights so that z is negative for every input, it can never update again — it is permanently "dead." In practice a fraction of ReLU units die during training; the fixes in Section 3 address exactly this.</p>
+
+  <h2 id="s3"><span class="num">3.</span>Leaky ReLU &amp; ELU</h2>
+  <div class="formula">
+    LeakyReLU(z) = z if z &gt; 0, else 0.01·z
+    <span class="sub">Range (−∞, +∞), non-saturating. The small positive slope on the negative side means ReLU′ is never exactly 0, so gradients keep trickling and dead neurons can recover.</span>
+  </div>
+  <div class="formula">
+    ELU(z) = z if z &gt; 0, else α(eᶻ − 1)
+    <span class="sub">Range (−α, +∞). A smooth exponential curve for negatives that saturates softly toward −α. α controls the magnitude of the negative floor. Zero-centred-ish outputs can speed convergence versus ReLU.</span>
+  </div>
+  <p>Worked contrast (z = x − 3 at x = 2, so z = −1; downstream salary = 30 + 10·h): ReLU gives h = 0 → ₹30.0k (the unit contributes nothing), while Leaky ReLU gives h = −0.01 → ₹29.9k (it still carries a small signal, and a non-zero gradient).</p>
+
+  <h2 id="s4"><span class="num">4.</span>Sigmoid &amp; Tanh</h2>
+  <div class="formula">
+    σ(z) = 1 / (1 + e⁻ᶻ) &nbsp;;&nbsp; range (0, 1)
+    <span class="sub">Squashes to a probability. Values of σ(x−3): x=1→0.119, x=2→0.269, x=3→0.500, x=4→0.731, x=5→0.881. Used as a binary-classification <i>output</i> (interpret as P(class=1)); poor as a deep hidden activation because it saturates.</span>
+  </div>
+  <div class="formula">
+    tanh(z) = (eᶻ − e⁻ᶻ)/(eᶻ + e⁻ᶻ) &nbsp;;&nbsp; range (−1, 1)
+    <span class="sub">A zero-centred cousin of sigmoid. Zero-centring makes its outputs easier for the next layer to work with, so historically it was preferred over sigmoid for hidden layers — but it still saturates at both ends.</span>
+  </div>
+  <div class="note">A sigmoid output <b>cannot</b> represent a continuous prediction (it's bounded to (0,1)); it can only be an output for <b>binary classification</b>. For continuous targets the output neuron is left linear (no activation), as in SalaryNet.</div>
+
+  <h2 id="s5"><span class="num">5.</span>Saturation, Range &amp; Vanishing Gradients</h2>
+  <p><b>Saturation</b> is where an activation's curve goes flat — its derivative approaches 0. In a flat region, backprop multiplies by a near-zero slope, so almost no gradient reaches earlier layers: the <b>vanishing-gradient problem</b>. Sigmoid and tanh saturate at <i>both</i> ends; ReLU saturates (hard) only for z &lt; 0; Leaky ReLU does not saturate; ELU saturates softly for z &lt; 0.</p>
+  <table>
+    <thead><tr><th>Activation</th><th>Formula</th><th>Range</th><th>Saturation</th></tr></thead>
+    <tbody>
+      <tr><td>ReLU</td><td>max(0, z)</td><td>[0, +∞)</td><td>Full for z &lt; 0 (dead units)</td></tr>
+      <tr><td>Leaky ReLU</td><td>z / 0.01z</td><td>(−∞, +∞)</td><td>None</td></tr>
+      <tr><td>ELU</td><td>z / α(eᶻ−1)</td><td>(−α, +∞)</td><td>Partial (soft, z &lt; 0)</td></tr>
+      <tr><td>Sigmoid</td><td>1/(1+e⁻ᶻ)</td><td>(0, 1)</td><td>Both ends</td></tr>
+      <tr><td>Tanh</td><td>tanh(z)</td><td>(−1, 1)</td><td>Both ends</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s6"><span class="num">6.</span>Choosing an Activation</h2>
+  <ul>
+    <li><b>Hidden layers:</b> start with <b>ReLU</b>. If you see many dead units or want smoother negatives, try <b>Leaky ReLU</b> or <b>ELU</b>.</li>
+    <li><b>Binary-classification output:</b> <b>sigmoid</b> (one probability).</li>
+    <li><b>Multiclass output:</b> <b>softmax</b> (a probability distribution — met in Logistic Regression, Class 26).</li>
+    <li><b>Regression output:</b> <b>no activation</b> (linear), so the network can output any real number.</li>
+  </ul>
+
+  <h2 id="s7"><span class="num">7.</span>Gradient Descent &amp; the Learning Rate</h2>
+  <div class="formula">
+    J(θ) = (1/N) Σᵢ ½(yᵢ − ŷᵢ)² &nbsp;;&nbsp; θ<sub>new</sub> = θ<sub>old</sub> − η·∇J(θ)
+    <span class="sub">∇J = [∂J/∂w₁, ∂J/∂b₁, …] is the gradient (rate of change) w.r.t. every parameter. η is the learning rate.</span>
+  </div>
+  <p><b>Why squared loss?</b> It removes the sign of the error, and it makes the cost surface <b>convex</b> for a linear model — a single global minimum to descend into. <b>The learning rate is the critical hyperparameter:</b> too large and the updates overshoot and oscillate across the valley without settling; too small and training is correct but painfully slow. A single fixed η applied to every parameter is a real limitation — different parameters may need different step sizes.</p>
+
+  <h2 id="s8"><span class="num">8.</span>Full-Batch, SGD &amp; Mini-Batch</h2>
+  <table>
+    <thead><tr><th>Variant</th><th>Rows per update</th><th>Updates / epoch (N=10,000)</th><th>Trade-off</th></tr></thead>
+    <tbody>
+      <tr><td><b>Full-Batch</b></td><td>all N</td><td>1</td><td>+ Exact gradient over the whole set, very smooth. − Heavy memory, slow, loss too smooth (can stall).</td></tr>
+      <tr><td><b>SGD</b></td><td>1</td><td>N = 10,000</td><td>+ Frequent, cheap updates, reacts fast. − Noisy gradients; the path zig-zags.</td></tr>
+      <tr><td><b>Mini-Batch</b></td><td>B (e.g. 32–1024)</td><td>N / B (e.g. 10)</td><td>The practical default — smoother than SGD, lighter than full-batch. B is a hyperparameter.</td></tr>
+    </tbody>
+  </table>
+  <p>SGD's loss for a single example is ℓ = ½(yᵢ − ŷᵢ)²; mini-batch averages over B rows; full-batch averages over all N. The noise in SGD is not purely bad — it can help escape poor flat regions — but mini-batch is the usual balance of speed, memory, and stability.</p>
+
+  <h2 id="s9"><span class="num">9.</span>Toward Adaptive Optimisers (Adam)</h2>
+  <p>All three variants above still use one fixed η. Adaptive methods remove that constraint:</p>
+  <ul>
+    <li><b>Momentum</b> — accumulate a running "velocity" of past gradients to push through flat spots and dampen oscillation.</li>
+    <li><b>Adaptive learning rates</b> (AdaGrad / RMSProp) — give each parameter its own effective step, shrinking it for parameters that have already moved a lot.</li>
+    <li><b>Adam</b> — combines both: momentum (first moment) + per-parameter adaptive scaling (second moment). It's the common default and makes training far less sensitive to the initial η. (The deep dive is the next session.)</li>
+  </ul>
+
+  <h2 id="s10"><span class="num">10.</span>In PyTorch</h2>
+  <pre><code>from torch import nn
+
+<span class="cmt"># activations as layers or functions</span>
+nn.ReLU()            <span class="cmt"># max(0, z)</span>
+nn.LeakyReLU(0.01)   <span class="cmt"># small negative slope</span>
+nn.ELU(alpha=1.0)    <span class="cmt"># smooth negatives</span>
+nn.Sigmoid()         <span class="cmt"># (0,1) — binary output</span>
+nn.Tanh()            <span class="cmt"># (-1,1)</span>
+
+<span class="cmt"># optimisers — the batch size lives in the DataLoader, not the optimiser</span>
+opt = torch.optim.SGD(model.parameters(), lr=0.01)          <span class="cmt"># (mini-batch) SGD</span>
+opt = torch.optim.Adam(model.parameters(), lr=0.001)        <span class="cmt"># adaptive (Section 9)</span>
+loader = DataLoader(dataset, batch_size=64, shuffle=True)   <span class="cmt"># batch_size → full/mini/SGD</span></code></pre>
+  <div class="note"><b>Full vs. mini vs. SGD is set by <code>batch_size</code></b> in the DataLoader: <code>batch_size = len(dataset)</code> is full-batch, <code>1</code> is pure SGD, anything in between is mini-batch. The optimiser (SGD, Adam) is a separate choice.</div>
+
+  <h2 id="s11"><span class="num">11.</span>Summary</h2>
+  <div class="summary-box">
+    <h3>The whole idea, in one paragraph</h3>
+    <p>An activation function is the only non-linearity in a network — without it, any depth collapses to a single line. ReLU (max(0,z)) is the hidden-layer default but can create dead neurons; Leaky ReLU and ELU fix that with a non-zero negative branch; sigmoid and tanh squash to bounded ranges and saturate at both ends, which makes sigmoid good for a binary output but poor as a deep hidden unit. Learning happens by gradient descent, θ ← θ − η∇J, where the learning rate η is the make-or-break hyperparameter. How many rows we use per update defines the variant — full-batch (exact, heavy), SGD (noisy, frequent), or mini-batch (the balanced default) — and because a single fixed η is limiting, the next step is adaptive optimisers like Adam.</p>
+  </div>
+  <div class="pill-row">
+    <span class="pill">Activation Function</span>
+    <span class="pill">ReLU / Leaky / ELU</span>
+    <span class="pill">Sigmoid / Tanh</span>
+    <span class="pill">Saturation</span>
+    <span class="pill">Vanishing Gradients</span>
+    <span class="pill">Learning Rate η</span>
+    <span class="pill">Full / SGD / Mini-Batch</span>
+    <span class="pill">Adam</span>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Classwork Notes · Activation Functions &amp; Gradient Descent</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.16); --accent:#6B4FA0;
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.16); --accent:#B49AE0; }
+  }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.6; }
+  .wrap{max-width:840px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 80px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.7rem,4vw,2.4rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 6px;}
+  .subtitle{color:var(--ink-soft); font-size:1rem; margin-bottom:8px;}
+  .pdf-link{display:inline-flex; align-items:center; gap:8px; margin:14px 10px 34px 0; font-size:.9rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .pdf-link:hover{border-color:var(--accent); color:var(--accent);}
+  h2{font-size:1.35rem; font-weight:900; margin:44px 0 14px; padding-top:16px; border-top:1px solid var(--line);}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h3{font-size:1.05rem; font-weight:800; margin:22px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:8px 10px; text-align:center; border:1px solid var(--line);}
+  th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  tr.hl td{background:color-mix(in srgb, var(--accent) 10%, transparent); font-weight:800;}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .agenda{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 20px;}
+  .agenda span{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:8px 16px; font-size:.86rem; font-weight:700; color:var(--ink);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.92em; font-family:var(--mono);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Day 33 · Classwork Notes</div>
+  <h1>Activation Functions &amp; Types of Gradient Descent</h1>
+  <p class="subtitle">Two knobs that decide whether a network learns, and how fast. First, the activation-function zoo — ReLU, Leaky ReLU, ELU, Sigmoid, Tanh — and when each fits. Then the gradient-descent family — Full-Batch, SGD, Mini-Batch — and why a fixed learning rate pushes us toward Adam.</p>
+  <a class="pdf-link" href="Activation%20Fuctions%20and%20types%20Gradient%20Descents.pdf" target="_blank">📄 Handwritten notes (PDF)</a>
+
+  <h2>Agenda</h2>
+  <div class="agenda">
+    <span>Revision (45 min): External/Internal IPs, deep learning, the neuron</span>
+    <span>Why an activation function</span>
+    <span>ReLU, Leaky ReLU, ELU</span>
+    <span>Sigmoid, Tanh</span>
+    <span>Gradient descent &amp; learning rate</span>
+    <span>Full-Batch · SGD · Mini-Batch</span>
+    <span>→ Adam (next)</span>
+  </div>
+
+  <h2>Revision: External vs. Internal IPs</h2>
+  <p>An <b>IP address</b> is a unique address used to identify a machine. An <b>internal (private) IP</b> identifies a server <i>within a private network</i> — your laptop at home on the LAN behind Wi-Fi. An <b>external (public) IP</b> identifies your network <i>on the internet</i> (assigned by your ISP). Special addresses: <code>0.0.0.0</code> (bind to all interfaces), <code>127.0.0.1</code> (localhost), and private ranges. This ties back to last session's GCP deployment — the app binds <code>0.0.0.0:8080</code> and we reach it on the VM's external IP.</p>
+
+  <h2>Recap: Rule-Based → ML → Deep Learning, and the Neuron</h2>
+  <p><b>Rule-Based AI:</b> humans write rules, data follows. <b>Machine Learning:</b> data arrives and rules are learned from the data. <b>Deep Learning:</b> automatically learns "multiple levels of representation" by itself (traditional ML uses engineered features handcrafted by us). A <b>neuron</b> computes a weighted sum z = w₁x₁ + w₂x₂ + w₃x₃ + b; weights control the influence of inputs, bias shifts the neuron's output / baseline (threshold). z = Wx + b is an <b>affine</b> transform (= mx + c): W scales/rotates/reflects, b translates. Whatever W and b you pick, <b>a line stays a line</b> — and stacking affine layers just gives another line.</p>
+
+  <h2>Part III: Why Do We Need an Activation Function?</h2>
+  <div class="formula">
+    Activation function ⟹ activates non-linearity
+    <span class="sub">The weighted sum <i>combines</i> information; the activation function is what <i>transforms</i> the result. Without it, a deep stack collapses to one linear model.</span>
+  </div>
+  <p>A layer with many neurons is a <b>hidden layer</b>; the non-linear function applied after it is the <b>activation function</b>. (Polynomial aside: feeding x² as a new input into mx+c is non-linear in the input but still linear in the parameters — still a linear model.)</p>
+
+  <h2>Activation Function 1: ReLU</h2>
+  <div class="formula">
+    ReLU(z) = max(0, z)
+    <span class="sub">Rectified Linear Unit. Negative inputs → 0; positive inputs pass through unchanged. Range [0, +∞).</span>
+  </div>
+  <p><b>What is ReLU doing?</b> Turning negative values into zeros. <b>The dead-ReLU problem:</b> a neuron whose z stays negative outputs 0 and passes 0 gradient back — its gradient can become 0 permanently, so it never recovers ("dead"). What if we don't want negatives to become 0?</p>
+
+  <h2>Activation Function 2: Leaky ReLU</h2>
+  <div class="formula">
+    f(z) = z if z &gt; 0, &nbsp; 0.01·z if z ≤ 0
+    <span class="sub">A non-saturating activation — the small 0.01 slope on the negative side keeps a trickle of gradient flowing, fixing the dead-neuron problem.</span>
+  </div>
+  <p>Worked example (z = x − 3, salary = 30 + 10·h at x = 2):</p>
+  <table>
+    <thead><tr><th>Activation</th><th>h at z = −1</th><th>Salary = 30 + 10·h</th></tr></thead>
+    <tbody>
+      <tr class="hl"><td>ReLU: max(0, −1)</td><td>0 (dead)</td><td>₹30.0k</td></tr>
+      <tr><td>Leaky ReLU: 0.01·(−1)</td><td>−0.01</td><td>₹29.9k</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Activation Function 3: Sigmoid — When You Want Probability-Like Values</h2>
+  <p>Instead of "how much salary," suppose we estimate <b>eligibility for a ₹10,000 promotion bonus</b> from experience — a probability. The sigmoid squashes any real number into (0, 1):</p>
+  <div class="formula">
+    σ(z) = 1 / (1 + e⁻ᶻ)
+    <span class="sub">With h₂ = σ(x − 3):</span>
+  </div>
+  <table>
+    <thead><tr><th>Exp (x)</th><th>z = x − 3</th><th>σ(z)</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>−2</td><td>0.119</td></tr>
+      <tr><td>2</td><td>−1</td><td>0.269</td></tr>
+      <tr><td>3</td><td>0</td><td>0.500</td></tr>
+      <tr><td>4</td><td>1</td><td>0.731</td></tr>
+      <tr class="hl"><td>5</td><td>2</td><td>0.881</td></tr>
+    </tbody>
+  </table>
+  <p>Example: Ŝ = 20 + 5x + 10·h₂ at x = 5 → 20 + 25 + 10·(0.881) = <b>53.81</b>. The sigmoid <b>saturates at both ends</b> (flat for very large/small z → vanishing gradients), so it <b>cannot</b> be an output for continuous prediction — but it <b>can</b> be used as the output for <b>binary classification</b> (0 or 1).</p>
+
+  <h2>Activation Function 4: ELU, and Tanh</h2>
+  <div class="formula">
+    ELU(z) = z if z &gt; 0, &nbsp; α(eᶻ − 1) if z ≤ 0
+    <span class="sub">Exponential Linear Unit. α controls the magnitude of the negative floor; smooth curve for negatives, bottoming out near −α. A "partially saturating" option.</span>
+  </div>
+  <p><b>Tanh</b> squashes to (−1, 1), zero-centred, and also saturates at both ends. The negative-side "options": ReLU zeros it, Leaky leaks it (0.01z), ELU curves it (α(eᶻ−1)).</p>
+
+  <h3>Ranges &amp; saturation at a glance</h3>
+  <table>
+    <thead><tr><th>Activation</th><th>Range</th><th>Saturation</th></tr></thead>
+    <tbody>
+      <tr><td>ReLU</td><td>[0, +∞)</td><td>Full for z &lt; 0 (dead)</td></tr>
+      <tr><td>Leaky ReLU</td><td>(−∞, +∞)</td><td>Non-saturating</td></tr>
+      <tr><td>ELU</td><td>(−α, +∞)</td><td>Partial (soft)</td></tr>
+      <tr><td>Sigmoid</td><td>(0, 1)</td><td>Both ends</td></tr>
+      <tr><td>Tanh</td><td>(−1, 1)</td><td>Both ends</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Part IV: Optimisation — Gradient Descent &amp; the Learning Rate</h2>
+  <p>For the 2-neuron net, θ = [w₁, b₁, w₂, b₂, w₃, w₄, b₃]. The cost function averages the loss over all rows:</p>
+  <div class="formula">
+    J(θ) = (1/N) Σᵢ ℓ(f_θ(xᵢ), yᵢ), &nbsp; with &nbsp; ℓ = ½(y − ŷ)²
+    <span class="sub">Why squared loss? (1) to remove the sign of the error; (2) the surface is convex — one global minimum, easy to roll into.</span>
+  </div>
+  <p>The gradient ∇J is the vector of every parameter's rate of change [∂J/∂w₁, ∂J/∂b₁, …]. The update:</p>
+  <div class="formula">
+    w<sub>new</sub> = w<sub>old</sub> − η · (∂J/∂w), &nbsp; b<sub>new</sub> = b<sub>old</sub> − η · (∂J/∂b)
+    <span class="sub">η (learning rate) is chosen by us — a fixed hyperparameter (e.g. 0.001, 0.00001).</span>
+  </div>
+  <div class="note"><b>Learning rate matters enormously.</b> η too <b>high</b> → the steps keep shuffling across the valley and never descend. η too <b>low</b> → slow but sure descent toward the optimum. Important to keep it low-ish. A single fixed η for all parameters is the limitation that adaptive optimisers fix.</div>
+
+  <h2>Types of Gradient Descent</h2>
+  <h3>Full-Batch Gradient Descent</h3>
+  <p>All rows → one forward pass → MSE over everything → one gradient → <b>one</b> parameter update, then repeat. For 10,000 employees: forward pass → MSE → gradients → update, as one step.</p>
+  <ul>
+    <li><b>Advantage:</b> the gradient represents the full training sample (loss is an average over all samples) — accurate, smooth direction.</li>
+    <li><b>Disadvantage:</b> one update needs a lot of memory, and the loss is <i>too</i> smooth (can stall).</li>
+  </ul>
+
+  <h3>Stochastic Gradient Descent (SGD)</h3>
+  <p>Sample = 10,000 rows → <b>10,000 updates</b> per epoch, one employee at a time. Loss per step ℓ = ½(yᵢ − ŷᵢ)².</p>
+  <ul>
+    <li><b>Advantage:</b> frequent, inexpensive updates.</li>
+    <li><b>Disadvantage:</b> noisy gradients (each step trusts a single row, so the path zig-zags).</li>
+  </ul>
+
+  <h3>Mini-Batch Gradient Descent</h3>
+  <p>Batch size = 1024 / 128 / 100 / 10 / … ; samples in a batch are randomly taken. 10,000 rows in batches of 1,000 → <b>10 updates</b> per epoch. The practical default — smoother than SGD, lighter than full-batch.</p>
+
+  <div class="note"><b>Next:</b> SGD still uses a fixed learning rate, which "is not good." The next optimisation can be more calibrated — <b>adaptive descent</b> and <b>Adam</b> (momentum + per-parameter adaptive learning rates).</div>
+
+  <div class="note">Want the formal treatment — activation derivatives &amp; the vanishing-gradient problem, the convexity argument, the full SGD/mini-batch/Adam comparison, and a scikit-learn / PyTorch mapping? See <a href="activation-functions-textbook-notes.html">Activation Functions &amp; Gradient Descent — Reference Notes</a>.</div>
+</div>
+</body>
+</html>
