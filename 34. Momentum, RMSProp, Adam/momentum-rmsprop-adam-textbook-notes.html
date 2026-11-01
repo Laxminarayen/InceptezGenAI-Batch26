@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Momentum, RMSProp &amp; Adam — Reference Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{ --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC; --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63; --line: rgba(32,40,58,.16); --accent:#6B4FA0; --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; }
+  @media (prefers-color-scheme: dark){ :root{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.16); --accent:#B49AE0; } }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap{max-width:860px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:680px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+  h2{font-size:1.4rem; font-weight:900; margin:48px 0 14px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px;}
+  h3{font-size:1.06rem; font-weight:800; margin:24px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:9px 12px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono);}
+  pre{background:#10141c; color:#dfe6f2; border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.86rem; line-height:1.55; font-family:var(--mono);}
+  pre code{background:none; padding:0; font-size:1em; color:inherit;}
+  pre .cmt{color:#7f8aa0;}
+  .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px;}
+  .pill{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:.82rem; font-weight:700; color:var(--ink);}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Reference Notes · Deep Learning</div>
+  <h1>Momentum, RMSProp &amp; Adam</h1>
+  <p class="abstract">Plain gradient descent trusts one noisy gradient per step. Modern optimizers give it a memory — an exponentially weighted moving average of gradients (Momentum), of squared gradients (RMSProp), or of both (Adam). This chapter builds all three from the EWMA and connects them to the MNIST classifier.</p>
+
+  <div class="related-links">
+    <a href="classwork-notes.html">📝 Classwork Notes (Day 34 session write-up)</a>
+    <a href="momentum-rmsprop-adam-slides.html">🖥️ Slide Deck</a>
+    <a href="MnistClassification.ipynb">📓 Notebook: MNIST Classification</a>
+    <a href="../33.%20Activation%20Functions%20and%20Gradient%20Descents/activation-functions-textbook-notes.html">📚 Activations &amp; GD (Class 33)</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">The Problem: Noisy Gradients</a></li>
+      <li><a href="#s2">EWMA — Exponentially Weighted Moving Average</a></li>
+      <li><a href="#s3">Momentum</a></li>
+      <li><a href="#s4">RMSProp</a></li>
+      <li><a href="#s5">Adam</a></li>
+      <li><a href="#s6">Hyperparameters &amp; Bias Correction</a></li>
+      <li><a href="#s7">Choosing an Optimizer</a></li>
+      <li><a href="#s8">Application: MNIST Classification</a></li>
+      <li><a href="#s9">In PyTorch</a></li>
+      <li><a href="#s10">Summary</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1"><span class="num">1.</span>The Problem: Noisy Gradients</h2>
+  <p>With mini-batch (or stochastic) gradient descent, each update w<sub>new</sub> = w<sub>old</sub> − η·g<sub>t</sub> uses the gradient from <i>one</i> batch. Different batches give different gradients for the same weight, so the raw gradient g<sub>t</sub> is noisy: it reflects only the current value and is "not intelligent." On an elongated loss valley the descent zig-zags across the steep direction while crawling along the gentle one — many wasted steps. The remedy is to stop trusting a single reading and average it over time.</p>
+
+  <h2 id="s2"><span class="num">2.</span>EWMA — Exponentially Weighted Moving Average</h2>
+  <div class="formula">
+    EMA<sub>t</sub> = β·EMA<sub>t−1</sub> + (1−β)·x<sub>t</sub>
+    <span class="sub">β is the weight on the accumulated past (e.g. 0.8 → keep 80% of the old estimate, add 20% of the new reading). Larger β = longer memory, smoother but laggier.</span>
+  </div>
+  <p>Unrolling shows why it is "exponentially weighted": EMA<sub>t</sub> = (1−β)[x<sub>t</sub> + βx<sub>t−1</sub> + β²x<sub>t−2</sub> + …] — each older reading's weight decays by a factor of β, so recent readings dominate and ancient ones fade smoothly (unlike a fixed-window moving average, which forgets abruptly).</p>
+  <h3>Worked example (ice-cream sales, β = 0.8)</h3>
+  <table>
+    <thead><tr><th>Day</th><th>Actual</th><th>3-day MA</th><th>EMA (0.8/0.2)</th></tr></thead>
+    <tbody>
+      <tr><td>Mon</td><td>50</td><td>—</td><td>50.00 (seed)</td></tr>
+      <tr><td>Tue</td><td>52</td><td>—</td><td>50.40</td></tr>
+      <tr><td>Wed</td><td>49</td><td>50.33</td><td>50.12</td></tr>
+      <tr><td>Thu</td><td>80</td><td>60.33</td><td>56.10</td></tr>
+      <tr><td>Fri</td><td>51</td><td>60.00</td><td>55.08</td></tr>
+    </tbody>
+  </table>
+  <p>The Thursday spike to 80 barely moves the EMA (to 56.1) — the whole point: a stable estimate that ignores one-off noise.</p>
+
+  <h2 id="s3"><span class="num">3.</span>Momentum</h2>
+  <p>Apply the EWMA to the gradients themselves. Keep a running "velocity" m<sub>t</sub>:</p>
+  <div class="formula">
+    m<sub>t</sub> = β·m<sub>t−1</sub> + (1−β)·g<sub>t</sub> &nbsp;;&nbsp; w<sub>new</sub> = w<sub>old</sub> − η·m<sub>t</sub>
+    <span class="sub">β ≈ 0.9 is typical. m<sub>t</sub> is the gradient history, not just the current gradient — so the step is "previous-gradient-aware."</span>
+  </div>
+  <p>Why it helps: along a consistent direction, successive gradients point the same way and <b>add up</b>, building speed; across an oscillating direction, gradients alternate sign and <b>cancel</b> in the average. The optimizer glides down the valley instead of rattling between its walls. (PyTorch implements this as <code>SGD(..., momentum=0.9)</code>.)</p>
+
+  <h2 id="s4"><span class="num">4.</span>RMSProp</h2>
+  <p>Momentum fixes direction, but a single η still can't fit every parameter — some parameters routinely have large gradients, others tiny ones. RMSProp (Root Mean Square Propagation) tracks an EWMA of <i>squared</i> gradients and divides the step by its root:</p>
+  <div class="formula">
+    S<sub>t</sub> = ρ·S<sub>t−1</sub> + (1−ρ)·g<sub>t</sub>² &nbsp;;&nbsp; w<sub>new</sub> = w<sub>old</sub> − (η / √(S<sub>t</sub> + ε))·g<sub>t</sub>
+    <span class="sub">Squaring removes the sign and keeps magnitude. ε (e.g. 1e-8) avoids division by zero.</span>
+  </div>
+  <p>The effect is a <b>per-parameter adaptive learning rate</b>: a parameter with large recent gradients gets a large S<sub>t</sub>, so η is divided by a big number and the step shrinks (damping the wild direction); a parameter with small gradients gets a small S<sub>t</sub>, so its step grows. The learning rate "no longer has to be fixed."</p>
+
+  <h2 id="s5"><span class="num">5.</span>Adam</h2>
+  <p>Adam (Adaptive Moment Estimation) combines the two memories — Momentum's EWMA of gradients (first moment, m<sub>t</sub>) and RMSProp's EWMA of squared gradients (second moment, v<sub>t</sub>):</p>
+  <div class="formula">
+    m<sub>t</sub> = β₁m<sub>t−1</sub> + (1−β₁)g<sub>t</sub> &nbsp;;&nbsp; v<sub>t</sub> = β₂v<sub>t−1</sub> + (1−β₂)g<sub>t</sub>²
+  </div>
+  <div class="formula">
+    w<sub>new</sub> = w<sub>old</sub> − (η / √(v<sub>t</sub> + ε))·m<sub>t</sub>
+    <span class="sub">Momentum supplies the numerator (smoothed direction); RMSProp supplies the denominator (per-parameter scale). ε is the small anti-÷0 nudge.</span>
+  </div>
+  <p>Adam gets a smoothed direction <i>and</i> an adaptive step at once — which is why it converges quickly, stays stable, and is relatively forgiving of the initial η. <b>AdamW</b> is a common variant that decouples weight decay from the gradient update for better regularisation.</p>
+
+  <h2 id="s6"><span class="num">6.</span>Hyperparameters &amp; Bias Correction</h2>
+  <table>
+    <thead><tr><th>Symbol</th><th>Meaning</th><th>Typical</th></tr></thead>
+    <tbody>
+      <tr><td>η (lr)</td><td>Base learning rate (step size)</td><td>0.001 for Adam</td></tr>
+      <tr><td>β₁</td><td>Decay for the gradient EWMA (momentum)</td><td>0.9</td></tr>
+      <tr><td>β₂</td><td>Decay for the squared-gradient EWMA</td><td>0.999</td></tr>
+      <tr><td>ε</td><td>Small constant to avoid dividing by zero</td><td>1e-8</td></tr>
+    </tbody>
+  </table>
+  <div class="note warn"><b>Bias correction:</b> because m and v start at 0, the early estimates are biased toward 0. Adam divides by (1 − β<sup>t</sup>) — m̂<sub>t</sub> = m<sub>t</sub>/(1−β₁<sup>t</sup>), v̂<sub>t</sub> = v<sub>t</sub>/(1−β₂<sup>t</sup>) — so the first few steps aren't artificially tiny. PyTorch handles this internally.</div>
+
+  <h2 id="s7"><span class="num">7.</span>Choosing an Optimizer</h2>
+  <table>
+    <thead><tr><th>Optimizer</th><th>Keeps</th><th>Good when</th></tr></thead>
+    <tbody>
+      <tr><td>SGD</td><td>nothing</td><td>You want a simple, well-understood baseline and can tune η (often best final accuracy on vision with a schedule).</td></tr>
+      <tr><td>SGD + Momentum</td><td>EWMA of g</td><td>Noisy/oscillating loss; a strong, simple default for CNNs.</td></tr>
+      <tr><td>RMSProp</td><td>EWMA of g²</td><td>Non-stationary objectives, RNNs; per-parameter scaling matters.</td></tr>
+      <tr><td><b>Adam / AdamW</b></td><td>EWMA of g and g²</td><td>The go-to first choice for most problems — fast, robust to η.</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s8"><span class="num">8.</span>Application: MNIST Classification</h2>
+  <p>MNIST is 28×28 greyscale images of digits 0–9. The network flattens each image to 784 inputs → 128 hidden (ReLU) → 10 outputs:</p>
+  <div class="formula">
+    784 → 128 → 10, &nbsp; loss = CrossEntropy
+    <span class="sub">CrossEntropyLoss combines a softmax over the 10 outputs with the negative-log-likelihood — the right loss for multiclass classification (contrast MSE for regression).</span>
+  </div>
+  <p>DataLoader with <code>batch_size=128</code> → 60,000 / 128 ≈ 469 mini-batch updates per epoch. Accuracy is measured by <code>argmax(dim=1)</code> over the 10 logits. The notebook trains the same architecture under SGD, Momentum, RMSprop, Adam, and AdamW to compare convergence, and can swap the hidden activation (ReLU / Tanh / Sigmoid / LeakyReLU / ELU / GELU) from Class 33.</p>
+
+  <h2 id="s9"><span class="num">9.</span>In PyTorch</h2>
+  <pre><code>import torch
+from torch import nn
+
+opt = torch.optim.SGD(params, lr=0.01)                    <span class="cmt"># plain SGD / mini-batch</span>
+opt = torch.optim.SGD(params, lr=0.01, momentum=0.9)      <span class="cmt"># + momentum</span>
+opt = torch.optim.RMSprop(params, lr=0.001, alpha=0.99)   <span class="cmt"># alpha = ρ</span>
+opt = torch.optim.Adam(params, lr=0.001,
+                       betas=(0.9, 0.999), eps=1e-8)       <span class="cmt"># β1, β2, ε</span>
+opt = torch.optim.AdamW(params, lr=0.001, weight_decay=1e-2)
+
+<span class="cmt"># the loop is identical regardless of optimizer:</span>
+pred = model(x); loss = loss_fn(pred, y)
+opt.zero_grad(); loss.backward(); opt.step()</code></pre>
+
+  <h2 id="s10"><span class="num">10.</span>Summary</h2>
+  <div class="summary-box">
+    <h3>The whole idea, in one paragraph</h3>
+    <p>Plain gradient descent steps on one noisy gradient at a time, so it zig-zags. The exponentially weighted moving average (EWMA) smooths a noisy series by keeping a decaying memory of the past — EMA = β·prev + (1−β)·current. Apply it to the gradient and you get <b>Momentum</b> (m<sub>t</sub>), which captures a consistent direction; apply it to the squared gradient and you get <b>RMSProp</b> (S<sub>t</sub>), which gives each parameter an adaptive step η/√(S<sub>t</sub>+ε); combine both and you get <b>Adam</b>, w ← w − (η/√(v<sub>t</sub>+ε))·m<sub>t</sub> — the fast, stable default. We put it to work classifying MNIST digits with a 784→128→10 network and CrossEntropyLoss, with AWS EC2 deployment next.</p>
+  </div>
+  <div class="pill-row">
+    <span class="pill">EWMA</span>
+    <span class="pill">Momentum (m_t)</span>
+    <span class="pill">RMSProp (S_t)</span>
+    <span class="pill">Adam</span>
+    <span class="pill">β₁, β₂, ε</span>
+    <span class="pill">Bias Correction</span>
+    <span class="pill">CrossEntropyLoss</span>
+    <span class="pill">MNIST</span>
+  </div>
+</div>
+</body>
+</html>

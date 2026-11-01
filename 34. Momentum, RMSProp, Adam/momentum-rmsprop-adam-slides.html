@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Momentum, RMSProp &amp; Adam</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+    --c-why:#3B6E63; --c-concept:#B0670C; --c-mech:#1E6FA8; --c-eval:#6B4FA0;
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+    --accent: var(--c-why);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.14); --surface-canvas:#10131C; --c-why:#79C0AE; --c-concept:#E3A238; --c-mech:#5FA8E0; --c-eval:#B49AE0; --good:#3FBB7C; --warn:#E3A238; --bad:#E36868; --shadow: 0 10px 30px -12px rgba(0,0,0,.6); }
+  }
+  :root[data-theme="dark"]{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.14); --surface-canvas:#10131C; --c-why:#79C0AE; --c-concept:#E3A238; --c-mech:#5FA8E0; --c-eval:#B49AE0; --good:#3FBB7C; --warn:#E3A238; --bad:#E36868; --shadow: 0 10px 30px -12px rgba(0,0,0,.6); }
+  :root[data-theme="light"]{ --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC; --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63; --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC; --c-why:#3B6E63; --c-concept:#B0670C; --c-mech:#1E6FA8; --c-eval:#6B4FA0; --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B; --shadow: 0 10px 30px -12px rgba(32,40,58,.25); }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); overflow:hidden; -webkit-font-smoothing:antialiased; }
+  body[data-section="why"]{--accent:var(--c-why);}
+  body[data-section="concept"]{--accent:var(--c-concept);}
+  body[data-section="mech"]{--accent:var(--c-mech);}
+  body[data-section="eval"]{--accent:var(--c-eval);}
+  h1,h2,h3,p{margin:0;}
+  h1,h2,h3{text-wrap:balance; letter-spacing:-0.01em;}
+  ::selection{background:var(--accent); color:#fff;}
+  .eyebrow{font-size:.74rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  .slide h1{font-size:clamp(1.7rem,3.2vw,2.9rem); font-weight:800; color:var(--ink);}
+  .body-text{font-size:clamp(1rem,1.25vw,1.2rem); font-weight:500; line-height:1.6; color:var(--ink-soft);}
+  .body-text b{color:var(--ink); font-weight:800;}
+  .tabular{font-variant-numeric:tabular-nums;}
+  .chrome-top{position:fixed; top:0; left:0; right:0; height:52px; z-index:50; display:flex; align-items:center; justify-content:space-between; padding:0 20px; pointer-events:none;}
+  .chrome-top > *{pointer-events:auto;}
+  .hour-badge{font-size:.72rem; font-weight:800; letter-spacing:.12em; color:var(--ink-faint); background:var(--paper-2); border:1px solid var(--line); padding:6px 12px; border-radius:999px;}
+  .chapter-chip{display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:700; color:var(--ink-soft); background:var(--paper-2); border:1px solid var(--line); padding:6px 14px 6px 8px; border-radius:999px;}
+  .chapter-chip .num{display:inline-flex; align-items:center; justify-content:center; width:20px;height:20px; border-radius:50%; background:var(--accent); color:#fff; font-size:.68rem; font-weight:800;}
+  .icon-btn{width:36px;height:36px; border-radius:50%; border:1px solid var(--line); background:var(--paper-2); color:var(--ink); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;}
+  .icon-btn:hover{background:var(--paper-3);}
+  .deck{position:absolute; inset:0; top:52px; bottom:64px;}
+  .slide{position:absolute; inset:0; display:none; flex-direction:column; padding:clamp(18px,3vw,40px) clamp(24px,5vw,80px); overflow:auto;}
+  .slide.active{display:flex;}
+  .slide-inner{display:flex; flex-direction:column; gap:clamp(12px,1.8vh,20px); max-width:1360px; width:100%; margin:0 auto; flex:1; min-height:0;}
+  .chrome-bottom{position:fixed; left:0; right:0; bottom:0; height:64px; z-index:50; display:flex; align-items:center; gap:14px; padding:0 clamp(14px,3vw,32px); background:linear-gradient(0deg, var(--paper) 60%, transparent);}
+  .nav-btn{width:40px;height:40px;border-radius:50%; border:1px solid var(--line); background:var(--paper-2); color:var(--ink); font-size:1.2rem; cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center;}
+  .nav-btn:hover:not(:disabled){background:var(--accent); color:#fff; border-color:transparent;}
+  .nav-btn:disabled{opacity:.35; cursor:default;}
+  .progress{flex:1; display:flex; align-items:center; gap:5px; overflow-x:auto; scrollbar-width:none;}
+  .progress::-webkit-scrollbar{display:none;}
+  .dot{width:9px;height:9px;border-radius:50%; background:var(--paper-3); border:none; cursor:pointer; flex:none; transition:transform .15s ease;}
+  .dot.gap{width:14px; height:2px; border-radius:1px; background:transparent; cursor:default;}
+  .dot.active{transform:scale(1.5);}
+  .slide-counter{font-size:.8rem; font-weight:700; color:var(--ink-faint); flex:none; white-space:nowrap;}
+  .split{display:grid; grid-template-columns:1.05fr 1.35fr; gap:clamp(20px,4vw,52px); align-items:center; flex:1; min-height:0;}
+  @media (max-width:920px){ .split{grid-template-columns:1fr; overflow:auto;} }
+  .stack{display:flex; flex-direction:column; gap:12px; min-height:0;}
+  .center-col{display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:16px; flex:1;}
+  .visual-box{background:var(--surface-canvas); border:1px solid var(--line); border-radius:24px; padding:14px; box-shadow:var(--shadow); min-height:0; display:flex; flex-direction:column; gap:8px;}
+  .vocab-card{border-left:5px solid var(--accent); background:var(--paper-2); border-radius:14px; padding:12px 18px; display:flex; flex-direction:column; gap:4px;}
+  .vocab-term{font-size:1rem; font-weight:900; letter-spacing:.04em; color:var(--accent);}
+  .vocab-def{font-size:1rem; color:var(--ink); font-weight:600; line-height:1.4;}
+  .console{display:flex; flex-wrap:wrap; gap:14px 26px; align-items:center; background:var(--paper-2); border:1px solid var(--line); border-radius:20px; padding:14px 18px;}
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field label{font-size:.76rem; font-weight:800; color:var(--ink-soft);}
+  .field .val{color:var(--accent); font-weight:900;}
+  input[type="range"]{width:240px; accent-color:var(--accent);}
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px;}
+  .stat-tile{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:12px 14px;}
+  .stat-tile .label{font-size:.7rem; font-weight:800; color:var(--ink-faint); letter-spacing:.05em; text-transform:uppercase;}
+  .stat-tile .value{font-size:1.15rem; font-weight:900; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .stat-tile.accent .value{color:var(--accent);}
+  .card{background:var(--paper-2); border:1px solid var(--line); border-radius:18px; padding:16px 18px;}
+  .card-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px;}
+  .card .ico{font-size:1.7rem;}
+  .card h3{font-size:1rem; margin-top:6px;}
+  .card p{font-size:.9rem; color:var(--ink-soft); margin-top:4px; line-height:1.45;}
+  .banner{border-radius:14px; padding:12px 16px; font-weight:800; font-size:.92rem; display:flex; align-items:center; gap:10px;}
+  .banner.warn{background:color-mix(in srgb, var(--warn) 18%, var(--paper-2)); color:var(--warn);}
+  .banner.good{background:color-mix(in srgb, var(--good) 18%, var(--paper-2)); color:var(--good);}
+  .banner.bad{background:color-mix(in srgb, var(--bad) 18%, var(--paper-2)); color:var(--bad);}
+  .banner.info{background:var(--paper-3); color:var(--ink); font-weight:600; align-items:flex-start;}
+  .roadmap{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  .roadmap .stop{background:var(--paper-2); border-radius:18px; padding:16px 10px; text-align:center; border-top:5px solid var(--stop-color, var(--accent));}
+  .roadmap .stop .ico{font-size:2rem;}
+  .roadmap .stop .t{font-size:.8rem; font-weight:800; margin-top:6px;}
+  @media (max-width:920px){ .roadmap{grid-template-columns:repeat(2,1fr);} }
+  .kicker-big{font-size:clamp(2.2rem,5.6vw,3.9rem); font-weight:900; letter-spacing:-0.02em;}
+  .glow{color:var(--accent);}
+  .formula-box{background:var(--paper-2); border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:14px; padding:14px 18px; font-size:clamp(1rem,1.5vw,1.3rem); font-weight:800; color:var(--ink);}
+  .formula-box .sub{display:block; font-size:.86rem; font-weight:500; color:var(--ink-faint); margin-top:6px;}
+  .table-wrap{border:1px solid var(--line); border-radius:14px; overflow:hidden; overflow-x:auto;}
+  .data-table{width:100%; border-collapse:collapse; font-size:.86rem;}
+  .data-table th,.data-table td{padding:8px 10px; text-align:center; font-variant-numeric:tabular-nums;}
+  .data-table thead th{background:var(--paper-3); color:var(--ink-soft); font-weight:800; font-size:.72rem; letter-spacing:.03em; text-transform:uppercase;}
+  .data-table tbody tr{border-top:1px solid var(--line);}
+  .data-table tbody tr.hl-row{background:color-mix(in srgb, var(--accent) 12%, transparent); font-weight:800;}
+  .footnote{font-size:.82rem; color:var(--ink-faint); font-weight:600;}
+  .ewma-chart{width:100%; aspect-ratio:5/3; background:var(--surface-canvas); border-radius:14px;}
+  pre{background:#10141c; color:#dfe6f2; border-radius:12px; padding:14px 16px; overflow-x:auto; font-size:.8rem; line-height:1.5; font-family:ui-monospace,Menlo,monospace; margin:0;}
+  pre .cmt{color:#7f8aa0;}
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+</style>
+</head>
+<body data-section="why">
+  <div class="chrome-top">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="hour-badge">MOMENTUM · RMSPROP · ADAM</div>
+      <div class="chapter-chip" id="chapterChip" style="display:none;"><span class="num" id="chapterNum">1</span><span id="chapterLabel">—</span></div>
+    </div>
+    <button class="icon-btn" id="themeToggle" title="Toggle light / dark">🌗</button>
+  </div>
+
+  <main class="deck" id="deck">
+
+    <section class="slide" data-section="why" id="s0">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Deep Learning · Class 34</div>
+        <h1 class="kicker-big">Teaching the optimizer<br/>to have a <span class="glow">memory</span></h1>
+        <p class="body-text" style="max-width:800px;">A fixed learning rate reacts only to the <i>current</i> noisy gradient — blind and jittery. Today we give gradient descent a memory of the past, built from one simple idea (the EWMA). That memory becomes <b>Momentum</b>, <b>RMSProp</b>, and their combination, <b>Adam</b> — then we classify handwritten digits with it.</p>
+        <div class="roadmap" style="width:100%; margin-top:6px;">
+          <div class="stop" style="--stop-color:var(--c-why);"><div class="ico">📈</div><div class="t">1 · EWMA Smoothing</div></div>
+          <div class="stop" style="--stop-color:var(--c-concept);"><div class="ico">🏂</div><div class="t">2 · Momentum</div></div>
+          <div class="stop" style="--stop-color:var(--c-mech);"><div class="ico">🎚️</div><div class="t">3 · RMSProp</div></div>
+          <div class="stop" style="--stop-color:var(--c-eval);"><div class="ico">⚡</div><div class="t">4 · Adam &amp; MNIST</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 1 — EWMA -->
+    <section class="slide" data-section="why" id="sW1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Recap · The Problem With Plain SGD</div>
+        <h1>Each step trusts <span class="glow">only the current gradient</span></h1>
+        <p class="body-text">w<sub>new</sub> = w<sub>old</sub> − η·g<sub>t</sub>. The update depends only on g<sub>t</sub>, the current gradient — and different mini-batches give very different gradients for the same weight. The path zig-zags across the valley: <b>g<sub>t</sub> is based only on the current value and is not intelligent.</b></p>
+        <div class="banner bad">🚩 Big, noisy gradients → the descent oscillates and wastes steps instead of heading straight for the minimum.</div>
+        <div class="banner info"><b>The fix we'll build:</b> don't trust one noisy reading — average it with the recent past. That average is the Exponentially Weighted Moving Average (EWMA).</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="why" id="sW2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">EWMA · Smoothing Noisy Ice-Cream Sales</div>
+          <h1>More weight to the <span class="glow">recent</span> past, less to the old</h1>
+          <p class="body-text">A 3-day average treats all 3 days equally and forgets abruptly. An <b>EWMA</b> keeps a fraction of yesterday's estimate and blends in a fraction of today — a smooth, fading memory.</p>
+          <div class="formula-box">EMA<sub>t</sub> = 0.8·(previous EMA) + 0.2·(current value)<span class="sub">80% of the old estimate, 20% of the new reading. Drag β below to change how long the memory lasts.</span></div>
+          <div class="console">
+            <div class="field"><label>β (weight on the past) = <span class="val" id="betaLabel">0.80</span></label><input type="range" id="betaSlider" min="0" max="98" value="80"></div>
+          </div>
+        </div>
+        <div class="visual-box">
+          <canvas class="ewma-chart" id="ewmaChart" width="620" height="372"></canvas>
+          <div class="footnote" style="text-align:center;">● raw daily sales &nbsp;·&nbsp; <span style="color:var(--accent); font-weight:800;">— EWMA (smoothed)</span></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="why" id="sW3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">EWMA, By Hand</div>
+        <h1>The memory <span class="glow">absorbs</span> the Thursday spike</h1>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Day</th><th>Actual sales</th><th>EMA = 0.8·prev + 0.2·current</th></tr></thead>
+            <tbody>
+              <tr><td>Mon</td><td>50</td><td>50.00 (seed)</td></tr>
+              <tr><td>Tue</td><td>52</td><td>0.8·50 + 0.2·52 = 50.40</td></tr>
+              <tr><td>Wed</td><td>49</td><td>0.8·50.4 + 0.2·49 = 50.12</td></tr>
+              <tr class="hl-row"><td>Thu</td><td>80 ← spike</td><td>0.8·50.12 + 0.2·80 = 56.10</td></tr>
+              <tr><td>Fri</td><td>51</td><td>0.8·56.10 + 0.2·51 = 55.08</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="banner good">✓ The actual jumped to 80, but the smoothed value only rose to 56.1 — the EWMA refuses to overreact to a single noisy day. <b>That is exactly what we want to do to noisy gradients.</b></div>
+      </div>
+    </section>
+
+    <!-- SECTION 2 — MOMENTUM -->
+    <section class="slide" data-section="concept" id="sC1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Part II · Momentum</div>
+          <h1>Apply the EWMA idea to the <span class="glow">gradients</span></h1>
+          <p class="body-text">Replace the raw gradient g<sub>t</sub> with an EWMA of gradients, m<sub>t</sub> — a "velocity" that remembers which way we've consistently been heading.</p>
+          <div class="formula-box">m<sub>t</sub> = β·m<sub>t−1</sub> + (1−β)·g<sub>t</sub><span class="sub">previous EWMA + current gradient. Then step with the memory, not the raw reading:</span></div>
+          <div class="formula-box">w<sub>new</sub> = w<sub>old</sub> − η·m<sub>t</sub></div>
+        </div>
+        <div class="stack">
+          <div class="vocab-card"><div class="vocab-term">Intelligent &amp; previous-gradient-aware</div><div class="vocab-def">Consistent directions reinforce each other and build speed; random zig-zags cancel out. The ball rolls <i>through</i> small bumps instead of rattling in them.</div></div>
+          <div class="banner good">Momentum helps with <b>capturing a consistent direction</b> — smoothing the oscillation of plain SGD.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="concept" id="sC2">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Momentum, Visually</div>
+        <h1 class="kicker-big">Plain SGD <span class="glow">rattles</span>. Momentum <span class="glow">glides</span>.</h1>
+        <p class="body-text" style="max-width:720px;">On an elongated valley, SGD bounces wall-to-wall across the steep direction while barely moving along the gentle one. Momentum averages those opposing bounces to near-zero and keeps the steady forward component — so it heads down the valley far faster.</p>
+        <div class="banner info" style="max-width:720px;">w<sub>new</sub> = w<sub>old</sub> − η·<b>m<sub>t</sub></b> &nbsp;(gradient history) &nbsp;vs.&nbsp; w<sub>new</sub> = w<sub>old</sub> − η·<b>g<sub>t</sub></b> &nbsp;(current gradient only)</div>
+      </div>
+    </section>
+
+    <!-- SECTION 3 — RMSPROP -->
+    <section class="slide" data-section="mech" id="sM1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Part III · RMSProp</div>
+          <h1>What if one weight's gradients are <span class="glow">huge</span> and another's are tiny?</h1>
+          <p class="body-text">Momentum captures direction, but one fixed η still can't suit every parameter at once. RMSProp gives each parameter its <b>own adaptive step</b> by tracking an EWMA of <i>squared</i> gradients:</p>
+          <div class="formula-box">S<sub>t</sub> = ρ·S<sub>t−1</sub> + (1−ρ)·g<sub>t</sub>²<span class="sub">Squaring removes the sign and just keeps magnitude — "how big have this parameter's gradients been lately?"</span></div>
+        </div>
+        <div class="stack">
+          <div class="formula-box">w<sub>new</sub> = w<sub>old</sub> − (η / √(S<sub>t</sub> + ε))·g<sub>t</sub><span class="sub">ε is a tiny nudge to avoid dividing by zero. RMSProp = Root Mean Square Propagation.</span></div>
+          <div class="banner info"><b>Self-correcting step:</b> big recent gradients → large S<sub>t</sub> → divide by a big number → <i>shrink</i> the step. Small gradients → <i>grow</i> the step. The learning rate adapts per parameter.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="mech" id="sM2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Two Ideas, Two Memories</div>
+        <h1>Momentum smooths <span class="glow">direction</span>; RMSProp scales <span class="glow">step size</span></h1>
+        <div class="card-grid">
+          <div class="card" style="border-top:5px solid var(--c-concept);"><div class="ico">🏂</div><h3>Momentum — m<sub>t</sub></h3><p>EWMA of the <b>signed</b> gradients. Answers "which way have we consistently been going?" Builds velocity in a stable direction.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-mech);"><div class="ico">🎚️</div><h3>RMSProp — S<sub>t</sub> (or v<sub>t</sub>)</h3><p>EWMA of the <b>squared</b> gradients. Answers "how big have the steps been?" Scales η down where gradients are large, up where small.</p></div>
+        </div>
+        <div class="banner good">Both are just EWMAs — one of the gradient, one of its square. Combine them and you get the optimizer everyone reaches for first.</div>
+      </div>
+    </section>
+
+    <!-- SECTION 4 — ADAM + MNIST -->
+    <section class="slide" data-section="eval" id="sE1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Part IV · Adam = Adaptive Moment Estimation</div>
+          <h1>Momentum <span class="glow">+</span> RMSProp, together</h1>
+          <p class="body-text">Adam keeps <b>both</b> memories at once: m<sub>t</sub> (EWMA of gradients, the direction) and v<sub>t</sub> (EWMA of squared gradients, the per-parameter scale).</p>
+          <div class="formula-box">w<sub>new</sub> = w<sub>old</sub> − (η / √(v<sub>t</sub> + ε))·m<sub>t</sub><span class="sub">Momentum supplies the numerator m<sub>t</sub>; RMSProp supplies the denominator √(v<sub>t</sub>+ε). Direction and step-size, handled together.</span></div>
+        </div>
+        <div class="stack">
+          <div class="banner good">✅ Smoothed direction (momentum) + per-parameter adaptive step (RMSProp) = fast, stable, and forgiving of the initial learning rate.</div>
+          <div class="vocab-card"><div class="vocab-term">The common default</div><div class="vocab-def">Adam (and AdamW) is what you reach for first on most deep-learning problems. In PyTorch: <code>torch.optim.Adam(model.parameters(), lr=0.001)</code>.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">The Family Tree</div>
+        <h1>From fixed steps to <span class="glow">adaptive moments</span></h1>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Optimizer</th><th>Update core</th><th>Memory it keeps</th><th>What it buys</th></tr></thead>
+            <tbody>
+              <tr><td>SGD</td><td>w − η·g<sub>t</sub></td><td>none</td><td>simple; noisy, needs a good η</td></tr>
+              <tr><td>Momentum</td><td>w − η·m<sub>t</sub></td><td>EWMA of g</td><td>consistent direction, less zig-zag</td></tr>
+              <tr><td>RMSProp</td><td>w − (η/√S<sub>t</sub>)·g<sub>t</sub></td><td>EWMA of g²</td><td>per-parameter adaptive step</td></tr>
+              <tr class="hl-row"><td>Adam</td><td>w − (η/√v<sub>t</sub>)·m<sub>t</sub></td><td>EWMA of g <b>and</b> g²</td><td>both — the default</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Putting It to Work · MNIST Digits</div>
+          <h1>784 → 128 → <span class="glow">10</span></h1>
+          <p class="body-text">Flatten each 28×28 greyscale image into 784 inputs → a hidden layer of 128 neurons (ReLU) → 10 outputs, one per digit. <b>CrossEntropyLoss</b> turns the 10 scores into class probabilities. Trained with <b>Adam</b>, lr = 0.001, mini-batches of 128.</p>
+        </div>
+        <pre><code>model = nn.Sequential(
+    nn.Flatten(),
+    nn.Linear(28*28, 128),
+    nn.ReLU(),
+    nn.Linear(128, 10)
+)
+loss_fn = nn.CrossEntropyLoss()
+opt = torch.optim.Adam(model.parameters(), lr=0.001)
+
+<span class="cmt"># 60,000 imgs / batch 128 ≈ 469 updates per epoch</span>
+for images, labels in train_loader:
+    pred = model(images)
+    loss = loss_fn(pred, labels)
+    opt.zero_grad(); loss.backward(); opt.step()</code></pre>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE4">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Same Model, Swap the Optimizer</div>
+        <h1>The experiment, and <span class="glow">what's next</span></h1>
+        <p class="body-text">The notebook trains the identical 784→128→10 network with <b>SGD, Momentum, RMSprop, Adam, and AdamW</b> — so you can watch the adaptive optimizers converge faster and steadier than plain SGD on real data.</p>
+        <div class="card-grid">
+          <div class="card"><div class="ico">🖼️</div><h3>CrossEntropy, not MSE</h3><p>Classification (10 classes) uses categorical cross-entropy — pairs with the softmax-style output to measure probability error.</p></div>
+          <div class="card"><div class="ico">🧪</div><h3>Activations too</h3><p>The model factory also lets you swap ReLU → Tanh / Sigmoid / LeakyReLU / ELU / GELU to feel Class 33's zoo on real digits.</p></div>
+          <div class="card" style="border-top:5px solid var(--accent);"><div class="ico">☁️</div><h3>Next week</h3><p>Deploy the trained digit classifier to an <b>AWS EC2</b> instance — the cloud sequel to our GCP deployment.</p></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="chrome-bottom">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous slide">‹</button>
+    <div class="progress" id="progress"></div>
+    <div class="slide-counter"><span id="curNum" class="tabular">1</span> / <span id="totalNum" class="tabular">—</span></div>
+    <button class="nav-btn" id="nextBtn" aria-label="Next slide">›</button>
+  </nav>
+
+<script>
+"use strict";
+const $=(s,e=document)=>e.querySelector(s);
+const $$=(s,e=document)=>[...e.querySelectorAll(s)];
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+const slideEls=$$('.slide');
+let cur=0;
+const CHAPTERS={why:{num:1,label:'EWMA Smoothing'},concept:{num:2,label:'Momentum'},mech:{num:3,label:'RMSProp'},eval:{num:4,label:'Adam &amp; MNIST'}};
+const onEnter={};
+function buildDots(){const w=$('#progress');w.innerHTML='';let last=null;slideEls.forEach((s,i)=>{if(last!==null&&s.dataset.section!==last){const g=document.createElement('span');g.className='dot gap';w.appendChild(g);}const b=document.createElement('button');b.className='dot';b.setAttribute('aria-label','Go to slide '+(i+1));b.addEventListener('click',()=>goTo(i));w.appendChild(b);last=s.dataset.section;});}
+function goTo(i){i=clamp(i,0,slideEls.length-1);slideEls[cur].classList.remove('active');cur=i;const s=slideEls[cur];s.classList.add('active');document.body.dataset.section=s.dataset.section;const chip=$('#chapterChip'),m=CHAPTERS[s.dataset.section];if(m){chip.style.display='flex';$('#chapterNum').textContent=m.num;$('#chapterLabel').innerHTML=m.label;}else chip.style.display='none';$('#curNum').textContent=cur+1;$('#prevBtn').disabled=cur===0;$('#nextBtn').disabled=cur===slideEls.length-1;$$('.dot:not(.gap)',$('#progress')).forEach((d,idx)=>d.classList.toggle('active',idx===cur));const fn=onEnter[s.id];if(fn)requestAnimationFrame(fn);}
+function next(){if(cur<slideEls.length-1)goTo(cur+1);}
+function prev(){if(cur>0)goTo(cur-1);}
+$('#nextBtn').addEventListener('click',next);$('#prevBtn').addEventListener('click',prev);
+window.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();next();}else if(e.key==='ArrowLeft'){e.preventDefault();prev();}});
+const themeBtn=$('#themeToggle');
+(function(){const t=localStorage.getItem('sv-theme-nn4');if(t)document.documentElement.setAttribute('data-theme',t);})();
+themeBtn.addEventListener('click',()=>{const now=document.documentElement.getAttribute('data-theme');const dark=now?now==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;const nt=dark?'light':'dark';document.documentElement.setAttribute('data-theme',nt);localStorage.setItem('sv-theme-nn4',nt);});
+
+/* EWMA demo — noisy series + smoothed line, beta slider */
+const SERIES=[50,52,49,80,51,50,53,61,47,78,55,52,58,49,84,53];
+function cssVar(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+function drawEwma(){
+  const cv=$('#ewmaChart'); if(!cv) return;
+  const ctx=cv.getContext('2d'); const W=cv.width,H=cv.height; ctx.clearRect(0,0,W,H);
+  const beta=parseInt($('#betaSlider').value,10)/100;
+  $('#betaLabel').textContent=beta.toFixed(2);
+  const padL=40,padB=24,padT=16,padR=14;
+  const x0=padL,x1=W-padR,y0=H-padB,y1=padT;
+  const yMin=40,yMax=90;
+  const n=SERIES.length;
+  const sx=i=>x0+(i/(n-1))*(x1-x0);
+  const sy=v=>y0-((v-yMin)/(yMax-yMin))*(y0-y1);
+  const faint=cssVar('--ink-faint')||'#888'; const accent=cssVar('--c-why')||'#3B6E63'; const inkSoft=cssVar('--ink-soft')||'#555';
+  ctx.strokeStyle=faint; ctx.globalAlpha=.4; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(x0,y0); ctx.lineTo(x1,y0); ctx.stroke(); ctx.globalAlpha=1;
+  ctx.fillStyle=faint; ctx.font='10px -apple-system,Arial'; ctx.textAlign='right';
+  for(let v=40;v<=90;v+=10){ ctx.fillText(v, x0-6, sy(v)+3); }
+  // raw dots + faint line
+  ctx.strokeStyle=inkSoft; ctx.globalAlpha=.45; ctx.lineWidth=1.5; ctx.beginPath();
+  SERIES.forEach((v,i)=>{const X=sx(i),Y=sy(v); i===0?ctx.moveTo(X,Y):ctx.lineTo(X,Y);}); ctx.stroke(); ctx.globalAlpha=1;
+  ctx.fillStyle=inkSoft;
+  SERIES.forEach((v,i)=>{ctx.beginPath();ctx.arc(sx(i),sy(v),3,0,Math.PI*2);ctx.fill();});
+  // EWMA
+  let ema=SERIES[0];
+  ctx.strokeStyle=accent; ctx.lineWidth=3; ctx.beginPath();
+  SERIES.forEach((v,i)=>{ ema = i===0 ? v : beta*ema+(1-beta)*v; const X=sx(i),Y=sy(ema); i===0?ctx.moveTo(X,Y):ctx.lineTo(X,Y);});
+  ctx.stroke();
+}
+onEnter['sW2']=drawEwma;
+$('#betaSlider').addEventListener('input',drawEwma);
+
+buildDots();
+$('#totalNum').textContent=slideEls.length;
+const dl=parseInt(new URLSearchParams(location.search).get('slide'),10);
+goTo(Number.isFinite(dl)?dl-1:0);
+</script>
+</body>
+</html>
