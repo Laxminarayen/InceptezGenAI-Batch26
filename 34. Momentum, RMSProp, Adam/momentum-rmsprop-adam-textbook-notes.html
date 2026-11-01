@@ -47,6 +47,22 @@
   .pill{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:.82rem; font-weight:700; color:var(--ink);}
   .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
   .summary-box h3{margin-top:0;}
+  .fig{margin:20px 0 22px; background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 18px 10px;}
+  .fig svg{display:block; width:100%; height:auto;}
+  .fig figcaption{font-size:.82rem; color:var(--ink-faint); margin-top:12px; text-align:center; line-height:1.5;}
+  .fig text{font-family:var(--font);}
+  .fig .lbl{font-size:13px; font-weight:800; fill:var(--ink);}
+  .fig .lbl-s{font-size:12px; font-weight:600; fill:var(--ink-soft);}
+  .fig .lbl-f{font-size:11px; font-weight:600; fill:var(--ink-faint);}
+  .fig .contour{fill:none; stroke:var(--line); stroke-width:1.4;}
+  .fig .teal{stroke:#3B6E63;} .fig .amber{stroke:#B0670C;} .fig .blue{stroke:#1E6FA8;} .fig .purple{stroke:#6B4FA0;}
+  .fig .f-teal{fill:#3B6E63;} .fig .f-amber{fill:#B0670C;} .fig .f-blue{fill:#1E6FA8;} .fig .f-purple{fill:#6B4FA0;}
+  @media (prefers-color-scheme: dark){
+    .fig .teal{stroke:#6FB3A3;} .fig .amber{stroke:#E0A24C;} .fig .blue{stroke:#5CA6DE;} .fig .purple{stroke:#B49AE0;}
+    .fig .f-teal{fill:#6FB3A3;} .fig .f-amber{fill:#E0A24C;} .fig .f-blue{fill:#5CA6DE;} .fig .f-purple{fill:#B49AE0;}
+  }
+  .fig .box{fill:var(--paper-3); stroke:var(--line); stroke-width:1.4;}
+  .fig .flow{stroke:var(--ink-soft); stroke-width:1.6; fill:none;}
 </style>
 </head>
 <body>
@@ -81,6 +97,38 @@
   <h2 id="s1"><span class="num">1.</span>The Problem: Noisy Gradients</h2>
   <p>With mini-batch (or stochastic) gradient descent, each update w<sub>new</sub> = w<sub>old</sub> − η·g<sub>t</sub> uses the gradient from <i>one</i> batch. Different batches give different gradients for the same weight, so the raw gradient g<sub>t</sub> is noisy: it reflects only the current value and is "not intelligent." On an elongated loss valley the descent zig-zags across the steep direction while crawling along the gentle one — many wasted steps. The remedy is to stop trusting a single reading and average it over time.</p>
 
+  <figure class="fig">
+    <svg viewBox="0 0 640 300" role="img" aria-label="Three descent paths on a loss-contour map: full-batch is smooth, mini-batch mildly wavy, SGD strongly zig-zags.">
+      <!-- loss contours (concentric ellipses) around the minimum -->
+      <ellipse class="contour" cx="480" cy="155" rx="195" ry="104"/>
+      <ellipse class="contour" cx="480" cy="155" rx="148" ry="78"/>
+      <ellipse class="contour" cx="480" cy="155" rx="100" ry="52"/>
+      <ellipse class="contour" cx="480" cy="155" rx="54" ry="28"/>
+      <ellipse class="contour" cx="480" cy="155" rx="18" ry="9"/>
+      <circle cx="480" cy="155" r="4" fill="var(--ink)"/>
+      <text class="lbl-f" x="480" y="178" text-anchor="middle">minimum</text>
+      <!-- full-batch: smooth -->
+      <path class="teal" fill="none" stroke-width="2.4" d="M70,48 C 210,86 350,132 476,153"/>
+      <!-- mini-batch: mildly wavy -->
+      <path class="amber" fill="none" stroke-width="2.2" d="M70,48 Q 120,96 150,78 T 240,118 T 330,140 T 420,152 L476,153"/>
+      <!-- SGD: strong zig-zag -->
+      <polyline class="purple" fill="none" stroke-width="2.2" points="70,48 118,118 100,70 180,150 152,96 258,176 232,114 350,180 322,128 430,168 476,153"/>
+      <!-- start -->
+      <circle cx="70" cy="48" r="4.5" fill="var(--ink)"/>
+      <text class="lbl-f" x="70" y="38" text-anchor="middle">start</text>
+      <!-- legend -->
+      <g>
+        <line class="teal"   x1="40" y1="258" x2="70" y2="258" stroke-width="3"/>
+        <text class="lbl-s" x="78"  y="262">Full-batch — one true gradient, smooth</text>
+        <line class="amber"  x1="40" y1="278" x2="70" y2="278" stroke-width="3"/>
+        <text class="lbl-s" x="78"  y="282">Mini-batch — a little noisy</text>
+        <line class="purple" x1="372" y1="278" x2="402" y2="278" stroke-width="3"/>
+        <text class="lbl-s" x="410" y="282">SGD (1 sample) — very noisy</text>
+      </g>
+    </svg>
+    <figcaption><b>Fig 1.</b> Fewer samples per step → noisier gradient → more zig-zag. Full-batch is smooth but slow (whole dataset per step); SGD is cheap but jittery; mini-batch is the practical middle ground.</figcaption>
+  </figure>
+
   <h2 id="s2"><span class="num">2.</span>EWMA — Exponentially Weighted Moving Average</h2>
   <div class="formula">
     EMA<sub>t</sub> = β·EMA<sub>t−1</sub> + (1−β)·x<sub>t</sub>
@@ -108,6 +156,33 @@
   </div>
   <p>Why it helps: along a consistent direction, successive gradients point the same way and <b>add up</b>, building speed; across an oscillating direction, gradients alternate sign and <b>cancel</b> in the average. The optimizer glides down the valley instead of rattling between its walls. (PyTorch implements this as <code>SGD(..., momentum=0.9)</code>.)</p>
 
+  <figure class="fig">
+    <svg viewBox="0 0 640 300" role="img" aria-label="Left: plain gradient descent zig-zags across a narrow valley. Right: momentum averages the gradients and glides along the valley floor.">
+      <!-- LEFT PANEL: plain GD -->
+      <text class="lbl" x="150" y="26" text-anchor="middle">Plain GD</text>
+      <ellipse class="contour" cx="200" cy="150" rx="150" ry="66"/>
+      <ellipse class="contour" cx="230" cy="150" rx="104" ry="44"/>
+      <ellipse class="contour" cx="258" cy="150" rx="58" ry="24"/>
+      <circle cx="300" cy="150" r="4" fill="var(--ink)"/>
+      <polyline class="purple" fill="none" stroke-width="2.3" points="52,150 78,206 104,98 132,198 160,106 192,188 222,120 252,176 278,136 300,150"/>
+      <text class="lbl-f" x="150" y="252" text-anchor="middle">gradients across the valley cancel —</text>
+      <text class="lbl-f" x="150" y="268" text-anchor="middle">steps fight each other, slow progress</text>
+      <!-- divider -->
+      <line x1="320" y1="40" x2="320" y2="230" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="4 5"/>
+      <!-- RIGHT PANEL: momentum -->
+      <text class="lbl" x="490" y="26" text-anchor="middle">Momentum</text>
+      <ellipse class="contour" cx="490" cy="150" rx="150" ry="66"/>
+      <ellipse class="contour" cx="520" cy="150" rx="104" ry="44"/>
+      <ellipse class="contour" cx="548" cy="150" rx="58" ry="24"/>
+      <circle cx="590" cy="150" r="4" fill="var(--ink)"/>
+      <path class="teal" fill="none" stroke-width="2.6" d="M342,150 Q 420,172 480,152 T 586,150"/>
+      <polygon class="f-teal" points="586,150 574,144 576,156"/>
+      <text class="lbl-f" x="490" y="252" text-anchor="middle">the EWMA keeps the along-valley</text>
+      <text class="lbl-f" x="490" y="268" text-anchor="middle">direction and damps the wobble</text>
+    </svg>
+    <figcaption><b>Fig 2.</b> m<sub>t</sub> = β·m<sub>t−1</sub> + (1−β)·g<sub>t</sub>. Oscillating gradients (left) alternate sign and <b>cancel</b> in the average; the consistent down-valley direction <b>accumulates</b> — so Momentum builds speed and glides (right).</figcaption>
+  </figure>
+
   <h2 id="s4"><span class="num">4.</span>RMSProp</h2>
   <p>Momentum fixes direction, but a single η still can't fit every parameter — some parameters routinely have large gradients, others tiny ones. RMSProp (Root Mean Square Propagation) tracks an EWMA of <i>squared</i> gradients and divides the step by its root:</p>
   <div class="formula">
@@ -115,6 +190,37 @@
     <span class="sub">Squaring removes the sign and keeps magnitude. ε (e.g. 1e-8) avoids division by zero.</span>
   </div>
   <p>The effect is a <b>per-parameter adaptive learning rate</b>: a parameter with large recent gradients gets a large S<sub>t</sub>, so η is divided by a big number and the step shrinks (damping the wild direction); a parameter with small gradients gets a small S<sub>t</sub>, so its step grows. The learning rate "no longer has to be fixed."</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 640 300" role="img" aria-label="Left: a steep parameter with large gradient gets a small, damped step. Right: a flat parameter with small gradient gets a larger step. The step is eta divided by the root of S.">
+      <!-- LEFT: steep direction -->
+      <text class="lbl" x="160" y="26" text-anchor="middle">Steep parameter — large g</text>
+      <path class="blue" fill="none" stroke-width="2.4" d="M60,60 Q160,250 260,60"/>
+      <circle class="f-blue" cx="100" cy="166" r="6"/>
+      <!-- big gradient arrow (down the steep wall) -->
+      <line class="purple" x1="100" y1="166" x2="130" y2="226" stroke-width="2.6"/>
+      <polygon class="f-purple" points="130,226 118,220 128,214"/>
+      <text class="lbl-f" x="150" y="206">big g → big S</text>
+      <!-- small resulting step -->
+      <line class="teal" x1="150" y1="262" x2="172" y2="262" stroke-width="5"/>
+      <text class="lbl-s" x="150" y="284">small step (damped)</text>
+      <!-- divider -->
+      <line x1="320" y1="40" x2="320" y2="248" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="4 5"/>
+      <!-- RIGHT: flat direction -->
+      <text class="lbl" x="490" y="26" text-anchor="middle">Flat parameter — small g</text>
+      <path class="blue" fill="none" stroke-width="2.4" d="M360,150 Q490,210 620,150"/>
+      <circle class="f-blue" cx="400" cy="167" r="6"/>
+      <line class="purple" x1="400" y1="167" x2="424" y2="179" stroke-width="2.6"/>
+      <polygon class="f-purple" points="424,179 412,177 416,170"/>
+      <text class="lbl-f" x="446" y="168">small g → small S</text>
+      <!-- big resulting step -->
+      <line class="teal" x1="430" y1="248" x2="500" y2="248" stroke-width="5"/>
+      <text class="lbl-s" x="430" y="270">larger step (sped up)</text>
+      <!-- the rule -->
+      <text class="lbl-s" x="320" y="296" text-anchor="middle">step = η / √(S + ε) · g — each parameter scales itself</text>
+    </svg>
+    <figcaption><b>Fig 3.</b> RMSProp keeps S<sub>t</sub> = ρ·S<sub>t−1</sub> + (1−ρ)·g<sub>t</sub>² per parameter. Dividing by √S shrinks the step where gradients are large (steep, jittery directions) and lets it grow where they are small (flat directions) — an automatic per-parameter learning rate.</figcaption>
+  </figure>
 
   <h2 id="s5"><span class="num">5.</span>Adam</h2>
   <p>Adam (Adaptive Moment Estimation) combines the two memories — Momentum's EWMA of gradients (first moment, m<sub>t</sub>) and RMSProp's EWMA of squared gradients (second moment, v<sub>t</sub>):</p>
@@ -126,6 +232,34 @@
     <span class="sub">Momentum supplies the numerator (smoothed direction); RMSProp supplies the denominator (per-parameter scale). ε is the small anti-÷0 nudge.</span>
   </div>
   <p>Adam gets a smoothed direction <i>and</i> an adaptive step at once — which is why it converges quickly, stays stable, and is relatively forgiving of the initial η. <b>AdamW</b> is a common variant that decouples weight decay from the gradient update for better regularisation.</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 640 260" role="img" aria-label="Flow diagram: the gradient feeds a momentum branch that gives direction and an RMSProp branch that gives per-parameter scale; they combine into the Adam update.">
+      <!-- gradient source -->
+      <rect class="box" x="24" y="104" width="104" height="52" rx="9"/>
+      <text class="lbl" x="76" y="128" text-anchor="middle">gradient</text>
+      <text class="lbl-s" x="76" y="146" text-anchor="middle">g_t</text>
+      <!-- branch lines -->
+      <path class="flow" d="M128,122 C 170,122 170,56 212,56"/>
+      <path class="flow" d="M128,138 C 170,138 170,204 212,204"/>
+      <!-- momentum branch (top) -->
+      <rect class="box" x="212" y="30" width="236" height="52" rx="9"/>
+      <text class="lbl f-teal" x="330" y="52" text-anchor="middle">Momentum — first moment</text>
+      <text class="lbl-s" x="330" y="70" text-anchor="middle">m_t = β₁·m + (1−β₁)·g → direction</text>
+      <!-- rmsprop branch (bottom) -->
+      <rect class="box" x="212" y="178" width="236" height="52" rx="9"/>
+      <text class="lbl f-blue" x="330" y="200" text-anchor="middle">RMSProp — second moment</text>
+      <text class="lbl-s" x="330" y="218" text-anchor="middle">v_t = β₂·v + (1−β₂)·g² → scale</text>
+      <!-- merge into Adam -->
+      <path class="flow" d="M448,56 C 496,56 496,122 524,122"/>
+      <path class="flow" d="M448,204 C 496,204 496,138 524,138"/>
+      <rect class="box purple" x="524" y="92" width="96" height="76" rx="10" style="stroke-width:2;"/>
+      <text class="lbl f-purple" x="572" y="118" text-anchor="middle">Adam</text>
+      <text class="lbl-s" x="572" y="138" text-anchor="middle">w ← w −</text>
+      <text class="lbl-s" x="572" y="156" text-anchor="middle">η·m_t /√(v_t+ε)</text>
+    </svg>
+    <figcaption><b>Fig 4.</b> Adam runs both EWMAs at once: Momentum supplies the smoothed <i>direction</i> (numerator m<sub>t</sub>), RMSProp supplies the per-parameter <i>scale</i> (denominator √v<sub>t</sub>). One update with both — fast and stable.</figcaption>
+  </figure>
 
   <h2 id="s6"><span class="num">6.</span>Hyperparameters &amp; Bias Correction</h2>
   <table>
