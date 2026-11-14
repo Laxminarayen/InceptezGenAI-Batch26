@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Classwork Notes · Convolution &amp; CNNs I</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{ --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC; --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63; --line: rgba(32,40,58,.16); --accent:#6B4FA0; --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  @media (prefers-color-scheme: dark){ :root{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.16); --accent:#B49AE0; } }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.6; }
+  .wrap{max-width:840px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 80px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.7rem,4vw,2.4rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 6px;}
+  .subtitle{color:var(--ink-soft); font-size:1rem; margin-bottom:8px;}
+  .pdf-link{display:inline-flex; align-items:center; gap:8px; margin:14px 10px 34px 0; font-size:.9rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .pdf-link:hover{border-color:var(--accent); color:var(--accent);}
+  h2{font-size:1.35rem; font-weight:900; margin:44px 0 14px; padding-top:16px; border-top:1px solid var(--line);}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h3{font-size:1.05rem; font-weight:800; margin:22px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:8px 10px; text-align:center; border:1px solid var(--line);}
+  th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  tr.hl td{background:color-mix(in srgb, var(--accent) 10%, transparent); font-weight:800;}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .agenda{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 20px;}
+  .agenda span{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:8px 16px; font-size:.86rem; font-weight:700; color:var(--ink);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.92em; font-family:var(--mono);}
+  pre{background:#10141c; color:#dfe6f2; border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.85rem; line-height:1.55; font-family:var(--mono);}
+  pre code{background:none; padding:0;}
+  pre .cmt{color:#7f8aa0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Day 35 · Classwork Notes</div>
+  <h1>Convolution as an Operation — CNNs, Part 1</h1>
+  <p class="subtitle">Plain neural networks worked for MNIST, but they flatten an image and throw away its spatial structure. Today we define that problem precisely, then build the fix: the convolution operation — a small learnable filter that slides across the image to extract lines, edges and contours. That is the core of the Convolutional Neural Network.</p>
+  <a class="pdf-link" href="classwork-writtenNotes.pdf" target="_blank">📄 Handwritten notes (PDF)</a>
+
+  <h2>Agenda</h2>
+  <div class="agenda">
+    <span>0 · Revision — where we are</span>
+    <span>1 · Why NNs don't truly "understand" images</span>
+    <span>2 · Spatial information in an image</span>
+    <span>3 · Convolution</span>
+    <span>4 · CNNs</span>
+    <span>Next 2 weeks · Overfitting in NNs → NLP → RNNs → Attention &amp; Transformers</span>
+  </div>
+
+  <h2>Part 0: Revision — Where We Are</h2>
+  <p><b>Traditional ML</b> used data to understand patterns — we engineered the features ourselves. <b>Deep learning</b> is made of <b>layers that understand all the different representations of the input data</b>: inputs → hidden layers → weights, biases, activation functions → ŷ, trained with backpropagation and optimizers (SGD, Momentum, RMSProp, Adam). The road ahead: <b>CNNs → overfitting &amp; handling overfitting in NNs → Natural Language Processing → RNNs → Attention &amp; Transformers → Generative AI</b> (where deep learning ends and Gen AI begins).</p>
+
+  <h2>Part I: What Does a Neural Network Actually Understand?</h2>
+  <p>A dense network takes a <b>global weighted sum</b> of its inputs — it looks at <b>global patterns</b>. To feed an image in, we must first <b>flatten</b> it:</p>
+  <div class="formula">
+    28 × 28 image → flatten → 784 pixel values (784 × 1 vector)
+    <span class="sub">Rows of the image are laid end-to-end into one long column. The network sees a list of numbers.</span>
+  </div>
+  <p><b>The problem — spatial information is lost.</b> In the image, pixel 1 is close to pixel 6; pixels 1, 2, 6, 7 are neighbours. That local arrangement — <b>the structure — is what defines a number</b>. But once flattened, neighbouring pixels can end up far apart in the vector, and a global weighted sum can total the right brightness while missing the <b>local pattern / alignment</b> completely.</p>
+  <div class="note"><b>Problem definition — what is spatial info?</b> It is <i>where</i> pixels are located and <i>how neighbouring pixels relate</i> to each other. A dense network has <b>no local connectivity</b>, so it cannot see that nearby pixels form a stroke.</div>
+
+  <h2>Part II: A Search for a Spatial-Information-Preserving Network</h2>
+  <p>Neural networks <i>did</i> work well for MNIST — but only because <b>MNIST as an image is simple</b> (small, centred, clean). Real images are not. So what makes up an image?</p>
+  <ul>
+    <li><b>Lines, edges and contours.</b></li>
+    <li>Focus on <b>functions that extract lines, edges and contours</b> from an image.</li>
+    <li>Make those functions <b>learnable</b> — let the NN learn and extract the useful info on lines, edges and contours for proper classification.</li>
+  </ul>
+  <p>That spatial-preserving network is the <b>Convolutional Neural Network (CNN)</b>, and its core operation is <b>convolution</b>.</p>
+
+  <h2>Part III: The Convolution Operation</h2>
+  <p><b>Definition.</b> Convolution is an operation where a <b>small filter (kernel)</b> moves across an image and <b>produces a response at every position</b>. At each stop, multiply the overlapping image patch element-wise by the kernel, then <b>sum</b> — one number per position. The grid of responses is the <b>feature map</b>.</p>
+  <div class="formula">
+    response(at a position) = Σ (image patch × kernel)
+    <span class="sub">Slide the kernel one step at a time across the whole image; collect every response into the feature map. Kernels are often 2×2 or 3×3.</span>
+  </div>
+
+  <h3>Worked example — a vertical-edge kernel</h3>
+  <p>Take a patch that is bright on the left (value 10) and dark on the right (value 0), and the kernel <code>[1,0,-1]</code> on each of its 3 rows:</p>
+  <table>
+    <thead><tr><th>Patch type</th><th>Each row: 1·L + 0·M + (−1)·R</th><th>Σ over 3 rows</th></tr></thead>
+    <tbody>
+      <tr><td>Flat (all 10)</td><td>10 − 10 = 0</td><td><b>0</b></td></tr>
+      <tr class="hl"><td>Edge (10 | 0)</td><td>10 − 0 = +10</td><td><b>+30</b></td></tr>
+    </tbody>
+  </table>
+  <p>A patch inside a <b>flat</b> region cancels to <b>0</b>; a patch <b>straddling the edge</b> lights up (+30). The kernel responds only where brightness changes — i.e. "<b>where is the edge?</b>" A top-to-bottom gradient kernel reads from −1 (white) to +1 (black); left-to-right kernels catch vertical edges.</p>
+
+  <h3>Example kernels (from the notebook)</h3>
+  <pre><code><span class="cmt"># horizontal-edge (top vs bottom)</span>
+[[-1,-1,-1],
+ [ 0, 0, 0],
+ [ 1, 1, 1]]
+
+<span class="cmt"># vertical-edge (left vs right)</span>
+[[-1, 0, 1],
+ [-1, 0, 1],
+ [-1, 0, 1]]</code></pre>
+  <p>In code, convolution is <code>scipy.signal.correlate2d(image, kernel, mode='same')</code>, and we keep only the positive response with <code>np.maximum(output, 0)</code> (a ReLU) to visualise the detected edges.</p>
+
+  <h3>Output size</h3>
+  <div class="formula">
+    output = (input − kernel + 1) per side
+    <span class="sub">A 3×3 kernel on 28×28 → 26×26. A 5×5 kernel on 28×28 → 24×24. A 2×2 kernel on 5×5 → 4×4. The map shrinks by (kernel − 1).</span>
+  </div>
+
+  <h2>Part IV: CNNs — Multiple Filters &amp; Stacked Layers</h2>
+  <p><b>What if I have multiple filters?</b> One kernel detects one kind of edge; use <b>n filters / kernels</b> and you get <b>n feature maps</b> stacked into a volume:</p>
+  <div class="formula">
+    28×28 image —(n filters, 5×5)→ 24 × 24 × n
+    <span class="sub">Depth n = how many different patterns we look for. The values of these filters are <b>learnable</b> — gradient descent + backpropagation tune them (they are the "n" weights of this layer).</span>
+  </div>
+  <p><b>What if I stack layers of filters?</b> Early layers learn simple <b>lines &amp; edges</b>; deeper layers combine them into <b>corners, curves and contours</b>, then <b>object parts</b>, then whole objects — enough to tell cat from dog from car. Because early layers learn generic edges, trained CNNs can be reused — <b>transfer learning</b>: keep the edge/contour layers, retrain only the top.</p>
+  <p><b>From feature maps to a prediction.</b> After the convolutional layers, the final volume (e.g. 4×4×100 = <b>1600</b>) is <b>flattened</b> and sent to a normal dense head → 128 → … → <b>k</b> class scores, trained end-to-end with backpropagation.</p>
+  <pre><code>import torch.nn as nn
+model = nn.Sequential(
+    nn.Conv2d(1, 32, kernel_size=3), nn.ReLU(),   <span class="cmt"># 32 learnable filters</span>
+    nn.Conv2d(32, 64, kernel_size=3), nn.ReLU(),
+    nn.Flatten(),
+    nn.Linear(64*24*24, 128), nn.ReLU(),
+    nn.Linear(128, 10)                            <span class="cmt"># k classes</span>
+)</code></pre>
+
+  <div class="note"><b>Next 2 weeks:</b> (1) Overfitting &amp; how to handle overfitting in neural networks, (2) Natural Language Processing, (3) RNNs, (4) Attention &amp; Transformers — the bridge from deep learning to Gen AI.</div>
+
+  <div class="note">Want the full definitions, the convolution walk-through, kernels, output-size maths and the CNN build-up? See <a href="convolution-cnn-textbook-notes.html">Convolution &amp; CNNs I — Reference Notes</a>.</div>
+</div>
+</body>
+</html>

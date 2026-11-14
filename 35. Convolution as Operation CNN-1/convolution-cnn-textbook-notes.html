@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Convolution &amp; CNNs I — Reference Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{ --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC; --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63; --line: rgba(32,40,58,.16); --accent:#6B4FA0; --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; }
+  @media (prefers-color-scheme: dark){ :root{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.16); --accent:#B49AE0; } }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap{max-width:860px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:680px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+  h2{font-size:1.4rem; font-weight:900; margin:48px 0 14px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px;}
+  h3{font-size:1.06rem; font-weight:800; margin:24px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:9px 12px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono);}
+  pre{background:#10141c; color:#dfe6f2; border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.86rem; line-height:1.55; font-family:var(--mono);}
+  pre code{background:none; padding:0; font-size:1em; color:inherit;}
+  pre .cmt{color:#7f8aa0;}
+  .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px;}
+  .pill{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:.82rem; font-weight:700; color:var(--ink);}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0;}
+  .fig{margin:20px 0 22px; background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 18px 10px;}
+  .fig svg{display:block; width:100%; height:auto;}
+  .fig figcaption{font-size:.82rem; color:var(--ink-faint); margin-top:12px; text-align:center; line-height:1.5;}
+  .fig text{font-family:var(--font);}
+  .fig .lbl{font-size:13px; font-weight:800; fill:var(--ink);}
+  .fig .lbl-s{font-size:12px; font-weight:600; fill:var(--ink-soft);}
+  .fig .lbl-f{font-size:11px; font-weight:600; fill:var(--ink-faint);}
+  .fig .teal{stroke:#3B6E63;} .fig .amber{stroke:#B0670C;} .fig .blue{stroke:#1E6FA8;} .fig .purple{stroke:#6B4FA0;}
+  .fig .f-teal{fill:#3B6E63;} .fig .f-amber{fill:#B0670C;} .fig .f-blue{fill:#1E6FA8;} .fig .f-purple{fill:#6B4FA0;}
+  @media (prefers-color-scheme: dark){
+    .fig .teal{stroke:#6FB3A3;} .fig .amber{stroke:#E0A24C;} .fig .blue{stroke:#5CA6DE;} .fig .purple{stroke:#B49AE0;}
+    .fig .f-teal{fill:#6FB3A3;} .fig .f-amber{fill:#E0A24C;} .fig .f-blue{fill:#5CA6DE;} .fig .f-purple{fill:#B49AE0;}
+  }
+  .fig .box{fill:var(--paper-3); stroke:var(--line); stroke-width:1.4;}
+  .fig .flow{stroke:var(--ink-soft); stroke-width:1.6; fill:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Reference Notes · Deep Learning</div>
+  <h1>Convolution as an Operation — CNNs, Part 1</h1>
+  <p class="abstract">A dense neural network flattens an image and loses the one thing that defines it — spatial structure. This chapter builds the fix from scratch: the convolution operation, a small learnable filter that slides over the image to extract lines, edges and contours, stacked into the Convolutional Neural Network.</p>
+
+  <div class="related-links">
+    <a href="classwork-notes.html">📝 Classwork Notes (Day 35 session write-up)</a>
+    <a href="convolution-cnn-slides.html">🖥️ Slide Deck (with live convolution demo)</a>
+    <a href="ConvolutionOperation&Filters.ipynb">📓 Notebook: Convolution &amp; Filters</a>
+    <a href="../34.%20Momentum%2C%20RMSProp%2C%20Adam/momentum-rmsprop-adam-textbook-notes.html">📚 Momentum/RMSProp/Adam (Class 34)</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">Where We Are: ML → Deep Learning</a></li>
+      <li><a href="#s2">Why a Dense Net Can't Really See</a></li>
+      <li><a href="#s3">Spatial Information</a></li>
+      <li><a href="#s4">What Makes Up an Image</a></li>
+      <li><a href="#s5">The Convolution Operation</a></li>
+      <li><a href="#s6">Kernels &amp; a Worked Example</a></li>
+      <li><a href="#s7">Output Size</a></li>
+      <li><a href="#s8">Multiple Filters &amp; Feature Maps</a></li>
+      <li><a href="#s9">Stacking Layers &amp; the CNN</a></li>
+      <li><a href="#s10">Summary</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1"><span class="num">1.</span>Where We Are: Traditional ML → Deep Learning</h2>
+  <p>Traditional ML <b>used data to understand patterns</b> — but we engineered the features by hand. <b>Deep learning</b> is built from <b>layers that understand all the different representations of the input data</b>: inputs → hidden layers (weights, biases, activation functions) → output ŷ, trained by backpropagation and optimizers (SGD, Momentum, RMSProp, Adam from Class 34). The remaining road: <b>CNNs → overfitting in NNs → NLP → RNNs → Attention &amp; Transformers → Generative AI</b>.</p>
+
+  <h2 id="s2"><span class="num">2.</span>Why a Dense Net Can't Really See an Image</h2>
+  <p>A fully-connected network takes a <b>global weighted sum</b> of its inputs. To feed it an image, we first <b>flatten</b> the 2-D grid into a 1-D vector — for MNIST, 28×28 = <b>784</b> values laid end to end, row after row.</p>
+  <div class="formula">28 × 28 image → flatten → 784 × 1 vector<span class="sub">The network now sees a list of numbers with no notion of rows, columns, or which pixels were neighbours.</span></div>
+
+  <figure class="fig">
+    <svg viewBox="0 0 640 250" role="img" aria-label="A small image grid is unrolled row by row into a tall vector; two neighbouring pixels end up far apart in the vector.">
+      <!-- image grid -->
+      <text class="lbl" x="95" y="30" text-anchor="middle">image (neighbours touch)</text>
+      <g>
+        <!-- 4x4 grid -->
+        <g stroke="var(--line)" stroke-width="1.2" fill="var(--paper-3)">
+          <rect x="30" y="46" width="34" height="34"/><rect x="64" y="46" width="34" height="34"/><rect x="98" y="46" width="34" height="34"/><rect x="132" y="46" width="34" height="34"/>
+          <rect x="30" y="80" width="34" height="34"/><rect x="64" y="80" width="34" height="34"/><rect x="98" y="80" width="34" height="34"/><rect x="132" y="80" width="34" height="34"/>
+          <rect x="30" y="114" width="34" height="34"/><rect x="64" y="114" width="34" height="34"/><rect x="98" y="114" width="34" height="34"/><rect x="132" y="114" width="34" height="34"/>
+          <rect x="30" y="148" width="34" height="34"/><rect x="64" y="148" width="34" height="34"/><rect x="98" y="148" width="34" height="34"/><rect x="132" y="148" width="34" height="34"/>
+        </g>
+        <!-- highlight pixel A (row0 col3) and pixel B (row1 col3) - vertical neighbours -->
+        <rect x="132" y="46" width="34" height="34" fill="#1E6FA8" opacity="0.5"/>
+        <rect x="132" y="80" width="34" height="34" fill="#B0670C" opacity="0.5"/>
+        <text class="lbl-f" x="149" y="67" text-anchor="middle" fill="#fff">A</text>
+        <text class="lbl-f" x="149" y="101" text-anchor="middle" fill="#fff">B</text>
+      </g>
+      <!-- arrow -->
+      <path class="flow" d="M180,114 H250"/><polygon points="250,114 240,109 240,119" fill="var(--ink-soft)"/>
+      <text class="lbl-f" x="215" y="104" text-anchor="middle">flatten</text>
+      <!-- vector -->
+      <text class="lbl" x="400" y="30" text-anchor="middle">784 × 1 vector (A and B now far apart)</text>
+      <g stroke="var(--line)" stroke-width="1" fill="var(--paper-3)">
+        <rect x="300" y="44" width="200" height="18"/><rect x="300" y="62" width="200" height="18"/>
+        <rect x="300" y="80" width="200" height="18"/><rect x="300" y="98" width="200" height="18"/>
+        <rect x="300" y="116" width="200" height="18"/><rect x="300" y="134" width="200" height="18"/>
+        <rect x="300" y="152" width="200" height="18"/><rect x="300" y="170" width="200" height="18"/>
+      </g>
+      <rect x="300" y="44" width="200" height="18" fill="#1E6FA8" opacity="0.55"/>
+      <rect x="300" y="134" width="200" height="18" fill="#B0670C" opacity="0.55"/>
+      <text class="lbl-f" x="520" y="57">A (pos 4)</text>
+      <text class="lbl-f" x="520" y="147">B (pos 8)</text>
+      <path class="purple" fill="none" stroke-width="1.6" stroke-dasharray="4 4" d="M506,53 C 560,80 560,120 506,143"/>
+    </svg>
+    <figcaption><b>Fig 1.</b> Flattening unrolls the grid row by row. Pixels A and B are vertical neighbours in the image, but land a whole row apart in the vector — so a dense net has <b>no idea they were adjacent</b>. The spatial relationship is gone.</figcaption>
+  </figure>
+
+  <h2 id="s3"><span class="num">3.</span>Spatial Information — the Thing We Lost</h2>
+  <p><b>Spatial information</b> = <i>where</i> pixels are located and <i>how neighbouring pixels relate</i> to each other. Pixel 1 is close to pixel 6; pixels 1, 2, 6, 7 are a little neighbourhood — and <b>that structure is what defines a number</b>. A global weighted sum can add up to the right total brightness while completely missing the <b>local pattern / alignment</b>. A dense network has <b>no local connectivity</b>, so it cannot tell that nearby pixels form a stroke.</p>
+  <div class="note"><b>So why did MNIST work with a dense net?</b> Because MNIST as an image is <b>simple</b> — small, centred, clean, low-variation. Real-world images (cats, dogs, scenes, rotated/scaled objects) break a flattening network.</div>
+
+  <h2 id="s4"><span class="num">4.</span>What Makes Up an Image?</h2>
+  <p><b>Lines, edges and contours.</b> If we had <b>functions that extract lines, edges and contours</b> from an image, and we made those functions <b>learnable</b>, the network could learn and extract exactly the useful information it needs for proper classification — while keeping spatial structure. That spatial-preserving network is the <b>Convolutional Neural Network (CNN)</b>.</p>
+
+  <h2 id="s5"><span class="num">5.</span>The Convolution Operation</h2>
+  <p><b>Definition:</b> convolution is an operation where a <b>small filter (kernel)</b> moves across an image and <b>produces a response at every position</b>. At each stop, overlap the kernel on an image patch, multiply element-wise, and <b>sum</b> into a single number. Collect every response into the <b>feature map</b>.</p>
+  <div class="formula">response = Σ (image patch ⊙ kernel)<span class="sub">⊙ is element-wise multiply. Slide the kernel one step at a time (left→right, top→bottom) over the whole image.</span></div>
+
+  <figure class="fig">
+    <svg viewBox="0 0 640 260" role="img" aria-label="A 3 by 3 kernel overlaps a patch of the input image, multiplies element-wise and sums into one cell of the feature map.">
+      <!-- input -->
+      <text class="lbl" x="110" y="26" text-anchor="middle">input image</text>
+      <g stroke="var(--line)" stroke-width="1.1" fill="var(--paper-3)">
+        <rect x="40" y="40" width="30" height="30"/><rect x="70" y="40" width="30" height="30"/><rect x="100" y="40" width="30" height="30"/><rect x="130" y="40" width="30" height="30"/><rect x="160" y="40" width="30" height="30"/>
+        <rect x="40" y="70" width="30" height="30"/><rect x="70" y="70" width="30" height="30"/><rect x="100" y="70" width="30" height="30"/><rect x="130" y="70" width="30" height="30"/><rect x="160" y="70" width="30" height="30"/>
+        <rect x="40" y="100" width="30" height="30"/><rect x="70" y="100" width="30" height="30"/><rect x="100" y="100" width="30" height="30"/><rect x="130" y="100" width="30" height="30"/><rect x="160" y="100" width="30" height="30"/>
+        <rect x="40" y="130" width="30" height="30"/><rect x="70" y="130" width="30" height="30"/><rect x="100" y="130" width="30" height="30"/><rect x="130" y="130" width="30" height="30"/><rect x="160" y="130" width="30" height="30"/>
+        <rect x="40" y="160" width="30" height="30"/><rect x="70" y="160" width="30" height="30"/><rect x="100" y="160" width="30" height="30"/><rect x="130" y="160" width="30" height="30"/><rect x="160" y="160" width="30" height="30"/>
+      </g>
+      <!-- highlighted 3x3 patch -->
+      <rect x="40" y="40" width="90" height="90" fill="#1E6FA8" opacity="0.18"/>
+      <rect x="40" y="40" width="90" height="90" fill="none" class="blue" stroke-width="3"/>
+      <!-- kernel -->
+      <text class="lbl" x="300" y="26" text-anchor="middle">kernel (3×3)</text>
+      <g stroke="var(--line)" stroke-width="1.1" fill="var(--paper-3)">
+        <rect x="255" y="62" width="30" height="30"/><rect x="285" y="62" width="30" height="30"/><rect x="315" y="62" width="30" height="30"/>
+        <rect x="255" y="92" width="30" height="30"/><rect x="285" y="92" width="30" height="30"/><rect x="315" y="92" width="30" height="30"/>
+        <rect x="255" y="122" width="30" height="30"/><rect x="285" y="122" width="30" height="30"/><rect x="315" y="122" width="30" height="30"/>
+      </g>
+      <text class="f-blue" x="235" y="112" style="font-size:22px;font-weight:800;">⊙</text>
+      <!-- arrow sum -->
+      <path class="flow" d="M360,107 H430"/><polygon points="430,107 420,102 420,112" fill="var(--ink-soft)"/>
+      <text class="lbl-f" x="395" y="97" text-anchor="middle">Σ</text>
+      <!-- feature map -->
+      <text class="lbl" x="530" y="26" text-anchor="middle">feature map</text>
+      <g stroke="var(--line)" stroke-width="1.1" fill="var(--paper-3)">
+        <rect x="470" y="62" width="34" height="34"/><rect x="504" y="62" width="34" height="34"/><rect x="538" y="62" width="34" height="34"/>
+        <rect x="470" y="96" width="34" height="34"/><rect x="504" y="96" width="34" height="34"/><rect x="538" y="96" width="34" height="34"/>
+        <rect x="470" y="130" width="34" height="34"/><rect x="504" y="130" width="34" height="34"/><rect x="538" y="130" width="34" height="34"/>
+      </g>
+      <rect x="470" y="62" width="34" height="34" fill="#6B4FA0" opacity="0.55"/>
+      <text class="lbl-f" x="487" y="83" text-anchor="middle" fill="#fff">r</text>
+      <text class="lbl-s" x="530" y="205" text-anchor="middle">one patch → one response r</text>
+    </svg>
+    <figcaption><b>Fig 2.</b> The kernel overlaps a patch, multiplies element-wise, and sums to a single response <b>r</b> — one cell of the feature map. Slide it to the next position and repeat to fill the whole map.</figcaption>
+  </figure>
+
+  <h2 id="s6"><span class="num">6.</span>Kernels &amp; a Worked Example</h2>
+  <p>A <b>kernel</b> (filter) is a small weight matrix — often 2×2 or 3×3. Different kernels detect different things. Take the vertical-edge kernel <code>[1,0,−1]</code> on each row, over a patch that is bright on the left (10) and dark on the right (0):</p>
+  <table>
+    <thead><tr><th>Patch</th><th>Each row: 1·L + 0·M + (−1)·R</th><th>Σ over 3 rows</th></tr></thead>
+    <tbody>
+      <tr><td>Flat (all 10)</td><td>10 − 10 = 0</td><td><b>0</b> — no edge</td></tr>
+      <tr><td>Edge (10 | 0)</td><td>10 − 0 = +10</td><td><b>+30</b> — edge detected</td></tr>
+    </tbody>
+  </table>
+  <p>A patch inside a flat region cancels to 0; a patch straddling the brightness change lights up. The kernel answers "<b>where is the edge?</b>" Common kernels from the notebook:</p>
+  <pre><code><span class="cmt"># horizontal edge (top vs bottom)      # vertical edge (left vs right)</span>
+[[-1,-1,-1],                           [[-1, 0, 1],
+ [ 0, 0, 0],                            [-1, 0, 1],
+ [ 1, 1, 1]]                            [-1, 0, 1]]
+
+<span class="cmt"># a top→bottom gradient kernel reads from -1 (white) to +1 (black)</span>
+import numpy as np
+from scipy.signal import correlate2d
+output = correlate2d(image, kernel, mode='same')
+edges  = np.maximum(output, 0)   <span class="cmt"># ReLU: keep the positive response to visualise</span></code></pre>
+
+  <h2 id="s7"><span class="num">7.</span>Output Size</h2>
+  <div class="formula">output side = input − kernel + 1<span class="sub">(for a stride-1 "valid" convolution with no padding)</span></div>
+  <table>
+    <thead><tr><th>Input</th><th>Kernel</th><th>Feature map</th></tr></thead>
+    <tbody>
+      <tr><td>28 × 28</td><td>3 × 3</td><td>26 × 26</td></tr>
+      <tr><td>28 × 28</td><td>5 × 5</td><td>24 × 24</td></tr>
+      <tr><td>5 × 5</td><td>2 × 2</td><td>4 × 4</td></tr>
+    </tbody>
+  </table>
+  <p>Each convolution shrinks the map by (kernel − 1) on each side — which is why deep stacks eventually reach a small spatial size (e.g. 4×4) before flattening. (Padding can keep the size the same; more on that next session.)</p>
+
+  <h2 id="s8"><span class="num">8.</span>Multiple Filters &amp; Feature Maps</h2>
+  <p>One kernel detects one kind of pattern. Use <b>n filters</b> and you get <b>n feature maps</b> stacked into a volume — each channel answering "is <i>this</i> pattern here?"</p>
+  <div class="formula">28×28 image —(n filters, 5×5)→ 24 × 24 × n<span class="sub">Depth n = how many patterns this layer looks for. The filter values are the layer's weights.</span></div>
+  <div class="note warn"><b>Learnable filters:</b> we do <i>not</i> hand-pick the kernel numbers. They start random and <b>gradient descent + backpropagation</b> tune them so the network extracts the lines, edges and contours that actually help classification. Edge detectors become weights the network learns.</div>
+
+  <figure class="fig">
+    <svg viewBox="0 0 640 230" role="img" aria-label="One image passed through n learnable filters produces n stacked feature maps forming a 24 by 24 by n volume.">
+      <text class="lbl" x="90" y="30" text-anchor="middle">input 28×28</text>
+      <rect x="55" y="48" width="74" height="74" class="box"/>
+      <path class="flow" d="M140,85 H220"/><polygon points="220,85 210,80 210,90" fill="var(--ink-soft)"/>
+      <text class="lbl-f" x="180" y="74" text-anchor="middle">n filters</text>
+      <text class="lbl-f" x="180" y="102" text-anchor="middle">(5×5, learnable)</text>
+      <!-- stacked maps -->
+      <text class="lbl" x="420" y="30" text-anchor="middle">24 × 24 × n feature maps</text>
+      <g>
+        <rect x="360" y="70" width="66" height="66" class="box" fill="#6B4FA0" opacity="0.25"/>
+        <rect x="348" y="58" width="66" height="66" class="box" fill="#6B4FA0" opacity="0.4"/>
+        <rect x="336" y="46" width="66" height="66" class="box" fill="#6B4FA0" opacity="0.6"/>
+      </g>
+      <text class="lbl-s" x="369" y="82" text-anchor="middle" fill="#fff">edge 1</text>
+      <text class="lbl-f" x="500" y="85">each channel =</text>
+      <text class="lbl-f" x="500" y="102">one detected pattern</text>
+    </svg>
+    <figcaption><b>Fig 3.</b> n learnable filters turn one image into a stack of n feature maps (a 24×24×n volume). One channel might fire on vertical edges, another on horizontal, another on curves.</figcaption>
+  </figure>
+
+  <h2 id="s9"><span class="num">9.</span>Stacking Layers &amp; the CNN</h2>
+  <p>Stack convolutional layers and the features grow in abstraction: shallow layers see <b>edges</b>, deeper layers combine them into <b>corners, curves and contours</b>, then <b>object parts</b>, then whole objects. Because early layers learn generic edges, trained CNNs can be <b>reused</b> — <b>transfer learning</b>: keep the edge/contour layers, retrain only the top for a new task.</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 640 150" role="img" aria-label="A hierarchy from edges in layer 1, to contours, to object parts, to a whole-object prediction.">
+      <g text-anchor="middle">
+        <rect x="24" y="48" width="118" height="54" class="box" style="stroke:#3B6E63;stroke-width:2;"/>
+        <text class="lbl f-teal" x="83" y="70">Layer 1</text><text class="lbl-s" x="83" y="88">lines &amp; edges</text>
+        <rect x="186" y="48" width="118" height="54" class="box" style="stroke:#B0670C;stroke-width:2;"/>
+        <text class="lbl f-amber" x="245" y="70">Layer 2–3</text><text class="lbl-s" x="245" y="88">corners, contours</text>
+        <rect x="348" y="48" width="118" height="54" class="box" style="stroke:#1E6FA8;stroke-width:2;"/>
+        <text class="lbl f-blue" x="407" y="70">Deeper</text><text class="lbl-s" x="407" y="88">object parts</text>
+        <rect x="510" y="48" width="118" height="54" class="box" style="stroke:#6B4FA0;stroke-width:2;"/>
+        <text class="lbl f-purple" x="569" y="70">Top</text><text class="lbl-s" x="569" y="88">"cat" vs "dog"</text>
+      </g>
+      <g fill="var(--ink-soft)">
+        <path class="flow" d="M142,75 H186"/><polygon points="186,75 176,70 176,80"/>
+        <path class="flow" d="M304,75 H348"/><polygon points="348,75 338,70 338,80"/>
+        <path class="flow" d="M466,75 H510"/><polygon points="510,75 500,70 500,80"/>
+      </g>
+    </svg>
+    <figcaption><b>Fig 4.</b> The CNN hierarchy: each layer builds on the one below, from simple edges up to whole-object concepts. Early layers are generic — the basis for transfer learning.</figcaption>
+  </figure>
+
+  <p><b>From feature maps to a prediction:</b> after the convolutional layers, the final volume (e.g. 4×4×100 = <b>1600</b>) is <b>flattened</b> and fed to a normal dense head → 128 → … → <b>k</b> class scores, trained end-to-end with backpropagation.</p>
+  <pre><code>import torch.nn as nn
+model = nn.Sequential(
+    nn.Conv2d(1, 32, kernel_size=3), nn.ReLU(),   <span class="cmt"># 32 learnable filters</span>
+    nn.Conv2d(32, 64, kernel_size=3), nn.ReLU(),
+    nn.Flatten(),
+    nn.Linear(64*24*24, 128), nn.ReLU(),
+    nn.Linear(128, 10)                            <span class="cmt"># k classes</span>
+)</code></pre>
+
+  <h2 id="s10"><span class="num">10.</span>Summary</h2>
+  <div class="summary-box">
+    <h3>The whole idea, in one paragraph</h3>
+    <p>A dense network must <b>flatten</b> an image into 784 numbers, destroying <b>spatial information</b> — where pixels are and how neighbours relate, which is exactly the structure that defines a digit or object. The fix is <b>convolution</b>: slide a small <b>kernel</b> across the image, multiply each patch element-wise and sum, producing a <b>feature map</b> that lights up on lines, edges and contours. Make the kernels <b>learnable</b> (tuned by gradient descent + backprop), use <b>many filters</b> per layer for a stack of feature maps, and <b>stack layers</b> so simple edges build into contours, parts and whole objects. Flatten the final volume into a dense head for the k-class prediction — that is the <b>Convolutional Neural Network</b>. Next: handling overfitting in NNs, then NLP, RNNs, and Attention &amp; Transformers.</p>
+  </div>
+  <div class="pill-row">
+    <span class="pill">Spatial information</span>
+    <span class="pill">Flatten → 784</span>
+    <span class="pill">Convolution</span>
+    <span class="pill">Kernel / Filter</span>
+    <span class="pill">Feature map</span>
+    <span class="pill">input − kernel + 1</span>
+    <span class="pill">24×24×n</span>
+    <span class="pill">Learnable filters</span>
+    <span class="pill">CNN hierarchy</span>
+    <span class="pill">Transfer learning</span>
+  </div>
+</div>
+</body>
+</html>

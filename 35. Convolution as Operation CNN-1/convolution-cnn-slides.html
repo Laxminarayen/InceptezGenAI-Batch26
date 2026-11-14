@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Convolution &amp; CNNs I</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+    --c-why:#3B6E63; --c-concept:#B0670C; --c-mech:#1E6FA8; --c-eval:#6B4FA0;
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+    --accent: var(--c-why);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.14); --surface-canvas:#10131C; --c-why:#79C0AE; --c-concept:#E3A238; --c-mech:#5FA8E0; --c-eval:#B49AE0; --good:#3FBB7C; --warn:#E3A238; --bad:#E36868; --shadow: 0 10px 30px -12px rgba(0,0,0,.6); }
+  }
+  :root[data-theme="dark"]{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.14); --surface-canvas:#10131C; --c-why:#79C0AE; --c-concept:#E3A238; --c-mech:#5FA8E0; --c-eval:#B49AE0; --good:#3FBB7C; --warn:#E3A238; --bad:#E36868; --shadow: 0 10px 30px -12px rgba(0,0,0,.6); }
+  :root[data-theme="light"]{ --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC; --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63; --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC; --c-why:#3B6E63; --c-concept:#B0670C; --c-mech:#1E6FA8; --c-eval:#6B4FA0; --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B; --shadow: 0 10px 30px -12px rgba(32,40,58,.25); }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); overflow:hidden; -webkit-font-smoothing:antialiased; }
+  body[data-section="why"]{--accent:var(--c-why);}
+  body[data-section="concept"]{--accent:var(--c-concept);}
+  body[data-section="mech"]{--accent:var(--c-mech);}
+  body[data-section="eval"]{--accent:var(--c-eval);}
+  h1,h2,h3,p{margin:0;}
+  h1,h2,h3{text-wrap:balance; letter-spacing:-0.01em;}
+  ::selection{background:var(--accent); color:#fff;}
+  .eyebrow{font-size:.74rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  .slide h1{font-size:clamp(1.7rem,3.2vw,2.9rem); font-weight:800; color:var(--ink);}
+  .body-text{font-size:clamp(1rem,1.25vw,1.2rem); font-weight:500; line-height:1.6; color:var(--ink-soft);}
+  .body-text b{color:var(--ink); font-weight:800;}
+  .tabular{font-variant-numeric:tabular-nums;}
+  .chrome-top{position:fixed; top:0; left:0; right:0; height:52px; z-index:50; display:flex; align-items:center; justify-content:space-between; padding:0 20px; pointer-events:none;}
+  .chrome-top > *{pointer-events:auto;}
+  .hour-badge{font-size:.72rem; font-weight:800; letter-spacing:.12em; color:var(--ink-faint); background:var(--paper-2); border:1px solid var(--line); padding:6px 12px; border-radius:999px;}
+  .chapter-chip{display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:700; color:var(--ink-soft); background:var(--paper-2); border:1px solid var(--line); padding:6px 14px 6px 8px; border-radius:999px;}
+  .chapter-chip .num{display:inline-flex; align-items:center; justify-content:center; width:20px;height:20px; border-radius:50%; background:var(--accent); color:#fff; font-size:.68rem; font-weight:800;}
+  .icon-btn{width:36px;height:36px; border-radius:50%; border:1px solid var(--line); background:var(--paper-2); color:var(--ink); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;}
+  .icon-btn:hover{background:var(--paper-3);}
+  .deck{position:absolute; inset:0; top:52px; bottom:64px;}
+  .slide{position:absolute; inset:0; display:none; flex-direction:column; padding:clamp(18px,3vw,40px) clamp(24px,5vw,80px); overflow:auto;}
+  .slide.active{display:flex;}
+  .slide-inner{display:flex; flex-direction:column; gap:clamp(12px,1.8vh,20px); max-width:1360px; width:100%; margin:0 auto; flex:1; min-height:0;}
+  .chrome-bottom{position:fixed; left:0; right:0; bottom:0; height:64px; z-index:50; display:flex; align-items:center; gap:14px; padding:0 clamp(14px,3vw,32px); background:linear-gradient(0deg, var(--paper) 60%, transparent);}
+  .nav-btn{width:40px;height:40px;border-radius:50%; border:1px solid var(--line); background:var(--paper-2); color:var(--ink); font-size:1.2rem; cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center;}
+  .nav-btn:hover:not(:disabled){background:var(--accent); color:#fff; border-color:transparent;}
+  .nav-btn:disabled{opacity:.35; cursor:default;}
+  .progress{flex:1; display:flex; align-items:center; gap:5px; overflow-x:auto; scrollbar-width:none;}
+  .progress::-webkit-scrollbar{display:none;}
+  .dot{width:9px;height:9px;border-radius:50%; background:var(--paper-3); border:none; cursor:pointer; flex:none; transition:transform .15s ease;}
+  .dot.gap{width:14px; height:2px; border-radius:1px; background:transparent; cursor:default;}
+  .dot.active{transform:scale(1.5);}
+  .slide-counter{font-size:.8rem; font-weight:700; color:var(--ink-faint); flex:none; white-space:nowrap;}
+  .split{display:grid; grid-template-columns:1.05fr 1.35fr; gap:clamp(20px,4vw,52px); align-items:center; flex:1; min-height:0;}
+  @media (max-width:920px){ .split{grid-template-columns:1fr; overflow:auto;} }
+  .stack{display:flex; flex-direction:column; gap:12px; min-height:0;}
+  .center-col{display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:16px; flex:1;}
+  .visual-box{background:var(--surface-canvas); border:1px solid var(--line); border-radius:24px; padding:14px; box-shadow:var(--shadow); min-height:0; display:flex; flex-direction:column; gap:8px;}
+  .vocab-card{border-left:5px solid var(--accent); background:var(--paper-2); border-radius:14px; padding:12px 18px; display:flex; flex-direction:column; gap:4px;}
+  .vocab-term{font-size:1rem; font-weight:900; letter-spacing:.04em; color:var(--accent);}
+  .vocab-def{font-size:1rem; color:var(--ink); font-weight:600; line-height:1.4;}
+  .console{display:flex; flex-wrap:wrap; gap:12px 18px; align-items:center; background:var(--paper-2); border:1px solid var(--line); border-radius:20px; padding:12px 16px;}
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field label{font-size:.76rem; font-weight:800; color:var(--ink-soft);}
+  .seg{display:flex; gap:6px; flex-wrap:wrap;}
+  .seg button{font:inherit; font-size:.8rem; font-weight:700; color:var(--ink); background:var(--paper-3); border:1px solid var(--line); border-radius:999px; padding:6px 12px; cursor:pointer;}
+  .seg button.on{background:var(--accent); color:#fff; border-color:transparent;}
+  .ctrl-btn{font:inherit; font-size:.82rem; font-weight:800; color:#fff; background:var(--accent); border:none; border-radius:999px; padding:8px 16px; cursor:pointer;}
+  .ctrl-btn.ghost{background:var(--paper-3); color:var(--ink); border:1px solid var(--line);}
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px;}
+  .stat-tile{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:12px 14px;}
+  .stat-tile .label{font-size:.7rem; font-weight:800; color:var(--ink-faint); letter-spacing:.05em; text-transform:uppercase;}
+  .stat-tile .value{font-size:1.15rem; font-weight:900; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .stat-tile.accent .value{color:var(--accent);}
+  .card{background:var(--paper-2); border:1px solid var(--line); border-radius:18px; padding:16px 18px;}
+  .card-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px;}
+  .card .ico{font-size:1.7rem;}
+  .card h3{font-size:1rem; margin-top:6px;}
+  .card p{font-size:.9rem; color:var(--ink-soft); margin-top:4px; line-height:1.45;}
+  .banner{border-radius:14px; padding:12px 16px; font-weight:800; font-size:.92rem; display:flex; align-items:center; gap:10px;}
+  .banner.warn{background:color-mix(in srgb, var(--warn) 18%, var(--paper-2)); color:var(--warn);}
+  .banner.good{background:color-mix(in srgb, var(--good) 18%, var(--paper-2)); color:var(--good);}
+  .banner.bad{background:color-mix(in srgb, var(--bad) 18%, var(--paper-2)); color:var(--bad);}
+  .banner.info{background:var(--paper-3); color:var(--ink); font-weight:600; align-items:flex-start;}
+  .roadmap{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  .roadmap .stop{background:var(--paper-2); border-radius:18px; padding:16px 10px; text-align:center; border-top:5px solid var(--stop-color, var(--accent));}
+  .roadmap .stop .ico{font-size:2rem;}
+  .roadmap .stop .t{font-size:.8rem; font-weight:800; margin-top:6px;}
+  @media (max-width:920px){ .roadmap{grid-template-columns:repeat(2,1fr);} }
+  .kicker-big{font-size:clamp(2.2rem,5.6vw,3.9rem); font-weight:900; letter-spacing:-0.02em;}
+  .glow{color:var(--accent);}
+  .formula-box{background:var(--paper-2); border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:14px; padding:14px 18px; font-size:clamp(1rem,1.5vw,1.3rem); font-weight:800; color:var(--ink);}
+  .formula-box .sub{display:block; font-size:.86rem; font-weight:500; color:var(--ink-faint); margin-top:6px;}
+  .table-wrap{border:1px solid var(--line); border-radius:14px; overflow:hidden; overflow-x:auto;}
+  .data-table{width:100%; border-collapse:collapse; font-size:.86rem;}
+  .data-table th,.data-table td{padding:8px 10px; text-align:center; font-variant-numeric:tabular-nums;}
+  .data-table thead th{background:var(--paper-3); color:var(--ink-soft); font-weight:800; font-size:.72rem; letter-spacing:.03em; text-transform:uppercase;}
+  .data-table tbody tr{border-top:1px solid var(--line);}
+  .data-table tbody tr.hl-row{background:color-mix(in srgb, var(--accent) 12%, transparent); font-weight:800;}
+  .footnote{font-size:.82rem; color:var(--ink-faint); font-weight:600;}
+  .conv-canvas{width:100%; aspect-ratio:16/9; background:var(--surface-canvas); border-radius:14px;}
+  pre{background:#10141c; color:#dfe6f2; border-radius:12px; padding:14px 16px; overflow-x:auto; font-size:.8rem; line-height:1.5; font-family:ui-monospace,Menlo,monospace; margin:0;}
+  pre .cmt{color:#7f8aa0;}
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+</style>
+</head>
+<body data-section="why">
+  <div class="chrome-top">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="hour-badge">CONVOLUTION · CNN — PART 1</div>
+      <div class="chapter-chip" id="chapterChip" style="display:none;"><span class="num" id="chapterNum">1</span><span id="chapterLabel">—</span></div>
+    </div>
+    <button class="icon-btn" id="themeToggle" title="Toggle light / dark">🌗</button>
+  </div>
+
+  <main class="deck" id="deck">
+
+    <section class="slide" data-section="why" id="s0">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Deep Learning · Class 35</div>
+        <h1 class="kicker-big">Networks that<br/>can finally <span class="glow">see</span></h1>
+        <p class="body-text" style="max-width:820px;">A plain neural network flattens an image into a row of pixels — and the moment it does, it throws away <i>where</i> each pixel sat. Today we find the missing idea: an operation that slides a tiny filter across the image to detect lines, edges and contours while <b>keeping spatial information</b>. That operation is <b>convolution</b> — the heart of the <b>CNN</b>.</p>
+        <div class="roadmap" style="width:100%; margin-top:6px;">
+          <div class="stop" style="--stop-color:var(--c-why);"><div class="ico">🧮</div><div class="t">1 · Where we are</div></div>
+          <div class="stop" style="--stop-color:var(--c-concept);"><div class="ico">🖼️</div><div class="t">2 · Spatial info lost</div></div>
+          <div class="stop" style="--stop-color:var(--c-mech);"><div class="ico">🔲</div><div class="t">3 · Convolution</div></div>
+          <div class="stop" style="--stop-color:var(--c-eval);"><div class="ico">🧠</div><div class="t">4 · Filters → CNN</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 1 — WHERE WE ARE -->
+    <section class="slide" data-section="why" id="sW1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Revision · The Journey So Far</div>
+        <h1>From <span class="glow">traditional ML</span> to <span class="glow">deep learning</span></h1>
+        <p class="body-text">Traditional ML <b>used data to understand patterns</b> — we hand-built the features. Deep learning is made of <b>layers that learn their own representations</b> of the input data, so the network discovers the features itself.</p>
+        <div class="card-grid">
+          <div class="card" style="border-top:5px solid var(--c-why);"><div class="ico">📊</div><h3>Traditional ML</h3><p>Logistic regression, KNN, trees, SVM, ensembles, K-Means — we engineered the inputs by hand.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-concept);"><div class="ico">🧠</div><h3>Deep Learning</h3><p>Inputs → hidden layers → weights, biases, activations → ŷ. Backprop + optimizers (SGD, Momentum, Adam) tune it.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-mech);"><div class="ico">🔭</div><h3>Where we're headed</h3><p>CNNs (images) → overfitting in NNs → NLP → RNNs → Attention &amp; Transformers → Gen AI.</p></div>
+        </div>
+        <div class="banner info"><b>Today's question:</b> plain neural networks worked for MNIST — so why do they <i>not</i> truly "understand" images? There is something more going on.</div>
+      </div>
+    </section>
+
+    <!-- SECTION 2 — SPATIAL INFO LOST -->
+    <section class="slide" data-section="concept" id="sC1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Part II · What Does a Neural Network Understand?</div>
+          <h1>Flattening an image <span class="glow">loses</span> its structure</h1>
+          <p class="body-text">To feed a 28×28 image to a dense network we flatten it into <b>784 pixel values</b> — row after row stacked into one long column. The network then takes a <b>global weighted sum</b> of all 784 at once.</p>
+          <div class="formula-box">28 × 28 image → flatten → 784 × 1 vector<span class="sub">Rows are laid end-to-end. The network sees a list of numbers, not a picture.</span></div>
+        </div>
+        <div class="stack">
+          <div class="banner bad">🚩 Pixel 1 and pixel 6 may be right next to each other in the image, but after flattening they can land far apart in the vector — their <b>spatial / local relationship is lost</b>.</div>
+          <div class="vocab-card"><div class="vocab-term">Spatial information</div><div class="vocab-def"><b>Where</b> pixels are located and <b>how neighbouring pixels relate</b> to each other. A dense net has <i>no local connectivity</i> — it can't see that nearby pixels form a stroke.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="concept" id="sC2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Problem Definition</div>
+        <h1>The structure is <span class="glow">what defines a number</span></h1>
+        <p class="body-text">Pixels 1, 2, 6, 7 are close to each other — <b>that arrangement</b> is what makes a digit look like a "4" and not a "9". A global weighted sum can total the right brightness while completely missing the <b>local pattern / alignment</b>.</p>
+        <div class="banner good">✓ We need a network that <b>preserves spatial information</b> — one that looks at small neighbourhoods and asks "is there an edge here?" before combining them.</div>
+        <div class="banner info"><b>Why did MNIST still work with a dense net?</b> Because MNIST as an image is <i>simple</i> — centred, clean, low-res. Real images (cats, dogs, scenes) are not that forgiving.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="concept" id="sC3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Part IV · A Spatial-Information-Preserving Network</div>
+          <h1>What <span class="glow">makes up</span> an image?</h1>
+          <p class="body-text"><b>Lines, edges and contours.</b> If we had functions that extract lines, edges and contours from an image — and made them <b>learnable</b> — the network could learn and extract exactly the useful information it needs for proper classification.</p>
+        </div>
+        <div class="stack">
+          <div class="vocab-card"><div class="vocab-term">The idea</div><div class="vocab-def">Focus on small <b>functions that extract lines / edges / contours</b> from the image. Make a neural network <b>learn</b> those functions by gradient descent.</div></div>
+          <div class="banner good">That spatial-preserving, edge-extracting network is the <b>Convolutional Neural Network (CNN)</b>. Its core operation is <b>convolution</b>.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3 — CONVOLUTION -->
+    <section class="slide" data-section="mech" id="sM1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Part V · The Convolution Operation</div>
+          <h1>A small <span class="glow">filter</span> slides across the image</h1>
+          <p class="body-text">Convolution is an operation where a <b>small filter (kernel)</b> moves across an image and produces a response <b>at every position</b>. At each stop it does an element-wise multiply of the overlapping patch with the kernel, then <b>sums</b> — one number per position.</p>
+          <div class="formula-box">response = Σ (image patch × kernel)<span class="sub">Slide the kernel one step at a time; the grid of responses is the <b>feature map</b>.</span></div>
+        </div>
+        <div class="stack">
+          <div class="vocab-card"><div class="vocab-term">Kernel / Filter</div><div class="vocab-def">A small matrix (e.g. 3×3 or 2×2) of weights. Different kernels detect different things — a horizontal edge, a vertical edge, a diagonal.</div></div>
+          <div class="vocab-card"><div class="vocab-term">Feature map</div><div class="vocab-def">The output grid of responses. Bright where the kernel's pattern is present, dark where it isn't.</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="mech" id="sM2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Convolution, Live · Press ▶ and watch the kernel slide</div>
+        <h1>Slide the kernel, build the <span class="glow">feature map</span></h1>
+        <div class="split" style="gap:clamp(16px,3vw,36px);">
+          <div class="visual-box" style="flex:1;">
+            <canvas class="conv-canvas" id="convCanvas" width="880" height="495"></canvas>
+          </div>
+          <div class="stack" style="justify-content:center;">
+            <div class="console">
+              <div class="field" style="width:100%;">
+                <label>Kernel (this is what becomes <i>learnable</i>)</label>
+                <div class="seg" id="kernelSeg">
+                  <button data-k="vert" class="on">Vertical edge</button>
+                  <button data-k="horiz">Horizontal edge</button>
+                  <button data-k="tb">Top→Bottom</button>
+                </div>
+              </div>
+            </div>
+            <div class="console" style="gap:10px;">
+              <button class="ctrl-btn" id="playBtn">▶ Auto-slide</button>
+              <button class="ctrl-btn ghost" id="stepBtn">Step ▸</button>
+              <button class="ctrl-btn ghost" id="resetBtn">↺ Reset</button>
+            </div>
+            <div class="banner info" id="convReadout" style="font-variant-numeric:tabular-nums;">Position (0,0): element-wise multiply the highlighted 3×3 patch by the kernel, then sum.</div>
+            <div class="footnote">Input 6×6 · kernel 3×3 · feature map 4×4 &nbsp;(6 − 3 + 1 = 4). Negative responses shown in red, positive in green — a bright edge produces a strong response.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="mech" id="sM3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Worked Example · 5×5 Image, 3×3 Kernel</div>
+          <h1>One window, <span class="glow">by hand</span></h1>
+          <p class="body-text">Vertical-edge kernel on a bright-left / dark-right patch. A patch fully <i>inside</i> a flat region cancels to 0; a patch <i>straddling</i> the edge lights up.</p>
+          <div class="formula-box">flat patch → 0 &nbsp;·&nbsp; edge patch → 30<span class="sub">The kernel responds only where brightness changes — exactly "where is the edge?"</span></div>
+        </div>
+        <div class="stack">
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>kernel [1,0,−1]×3</th><th>flat patch</th><th>edge patch</th></tr></thead>
+              <tbody>
+                <tr><td>row sums</td><td>10·1 + 10·0 + 10·(−1)</td><td>10·1 + 10·0 + 0·(−1)</td></tr>
+                <tr><td>per row</td><td>0</td><td>+10</td></tr>
+                <tr class="hl-row"><td>Σ over 3 rows</td><td>0</td><td>+30</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="banner good">✓ Output size: a 3×3 kernel on a 28×28 image (valid) gives <b>26×26</b>; a 5×5 kernel gives <b>24×24</b>. The map shrinks by (kernel − 1).</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4 — FILTERS -> CNN -->
+    <section class="slide" data-section="eval" id="sE1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">What If I Have Multiple Filters?</div>
+          <h1>Many kernels → a <span class="glow">stack</span> of feature maps</h1>
+          <p class="body-text">One kernel finds one kind of edge. Use <b>n kernels</b> and you get n feature maps stacked into a volume — each channel answering a different "is this pattern here?"</p>
+          <div class="formula-box">28×28 image &nbsp;—(n filters, 5×5)→&nbsp; 24 × 24 × n<span class="sub">Depth n = how many different patterns we look for at this layer.</span></div>
+        </div>
+        <div class="stack">
+          <div class="vocab-card"><div class="vocab-term">Learnable filters</div><div class="vocab-def">We don't hand-pick the kernel numbers. They start random and <b>gradient descent + backpropagation</b> tune them so the network extracts the lines, edges and contours that help classification.</div></div>
+          <div class="banner good">This is the key shift: edge detectors become <b>weights the network learns</b>, not fixed formulas.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">What If I Stack Layers of Filters?</div>
+        <h1>Shallow layers see <span class="glow">edges</span>; deep layers see <span class="glow">objects</span></h1>
+        <div class="card-grid">
+          <div class="card" style="border-top:5px solid var(--c-why);"><div class="ico">➖</div><h3>Layer 1</h3><p>Simple lines &amp; edges — horizontal, vertical, diagonal strokes.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-concept);"><div class="ico">🔺</div><h3>Layer 2–3</h3><p>Corners, curves and contours — combinations of layer-1 edges.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-mech);"><div class="ico">👁️</div><h3>Deeper</h3><p>Parts and shapes — an eye, a wheel, the loop of a digit.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-eval);"><div class="ico">🐱</div><h3>Top</h3><p>Whole-object patterns — enough to say "cat" vs "dog".</p></div>
+        </div>
+        <div class="banner info"><b>Transfer learning preview:</b> because early layers learn generic edges, a network trained on millions of images can be <i>reused</i> — keep its edge/contour layers, retrain only the top for your task.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">From Feature Maps to a Prediction</div>
+          <h1>Convolve → flatten → <span class="glow">classify</span></h1>
+          <p class="body-text">After the convolutional layers extract features, the final volume (e.g. 4×4×100 = <b>1600</b>) is flattened and fed to a normal dense head → <b>128</b> → … → <b>k</b> class scores (cat / dog / car …).</p>
+          <div class="formula-box">… conv layers … → flatten (1600) → Dense(128) → … → k classes<span class="sub">Convolutions keep spatial info; the dense head makes the final decision. Trained end-to-end with backpropagation.</span></div>
+        </div>
+        <pre><code>import torch.nn as nn
+model = nn.Sequential(
+    nn.Conv2d(1, 32, kernel_size=3),  <span class="cmt"># 32 learnable filters</span>
+    nn.ReLU(),
+    nn.Conv2d(32, 64, kernel_size=3),
+    nn.ReLU(),
+    nn.Flatten(),
+    nn.Linear(64*24*24, 128), nn.ReLU(),
+    nn.Linear(128, 10)                <span class="cmt"># k classes</span>
+)</code></pre>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE4">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Recap &amp; What's Next</div>
+        <h1>The big idea, and the <span class="glow">road ahead</span></h1>
+        <div class="card-grid">
+          <div class="card"><div class="ico">🧩</div><h3>Why CNNs</h3><p>Dense nets flatten away spatial info. Convolution keeps local structure by sliding small filters over the image.</p></div>
+          <div class="card"><div class="ico">🔲</div><h3>Convolution</h3><p>Element-wise multiply a patch by a kernel and sum → one response. Slide it → a feature map of edges/contours.</p></div>
+          <div class="card" style="border-top:5px solid var(--accent);"><div class="ico">⏭️</div><h3>Next 2 weeks</h3><p>Overfitting &amp; how to handle it in NNs, then NLP → RNNs → Attention &amp; Transformers → Gen AI.</p></div>
+        </div>
+        <div class="banner good">Next: try the <b>ConvolutionOperation &amp; Filters</b> notebook — run real edge kernels over the <code>camera</code> image and watch the feature maps appear.</div>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="chrome-bottom">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous slide">‹</button>
+    <div class="progress" id="progress"></div>
+    <div class="slide-counter"><span id="curNum" class="tabular">1</span> / <span id="totalNum" class="tabular">—</span></div>
+    <button class="nav-btn" id="nextBtn" aria-label="Next slide">›</button>
+  </nav>
+
+<script>
+"use strict";
+const $=(s,e=document)=>e.querySelector(s);
+const $$=(s,e=document)=>[...e.querySelectorAll(s)];
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+const slideEls=$$('.slide');
+let cur=0;
+const CHAPTERS={why:{num:1,label:'Where We Are'},concept:{num:2,label:'Spatial Information'},mech:{num:3,label:'Convolution'},eval:{num:4,label:'Filters &amp; CNNs'}};
+const onEnter={};
+function buildDots(){const w=$('#progress');w.innerHTML='';let last=null;slideEls.forEach((s,i)=>{if(last!==null&&s.dataset.section!==last){const g=document.createElement('span');g.className='dot gap';w.appendChild(g);}const b=document.createElement('button');b.className='dot';b.setAttribute('aria-label','Go to slide '+(i+1));b.addEventListener('click',()=>goTo(i));w.appendChild(b);last=s.dataset.section;});}
+function goTo(i){i=clamp(i,0,slideEls.length-1);slideEls[cur].classList.remove('active');cur=i;const s=slideEls[cur];s.classList.add('active');document.body.dataset.section=s.dataset.section;const chip=$('#chapterChip'),m=CHAPTERS[s.dataset.section];if(m){chip.style.display='flex';$('#chapterNum').textContent=m.num;$('#chapterLabel').innerHTML=m.label;}else chip.style.display='none';$('#curNum').textContent=cur+1;$('#prevBtn').disabled=cur===0;$('#nextBtn').disabled=cur===slideEls.length-1;$$('.dot:not(.gap)',$('#progress')).forEach((d,idx)=>d.classList.toggle('active',idx===cur));const fn=onEnter[s.id];if(fn)requestAnimationFrame(fn);}
+function next(){if(cur<slideEls.length-1)goTo(cur+1);}
+function prev(){if(cur>0)goTo(cur-1);}
+$('#nextBtn').addEventListener('click',next);$('#prevBtn').addEventListener('click',prev);
+window.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();next();}else if(e.key==='ArrowLeft'){e.preventDefault();prev();}});
+const themeBtn=$('#themeToggle');
+(function(){const t=localStorage.getItem('sv-theme-cnn1');if(t)document.documentElement.setAttribute('data-theme',t);})();
+themeBtn.addEventListener('click',()=>{const now=document.documentElement.getAttribute('data-theme');const dark=now?now==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;const nt=dark?'light':'dark';document.documentElement.setAttribute('data-theme',nt);localStorage.setItem('sv-theme-cnn1',nt);drawConv();});
+
+/* ---- Convolution visualizer ---- */
+function cssVar(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+// 6x6 input: bright left (cols 0-2), dark right (cols 3-5) = a vertical edge
+const IMG=[
+ [9,9,9,0,0,0],
+ [9,9,9,0,0,0],
+ [9,9,9,0,0,0],
+ [9,9,9,0,0,0],
+ [9,9,9,0,0,0],
+ [9,9,9,0,0,0]];
+const KERNELS={
+  vert:[[1,0,-1],[1,0,-1],[1,0,-1]],
+  horiz:[[-1,-1,-1],[0,0,0],[1,1,1]],
+  tb:[[1,1,1],[0,0,0],[-1,-1,-1]]
+};
+const N=6, K=3, M=N-K+1; // 4
+let kern='vert', pos=0, timer=null;
+function convAt(r,c){let s=0;for(let i=0;i<K;i++)for(let j=0;j<K;j++)s+=IMG[r+i][c+j]*KERNELS[kern][i][j];return s;}
+function drawConv(){
+  const cv=$('#convCanvas'); if(!cv) return;
+  const ctx=cv.getContext('2d'); const W=cv.width,H=cv.height; ctx.clearRect(0,0,W,H);
+  const ink=cssVar('--ink')||'#222', soft=cssVar('--ink-soft')||'#555', faint=cssVar('--ink-faint')||'#888';
+  const accent=cssVar('--c-mech')||'#1E6FA8', line=cssVar('--line')||'#ccc';
+  const good=cssVar('--good')||'#1C8C5A', bad=cssVar('--bad')||'#C23B3B';
+  const cr=Math.floor(pos/M), cc=pos%M;
+  ctx.font='bold 13px -apple-system,Arial'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  // --- input grid (left) ---
+  const cell=48, ix=30, iy=70;
+  ctx.fillStyle=soft; ctx.font='bold 14px -apple-system,Arial'; ctx.fillText('Input image (6×6)', ix+N*cell/2, iy-26);
+  for(let r=0;r<N;r++)for(let c=0;c<N;c++){
+    const x=ix+c*cell,y=iy+r*cell, v=IMG[r][c];
+    const g=Math.round(255-(v/9)*205); ctx.fillStyle='rgb('+g+','+g+','+g+')';
+    ctx.fillRect(x,y,cell-2,cell-2);
+    ctx.fillStyle=v>4.5?'#333':'#eee'; ctx.font='bold 13px -apple-system,Arial'; ctx.fillText(v,x+cell/2-1,y+cell/2);
+  }
+  // highlight current 3x3 window
+  ctx.strokeStyle=accent; ctx.lineWidth=4;
+  ctx.strokeRect(ix+cc*cell-1, iy+cr*cell-1, K*cell, K*cell);
+  // --- kernel (middle) ---
+  const kcell=40, kx=ix+N*cell+56, ky=iy+cell;
+  ctx.fillStyle=soft; ctx.font='bold 14px -apple-system,Arial'; ctx.fillText('kernel', kx+K*kcell/2, ky-22);
+  for(let i=0;i<K;i++)for(let j=0;j<K;j++){
+    const x=kx+j*kcell,y=ky+i*kcell, v=KERNELS[kern][i][j];
+    ctx.fillStyle=cssVar('--paper-2')||'#eee'; ctx.fillRect(x,y,kcell-2,kcell-2);
+    ctx.strokeStyle=line; ctx.lineWidth=1; ctx.strokeRect(x,y,kcell-2,kcell-2);
+    ctx.fillStyle=v>0?good:(v<0?bad:faint); ctx.font='bold 14px -apple-system,Arial';
+    ctx.fillText(v>0?'+'+v:v, x+kcell/2-1, y+kcell/2);
+  }
+  ctx.fillStyle=ink; ctx.font='bold 30px -apple-system,Arial'; ctx.fillText('✳', kx-30, ky+K*kcell/2);
+  ctx.fillText('=', kx+K*kcell+24, ky+K*kcell/2);
+  // --- feature map (right) ---
+  const ox=kx+K*kcell+60, oy=iy+cell, ocell=46;
+  ctx.fillStyle=soft; ctx.font='bold 14px -apple-system,Arial'; ctx.fillText('feature map (4×4)', ox+M*ocell/2, oy-22);
+  for(let r=0;r<M;r++)for(let c=0;c<M;c++){
+    const x=ox+c*ocell,y=oy+r*ocell, idx=r*M+c;
+    const done=idx<=pos;
+    const val=convAt(r,c);
+    if(done){ const mag=Math.min(Math.abs(val)/27,1); ctx.fillStyle=val>0?'rgba(28,140,90,'+(0.2+0.65*mag)+')':(val<0?'rgba(194,59,59,'+(0.2+0.65*mag)+')':(cssVar('--paper-3')||'#ddd')); }
+    else ctx.fillStyle=cssVar('--paper-3')||'#e6e6e6';
+    ctx.fillRect(x,y,ocell-2,ocell-2);
+    ctx.strokeStyle=(idx===pos)?accent:line; ctx.lineWidth=(idx===pos)?3:1; ctx.strokeRect(x,y,ocell-2,ocell-2);
+    if(done){ ctx.fillStyle=ink; ctx.font='bold 14px -apple-system,Arial'; ctx.fillText(val>0?'+'+val:val, x+ocell/2-1, y+ocell/2); }
+  }
+  // readout
+  const val=convAt(cr,cc);
+  $('#convReadout').innerHTML='Position ('+cr+','+cc+'): Σ(patch × kernel) = <b>'+(val>0?'+'+val:val)+'</b>'+(val===0?' — flat region, no edge':(Math.abs(val)>=18?' — strong edge here!':' — partial edge'));
+}
+function stepConv(){ pos=(pos+1)%(M*M); drawConv(); }
+function playConv(){ if(timer){clearInterval(timer);timer=null;$('#playBtn').textContent='▶ Auto-slide';return;} $('#playBtn').textContent='⏸ Pause'; timer=setInterval(()=>{ stepConv(); },700); }
+$('#stepBtn').addEventListener('click',()=>{ if(timer){clearInterval(timer);timer=null;$('#playBtn').textContent='▶ Auto-slide';} stepConv(); });
+$('#resetBtn').addEventListener('click',()=>{ pos=0; drawConv(); });
+$('#playBtn').addEventListener('click',playConv);
+$$('#kernelSeg button').forEach(b=>b.addEventListener('click',()=>{ $$('#kernelSeg button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); kern=b.dataset.k; drawConv(); }));
+onEnter['sM2']=drawConv;
+
+buildDots();
+$('#totalNum').textContent=slideEls.length;
+const dl=parseInt(new URLSearchParams(location.search).get('slide'),10);
+goTo(Number.isFinite(dl)?dl-1:0);
+</script>
+</body>
+</html>
