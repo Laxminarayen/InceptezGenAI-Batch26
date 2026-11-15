@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Classwork Notes · Pooling &amp; CNNs II</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{ --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC; --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63; --line: rgba(32,40,58,.16); --accent:#6B4FA0; --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  @media (prefers-color-scheme: dark){ :root{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.16); --accent:#B49AE0; } }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.6; }
+  .wrap{max-width:840px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 80px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.7rem,4vw,2.4rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 6px;}
+  .subtitle{color:var(--ink-soft); font-size:1rem; margin-bottom:8px;}
+  .pdf-link{display:inline-flex; align-items:center; gap:8px; margin:14px 10px 34px 0; font-size:.9rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .pdf-link:hover{border-color:var(--accent); color:var(--accent);}
+  h2{font-size:1.35rem; font-weight:900; margin:44px 0 14px; padding-top:16px; border-top:1px solid var(--line);}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h3{font-size:1.05rem; font-weight:800; margin:22px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:8px 10px; text-align:center; border:1px solid var(--line);}
+  th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  tr.hl td{background:color-mix(in srgb, var(--accent) 10%, transparent); font-weight:800;}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .agenda{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 20px;}
+  .agenda span{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:8px 16px; font-size:.86rem; font-weight:700; color:var(--ink);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.92em; font-family:var(--mono);}
+  pre{background:#10141c; color:#dfe6f2; border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.85rem; line-height:1.55; font-family:var(--mono);}
+  pre code{background:none; padding:0;}
+  pre .cmt{color:#7f8aa0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Day 36 · Classwork Notes</div>
+  <h1>Pooling — CNNs, Part 2</h1>
+  <p class="subtitle">Convolution turns an image into feature maps, but we don't need every value at full resolution. Pooling summarises each small region into one number — shrinking the maps while keeping the pattern. That's the operation that finally turns stacked convolutions into a full CNN, which we then train on cats vs dogs and deploy to AWS EC2.</p>
+  <a class="pdf-link" href="Classnotes.pdf" target="_blank">📄 Handwritten notes (PDF)</a>
+
+  <h2>Agenda</h2>
+  <div class="agenda">
+    <span>1 · CNNs — close the gap from Convolution to CNN</span>
+    <span>2 · Pooling</span>
+    <span>3 · CNNs (full pipeline)</span>
+    <span>4 · Practicals → deployment → EC2</span>
+  </div>
+
+  <h2>Part I: Representations — Global vs Spatial / Local</h2>
+  <p>Two ways to represent an image for a model:</p>
+  <ul>
+    <li><b>Global representation (simple neural network):</b> flatten the image into one long vector (e.g. 10,000 values → a dimensionality-reduced vector of rows × cols) and take a <b>global, non-linear weighted sum</b>. Fast, but <i>where</i> pixels sit is lost.</li>
+    <li><b>Spatial / local representation (CNN):</b> a small <b>kernel / filter</b> slides over the image to capture <b>edges, corners, lines and curves</b>. The network <b>learns these kernels</b>.</li>
+  </ul>
+  <p>Kernel sizes are usually small and odd: <b>2×2, 3×3, 5×5, 7×7, 9×9</b>. A square kernel (m = n) is the norm, though not mandatory. Convolution with 128 filters turns a 28×28×1 image into a <b>24×24×128</b> stack of feature maps — the <b>filter number</b> is the depth.</p>
+
+  <h3>Convolution vocabulary (recap)</h3>
+  <ol>
+    <li><b>Convolution</b> — slide a filter, multiply &amp; sum each patch.</li>
+    <li><b>Filters</b> — many kernels → many feature maps.</li>
+    <li><b>Weights</b> — the filter values themselves.</li>
+    <li><b>Striding</b> — how far the filter jumps each step; <b>stride = 1</b> moves one pixel at a time.</li>
+    <li><b>Feature maps</b> — the outputs. <b>Backprop</b> tunes the filter weights.</li>
+  </ol>
+
+  <h2>Part II: Pooling — Do We Need Every Single Value?</h2>
+  <p>After convolution the CNN produces feature maps = <b>patterns in the image</b>. For a 1920×1080 (1080p) frame these maps are huge. <b>Do we need every single value at its original resolution? NOT ALWAYS!</b></p>
+  <div class="note"><b>The question:</b> what is a really efficient way to <b>summarise a small region into a single value</b>? Two common answers:</div>
+  <ul>
+    <li><b>Max pooling</b> — take the <b>max value</b> from a small region (the strongest response).</li>
+    <li><b>Average pooling</b> — take the <b>average</b> of the values in the small region.</li>
+    <li>(and <b>Min pooling</b> — the smallest value; less common.)</li>
+  </ul>
+
+  <h3>Worked example — a 4×4 map, 2×2 regions (stride 2)</h3>
+  <p>Split the map into non-overlapping 2×2 regions and summarise each:</p>
+  <table>
+    <thead><tr><th>Input 4×4</th><th>col 0–1</th><th>col 2–3</th></tr></thead>
+    <tbody>
+      <tr><td><b>row 0</b></td><td>8 &nbsp; 1</td><td>6 &nbsp; 2</td></tr>
+      <tr><td><b>row 1</b></td><td>71 &nbsp; 0</td><td>6 &nbsp; 6</td></tr>
+      <tr><td><b>row 2</b></td><td>50 &nbsp; 30</td><td>7 &nbsp; 7</td></tr>
+      <tr><td><b>row 3</b></td><td>20 &nbsp; 60</td><td>13 &nbsp; 3</td></tr>
+    </tbody>
+  </table>
+  <table>
+    <thead><tr><th>Region</th><th>Max pool</th><th>Avg pool</th><th>Min pool</th></tr></thead>
+    <tbody>
+      <tr><td>{8, 1, 71, 0}</td><td>71</td><td>20</td><td>0</td></tr>
+      <tr><td>{6, 2, 6, 6}</td><td>6</td><td>5</td><td>2</td></tr>
+      <tr><td>{50, 30, 20, 60}</td><td>60</td><td>40</td><td>20</td></tr>
+      <tr><td>{7, 7, 13, 3}</td><td>13</td><td>7.5</td><td>3</td></tr>
+    </tbody>
+  </table>
+  <p>So <b>Max</b> → <code>[[71, 6], [60, 13]]</code>, <b>Avg</b> → <code>[[20, 5], [40, 7.5]]</code>, <b>Min</b> → <code>[[0, 2], [20, 3]]</code>. The 4×4 map becomes a 2×2 map — a <b>reduced-dimensionality image with the same information retained</b>.</p>
+
+  <h3>Advantages of pooling</h3>
+  <ol>
+    <li><b>Reduces spatial dimensions</b> of the feature maps.</li>
+    <li><b>Reduces computation</b> downstream.</li>
+    <li><b>Summarises the local response</b> (and adds a little translation tolerance).</li>
+  </ol>
+
+  <h3>Two interview questions</h3>
+  <ol>
+    <li><b>Does the pooling layer have weights &amp; biases?</b> <b>No</b> — standard Max / Avg pooling has <b>no learnable W's or B's</b>. It is a fixed rule.</li>
+    <li><b>Does backpropagation pass through pooling?</b> <b>Yes!</b> No learnable parameters does <i>not</i> mean no backpropagation — gradients still flow back to the conv layers below. (Max pooling routes the gradient to whichever cell was the max.)</li>
+  </ol>
+
+  <h2>Part III: The Full CNN Pipeline</h2>
+  <p>Putting it together, a CNN alternates convolution and pooling, then flattens into a dense head:</p>
+  <div class="formula">
+    28×28 image → [Conv → ReLU → Max Pool] → [Conv → ReLU → Max Pool] → Flatten → Fully-Connected → outputs
+    <span class="sub">Conv layers (with weights W, b) learn local patterns; pooling reduces spatial dims; the flattened vector feeds a fully-connected layer <b>for decision making</b> (a simple NN head). Trained end-to-end with backpropagation.</span>
+  </div>
+  <p><b>Colour images &amp; 3-D filters:</b> an RGB image has 3 channels (R, G, B), so each filter is actually <b>3-D</b> — one slice per input channel. Convolution sums across all channels; pooling then shrinks each output map.</p>
+
+  <h2>Part IV: Practical — Cats vs Dogs, then EC2</h2>
+  <p>We build a real CNN that classifies cats vs dogs from 128×128 colour photos, train it in Colab, save the best weights, wrap it in a small Flask web app, and deploy it to an <b>AWS EC2</b> instance.</p>
+  <pre><code>self.network = nn.Sequential(
+    nn.Conv2d(3, 16, 3, padding=1), nn.ReLU(), nn.MaxPool2d(2),   <span class="cmt"># 128 → 64</span>
+    nn.Conv2d(16, 32, 3, padding=1), nn.ReLU(), nn.MaxPool2d(2),  <span class="cmt"># 64 → 32</span>
+    nn.Conv2d(32, 64, 3, padding=1), nn.ReLU(), nn.MaxPool2d(2),  <span class="cmt"># 32 → 16</span>
+    nn.AdaptiveAvgPool2d((4, 4)), nn.Flatten(),                   <span class="cmt"># 16 → 4 → 1024</span>
+    nn.Linear(64*4*4, 32), nn.ReLU(),
+    nn.Linear(32, 2))                                             <span class="cmt"># Cat / Dog</span></code></pre>
+
+  <div class="note"><b>Full code walkthroughs for this class:</b>
+    <a href="notebook-code-explanation.html">📓 Notebook code explanation (CatsvsDogs.ipynb)</a> ·
+    <a href="flask-app-code-explanation.html">🌐 Flask app code explanation (CatsVsDogs)</a> ·
+    <a href="Cats_Dogs_CNN_GitHub_to_EC2_Deployment_Guide.pdf" target="_blank">🚀 GitHub → EC2 deployment guide (PDF)</a>.
+  </div>
+  <div class="note"><b>Next:</b> handling <b>overfitting</b> in neural networks, then NLP → RNNs → Attention &amp; Transformers. Want the diagrams, output-size maths and full pooling reference? See <a href="pooling-cnn-textbook-notes.html">Pooling &amp; CNNs II — Reference Notes</a>.</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Notebook Code Explanation · CatsvsDogs.ipynb</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{ --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC; --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63; --line: rgba(32,40,58,.16); --accent:#6B4FA0; --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; }
+  @media (prefers-color-scheme: dark){ :root{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.16); --accent:#B49AE0; } }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap{max-width:880px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:720px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+  h2{font-size:1.3rem; font-weight:900; margin:44px 0 12px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px; font-size:.9rem;}
+  .cell-tag{display:inline-block; font-size:.68rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); background:color-mix(in srgb, var(--accent) 12%, transparent); border-radius:6px; padding:2px 8px; margin-bottom:6px;}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono); color:var(--ink);}
+  pre{background:#10141c; color:#dfe6f2; border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:10px 0 14px; font-size:.84rem; line-height:1.55; font-family:var(--mono);}
+  pre code{background:none; padding:0; font-size:1em; color:inherit;}
+  pre .cmt{color:#7f8aa0;}
+  pre .kw{color:#c792ea;} pre .fn{color:#82aaff;} pre .str{color:#c3e88d;} pre .num{color:#f78c6c;}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.88rem;}
+  th, td{padding:8px 11px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.74rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0; color:var(--accent);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Code Explanation · Deep Learning · Class 36</div>
+  <h1>Notebook Walkthrough — <code>CatsvsDogs.ipynb</code></h1>
+  <p class="abstract">A cell-by-cell explanation of the cats-vs-dogs CNN notebook: downloading the dataset, building image pipelines, defining the convolutional network, and the training loop that saves the best model. Every line is explained so you can rebuild it from scratch.</p>
+
+  <div class="related-links">
+    <a href="CatsvsDogs.ipynb">📓 Open the notebook</a>
+    <a href="classwork-notes.html">📝 Classwork Notes</a>
+    <a href="pooling-cnn-textbook-notes.html">📚 Pooling Reference</a>
+    <a href="flask-app-code-explanation.html">🌐 Flask app explanation</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">Imports</a></li>
+      <li><a href="#s2">Download &amp; unzip the dataset</a></li>
+      <li><a href="#s3">Transforms (train vs validation)</a></li>
+      <li><a href="#s4">ImageFolder datasets</a></li>
+      <li><a href="#s5">DataLoaders</a></li>
+      <li><a href="#s6">Inspecting labels &amp; sizes</a></li>
+      <li><a href="#s7">The CNN model</a></li>
+      <li><a href="#s8">Loss &amp; optimizer</a></li>
+      <li><a href="#s9">The training loop</a></li>
+      <li><a href="#s10">Common gotchas</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1"><span class="num">Cells 0–1.</span>Imports</h2>
+  <span class="cell-tag">setup</span>
+  <pre><code><span class="kw">from</span> pathlib <span class="kw">import</span> Path
+<span class="kw">from</span> urllib.request <span class="kw">import</span> urlretrieve
+<span class="kw">from</span> zipfile <span class="kw">import</span> ZipFile
+<span class="kw">import</span> matplotlib.pyplot <span class="kw">as</span> plt
+<span class="kw">import</span> torch
+<span class="kw">import</span> torch.nn <span class="kw">as</span> nn
+<span class="kw">from</span> torch.utils.data <span class="kw">import</span> DataLoader
+<span class="kw">from</span> torchvision <span class="kw">import</span> datasets, transforms</code></pre>
+  <ul>
+    <li><code>Path</code> — clean, OS-independent file paths (better than string concatenation).</li>
+    <li><code>urlretrieve</code> / <code>ZipFile</code> — download the dataset zip and unpack it.</li>
+    <li><code>torch</code>, <code>torch.nn</code> — tensors, autograd, and neural-network building blocks.</li>
+    <li><code>DataLoader</code> — batches and shuffles data during training.</li>
+    <li><code>torchvision.datasets</code> / <code>transforms</code> — ready-made image dataset helpers and preprocessing.</li>
+  </ul>
+
+  <h2 id="s2"><span class="num">Cells 2–5.</span>Download &amp; Unzip the Dataset</h2>
+  <span class="cell-tag">data</span>
+  <pre><code>DATASET_URL = (<span class="str">"https://storage.googleapis.com/tensorflow-1-public/"</span>
+               <span class="str">"course2/cats_and_dogs_filtered.zip"</span>)
+DATA_DIR = Path(<span class="str">"cats_and_dogs_filtered"</span>)
+urlretrieve(DATASET_URL, DATA_DIR.joinpath(<span class="str">"cats_and_dogs_filtered.zip"</span>))
+<span class="cmt">!unzip /content/cats_and_dogs_filtered/cats_and_dogs_filtered.zip</span></code></pre>
+  <p>Downloads a small, curated cats-and-dogs set and unzips it. After unzipping you get the folder structure <code>train/cats</code>, <code>train/dogs</code>, <code>validation/cats</code>, <code>validation/dogs</code> — exactly what <code>ImageFolder</code> expects (one sub-folder per class).</p>
+  <div class="note warn"><b>Colab-specific:</b> the <code>!unzip</code> shell command and the <code>/content/…</code> path only work in Google Colab. On your own machine, unzip with Python instead: <code>ZipFile(path).extractall(DATA_DIR)</code>, and make sure <code>DATA_DIR</code> exists first (<code>DATA_DIR.mkdir(exist_ok=True)</code>).</div>
+
+  <h2 id="s3"><span class="num">Cells 6–7.</span>Transforms — Train vs Validation</h2>
+  <span class="cell-tag">preprocessing</span>
+  <pre><code>train_transform = transforms.Compose([
+    transforms.Resize((<span class="num">128</span>, <span class="num">128</span>)),
+    transforms.RandomHorizontalFlip(),   <span class="cmt"># data augmentation</span>
+    transforms.ToTensor(),
+])
+val_transform = transforms.Compose([
+    transforms.Resize((<span class="num">128</span>, <span class="num">128</span>)),
+    transforms.ToTensor(),
+])</code></pre>
+  <ul>
+    <li><b><code>Resize((128,128))</code></b> — every image becomes 128×128 so the network sees a fixed input size.</li>
+    <li><b><code>RandomHorizontalFlip()</code></b> — randomly mirrors training images left↔right. This is <b>data augmentation</b>: it multiplies the effective dataset and fights overfitting. A flipped cat is still a cat.</li>
+    <li><b><code>ToTensor()</code></b> — converts the PIL image (H×W×C, values 0–255) into a PyTorch tensor (C×H×W, values 0.0–1.0).</li>
+  </ul>
+  <div class="note"><b>Why no flip on validation?</b> Augmentation is a <i>training</i> trick. For validation we want a stable, deterministic measure of accuracy, so we only resize and convert — no randomness.</div>
+
+  <h2 id="s4"><span class="num">Cells 8–9.</span>ImageFolder Datasets</h2>
+  <span class="cell-tag">data</span>
+  <pre><code>train_data = datasets.ImageFolder(DATA_DIR / <span class="str">"train"</span>, transform=train_transform)
+val_data   = datasets.ImageFolder(DATA_DIR / <span class="str">"validation"</span>, transform=val_transform)</code></pre>
+  <p><code>ImageFolder</code> reads a directory where each sub-folder is a class. It automatically assigns integer labels alphabetically (<code>cats</code> → 0, <code>dogs</code> → 1) and applies the given transform when an image is loaded. Each item is a <code>(image_tensor, label)</code> pair.</p>
+
+  <h2 id="s5"><span class="num">Cells 10–11.</span>DataLoaders</h2>
+  <span class="cell-tag">batching</span>
+  <pre><code>train_loader = DataLoader(train_data, batch_size=<span class="num">32</span>, shuffle=<span class="kw">True</span>)
+val_loader   = DataLoader(val_data,   batch_size=<span class="num">32</span>, shuffle=<span class="kw">False</span>)</code></pre>
+  <ul>
+    <li><b><code>batch_size=32</code></b> — the network processes 32 images per step (mini-batch gradient descent, from Class 34).</li>
+    <li><b><code>shuffle=True</code> for training</b> — reshuffles every epoch so the model doesn't learn the order of the data.</li>
+    <li><b><code>shuffle=False</code> for validation</b> — order doesn't matter when only measuring accuracy, and keeping it fixed makes runs reproducible.</li>
+  </ul>
+
+  <h2 id="s6"><span class="num">Cells 12–14.</span>Inspecting Labels &amp; Sizes</h2>
+  <span class="cell-tag">sanity check</span>
+  <pre><code>train_data.class_to_idx   <span class="cmt"># {'cats': 0, 'dogs': 1} — labels given to each class</span>
+len(train_data)           <span class="cmt"># number of training images</span>
+len(val_data)             <span class="cmt"># number of validation images</span></code></pre>
+  <p>A quick sanity check: <code>class_to_idx</code> confirms which class is 0 and which is 1 (this must match the <code>LABELS</code> list in the Flask app later), and <code>len(...)</code> confirms the data actually loaded.</p>
+
+  <h2 id="s7"><span class="num">Cell 16.</span>The CNN Model</h2>
+  <span class="cell-tag">model</span>
+  <pre><code><span class="kw">class</span> <span class="fn">CatDogCNN</span>(nn.Module):
+  <span class="kw">def</span> <span class="fn">__init__</span>(self):
+    super().__init__()
+    self.network = nn.Sequential(
+        nn.Conv2d(in_channels=<span class="num">3</span>,  out_channels=<span class="num">16</span>, kernel_size=<span class="num">3</span>, padding=<span class="num">1</span>),
+        nn.ReLU(),
+        nn.MaxPool2d(kernel_size=<span class="num">2</span>),                 <span class="cmt"># 128 → 64</span>
+
+        nn.Conv2d(in_channels=<span class="num">16</span>, out_channels=<span class="num">32</span>, kernel_size=<span class="num">3</span>, padding=<span class="num">1</span>),
+        nn.ReLU(),
+        nn.MaxPool2d(kernel_size=<span class="num">2</span>),                 <span class="cmt"># 64 → 32</span>
+
+        nn.Conv2d(in_channels=<span class="num">32</span>, out_channels=<span class="num">64</span>, kernel_size=<span class="num">3</span>, padding=<span class="num">1</span>),
+        nn.ReLU(),
+        nn.MaxPool2d(kernel_size=<span class="num">2</span>),                 <span class="cmt"># 32 → 16</span>
+
+        nn.AdaptiveAvgPool2d((<span class="num">4</span>, <span class="num">4</span>)),              <span class="cmt"># 16 → 4 (fixed size)</span>
+        nn.Flatten(),
+        nn.Linear(in_features=<span class="num">64</span>*<span class="num">4</span>*<span class="num">4</span>, out_features=<span class="num">32</span>),
+        nn.ReLU(),
+        nn.Linear(in_features=<span class="num">32</span>, out_features=<span class="num">2</span>))   <span class="cmt"># Cat / Dog</span>
+
+  <span class="kw">def</span> <span class="fn">forward</span>(self, x):
+    <span class="kw">return</span> self.network(x)
+
+device = torch.device(<span class="str">'cuda'</span> <span class="kw">if</span> torch.cuda.is_available() <span class="kw">else</span> <span class="str">'cpu'</span>)
+model = CatDogCNN().to(device)</code></pre>
+  <p>This is the heart of the class — the <b>Conv → ReLU → MaxPool</b> pattern from the lecture, repeated three times with a growing number of filters (16 → 32 → 64), then a dense head.</p>
+  <table>
+    <thead><tr><th>Layer</th><th>What it does</th><th>Output shape (per image)</th></tr></thead>
+    <tbody>
+      <tr><td>input</td><td>RGB image</td><td>3 × 128 × 128</td></tr>
+      <tr><td><code>Conv2d(3,16,3,padding=1)</code> + ReLU</td><td>16 learnable 3×3 filters; <code>padding=1</code> keeps the size</td><td>16 × 128 × 128</td></tr>
+      <tr><td><code>MaxPool2d(2)</code></td><td>2×2 max pooling, halves H &amp; W</td><td>16 × 64 × 64</td></tr>
+      <tr><td><code>Conv2d(16,32,3,p=1)</code> + ReLU + Pool</td><td>32 filters, then halve</td><td>32 × 32 × 32</td></tr>
+      <tr><td><code>Conv2d(32,64,3,p=1)</code> + ReLU + Pool</td><td>64 filters, then halve</td><td>64 × 16 × 16</td></tr>
+      <tr><td><code>AdaptiveAvgPool2d((4,4))</code></td><td>Average-pools to a fixed 4×4 no matter the input</td><td>64 × 4 × 4</td></tr>
+      <tr><td><code>Flatten()</code></td><td>Unroll to a vector</td><td>64·4·4 = 1024</td></tr>
+      <tr><td><code>Linear(1024,32)</code> + ReLU</td><td>Dense hidden layer</td><td>32</td></tr>
+      <tr><td><code>Linear(32,2)</code></td><td>Two class scores (logits)</td><td>2</td></tr>
+    </tbody>
+  </table>
+  <ul>
+    <li><b><code>padding=1</code></b> on a 3×3 conv keeps the spatial size the same, so only the pooling layers shrink it — making the arithmetic easy to follow.</li>
+    <li><b><code>AdaptiveAvgPool2d((4,4))</code></b> forces a fixed 4×4 output. This guarantees the flattened size is always <code>64·4·4 = 1024</code>, so the <code>Linear</code> layer's input never breaks even if the input image size changes.</li>
+    <li><b><code>nn.Sequential</code></b> chains the layers; <code>forward</code> just runs the input through them.</li>
+    <li><b><code>.to(device)</code></b> moves the model to the GPU (<code>cuda</code>) if available, else CPU.</li>
+    <li>The output layer has <b>2 units</b> (not 1) — two class logits used with <code>CrossEntropyLoss</code>.</li>
+  </ul>
+
+  <h2 id="s8"><span class="num">Cell 18.</span>Loss &amp; Optimizer</h2>
+  <span class="cell-tag">training setup</span>
+  <pre><code>loss_function = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(model.parameters(), lr=<span class="num">0.001</span>)</code></pre>
+  <ul>
+    <li><b><code>CrossEntropyLoss</code></b> — the right loss for classification. In PyTorch it applies <code>softmax</code> internally, so the model outputs <b>raw logits</b> (no softmax layer in the model).</li>
+    <li><b><code>Adam(lr=0.001)</code></b> — the adaptive optimizer from Class 34 (Momentum + RMSProp combined). <code>model.parameters()</code> hands it every learnable weight to update.</li>
+  </ul>
+
+  <h2 id="s9"><span class="num">Cell 19.</span>The Training Loop</h2>
+  <span class="cell-tag">training</span>
+  <pre><code>best_accuracy = -<span class="num">1.0</span>
+train_loss = []
+val_accuracies = []
+Model_file = Path(<span class="str">"cat_dog_model.pth"</span>)
+epochs = <span class="num">100</span>
+
+<span class="kw">for</span> epoch <span class="kw">in</span> range(epochs):
+  model.train()                                  <span class="cmt"># train mode</span>
+  total_loss = <span class="num">0.0</span>
+  <span class="kw">for</span> images, labels <span class="kw">in</span> train_loader:
+    images, labels = images.to(device), labels.to(device)
+    optimizer.zero_grad()                        <span class="cmt"># clear old gradients</span>
+    outputs = model(images)                      <span class="cmt"># forward pass</span>
+    loss = loss_function(outputs, labels)
+    loss.backward()                              <span class="cmt"># backpropagation</span>
+    optimizer.step()                             <span class="cmt"># update weights</span>
+    total_loss += loss.item()
+  average_loss = total_loss / len(train_loader)
+  train_loss.append(average_loss)
+
+  model.eval()                                   <span class="cmt"># evaluation mode</span>
+  correct = <span class="num">0</span>
+  <span class="kw">with</span> torch.no_grad():                           <span class="cmt"># no gradients when scoring</span>
+    <span class="kw">for</span> images, labels <span class="kw">in</span> val_loader:
+      images = images.to(device)
+      outputs = model(images)
+      predictions = outputs.argmax(dim=<span class="num">1</span>).cpu()
+      correct += (predictions == labels).sum().item()
+  accuracy = correct / len(val_loader.dataset)
+  val_accuracies.append(accuracy)
+
+  <span class="kw">if</span> accuracy &gt; best_accuracy:                     <span class="cmt"># keep the best model only</span>
+    best_accuracy = accuracy
+    torch.save(model.state_dict(), Model_file)</code></pre>
+  <p>The classic PyTorch loop, with validation and checkpointing:</p>
+  <ul>
+    <li><b><code>model.train()</code> / <code>model.eval()</code></b> — switch modes. They matter when the model has dropout or batch-norm (train vs inference behaviour). Good habit even here.</li>
+    <li><b>The 5-step update</b> — <code>zero_grad → forward → loss → backward → step</code>. <code>zero_grad()</code> is essential: PyTorch <i>accumulates</i> gradients, so you must clear them each batch.</li>
+    <li><b><code>torch.no_grad()</code></b> — during validation we don't need gradients; this saves memory and speeds things up.</li>
+    <li><b><code>outputs.argmax(dim=1)</code></b> — the predicted class is the index of the larger of the 2 logits (0 = cat, 1 = dog).</li>
+    <li><b><code>accuracy = correct / len(val_loader.dataset)</code></b> — fraction of validation images classified correctly.</li>
+    <li><b><code>torch.save(model.state_dict(), ...)</code></b> — saves <i>only the weights</i> (not the code) whenever validation accuracy improves. This <code>cat_dog_model.pth</code> file is what the Flask app loads. Saving on the best epoch is a simple form of <b>early-stopping / best-checkpoint</b>.</li>
+  </ul>
+
+  <h2 id="s10"><span class="num">Appendix.</span>Common Gotchas</h2>
+  <div class="note warn">
+    <ul style="margin:0;">
+      <li><b>Colab paths</b> — <code>!unzip</code> and <code>/content/…</code> are Colab-only; adapt for a local run.</li>
+      <li><b>Last cell typo</b> — the final <code>print(f"... {Model_File} ...")</code> uses <code>Model_File</code> but the variable is <code>Model_file</code> (Python is case-sensitive). Fix the capitalisation or that print will raise <code>NameError</code>. The model is still saved correctly above it.</li>
+      <li><b>Validation labels &amp; device</b> — labels stay on CPU while predictions are moved with <code>.cpu()</code>, so the comparison lines up. If you move labels to the GPU, compare on the same device.</li>
+      <li><b>Label order must match the app</b> — <code>class_to_idx</code> is <code>{cats:0, dogs:1}</code>, so the Flask app's <code>LABELS = ["Cat", "Dog"]</code> must be in that exact order.</li>
+    </ul>
+  </div>
+
+  <div class="summary-box">
+    <h3>In one paragraph</h3>
+    <p>The notebook downloads a cats-vs-dogs set, resizes images to 128×128 (with a random flip for training-time augmentation), wraps them in <code>ImageFolder</code> datasets and batched <code>DataLoader</code>s, defines a three-block <b>Conv→ReLU→MaxPool</b> CNN ending in a small dense head (1024 → 32 → 2), and trains it with <b>Adam + CrossEntropyLoss</b> for 100 epochs — saving the weights (<code>cat_dog_model.pth</code>) whenever validation accuracy hits a new best. That saved file is exactly what the <a href="flask-app-code-explanation.html">Flask app</a> serves.</p>
+  </div>
+</div>
+</body>
+</html>

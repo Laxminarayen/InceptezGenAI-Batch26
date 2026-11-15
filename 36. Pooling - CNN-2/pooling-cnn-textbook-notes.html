@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Pooling &amp; CNNs II — Reference Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{ --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC; --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63; --line: rgba(32,40,58,.16); --accent:#6B4FA0; --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; }
+  @media (prefers-color-scheme: dark){ :root{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.16); --accent:#B49AE0; } }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap{max-width:860px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:680px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+  h2{font-size:1.4rem; font-weight:900; margin:48px 0 14px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px;}
+  h3{font-size:1.06rem; font-weight:800; margin:24px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:9px 12px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono);}
+  pre{background:#10141c; color:#dfe6f2; border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.86rem; line-height:1.55; font-family:var(--mono);}
+  pre code{background:none; padding:0; font-size:1em; color:inherit;}
+  pre .cmt{color:#7f8aa0;}
+  .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px;}
+  .pill{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:.82rem; font-weight:700; color:var(--ink);}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0;}
+  .fig{margin:20px 0 22px; background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 18px 10px;}
+  .fig svg{display:block; width:100%; height:auto;}
+  .fig figcaption{font-size:.82rem; color:var(--ink-faint); margin-top:12px; text-align:center; line-height:1.5;}
+  .fig text{font-family:var(--font);}
+  .fig .lbl{font-size:13px; font-weight:800; fill:var(--ink);}
+  .fig .lbl-s{font-size:12px; font-weight:600; fill:var(--ink-soft);}
+  .fig .lbl-f{font-size:11px; font-weight:600; fill:var(--ink-faint);}
+  .fig .teal{stroke:#3B6E63;} .fig .amber{stroke:#B0670C;} .fig .blue{stroke:#1E6FA8;} .fig .purple{stroke:#6B4FA0;}
+  .fig .f-teal{fill:#3B6E63;} .fig .f-amber{fill:#B0670C;} .fig .f-blue{fill:#1E6FA8;} .fig .f-purple{fill:#6B4FA0;}
+  @media (prefers-color-scheme: dark){
+    .fig .teal{stroke:#6FB3A3;} .fig .amber{stroke:#E0A24C;} .fig .blue{stroke:#5CA6DE;} .fig .purple{stroke:#B49AE0;}
+    .fig .f-teal{fill:#6FB3A3;} .fig .f-amber{fill:#E0A24C;} .fig .f-blue{fill:#5CA6DE;} .fig .f-purple{fill:#B49AE0;}
+  }
+  .fig .box{fill:var(--paper-3); stroke:var(--line); stroke-width:1.4;}
+  .fig .flow{stroke:var(--ink-soft); stroke-width:1.6; fill:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Reference Notes · Deep Learning</div>
+  <h1>Pooling — CNNs, Part 2</h1>
+  <p class="abstract">Convolution produces feature maps; pooling shrinks them. This chapter defines Max / Average / Min pooling, works the numbers on a 4×4 map, explains why pooling has no weights yet still passes gradients, and assembles the full Conv→ReLU→Pool→Flatten→FC pipeline we use for the cats-vs-dogs classifier.</p>
+
+  <div class="related-links">
+    <a href="classwork-notes.html">📝 Classwork Notes (Day 36 write-up)</a>
+    <a href="pooling-cnn-slides.html">🖥️ Slide Deck (live pooling demo)</a>
+    <a href="notebook-code-explanation.html">📓 Notebook code explanation</a>
+    <a href="flask-app-code-explanation.html">🌐 Flask app code explanation</a>
+    <a href="../35.%20Convolution%20as%20Operation%20CNN-1/convolution-cnn-textbook-notes.html">📚 Convolution (Class 35)</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">Recap: Global vs Spatial Representation</a></li>
+      <li><a href="#s2">The Problem: Full-Resolution Maps</a></li>
+      <li><a href="#s3">The Pooling Operation</a></li>
+      <li><a href="#s4">Worked Example (4×4 → 2×2)</a></li>
+      <li><a href="#s5">Max vs Average vs Min</a></li>
+      <li><a href="#s6">No Weights, Yet Backprop Flows</a></li>
+      <li><a href="#s7">Advantages &amp; Output Size</a></li>
+      <li><a href="#s8">The Full CNN Pipeline</a></li>
+      <li><a href="#s9">Colour Images &amp; 3-D Filters</a></li>
+      <li><a href="#s10">Summary</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1"><span class="num">1.</span>Recap: Global vs Spatial Representation</h2>
+  <p>A <b>simple neural network</b> flattens the image and takes a <b>global</b> weighted sum — a dimensionality-reduced vector that has lost <i>where</i> pixels are. A <b>CNN</b> keeps the <b>spatial / local</b> representation: a learnable <b>kernel / filter</b> slides over the image to detect edges, corners, lines and curves. Kernel sizes are small and usually odd — 2×2, 3×3, 5×5, 7×7, 9×9 (square is the norm, not mandatory). Convolution with 128 filters turns 28×28×1 into a <b>24×24×128</b> feature-map stack.</p>
+
+  <h2 id="s2"><span class="num">2.</span>The Problem: Do We Need Full Resolution?</h2>
+  <p>After convolution the CNN holds feature maps that encode <b>patterns in the image</b>. For large inputs (e.g. 1920×1080) these maps are enormous. <b>Do we need every single value at its original resolution? Not always.</b> We want a cheap way to <b>summarise a small region into a single value</b> — that operation is <b>pooling</b>.</p>
+
+  <h2 id="s3"><span class="num">3.</span>The Pooling Operation</h2>
+  <p>Slide a small window (commonly 2×2) over the feature map and replace each region with <b>one summary number</b>. With <b>stride = window size</b> the regions don't overlap, so an N×N map becomes (N/2)×(N/2).</p>
+  <ul>
+    <li><b>Max pooling</b> — the maximum value in the region (keeps the strongest "feature fired here" signal). The CNN default.</li>
+    <li><b>Average pooling</b> — the mean of the region (smooths the response).</li>
+    <li><b>Min pooling</b> — the minimum value (rarely used).</li>
+  </ul>
+
+  <figure class="fig">
+    <svg viewBox="0 0 640 250" role="img" aria-label="A 2 by 2 window slides over a 4 by 4 feature map; each region becomes one value in the 2 by 2 pooled output.">
+      <text class="lbl" x="130" y="26" text-anchor="middle">feature map (4×4)</text>
+      <!-- 4x4 grid with the example values -->
+      <g font-size="15" font-weight="700" text-anchor="middle">
+        <g stroke="var(--line)" stroke-width="1.2" fill="var(--paper-3)">
+          <rect x="40" y="42" width="44" height="44"/><rect x="84" y="42" width="44" height="44"/><rect x="128" y="42" width="44" height="44"/><rect x="172" y="42" width="44" height="44"/>
+          <rect x="40" y="86" width="44" height="44"/><rect x="84" y="86" width="44" height="44"/><rect x="128" y="86" width="44" height="44"/><rect x="172" y="86" width="44" height="44"/>
+          <rect x="40" y="130" width="44" height="44"/><rect x="84" y="130" width="44" height="44"/><rect x="128" y="130" width="44" height="44"/><rect x="172" y="130" width="44" height="44"/>
+          <rect x="40" y="174" width="44" height="44"/><rect x="84" y="174" width="44" height="44"/><rect x="128" y="174" width="44" height="44"/><rect x="172" y="174" width="44" height="44"/>
+        </g>
+        <!-- highlight top-left region -->
+        <rect x="40" y="42" width="88" height="88" fill="#1E6FA8" opacity="0.16"/>
+        <rect x="40" y="42" width="88" height="88" fill="none" class="blue" stroke-width="3"/>
+        <g fill="var(--ink)">
+          <text x="62" y="68">8</text><text x="106" y="68">1</text><text x="150" y="68">6</text><text x="194" y="68">2</text>
+          <text x="62" y="112">71</text><text x="106" y="112">0</text><text x="150" y="112">6</text><text x="194" y="112">6</text>
+          <text x="62" y="156">50</text><text x="106" y="156">30</text><text x="150" y="156">7</text><text x="194" y="156">7</text>
+          <text x="62" y="200">20</text><text x="106" y="200">60</text><text x="150" y="200">13</text><text x="194" y="200">3</text>
+        </g>
+      </g>
+      <!-- arrow -->
+      <path class="flow" d="M232,130 H300"/><polygon points="300,130 290,125 290,135" fill="var(--ink-soft)"/>
+      <text class="lbl-f" x="266" y="120" text-anchor="middle">max 2×2</text>
+      <!-- output -->
+      <text class="lbl" x="470" y="26" text-anchor="middle">pooled (2×2)</text>
+      <g font-size="19" font-weight="800" text-anchor="middle">
+        <g stroke="var(--line)" stroke-width="1.2" fill="var(--paper-3)">
+          <rect x="400" y="70" width="64" height="64"/><rect x="464" y="70" width="64" height="64"/>
+          <rect x="400" y="134" width="64" height="64"/><rect x="464" y="134" width="64" height="64"/>
+        </g>
+        <rect x="400" y="70" width="64" height="64" fill="#1E6FA8" opacity="0.28"/>
+        <g fill="var(--ink)"><text x="432" y="108">71</text><text x="496" y="108">6</text><text x="432" y="172">60</text><text x="496" y="172">13</text></g>
+      </g>
+      <text class="lbl-s" x="470" y="218" text-anchor="middle">{8,1,71,0} → max = 71</text>
+    </svg>
+    <figcaption><b>Fig 1.</b> Non-overlapping 2×2 Max pooling: each region of the 4×4 map collapses to its maximum, producing a 2×2 map. The strongest activation in each neighbourhood survives.</figcaption>
+  </figure>
+
+  <h2 id="s4"><span class="num">4.</span>Worked Example (4×4 → 2×2)</h2>
+  <p>Split the map into four non-overlapping 2×2 regions and summarise each three ways:</p>
+  <table>
+    <thead><tr><th>Region (2×2 values)</th><th>Max</th><th>Average</th><th>Min</th></tr></thead>
+    <tbody>
+      <tr><td>{8, 1, 71, 0}</td><td>71</td><td>(8+1+71+0)/4 = 20</td><td>0</td></tr>
+      <tr><td>{6, 2, 6, 6}</td><td>6</td><td>20/4 = 5</td><td>2</td></tr>
+      <tr><td>{50, 30, 20, 60}</td><td>60</td><td>160/4 = 40</td><td>20</td></tr>
+      <tr><td>{7, 7, 13, 3}</td><td>13</td><td>30/4 = 7.5</td><td>3</td></tr>
+    </tbody>
+  </table>
+  <div class="formula">Max → [[71, 6], [60, 13]] &nbsp;·&nbsp; Avg → [[20, 5], [40, 7.5]] &nbsp;·&nbsp; Min → [[0, 2], [20, 3]]<span class="sub">A 4×4 map becomes a 2×2 map — a reduced-dimensionality image with the same essential information retained.</span></div>
+
+  <h2 id="s5"><span class="num">5.</span>Max vs Average vs Min</h2>
+  <figure class="fig">
+    <svg viewBox="0 0 640 170" role="img" aria-label="The same 2 by 2 region of values 8, 1, 71, 0 gives max 71, average 20, and min 0.">
+      <text class="lbl" x="90" y="28" text-anchor="middle">region {8, 1, 71, 0}</text>
+      <g font-size="16" font-weight="800" text-anchor="middle" fill="var(--ink)">
+        <g stroke="var(--line)" stroke-width="1.2" fill="var(--paper-3)">
+          <rect x="40" y="44" width="48" height="48"/><rect x="88" y="44" width="48" height="48"/>
+          <rect x="40" y="92" width="48" height="48"/><rect x="88" y="92" width="48" height="48"/>
+        </g>
+        <text x="64" y="72">8</text><text x="112" y="72">1</text>
+        <text x="64" y="120">71</text><text x="112" y="120">0</text>
+      </g>
+      <g>
+        <rect x="250" y="44" width="110" height="46" rx="9" class="box" style="stroke:#3B6E63;stroke-width:2;"/>
+        <text class="lbl f-teal" x="305" y="64" text-anchor="middle">Max = 71</text><text class="lbl-s" x="305" y="81" text-anchor="middle">strongest signal</text>
+        <rect x="250" y="98" width="110" height="46" rx="9" class="box" style="stroke:#B0670C;stroke-width:2;"/>
+        <text class="lbl f-amber" x="305" y="118" text-anchor="middle">Avg = 20</text><text class="lbl-s" x="305" y="135" text-anchor="middle">smoothed</text>
+        <rect x="420" y="71" width="110" height="46" rx="9" class="box" style="stroke:#1E6FA8;stroke-width:2;"/>
+        <text class="lbl f-blue" x="475" y="91" text-anchor="middle">Min = 0</text><text class="lbl-s" x="475" y="108" text-anchor="middle">weakest (rare)</text>
+      </g>
+      <g fill="var(--ink-soft)">
+        <path class="flow" d="M150,80 H250"/><polygon points="250,67 250,77 258,72" fill="none"/>
+        <path class="flow" d="M150,110 Q200,121 250,121"/>
+        <path class="flow" d="M360,96 H420"/>
+      </g>
+    </svg>
+    <figcaption><b>Fig 2.</b> The same region, three summaries. Max pooling dominates CNNs because the max cleanly answers "did this feature fire anywhere in the region?"</figcaption>
+  </figure>
+
+  <h2 id="s6"><span class="num">6.</span>No Weights, Yet Backprop Flows</h2>
+  <p>Two classic interview questions:</p>
+  <table>
+    <thead><tr><th>Question</th><th>Answer</th></tr></thead>
+    <tbody>
+      <tr><td>Does the pooling layer have weights &amp; biases?</td><td><b>No.</b> Standard Max / Avg pooling has <b>no learnable W's or B's</b> — it applies a fixed rule.</td></tr>
+      <tr><td>Does backpropagation pass through pooling?</td><td><b>Yes.</b> No learnable parameters does <i>not</i> mean no backprop. Gradients still flow back to the conv layers below.</td></tr>
+    </tbody>
+  </table>
+  <div class="note warn"><b>How the gradient routes:</b> for <b>max pooling</b>, the gradient of the output goes entirely to the cell that was the maximum (the others get 0). For <b>average pooling</b>, the gradient is split equally across all cells in the region. Either way the signal reaches the trainable filters beneath.</div>
+
+  <h2 id="s7"><span class="num">7.</span>Advantages &amp; Output Size</h2>
+  <ol>
+    <li><b>Reduces spatial dimensions</b> — a 24×24 map → 12×12 after 2×2 pooling.</li>
+    <li><b>Reduces computation</b> downstream (fewer multiply-adds).</li>
+    <li><b>Summarises the local response</b> and adds mild translation tolerance.</li>
+  </ol>
+  <div class="formula">output side = ⌊(input − window) / stride⌋ + 1<span class="sub">For the common case window = stride = 2: output = input / 2. So 128 → 64 → 32 → 16 through three pooling layers.</span></div>
+
+  <h2 id="s8"><span class="num">8.</span>The Full CNN Pipeline</h2>
+  <p>A CNN alternates convolution and pooling, then flattens into a dense head for the decision:</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 640 140" role="img" aria-label="Pipeline: image, conv plus ReLU, max pool, conv plus ReLU, max pool, flatten, fully connected, output.">
+      <g text-anchor="middle" font-size="11" font-weight="700">
+        <rect x="14" y="52" width="58" height="40" rx="7" class="box"/><text class="lbl-s" x="43" y="76">image</text>
+        <rect x="88" y="46" width="78" height="52" rx="7" class="box" style="stroke:#3B6E63;stroke-width:2;"/><text class="f-teal lbl-s" x="127" y="68">Conv+ReLU</text><text class="lbl-f" x="127" y="84">filters W,b</text>
+        <rect x="182" y="46" width="68" height="52" rx="7" class="box" style="stroke:#B0670C;stroke-width:2;"/><text class="f-amber lbl-s" x="216" y="68">MaxPool</text><text class="lbl-f" x="216" y="84">shrink</text>
+        <rect x="266" y="46" width="78" height="52" rx="7" class="box" style="stroke:#3B6E63;stroke-width:2;"/><text class="f-teal lbl-s" x="305" y="68">Conv+ReLU</text><text class="lbl-f" x="305" y="84">filters W,b</text>
+        <rect x="360" y="46" width="68" height="52" rx="7" class="box" style="stroke:#B0670C;stroke-width:2;"/><text class="f-amber lbl-s" x="394" y="68">MaxPool</text><text class="lbl-f" x="394" y="84">shrink</text>
+        <rect x="444" y="52" width="58" height="40" rx="7" class="box"/><text class="lbl-s" x="473" y="76">Flatten</text>
+        <rect x="518" y="46" width="68" height="52" rx="7" class="box" style="stroke:#6B4FA0;stroke-width:2;"/><text class="f-purple lbl-s" x="552" y="68">FC head</text><text class="lbl-f" x="552" y="84">outputs</text>
+      </g>
+      <g fill="var(--ink-soft)">
+        <path class="flow" d="M72,72 H88"/><path class="flow" d="M166,72 H182"/><path class="flow" d="M250,72 H266"/><path class="flow" d="M344,72 H360"/><path class="flow" d="M428,72 H444"/><path class="flow" d="M502,72 H518"/>
+      </g>
+      <path class="purple" stroke-width="1.6" fill="none" stroke-dasharray="4 4" d="M552,104 C 400,132 200,132 43,104"/>
+      <text class="f-purple lbl-f" x="300" y="130" text-anchor="middle">backpropagation tunes every filter &amp; FC weight (pooling has none, but gradients pass through)</text>
+    </svg>
+    <figcaption><b>Fig 3.</b> The CNN: repeated Conv→ReLU→MaxPool blocks extract and shrink features, then Flatten feeds a fully-connected head for the decision. Trained end-to-end by backprop.</figcaption>
+  </figure>
+
+  <h2 id="s9"><span class="num">9.</span>Colour Images &amp; 3-D Filters</h2>
+  <p>A colour image has three channels — <b>R, G, B</b>. So each convolution filter is actually <b>3-D</b>: one 2-D slice per input channel. The filter multiplies and sums across <i>all</i> channels at once to produce a single feature-map value, and pooling then shrinks each resulting map. (A layer with 16 such 3-D filters on an RGB input produces 16 feature maps.)</p>
+
+  <h2 id="s10"><span class="num">10.</span>Summary</h2>
+  <div class="summary-box">
+    <h3>The whole idea, in one paragraph</h3>
+    <p>Convolution finds patterns and produces feature maps, but keeping them at full resolution is wasteful. <b>Pooling</b> summarises each small region into one value — <b>Max</b> (strongest, the default), <b>Average</b> (smoothed) or <b>Min</b> — so an N×N map becomes (N/2)×(N/2) with a 2×2 window. It <b>reduces spatial dimensions and computation</b> while keeping the signal, has <b>no learnable weights</b>, yet <b>backpropagation still flows through it</b> (max-pool routes the gradient to the max cell). Stack Conv→ReLU→MaxPool blocks, flatten, and attach a fully-connected head and you have a complete CNN — the architecture behind our cats-vs-dogs classifier, deployed to AWS EC2. Next: handling overfitting in neural networks.</p>
+  </div>
+  <div class="pill-row">
+    <span class="pill">Pooling</span>
+    <span class="pill">Max pool</span>
+    <span class="pill">Average pool</span>
+    <span class="pill">Min pool</span>
+    <span class="pill">No weights</span>
+    <span class="pill">Backprop flows</span>
+    <span class="pill">Reduces spatial dims</span>
+    <span class="pill">Conv→ReLU→Pool</span>
+    <span class="pill">3-D filters (RGB)</span>
+  </div>
+</div>
+</body>
+</html>

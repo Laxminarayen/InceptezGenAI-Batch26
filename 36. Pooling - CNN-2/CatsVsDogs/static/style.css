@@ -1,0 +1,36 @@
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  min-height: 100vh;
+  padding: 30px 16px;
+  display: grid;
+  place-items: center;
+  background: #f2f6f5;
+  color: #19342e;
+  font-family: system-ui, -apple-system, Segoe UI, sans-serif;
+}
+.card {
+  background: white;
+  border-radius: 18px;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, .08);
+  max-width: 540px;
+  width: 100%;
+  padding: 34px;
+}
+.eyebrow { font-size: 12px; font-weight: 750; letter-spacing: .12em; color: #16725e; }
+h1 { font-size: 30px; margin: 12px 0 6px; }
+p { line-height: 1.5; color: #50655e; }
+form { display: grid; gap: 12px; margin: 25px 0; }
+label { font-weight: 650; }
+input[type=file] { padding: 12px; border: 1px solid #c6d5d0; border-radius: 9px; width: 100%; }
+button { background: #14735e; color: white; font-weight: 750; font-size: 16px;
+         border: 0; border-radius: 9px; padding: 13px; cursor: pointer; }
+button:hover { background: #0e5747; }
+.preview { display: block; width: 100%; max-height: 320px; object-fit: contain;
+           border-radius: 10px; margin: 18px 0; background: #eee; }
+.result { background: #e7f6ee; padding: 18px; border-radius: 12px; margin-top: 18px; }
+.result .label { font-size: 12px; font-weight: 700; color: #406b59; text-transform: uppercase; }
+.result h2 { font-size: 28px; margin: 6px 0 8px; }
+.result p { margin: 0; }
+.error { background: #fff0ef; color: #af221c; padding: 12px; border-radius: 9px; }
+.note { font-size: 12px; margin-top: 28px; }

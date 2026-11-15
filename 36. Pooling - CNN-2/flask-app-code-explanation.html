@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Flask App Code Explanation · CatsVsDogs</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{ --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC; --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63; --line: rgba(32,40,58,.16); --accent:#6B4FA0; --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; }
+  @media (prefers-color-scheme: dark){ :root{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.16); --accent:#B49AE0; } }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap{max-width:880px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:720px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+  h2{font-size:1.3rem; font-weight:900; margin:44px 0 12px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px; font-size:.9rem;}
+  .file-tag{display:inline-block; font-size:.68rem; font-weight:800; letter-spacing:.06em; color:var(--accent); background:color-mix(in srgb, var(--accent) 12%, transparent); border-radius:6px; padding:2px 8px; margin-bottom:6px; font-family:var(--mono);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono); color:var(--ink);}
+  pre{background:#10141c; color:#dfe6f2; border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:10px 0 14px; font-size:.84rem; line-height:1.55; font-family:var(--mono);}
+  pre code{background:none; padding:0; font-size:1em; color:inherit;}
+  pre .cmt{color:#7f8aa0;}
+  pre .kw{color:#c792ea;} pre .fn{color:#82aaff;} pre .str{color:#c3e88d;} pre .num{color:#f78c6c;}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.88rem;}
+  th, td{padding:8px 11px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.74rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .tree{background:var(--paper-2); border:1px solid var(--line); border-radius:12px; padding:14px 18px; font-family:var(--mono); font-size:.85rem; color:var(--ink-soft); white-space:pre; overflow-x:auto;}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0; color:var(--accent);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Code Explanation · Deep Learning · Class 36</div>
+  <h1>Flask App Walkthrough — <code>CatsVsDogs</code></h1>
+  <p class="abstract">A file-by-file explanation of the web app that serves the trained CNN: how <code>app.py</code> loads the model and handles an upload, how <code>model.py</code> must mirror the training architecture, and how the template renders the prediction. Everything you need to run it locally and understand it before the EC2 deployment.</p>
+
+  <div class="related-links">
+    <a href="notebook-code-explanation.html">📓 Notebook explanation</a>
+    <a href="classwork-notes.html">📝 Classwork Notes</a>
+    <a href="Cats_Dogs_CNN_GitHub_to_EC2_Deployment_Guide.pdf" target="_blank">🚀 EC2 Deployment Guide (PDF)</a>
+    <a href="CatsVsDogs/app.py">🗂️ app.py source</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">Project structure</a></li>
+      <li><a href="#s2">model.py — the architecture</a></li>
+      <li><a href="#s3">app.py — imports &amp; config</a></li>
+      <li><a href="#s4">Loading the model once</a></li>
+      <li><a href="#s5">The preprocessing pipeline</a></li>
+      <li><a href="#s6">The route: GET vs POST</a></li>
+      <li><a href="#s7">Validation &amp; the prediction</a></li>
+      <li><a href="#s8">The template</a></li>
+      <li><a href="#s9">requirements.txt</a></li>
+      <li><a href="#s10">Run it locally → EC2</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1"><span class="num">1.</span>Project Structure</h2>
+  <div class="tree">CatsVsDogs/
+├── app.py              # the Flask web server
+├── model.py            # the CNN class (must match the notebook)
+├── cat_dog_model.pth   # trained weights saved from the notebook
+├── requirements.txt    # Python dependencies
+├── templates/
+│   └── index.html      # the upload + result page (Jinja2)
+└── static/
+    └── style.css       # page styling</div>
+  <p>This is the standard Flask layout: Python at the root, HTML in <code>templates/</code> (rendered server-side with Jinja2), and CSS/JS/images in <code>static/</code>. The <code>.pth</code> is the bridge from the notebook — it carries the learned weights.</p>
+
+  <h2 id="s2"><span class="num">2.</span><code>model.py</code> — the Architecture</h2>
+  <span class="file-tag">model.py</span>
+  <pre><code><span class="kw">import</span> torch.nn <span class="kw">as</span> nn
+
+<span class="kw">class</span> <span class="fn">CatDogCNN</span>(nn.Module):
+  <span class="kw">def</span> <span class="fn">__init__</span>(self):
+    super().__init__()
+    self.network = nn.Sequential(
+        nn.Conv2d(<span class="num">3</span>,  <span class="num">16</span>, kernel_size=<span class="num">3</span>, padding=<span class="num">1</span>), nn.ReLU(), nn.MaxPool2d(<span class="num">2</span>),
+        nn.Conv2d(<span class="num">16</span>, <span class="num">32</span>, kernel_size=<span class="num">3</span>, padding=<span class="num">1</span>), nn.ReLU(), nn.MaxPool2d(<span class="num">2</span>),
+        nn.Conv2d(<span class="num">32</span>, <span class="num">64</span>, kernel_size=<span class="num">3</span>, padding=<span class="num">1</span>), nn.ReLU(), nn.MaxPool2d(<span class="num">2</span>),
+        nn.AdaptiveAvgPool2d((<span class="num">4</span>, <span class="num">4</span>)), nn.Flatten(),
+        nn.Linear(<span class="num">64</span>*<span class="num">4</span>*<span class="num">4</span>, <span class="num">32</span>), nn.ReLU(),
+        nn.Linear(<span class="num">32</span>, <span class="num">2</span>))
+
+  <span class="kw">def</span> <span class="fn">forward</span>(self, x):
+    <span class="kw">return</span> self.network(x)</code></pre>
+  <div class="note warn"><b>This must be byte-for-byte the same architecture as the notebook.</b> A <code>state_dict</code> is just a dictionary of tensors keyed by layer name/shape — it carries <i>no</i> structure. <code>load_state_dict</code> only works if the model you build here has the exact same layers, in the same order, with the same shapes. If they differ, loading throws a size-mismatch error. (See the <a href="notebook-code-explanation.html">notebook explanation</a> for the per-layer shapes.)</div>
+
+  <h2 id="s3"><span class="num">3.</span><code>app.py</code> — Imports &amp; Config</h2>
+  <span class="file-tag">app.py</span>
+  <pre><code><span class="kw">import</span> base64
+<span class="kw">from</span> io <span class="kw">import</span> BytesIO
+<span class="kw">from</span> pathlib <span class="kw">import</span> Path
+<span class="kw">import</span> torch
+<span class="kw">from</span> flask <span class="kw">import</span> Flask, render_template, request, jsonify
+<span class="kw">from</span> PIL <span class="kw">import</span> Image, UnidentifiedImageError
+<span class="kw">from</span> torchvision <span class="kw">import</span> transforms
+<span class="kw">from</span> model <span class="kw">import</span> CatDogCNN
+
+MODEL_PATH = Path(__file__).parent / <span class="str">"cat_dog_model.pth"</span>
+LABELS = [<span class="str">"Cat"</span>, <span class="str">"Dog"</span>]
+
+app = Flask(__name__)
+app.config[<span class="str">'MAX_CONTENT_LENGTH'</span>] = <span class="num">5</span> * <span class="num">1024</span> * <span class="num">1024</span>  <span class="cmt"># reject uploads &gt; 5 MB</span></code></pre>
+  <ul>
+    <li><b><code>base64</code> / <code>BytesIO</code></b> — used later to embed the uploaded image back into the page as a preview without saving a file to disk.</li>
+    <li><b><code>Path(__file__).parent / "cat_dog_model.pth"</code></b> — builds the model path <i>relative to this file</i>, so the app works no matter the working directory (important on EC2).</li>
+    <li><b><code>LABELS = ["Cat", "Dog"]</code></b> — index 0 → Cat, index 1 → Dog. This order <b>must match</b> the notebook's <code>class_to_idx</code> (<code>{cats:0, dogs:1}</code>).</li>
+    <li><b><code>MAX_CONTENT_LENGTH</code></b> — Flask rejects any request body larger than 5 MB before it reaches your code — a basic safety limit.</li>
+  </ul>
+
+  <h2 id="s4"><span class="num">4.</span>Loading the Model Once (at Startup)</h2>
+  <span class="file-tag">app.py</span>
+  <pre><code><span class="kw">if</span> <span class="kw">not</span> MODEL_PATH.exists():
+    <span class="kw">raise</span> FileNotFoundError(f<span class="str">"Model file not found at {MODEL_PATH}..."</span>)
+
+model = CatDogCNN()
+model.load_state_dict(torch.load(MODEL_PATH, map_location=torch.device(<span class="str">'cpu'</span>)))
+model.eval()</code></pre>
+  <ul>
+    <li><b>Fail fast</b> — if the weights file is missing, the app refuses to start with a clear message (better than a confusing error on the first request).</li>
+    <li><b>Loaded once at import time</b>, not per request — loading a model is expensive, so you do it a single time when the server boots and reuse it for every upload.</li>
+    <li><b><code>map_location='cpu'</code></b> — the model was likely trained on a GPU; this remaps the weights onto the CPU so it runs on a cheap, GPU-less EC2 instance.</li>
+    <li><b><code>model.eval()</code></b> — switches to inference mode (disables training-only behaviour). Essential before predicting.</li>
+  </ul>
+
+  <h2 id="s5"><span class="num">5.</span>The Preprocessing Pipeline</h2>
+  <span class="file-tag">app.py</span>
+  <pre><code>preprocess = transforms.Compose([
+    transforms.Resize((<span class="num">128</span>, <span class="num">128</span>)),
+    transforms.ToTensor(),
+])</code></pre>
+  <div class="note"><b>Must mirror the validation transform from the notebook</b> — resize to 128×128 and convert to a tensor, with <b>no</b> random flip. The model only understands inputs shaped exactly like the ones it trained on. If training had normalised the pixels, you would have to repeat that here too.</div>
+
+  <h2 id="s6"><span class="num">6.</span>The Route — GET vs POST</h2>
+  <span class="file-tag">app.py</span>
+  <pre><code>@app.route(<span class="str">'/'</span>, methods=[<span class="str">'GET'</span>, <span class="str">'POST'</span>])
+<span class="kw">def</span> <span class="fn">home</span>():
+    prediction = score = preview = error = <span class="kw">None</span>
+    <span class="kw">if</span> request.method == <span class="str">'POST'</span>:
+        uploaded = request.files.get(<span class="str">'image'</span>)
+        ...
+    <span class="kw">return</span> render_template(<span class="str">'index.html'</span>, prediction=prediction,
+                           score=score, preview=preview, error=error)</code></pre>
+  <p>One route handles both verbs:</p>
+  <ul>
+    <li><b>GET</b> (first visit) — all values are <code>None</code>, so the template just shows the empty upload form.</li>
+    <li><b>POST</b> (form submitted) — read the uploaded file, run the model, and pass the results back into the same template.</li>
+  </ul>
+
+  <h2 id="s7"><span class="num">7.</span>Validation &amp; the Prediction</h2>
+  <span class="file-tag">app.py</span>
+  <pre><code><span class="kw">if</span> <span class="kw">not</span> uploaded:
+    <span class="kw">return</span> jsonify({<span class="str">"error"</span>: <span class="str">"No file uploaded"</span>}), <span class="num">400</span>
+<span class="kw">elif</span> Path(uploaded.filename).suffix.lower() <span class="kw">not in</span> [<span class="str">'.jpg'</span>, <span class="str">'.jpeg'</span>, <span class="str">'.png'</span>]:
+    <span class="kw">return</span> jsonify({<span class="str">"error"</span>: <span class="str">"Invalid file type..."</span>}), <span class="num">400</span>
+<span class="kw">else</span>:
+    <span class="kw">try</span>:
+        <span class="kw">with</span> Image.open(uploaded.stream) <span class="kw">as</span> original:
+            <span class="kw">if</span> original.width * original.height &gt; <span class="num">5</span> * <span class="num">1024</span> * <span class="num">1024</span>:
+                <span class="kw">return</span> jsonify({<span class="str">"error"</span>: <span class="str">"Image size exceeds 5MB limit."</span>}), <span class="num">400</span>
+            image = original.convert(<span class="str">'RGB'</span>)
+            x = preprocess(image).unsqueeze(<span class="num">0</span>)          <span class="cmt"># add batch dim: [1,3,128,128]</span>
+            <span class="kw">with</span> torch.inference_mode():
+                probabilities = torch.softmax(model(x), dim=<span class="num">1</span>)[<span class="num">0</span>]
+                class_index = int(probabilities.argmax().item())
+                prediction  = LABELS[class_index]
+                score = round(float(probabilities[class_index]) * <span class="num">100</span>, <span class="num">1</span>)
+                buffer = BytesIO(); image.save(buffer, format=<span class="str">"JPEG"</span>)
+                preview = base64.b64encode(buffer.getvalue()).decode(<span class="str">'ascii'</span>)
+    <span class="kw">except</span> (UnidentifiedImageError, OSError, ValueError):
+        error = <span class="str">"Invalid image file..."</span></code></pre>
+  <p>Defence first, then inference:</p>
+  <ul>
+    <li><b>Three guards</b> — no file → 400; wrong extension → 400; wrong/corrupt image bytes → caught by the <code>try/except</code>. Never trust a user upload.</li>
+    <li><b><code>.convert('RGB')</code></b> — forces 3 channels (handles greyscale or RGBA inputs), matching the model's 3-channel input.</li>
+    <li><b><code>.unsqueeze(0)</code></b> — the model expects a <i>batch</i>: shape <code>[batch, channels, H, W]</code>. One image becomes a batch of one → <code>[1, 3, 128, 128]</code>.</li>
+    <li><b><code>torch.inference_mode()</code></b> — like <code>no_grad()</code> but even faster; no gradients are tracked during prediction.</li>
+    <li><b><code>torch.softmax(logits, dim=1)</code></b> — turns the 2 raw logits into probabilities that sum to 1. (Training used <code>CrossEntropyLoss</code> which applies softmax internally, so the model itself outputs logits — we add softmax here to get a human-readable confidence.)</li>
+    <li><b><code>argmax</code> → <code>LABELS[...]</code></b> — pick the higher-probability class and map 0/1 to "Cat"/"Dog"; <code>score</code> is that probability as a percentage.</li>
+    <li><b>The preview</b> — the image is re-encoded to JPEG in memory and base64-encoded, so the template can show it inline (<code>data:image/jpeg;base64,...</code>) without writing any file to the server's disk.</li>
+  </ul>
+  <div class="note"><b>Honest limitation (stated on the page):</b> the model only knows two labels, so it will output Cat or Dog even for a photo of neither. The score is a confidence, not a guarantee.</div>
+
+  <h2 id="s8"><span class="num">8.</span>The Template — <code>templates/index.html</code></h2>
+  <span class="file-tag">templates/index.html</span>
+  <pre><code>&lt;form method=<span class="str">"POST"</span> enctype=<span class="str">"multipart/form-data"</span>&gt;
+  &lt;input type=<span class="str">"file"</span> name=<span class="str">"image"</span> accept=<span class="str">"image/jpeg,image/png,..."</span> required&gt;
+  &lt;button type=<span class="str">"submit"</span>&gt;Predict&lt;/button&gt;
+&lt;/form&gt;
+
+{% if error %}  &lt;p class=<span class="str">"error"</span>&gt;{{ error }}&lt;/p&gt;  {% endif %}
+{% if preview %}&lt;img src=<span class="str">"data:image/jpeg;base64,{{ preview }}"</span>&gt;{% endif %}
+{% if prediction %}
+  &lt;h2&gt;{{ '🐱' if prediction == 'Cat' else '🐶' }} {{ prediction }}&lt;/h2&gt;
+  &lt;p&gt;Model score: &lt;strong&gt;{{ score }}%&lt;/strong&gt;&lt;/p&gt;
+{% endif %}</code></pre>
+  <ul>
+    <li><b><code>enctype="multipart/form-data"</code></b> — required for file uploads; without it the image bytes aren't sent.</li>
+    <li><b><code>name="image"</code></b> — matches <code>request.files.get('image')</code> in <code>app.py</code>.</li>
+    <li><b>Jinja2 <code>{% if %}</code> blocks</b> — the same page shows nothing, an error, or the prediction + preview, depending on which variables the route passed back. Server-side rendering: no JavaScript needed.</li>
+  </ul>
+
+  <h2 id="s9"><span class="num">9.</span><code>requirements.txt</code></h2>
+  <span class="file-tag">requirements.txt</span>
+  <pre><code>Flask&gt;=<span class="num">3.1</span>,&lt;<span class="num">4</span>
+Pillow&gt;=<span class="num">11</span>,&lt;<span class="num">13</span>
+torch&gt;=<span class="num">2.6</span>,&lt;<span class="num">3</span>
+torchvision&gt;=<span class="num">0.21</span>,&lt;<span class="num">1</span>
+gunicorn&gt;=<span class="num">22</span>,&lt;<span class="num">26</span>; platform_system != <span class="str">"Windows"</span></code></pre>
+  <ul>
+    <li><b>Pinned ranges</b> (<code>&gt;=x,&lt;y</code>) keep the install reproducible while allowing patch updates.</li>
+    <li><b><code>Pillow</code></b> is the imaging library behind <code>PIL</code> (opening/converting the upload).</li>
+    <li><b><code>gunicorn</code></b> — a production WSGI server for Linux/macOS (the <code>platform_system != "Windows"</code> marker skips it on Windows dev machines). Flask's built-in server is for development only; on EC2 you run the app under gunicorn.</li>
+  </ul>
+
+  <h2 id="s10"><span class="num">10.</span>Run It Locally, Then EC2</h2>
+  <pre><code><span class="cmt"># local development</span>
+python -m venv .venv &amp;&amp; source .venv/bin/activate
+pip install -r requirements.txt
+python app.py                 <span class="cmt"># serves http://127.0.0.1:5000 (debug=True)</span>
+
+<span class="cmt"># production (EC2 / Linux) — gunicorn, no debug</span>
+gunicorn --bind 0.0.0.0:8000 app:app</code></pre>
+  <div class="note warn"><b>Dev vs production.</b> <code>app.run(..., debug=True)</code> at the bottom of <code>app.py</code> is for local use only — never run with <code>debug=True</code> on a public server (it exposes an interactive debugger). On EC2 you serve with <b>gunicorn</b> bound to <code>0.0.0.0</code> and open the port in the security group. The full step-by-step is in the <a href="Cats_Dogs_CNN_GitHub_to_EC2_Deployment_Guide.pdf" target="_blank">GitHub → EC2 deployment guide</a>.</div>
+  <div class="note warn"><b>Don't commit the virtual environment.</b> <code>.venv/</code> can be 800 MB+. It's already in <code>.gitignore</code> — the EC2 host builds its own with <code>pip install -r requirements.txt</code>. Only the code and the small <code>cat_dog_model.pth</code> get pushed.</div>
+
+  <div class="summary-box">
+    <h3>In one paragraph</h3>
+    <p>The Flask app rebuilds the <em>exact</em> CNN architecture in <code>model.py</code>, loads the notebook's saved weights once at startup (remapped to CPU, in <code>eval</code> mode), and exposes one route. On GET it shows an upload form; on POST it validates the file, preprocesses the image identically to validation (resize 128×128 → tensor → batch dim), runs it through the model under <code>inference_mode</code>, softmaxes the two logits into a Cat/Dog probability, and re-renders the page with the label, score and an inline preview. Pinned dependencies and gunicorn make it ready to clone and serve on an AWS EC2 instance.</p>
+  </div>
+</div>
+</body>
+</html>

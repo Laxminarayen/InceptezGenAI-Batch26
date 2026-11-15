@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cat or Dog? | CNN Classifier</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <main class="card">
+    <div class="eyebrow">CNN IMAGE CLASSIFICATION DEMO</div>
+    <h1>🐱 Cat or Dog? 🐶</h1>
+    <p>Upload a photo and our trained CNN will make a prediction.</p>
+
+    <form method="POST" enctype="multipart/form-data">
+      <label for="image">Choose your image</label>
+      <input id="image" type="file" name="image"
+             accept="image/jpeg,image/png,image/webp" required>
+      <button type="submit">Predict</button>
+    </form>
+
+    {% if error %}
+      <p class="error" role="alert">{{ error }}</p>
+    {% endif %}
+
+    {% if preview %}
+      <img class="preview" src="data:image/jpeg;base64,{{ preview }}" alt="Uploaded image">
+    {% endif %}
+
+    {% if prediction %}
+      <div class="result">
+        <div class="label">CNN prediction</div>
+        <h2>{{ '🐱' if prediction == 'Cat' else '🐶' }} {{ prediction }}</h2>
+        <p>Model score: <strong>{{ score }}%</strong></p>
+      </div>
+    {% endif %}
+
+    <p class="note">Demo limitation: the CNN knows only two labels. It will choose
+      Cat or Dog even if the image contains neither. The score is not a guarantee.</p>
+  </main>
+</body>
+</html>
