@@ -1,5 +1,18 @@
 [
   {
+    "id": "mwixf4z9ien4yc",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Deployment EC2 application",
+    "body": "1. Look at the CIFAR-10 dataset \n2. Create the best CNN model for classification\n3. Host the model using FLASK, we will use this for deployment next saturday",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-11-16T07:12:49.653Z",
+    "likes": [],
+    "comments": [],
+    "date": "2026-11-15"
+  },
+  {
     "id": "mwixdb16umx7te",
     "author": "Laxminarayen",
     "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
