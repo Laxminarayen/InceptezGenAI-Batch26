@@ -1,5 +1,18 @@
 [
   {
+    "id": "mwixdb16umx7te",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Pooling & architecture choices",
+    "body": "1. What is pooling for, and what are the trade-offs between max pooling, average pooling, and using a strided convolution instead?\n2. How do receptive field and spatial resolution change as you go deeper, and why does that let early layers see edges while deep layers see objects?",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-11-16T07:11:24.186Z",
+    "likes": [],
+    "comments": [],
+    "date": "2026-11-17"
+  },
+  {
     "id": "mwixc3xzjn7e1r",
     "author": "Laxminarayen",
     "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
