@@ -1,5 +1,18 @@
 [
   {
+    "id": "mwixc3xzjn7e1r",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Why CNNs over dense nets for images",
+    "body": "1. Why do fully-connected networks scale poorly to images, and what two properties of convolution (parameter sharing, local connectivity) fix that?\n2. What does it mean that CNNs are \"translation-equivariant,\" and why is that a useful inductive bias for vision?\n3. A candidate says \"I flattened the image and used an MLP and it worked.\" When is that actually fine, and when does it fall apart?",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-11-16T07:10:28.343Z",
+    "likes": [],
+    "comments": [],
+    "date": "2026-11-16"
+  },
+  {
     "id": "mwgkaw6yifsm8p",
     "author": "Laxminarayen",
     "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
