@@ -1,5 +1,17 @@
 [
   {
+    "id": "mwmt4t20c071kb",
+    "author": "Malini-Sekar",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
+    "title": "Optimizers in Practice",
+    "body": "1. SGD + Momentum vs Adam — Which one wins?\nThink of two runners trying to reach the lowest loss!\n- 🏃 SGD + Momentum — The steady runner: Builds speed in a consistent direction, reduces zigzagging and can achieve better final generalization in some tasks.\n- ⚡ Adam — The smart runner: Adjusts step sizes automatically for different weights and usually learns faster initially.\nWhen to choose?\n- SGD + Momentum: When final generalization is the priority, especially in CNN/image classification tasks.\n- Adam: When faster convergence, easier tuning or training complex models like transformers is important.\nCatchy takeaway: Adam often learns faster; SGD + Momentum can sometimes finish better! Neither always wins.\n2. Adam's Two Moments + Bias Correction\nThink of Adam as a smart driver with three abilities.\n\nFirst moment — Direction\n\nRemembers the average gradient: Which way should I move?\n\n\n\nSecond moment — Step adjustment\n\nTracks squared gradients: How large should my adaptive step be?\n\n\n\nBias correction — Fair start\n\nCorrects early moving averages that are biased toward zero.\n\n\n\nCatchy takeaway:\n\nAdam = Direction + Adaptive Steps + Fair Start!\nFinal punchline\n\"SGD + Momentum uses past gradients to maintain consistent movement, while Adam combines gradient direction and squared-gradient history to adapt updates. Adam often converges faster initially, but SGD + Momentum may generalize better in some applications.\"",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-11-19T00:23:53.880Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "mwm9tchwudfrwl",
     "author": "Malini-Sekar",
     "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
