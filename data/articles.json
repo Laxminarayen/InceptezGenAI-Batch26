@@ -1,17 +1,5 @@
 [
   {
-    "id": "mwoz9fxqm6x2i4",
-    "author": "Malini-Sekar",
-    "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
-    "title": "Pooling & architecture choices",
-    "body": "1. What is pooling for? What are the trade-offs?\nPooling reduces the spatial size of feature maps, making computation faster, reducing memory usage, and helping the network focus on important features.\n\nConsider a small feature map:\nOriginal 2 × 2\n2\n\n\n8\n\n\n4\n\n\n6\n\n\n\n\nPooling results\nMax pooling\n8\n\nAverage pooling\n5\n\n\n\n\nMax selects the strongest activation; average calculates (2 + 8 + 4 + 6) / 4 = 5.\nMethod\tHow it works\tTrade-off\nMax pooling\tSelects the highest value\tPreserves strongest features but loses other details\nAverage pooling\tCalculates the average value\tPreserves overall information but may weaken strong features\nStrided convolution\tUses learnable filters with stride greater than 1 to reduce size\tLearns useful features while downsampling, but adds parameters and computation\n\nKey takeaway: Pooling reduces feature-map size using fixed rules, whereas strided convolution learns how to extract features while reducing size.\n2. How do receptive field and spatial resolution change in deeper layers?\n- Receptive field: The region of the original image influencing a neuron's output. It generally increases in deeper layers.\n- Spatial resolution: The height and width of feature maps. It generally decreases through pooling or strided convolution.\nCNN feature learning — from edges to objects\n\n\n\n\n\n\n\n\n\n\nEarly layers\nEdges, lines\n\n\n\n\n\n\n\n\n\n\nMiddle layers\nShapes, textures\n\n\n\n\n\n\n\n\n\n\nDeep layers\nObject-level patterns\n\n\nExample: When identifying a cat:\n- Early layers detect small edges and lines.\n- Middle layers combine them into eyes, ears, and fur patterns.\n- Deeper layers combine these features to recognize the cat.\nKey takeaway: As receptive field increases, deeper neurons can combine information from larger image regions, enabling the CNN to learn complex object-level patterns.",
-    "classTag": "",
-    "topics": [],
-    "createdAt": "2026-11-20T12:51:00.206Z",
-    "likes": [],
-    "comments": []
-  },
-  {
     "id": "mwmt4t20c071kb",
     "author": "Malini-Sekar",
     "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
