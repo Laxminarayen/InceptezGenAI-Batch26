@@ -4,13 +4,14 @@
     "author": "Laxminarayen",
     "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
     "title": "Deployment-OSCommands",
-    "body": "1. Please look up on DNS.\n2. Take your CIFAR-10 Flask app and deploy it in EC2 - With Gunicorn\n3. Please write an article on this along with OS-Commands (linux - ubuntu)",
+    "body": "1. Please look up on DNS.\n2. Take your CIFAR-10 Flask app and deploy it in EC2 - With Gunicorn\nRead about WSGI - Gunicorn as well\n3. Please write an article on this along with OS-Commands (linux - ubuntu)",
     "classTag": "",
     "topics": [],
     "createdAt": "2026-11-21T05:32:25.976Z",
     "likes": [],
     "comments": [],
-    "date": "2026-11-21"
+    "date": "2026-11-21",
+    "editedAt": "2026-11-21T05:35:06.031Z"
   },
   {
     "id": "mwixh3cvw10m15",
