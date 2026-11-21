@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Classwork Notes · Transfer Learning &amp; Deployment</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{ --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC; --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63; --line: rgba(32,40,58,.16); --accent:#6B4FA0; --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  @media (prefers-color-scheme: dark){ :root{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.16); --accent:#B49AE0; } }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.6; }
+  .wrap{max-width:840px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 80px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.7rem,4vw,2.4rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 6px;}
+  .subtitle{color:var(--ink-soft); font-size:1rem; margin-bottom:8px;}
+  .pdf-link{display:inline-flex; align-items:center; gap:8px; margin:14px 10px 34px 0; font-size:.9rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .pdf-link:hover{border-color:var(--accent); color:var(--accent);}
+  h2{font-size:1.35rem; font-weight:900; margin:44px 0 14px; padding-top:16px; border-top:1px solid var(--line);}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h3{font-size:1.05rem; font-weight:800; margin:22px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:8px 10px; text-align:center; border:1px solid var(--line);}
+  th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  tr.hl td{background:color-mix(in srgb, var(--accent) 10%, transparent); font-weight:800;}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .agenda{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 20px;}
+  .agenda span{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:8px 16px; font-size:.86rem; font-weight:700; color:var(--ink);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.92em; font-family:var(--mono);}
+  pre{background:#10141c; color:#dfe6f2; border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.85rem; line-height:1.55; font-family:var(--mono);}
+  pre code{background:none; padding:0;}
+  pre .cmt{color:#7f8aa0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Day 37 · Classwork Notes</div>
+  <h1>Transfer Learning &amp; Deployment (CNNs, Part 3)</h1>
+  <p class="subtitle">Training a deep CNN from scratch needs huge data and days of compute. Transfer learning reuses a model already trained on a giant dataset and adapts it to your task in minutes. We cover pre-trained models, feature extraction vs fine-tuning, the full overfitting toolbox, and deploying a lightweight MobileNet → ONNX → EC2 classifier.</p>
+  <a class="pdf-link" href="classowrkhandwrittten.pdf" target="_blank">📄 Handwritten notes (PDF)</a>
+
+  <h2>Agenda</h2>
+  <div class="agenda">
+    <span>Pre-trained models</span>
+    <span>Feature extraction &amp; fine-tuning</span>
+    <span>Overfitting in NNs</span>
+    <span>6 ways to regularize</span>
+    <span>Practical: CIFAR-10 → ONNX → EC2</span>
+  </div>
+
+  <h2>Part I: Transfer Learning</h2>
+  <p><b>Transfer learning</b> = reusing knowledge learned by a model on one task to help solve another task.</p>
+  <div class="note"><b>Interview Q — can the tasks be unrelated domains?</b> Can I use a model trained on X-ray data for natural images? <b>No! The patterns aren't useful across unrelated domains.</b> Transfer works when the source and target share visual structure.</div>
+
+  <h3>1. The pre-trained model</h3>
+  <p>A <b>pre-trained model</b> has its <b>weights &amp; biases already learned</b> from a previous, large training task — classically the <b>ImageNet Challenge</b>. Famous backbones: <b>AlexNet, ResNet, MobileNet</b>.</p>
+  <ul>
+    <li><b>Load pre-trained W &amp; B's</b> — the trained filters of the CNN blocks and FFNN (generic edge/shape detectors), instead of random weights.</li>
+    <li><b>Freeze</b> the backbone → its weights &amp; biases become <b>FROZEN</b> (not updated).</li>
+    <li><b>Train a fully-connected head</b> → only those W's &amp; B's update → the model <b>learns to classify</b> your classes.</li>
+  </ul>
+  <p>The pre-trained blocks transfer the learned knowledge; the head (e.g. KNN, Logistic Regression, or a small NN) is replaced to match your number of classes (the ImageNet head had ~1000 classes).</p>
+
+  <h3>What have we seen so far?</h3>
+  <p>Where we use a pre-trained model <b>without altering</b> the existing learnt W's &amp; B's, but <b>transferring the learning</b>. That's <b>feature extraction</b> / <b>transfer learning</b>.</p>
+
+  <h3>Part II: What if I want to alter the W's &amp; B's for my dataset too?</h3>
+  <p>Then you <b>fine-tune</b>: unfreeze some layers and train a little more to adapt them to your data.</p>
+  <div class="formula">
+    Initially = 1000 epochs over 3 days &nbsp;→&nbsp; Now = 5–10 epochs in 4–5 hours
+    <span class="sub">Starting from pre-trained weights, you need far fewer epochs — this is fine-tuning.</span>
+  </div>
+
+  <h3>Four keywords (keep them separate)</h3>
+  <table>
+    <thead><tr><th>Keyword</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><b>Pre-training</b></td><td>Learn a <b>reusable knowledge</b> on a big dataset.</td></tr>
+      <tr><td><b>Feature extraction</b></td><td><b>Freeze</b> + pass data through the backbone to get features.</td></tr>
+      <tr><td><b>Transfer learning</b></td><td><b>Freeze</b> the feature extractor + <b>train the task heads</b>.</td></tr>
+      <tr><td><b>Fine-tuning</b></td><td><b>Adapt</b> pre-trained weights &amp; biases for <b>our</b> data.</td></tr>
+    </tbody>
+  </table>
+
+  <h2>Part III: Overfitting in Neural Networks</h2>
+  <div class="formula">
+    Overfitting = good training performance + poor unseen performance
+    <span class="sub">The model memorizes the training set instead of learning general patterns.</span>
+  </div>
+  <p><b>Why do NNs overfit? They are data-hungry:</b></p>
+  <ol>
+    <li>Too little training data.</li>
+    <li>Training for too many epochs.</li>
+    <li>Training data does not represent real-life patterns.</li>
+  </ol>
+
+  <h3>Six ways to fight overfitting</h3>
+  <ol>
+    <li><b>Add more data</b> — and for images, <b>data augmentation</b>: horizontal flip, zoom, synthetic oversampling (make new training images from the ones you have).</li>
+    <li><b>Dropout</b> — e.g. <code>Dropout(0.2)</code> disables 20% of neurons during training. It <b>reduces reliance on particular neurons &amp; activations</b>, giving a more general, robust model (a deliberate, intentional "under-learning").</li>
+    <li><b>Early stopping</b> — stop training when validation performance stops improving (see below).</li>
+    <li><b>Reduce model complexity</b> — a 151-layer network on only 500 rows is overkill; use a smaller model.</li>
+    <li><b>Transfer learning</b> — general training on other data + simple task fitting on your data.</li>
+    <li><b>L2 regularization</b> — penalize the loss with a weight term.</li>
+  </ol>
+
+  <h3>Early stopping, concretely</h3>
+  <table>
+    <thead><tr><th>Epoch</th><th>Train acc</th><th>Val acc</th><th>Verdict</th></tr></thead>
+    <tbody>
+      <tr><td>560</td><td>80%</td><td>76%</td><td>good enough model</td></tr>
+      <tr><td>565</td><td>80%</td><td>76%</td><td>no change</td></tr>
+      <tr class="hl"><td>&gt; 565</td><td>↑ 85%</td><td>76% (↓)</td><td>starting to memorize training</td></tr>
+    </tbody>
+  </table>
+  <p><b>Early stop</b> training when validation performance stops improving — the generalizing model is the one you want, not the memorizing one.</p>
+
+  <h3>L2 regularization</h3>
+  <div class="formula">
+    Total loss = (1/n)·Σ(SE) + λ·Σw²
+    <span class="sub">Add a <b>squared penalty</b> on the weights (λ very small). "Don't focus so much on the features to drive the loss to zero (that chases uncertainty) — focus on general patterns."</span>
+  </div>
+  <div class="note"><b>Interview Q — will there be overfitting in LLMs?</b> <b>Yes</b>, there will be overfitting in LLMs — that is exactly why fine-tuning must be done carefully.</div>
+
+  <h2>Bonus: Translation Equivariance</h2>
+  <p><b>If I shift the input, the output shifts by the exact same amount.</b> This is the property that makes convolution natural for images — a feature detected at one location is detected the same way when it moves.</p>
+
+  <h2>Part IV: Practical — CIFAR-10 → ONNX → EC2</h2>
+  <p>We keep the model <b>light</b> (lower parameter count, smaller storage, fewer dependencies — Dockerization also helps ship the whole thing). We fine-tune <b>MobileNetV3-Small</b> (ImageNet-pretrained) on CIFAR-10 (10 classes), export to <b>ONNX</b>, and serve it with <b>ONNX Runtime</b> on a CPU-only Ubuntu EC2 micro instance — no PyTorch or GPU in production.</p>
+  <pre><code><span class="cmt"># load pre-trained backbone, freeze it, swap the head</span>
+model = mobilenet_v3_small(weights=MobileNet_V3_Small_Weights.DEFAULT)
+for p in model.parameters():
+    p.requires_grad = False                      # freeze backbone
+n = model.classifier[-1].in_features
+model.classifier[-1] = nn.Linear(n, 10)          # new 10-class head
+optimizer = torch.optim.AdamW(model.classifier[-1].parameters(), lr=1e-3)
+<span class="cmt"># ... train a few epochs, keep best val accuracy, then:</span>
+torch.onnx.export(model, example, "artifacts/model.onnx", opset_version=17)</code></pre>
+
+  <div class="note"><b>Full code walkthroughs for this class:</b>
+    <a href="train-notebook-code-explanation.html">📓 train.ipynb — line-by-line explanation</a> ·
+    <a href="app-code-explanation.html">🌐 app.py — line-by-line explanation</a> ·
+    <a href="EC2_Ubuntu_CIFAR10_Flask_Deployment_Guide_Two_SSH_Options.docx" target="_blank">🚀 EC2 Ubuntu deployment guide (DOCX)</a>.
+  </div>
+  <div class="note"><b>Next:</b> NLP → RNNs → Attention &amp; Transformers. Want the diagrams and full reference? See <a href="transfer-learning-textbook-notes.html">Transfer Learning &amp; Deployment — Reference Notes</a>.</div>
+</div>
+</body>
+</html>

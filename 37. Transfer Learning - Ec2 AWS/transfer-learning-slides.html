@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Transfer Learning &amp; Deployment</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+    --c-why:#3B6E63; --c-concept:#B0670C; --c-mech:#1E6FA8; --c-eval:#6B4FA0;
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+    --accent: var(--c-why);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.14); --surface-canvas:#10131C; --c-why:#79C0AE; --c-concept:#E3A238; --c-mech:#5FA8E0; --c-eval:#B49AE0; --good:#3FBB7C; --warn:#E3A238; --bad:#E36868; --shadow: 0 10px 30px -12px rgba(0,0,0,.6); }
+  }
+  :root[data-theme="dark"]{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.14); --surface-canvas:#10131C; --c-why:#79C0AE; --c-concept:#E3A238; --c-mech:#5FA8E0; --c-eval:#B49AE0; --good:#3FBB7C; --warn:#E3A238; --bad:#E36868; --shadow: 0 10px 30px -12px rgba(0,0,0,.6); }
+  :root[data-theme="light"]{ --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC; --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63; --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC; --c-why:#3B6E63; --c-concept:#B0670C; --c-mech:#1E6FA8; --c-eval:#6B4FA0; --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B; --shadow: 0 10px 30px -12px rgba(32,40,58,.25); }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); overflow:hidden; -webkit-font-smoothing:antialiased; }
+  body[data-section="why"]{--accent:var(--c-why);}
+  body[data-section="concept"]{--accent:var(--c-concept);}
+  body[data-section="mech"]{--accent:var(--c-mech);}
+  body[data-section="eval"]{--accent:var(--c-eval);}
+  h1,h2,h3,p{margin:0;}
+  h1,h2,h3{text-wrap:balance; letter-spacing:-0.01em;}
+  ::selection{background:var(--accent); color:#fff;}
+  .eyebrow{font-size:.74rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  .slide h1{font-size:clamp(1.7rem,3.2vw,2.9rem); font-weight:800; color:var(--ink);}
+  .body-text{font-size:clamp(1rem,1.25vw,1.2rem); font-weight:500; line-height:1.6; color:var(--ink-soft);}
+  .body-text b{color:var(--ink); font-weight:800;}
+  .tabular{font-variant-numeric:tabular-nums;}
+  .chrome-top{position:fixed; top:0; left:0; right:0; height:52px; z-index:50; display:flex; align-items:center; justify-content:space-between; padding:0 20px; pointer-events:none;}
+  .chrome-top > *{pointer-events:auto;}
+  .hour-badge{font-size:.72rem; font-weight:800; letter-spacing:.12em; color:var(--ink-faint); background:var(--paper-2); border:1px solid var(--line); padding:6px 12px; border-radius:999px;}
+  .chapter-chip{display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:700; color:var(--ink-soft); background:var(--paper-2); border:1px solid var(--line); padding:6px 14px 6px 8px; border-radius:999px;}
+  .chapter-chip .num{display:inline-flex; align-items:center; justify-content:center; width:20px;height:20px; border-radius:50%; background:var(--accent); color:#fff; font-size:.68rem; font-weight:800;}
+  .icon-btn{width:36px;height:36px; border-radius:50%; border:1px solid var(--line); background:var(--paper-2); color:var(--ink); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;}
+  .icon-btn:hover{background:var(--paper-3);}
+  .deck{position:absolute; inset:0; top:52px; bottom:64px;}
+  .slide{position:absolute; inset:0; display:none; flex-direction:column; padding:clamp(18px,3vw,40px) clamp(24px,5vw,80px); overflow:auto;}
+  .slide.active{display:flex;}
+  .slide-inner{display:flex; flex-direction:column; gap:clamp(12px,1.8vh,20px); max-width:1360px; width:100%; margin:0 auto; flex:1; min-height:0;}
+  .chrome-bottom{position:fixed; left:0; right:0; bottom:0; height:64px; z-index:50; display:flex; align-items:center; gap:14px; padding:0 clamp(14px,3vw,32px); background:linear-gradient(0deg, var(--paper) 60%, transparent);}
+  .nav-btn{width:40px;height:40px;border-radius:50%; border:1px solid var(--line); background:var(--paper-2); color:var(--ink); font-size:1.2rem; cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center;}
+  .nav-btn:hover:not(:disabled){background:var(--accent); color:#fff; border-color:transparent;}
+  .nav-btn:disabled{opacity:.35; cursor:default;}
+  .progress{flex:1; display:flex; align-items:center; gap:5px; overflow-x:auto; scrollbar-width:none;}
+  .progress::-webkit-scrollbar{display:none;}
+  .dot{width:9px;height:9px;border-radius:50%; background:var(--paper-3); border:none; cursor:pointer; flex:none; transition:transform .15s ease;}
+  .dot.gap{width:14px; height:2px; border-radius:1px; background:transparent; cursor:default;}
+  .dot.active{transform:scale(1.5);}
+  .slide-counter{font-size:.8rem; font-weight:700; color:var(--ink-faint); flex:none; white-space:nowrap;}
+  .split{display:grid; grid-template-columns:1.05fr 1.35fr; gap:clamp(20px,4vw,52px); align-items:center; flex:1; min-height:0;}
+  @media (max-width:920px){ .split{grid-template-columns:1fr; overflow:auto;} }
+  .stack{display:flex; flex-direction:column; gap:12px; min-height:0;}
+  .center-col{display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:16px; flex:1;}
+  .visual-box{background:var(--surface-canvas); border:1px solid var(--line); border-radius:24px; padding:16px; box-shadow:var(--shadow); min-height:0; display:flex; flex-direction:column; gap:8px;}
+  .vocab-card{border-left:5px solid var(--accent); background:var(--paper-2); border-radius:14px; padding:12px 18px; display:flex; flex-direction:column; gap:4px;}
+  .vocab-term{font-size:1rem; font-weight:900; letter-spacing:.04em; color:var(--accent);}
+  .vocab-def{font-size:1rem; color:var(--ink); font-weight:600; line-height:1.4;}
+  .console{display:flex; flex-wrap:wrap; gap:12px 18px; align-items:center; background:var(--paper-2); border:1px solid var(--line); border-radius:20px; padding:12px 16px;}
+  .field{display:flex; flex-direction:column; gap:6px; width:100%;}
+  .field label{font-size:.76rem; font-weight:800; color:var(--ink-soft);}
+  input[type="range"]{width:100%; accent-color:var(--accent);}
+  .ctrl-btn{font:inherit; font-size:.82rem; font-weight:800; color:#fff; background:var(--accent); border:none; border-radius:999px; padding:8px 16px; cursor:pointer;}
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px;}
+  .stat-tile{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:12px 14px;}
+  .stat-tile .label{font-size:.7rem; font-weight:800; color:var(--ink-faint); letter-spacing:.05em; text-transform:uppercase;}
+  .stat-tile .value{font-size:1.15rem; font-weight:900; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .stat-tile.accent .value{color:var(--accent);}
+  .card{background:var(--paper-2); border:1px solid var(--line); border-radius:18px; padding:16px 18px;}
+  .card-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px;}
+  .card.sm{padding:12px 14px;}
+  .card .ico{font-size:1.7rem;}
+  .card h3{font-size:1rem; margin-top:6px;}
+  .card p{font-size:.9rem; color:var(--ink-soft); margin-top:4px; line-height:1.45;}
+  .card.sm h3{font-size:.92rem;} .card.sm p{font-size:.82rem;}
+  .banner{border-radius:14px; padding:12px 16px; font-weight:800; font-size:.92rem; display:flex; align-items:center; gap:10px;}
+  .banner.warn{background:color-mix(in srgb, var(--warn) 18%, var(--paper-2)); color:var(--warn);}
+  .banner.good{background:color-mix(in srgb, var(--good) 18%, var(--paper-2)); color:var(--good);}
+  .banner.bad{background:color-mix(in srgb, var(--bad) 18%, var(--paper-2)); color:var(--bad);}
+  .banner.info{background:var(--paper-3); color:var(--ink); font-weight:600; align-items:flex-start;}
+  .roadmap{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  .roadmap .stop{background:var(--paper-2); border-radius:18px; padding:16px 10px; text-align:center; border-top:5px solid var(--stop-color, var(--accent));}
+  .roadmap .stop .ico{font-size:2rem;}
+  .roadmap .stop .t{font-size:.8rem; font-weight:800; margin-top:6px;}
+  @media (max-width:920px){ .roadmap{grid-template-columns:repeat(2,1fr);} }
+  .kicker-big{font-size:clamp(2.2rem,5.6vw,3.9rem); font-weight:900; letter-spacing:-0.02em;}
+  .glow{color:var(--accent);}
+  .formula-box{background:var(--paper-2); border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:14px; padding:14px 18px; font-size:clamp(1rem,1.5vw,1.3rem); font-weight:800; color:var(--ink);}
+  .formula-box .sub{display:block; font-size:.86rem; font-weight:500; color:var(--ink-faint); margin-top:6px;}
+  .table-wrap{border:1px solid var(--line); border-radius:14px; overflow:hidden; overflow-x:auto;}
+  .data-table{width:100%; border-collapse:collapse; font-size:.86rem;}
+  .data-table th,.data-table td{padding:8px 10px; text-align:center; font-variant-numeric:tabular-nums;}
+  .data-table thead th{background:var(--paper-3); color:var(--ink-soft); font-weight:800; font-size:.72rem; letter-spacing:.03em; text-transform:uppercase;}
+  .data-table tbody tr{border-top:1px solid var(--line);}
+  .data-table tbody tr.hl-row{background:color-mix(in srgb, var(--accent) 12%, transparent); font-weight:800;}
+  .footnote{font-size:.82rem; color:var(--ink-faint); font-weight:600;}
+  /* transfer-learning freeze demo */
+  .tl-stack{display:flex; flex-direction:column; gap:7px; width:100%;}
+  .tl-block{display:flex; align-items:center; justify-content:space-between; gap:10px; border-radius:12px; padding:10px 14px; font-weight:800; font-size:.9rem; border:1px solid var(--line); transition:background .15s, color .15s;}
+  .tl-block .pcount{font-size:.76rem; font-weight:700; opacity:.8; font-variant-numeric:tabular-nums;}
+  .tl-block.frozen{background:color-mix(in srgb, #1E6FA8 16%, var(--paper-2)); color:var(--ink-soft);}
+  .tl-block.train{background:color-mix(in srgb, var(--good) 20%, var(--paper-2)); color:var(--ink);}
+  .tl-block.head{border-style:dashed; border-width:2px;}
+  pre{background:#10141c; color:#dfe6f2; border-radius:12px; padding:14px 16px; overflow-x:auto; font-size:.8rem; line-height:1.5; font-family:ui-monospace,Menlo,monospace; margin:0;}
+  pre .cmt{color:#7f8aa0;}
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+</style>
+</head>
+<body data-section="why">
+  <div class="chrome-top">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="hour-badge">TRANSFER LEARNING · EC2 AWS</div>
+      <div class="chapter-chip" id="chapterChip" style="display:none;"><span class="num" id="chapterNum">1</span><span id="chapterLabel">—</span></div>
+    </div>
+    <button class="icon-btn" id="themeToggle" title="Toggle light / dark">🌗</button>
+  </div>
+
+  <main class="deck" id="deck">
+
+    <section class="slide" data-section="why" id="s0">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Deep Learning · Class 37</div>
+        <h1 class="kicker-big">Don't start from<br/><span class="glow">scratch</span></h1>
+        <p class="body-text" style="max-width:820px;">Training a deep CNN from zero needs huge data and days of compute. <b>Transfer learning</b> reuses the knowledge a model already learned on a giant dataset (ImageNet) and adapts it to <i>your</i> task in minutes. Today: pre-trained models, feature extraction vs fine-tuning, the toolbox for fighting <b>overfitting</b>, and shipping a <b>MobileNet → ONNX → EC2</b> classifier.</p>
+        <div class="roadmap" style="width:100%; margin-top:6px;">
+          <div class="stop" style="--stop-color:var(--c-why);"><div class="ico">♻️</div><div class="t">1 · Why reuse</div></div>
+          <div class="stop" style="--stop-color:var(--c-concept);"><div class="ico">🏛️</div><div class="t">2 · Pre-trained models</div></div>
+          <div class="stop" style="--stop-color:var(--c-mech);"><div class="ico">❄️</div><div class="t">3 · Freeze vs fine-tune</div></div>
+          <div class="stop" style="--stop-color:var(--c-eval);"><div class="ico">🛡️</div><div class="t">4 · Overfitting + EC2</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 1 — WHY -->
+    <section class="slide" data-section="why" id="sW1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Part I · What Is Transfer Learning?</div>
+          <h1>Reuse knowledge from <span class="glow">one task</span> to help another</h1>
+          <p class="body-text"><b>Transfer learning</b> = reusing the knowledge a model learned on one task to help solve another. Instead of learning edges, corners and textures all over again, you inherit them.</p>
+          <div class="formula-box">pre-trained features  +  your small dataset  →  a good model, fast<span class="sub">The low-level visual building blocks are shared across almost all image tasks.</span></div>
+        </div>
+        <div class="stack">
+          <div class="banner bad">🧪 <b>Interview Q:</b> can the tasks be <i>unrelated</i> domains — e.g. use a model trained on X-ray data for natural images?</div>
+          <div class="banner good">Answer: <b>No — the patterns aren't useful across unrelated domains.</b> Transfer works when the source and target share visual structure. The closer the domains, the better the transfer.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2 — PRE-TRAINED MODELS -->
+    <section class="slide" data-section="concept" id="sC1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Part II · The Pre-trained Model</div>
+          <h1>Weights &amp; biases <span class="glow">already learned</span></h1>
+          <p class="body-text">A <b>pre-trained model</b> has its weights &amp; biases already learned from a previous, large training task — classically the <b>ImageNet Challenge</b> (~1000 classes, millions of images).</p>
+          <div class="card-grid">
+            <div class="card sm"><div class="ico">🏗️</div><h3>AlexNet</h3><p>The 2012 breakthrough.</p></div>
+            <div class="card sm"><div class="ico">🔗</div><h3>ResNet</h3><p>Very deep, residual blocks.</p></div>
+            <div class="card sm"><div class="ico">📱</div><h3>MobileNet</h3><p>Lightweight — our choice for EC2.</p></div>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="vocab-card"><div class="vocab-term">Load pre-trained W &amp; B's</div><div class="vocab-def">You download the trained <b>filters</b> of the CNN blocks and the FFNN — the generic edge/shape detectors — instead of random initial weights.</div></div>
+          <div class="banner info"><b>The recipe:</b> keep the pre-trained <b>backbone</b> (feature extractor), swap in a fresh <b>head</b> for <i>your</i> number of classes, and train.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="concept" id="sC2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Four Keywords You Must Separate</div>
+        <h1>Pre-training · Feature extraction · Transfer learning · <span class="glow">Fine-tuning</span></h1>
+        <div class="card-grid">
+          <div class="card" style="border-top:5px solid var(--c-why);"><div class="ico">①</div><h3>Pre-training</h3><p>Learn a <b>reusable knowledge</b> on a big dataset (someone already did this for ImageNet models).</p></div>
+          <div class="card" style="border-top:5px solid var(--c-concept);"><div class="ico">②</div><h3>Feature extraction</h3><p><b>Freeze</b> the backbone and <b>pass your data</b> through it to get features — the backbone doesn't change.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-mech);"><div class="ico">③</div><h3>Transfer learning</h3><p><b>Freeze</b> the feature extractor + <b>train the task head</b> on your classes.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-eval);"><div class="ico">④</div><h3>Fine-tuning</h3><p><b>Adapt the pre-trained W's &amp; B's</b> to your data by unfreezing some layers and training a little more.</p></div>
+        </div>
+        <div class="banner info"><b>Then vs now:</b> initially we trained <b>1000 epochs over 3 days</b>. With a pre-trained backbone: <b>5–10 epochs in 4–5 hours</b>.</div>
+      </div>
+    </section>
+
+    <!-- SECTION 3 — FREEZE vs FINE-TUNE (interactive) -->
+    <section class="slide" data-section="mech" id="sM1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Interactive · Drag the freeze line</div>
+        <h1>Freeze the <span class="glow">generic</span>, train the <span class="glow">specific</span></h1>
+        <div class="split" style="gap:clamp(16px,3vw,40px);">
+          <div class="visual-box" style="flex:1;">
+            <div class="tl-stack" id="tlStack"></div>
+          </div>
+          <div class="stack" style="justify-content:center;">
+            <div class="console">
+              <div class="field">
+                <label>Freeze backbone blocks up to: <b id="freezeLabel">all 5</b></label>
+                <input type="range" id="freezeSlider" min="0" max="5" value="5" step="1">
+              </div>
+            </div>
+            <div class="stat-grid">
+              <div class="stat-tile accent"><div class="label">Mode</div><div class="value" id="tlMode" style="font-size:.95rem;">Feature extraction</div></div>
+              <div class="stat-tile"><div class="label">Trainable params</div><div class="value" id="tlParams">0.01 M</div></div>
+              <div class="stat-tile"><div class="label">Frozen</div><div class="value" id="tlFrozen">5 blocks</div></div>
+            </div>
+            <div class="banner info" id="tlReadout">❄️ Everything frozen except the head — the fastest, lowest-memory setting. This is <b>transfer learning / feature extraction</b>.</div>
+            <div class="footnote">Bottom blocks learn generic edges (reuse them); top blocks are more task-specific. Unfreeze from the top down when you fine-tune.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="mech" id="sM2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Practical · CIFAR-10 with MobileNetV3-Small</div>
+          <h1>Freeze the backbone, swap the <span class="glow">head</span></h1>
+          <p class="body-text">Load ImageNet-pretrained <b>MobileNetV3-Small</b>, freeze every parameter, then replace the final classifier with a fresh <code>Linear(…, 10)</code> for the 10 CIFAR-10 classes. Only the head trains.</p>
+        </div>
+        <pre><code>weights = MobileNet_V3_Small_Weights.DEFAULT
+model = mobilenet_v3_small(weights=weights)
+
+<span class="cmt"># freeze the whole backbone — no retraining</span>
+for p in model.parameters():
+    p.requires_grad = False
+
+<span class="cmt"># swap the head for 10 classes</span>
+n = model.classifier[-1].in_features
+model.classifier[-1] = nn.Linear(n, 10)
+
+optimizer = torch.optim.AdamW(
+    model.classifier[-1].parameters(), lr=1e-3)</code></pre>
+      </div>
+    </section>
+
+    <!-- SECTION 4 — OVERFITTING + DEPLOY -->
+    <section class="slide" data-section="eval" id="sE1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Part III · Overfitting in Neural Networks</div>
+        <h1>Great on training, <span class="glow">poor</span> on unseen data</h1>
+        <div class="formula-box">Overfitting = good training performance + poor unseen performance<span class="sub">Why NNs overfit — they're data-hungry: (1) too little training data, (2) training for too many epochs, (3) training data doesn't represent real life.</span></div>
+        <div class="banner info"><b>Interview Q:</b> will there be overfitting in LLMs? <b>Yes</b> — that's exactly why fine-tuning must be done carefully.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Six Ways to Fight Overfitting</div>
+        <h1>The regularization <span class="glow">toolbox</span></h1>
+        <div class="card-grid">
+          <div class="card sm"><div class="ico">➕</div><h3>1 · More data</h3><p>Incl. <b>image augmentation</b> — horizontal flip, zoom, synthetic oversampling.</p></div>
+          <div class="card sm"><div class="ico">🎲</div><h3>2 · Dropout</h3><p><code>Dropout(0.2)</code> disables 20% of neurons — less reliance on any one, more robust.</p></div>
+          <div class="card sm"><div class="ico">⏹️</div><h3>3 · Early stopping</h3><p>Stop when <b>validation</b> accuracy stops improving (don't wait for all 1000 epochs).</p></div>
+          <div class="card sm"><div class="ico">🪶</div><h3>4 · Reduce complexity</h3><p>A 151-layer net on 500 rows is overkill — shrink the model.</p></div>
+          <div class="card sm"><div class="ico">♻️</div><h3>5 · Transfer learning</h3><p>General training elsewhere + simple fitting on your data.</p></div>
+          <div class="card sm"><div class="ico">⚖️</div><h3>6 · L2 regularization</h3><p>Add λ·Σw² to the loss — penalize big weights, favour general patterns.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Early Stopping, Concretely</div>
+          <h1>Stop before it starts to <span class="glow">memorize</span></h1>
+          <div class="table-wrap">
+            <table class="data-table">
+              <thead><tr><th>Epoch</th><th>Train acc</th><th>Val acc</th><th>Verdict</th></tr></thead>
+              <tbody>
+                <tr><td>560</td><td>80%</td><td>76%</td><td>good enough ✓</td></tr>
+                <tr><td>565</td><td>80%</td><td>76%</td><td>no change</td></tr>
+                <tr class="hl-row"><td>&gt;565</td><td>↑ 85%</td><td>76% ↓</td><td>memorizing ✗</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="banner bad">When train accuracy keeps climbing but validation stalls or dips, the model is <b>starting to memorize the training set</b>.</div>
+          <div class="banner good">✓ <b>Early stop</b> training when validation performance stops improving — the generalizing model is the one you want, not the memorizing one.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE4">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Part IV · Ship It · Lightweight Deployment</div>
+          <h1>MobileNet → <span class="glow">ONNX</span> → EC2</h1>
+          <p class="body-text">Keep the model <b>light</b>: fewer parameters, smaller storage, fewer dependencies. Export to <b>ONNX</b> and serve it with <b>ONNX Runtime</b> on a CPU-only Ubuntu EC2 micro instance — no PyTorch or GPU needed in production.</p>
+          <div class="card-grid">
+            <div class="card sm"><div class="ico">🧠</div><h3>Train (Colab)</h3><p>MobileNetV3-Small on CIFAR-10 → <code>model.onnx</code> + <code>classes.json</code>.</p></div>
+            <div class="card sm"><div class="ico">🌐</div><h3>Serve (Flask)</h3><p>ONNX Runtime loads the model; upload an image → top-3 classes.</p></div>
+            <div class="card sm"><div class="ico">☁️</div><h3>Deploy (EC2)</h3><p>Copy artifacts, <code>gunicorn</code>, open the port. Runs on 1 GiB RAM.</p></div>
+          </div>
+        </div>
+        <pre><code><span class="cmt"># export to ONNX for a PyTorch-free server</span>
+torch.onnx.export(
+    model, example, "artifacts/model.onnx",
+    input_names=["images"],
+    output_names=["logits"],
+    opset_version=17)
+
+<span class="cmt"># EC2: pip install onnxruntime (no torch!)</span>
+session = ort.InferenceSession("model.onnx")</code></pre>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE5">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Recap</div>
+        <h1 class="kicker-big">Stand on <span class="glow">giant shoulders</span></h1>
+        <p class="body-text" style="max-width:780px;">Transfer learning reuses a pre-trained model's weights (ImageNet → AlexNet/ResNet/MobileNet). <b>Feature extraction</b> freezes the backbone and trains a new head; <b>fine-tuning</b> unfreezes some layers to adapt. Fight overfitting with more data/augmentation, dropout, early stopping, smaller models, transfer learning, and L2. Then ship light — MobileNet → ONNX → a CPU EC2 micro.</p>
+        <div class="banner info" style="max-width:780px;"><b>Also today:</b> translation equivariance — if you shift the input, the convolution's output shifts by the same amount. <b>Next:</b> NLP → RNNs → Attention &amp; Transformers.</div>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="chrome-bottom">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous slide">‹</button>
+    <div class="progress" id="progress"></div>
+    <div class="slide-counter"><span id="curNum" class="tabular">1</span> / <span id="totalNum" class="tabular">—</span></div>
+    <button class="nav-btn" id="nextBtn" aria-label="Next slide">›</button>
+  </nav>
+
+<script>
+"use strict";
+const $=(s,e=document)=>e.querySelector(s);
+const $$=(s,e=document)=>[...e.querySelectorAll(s)];
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+const slideEls=$$('.slide');
+let cur=0;
+const CHAPTERS={why:{num:1,label:'Why Reuse'},concept:{num:2,label:'Pre-trained Models'},mech:{num:3,label:'Freeze vs Fine-tune'},eval:{num:4,label:'Overfitting + EC2'}};
+const onEnter={};
+function buildDots(){const w=$('#progress');w.innerHTML='';let last=null;slideEls.forEach((s,i)=>{if(last!==null&&s.dataset.section!==last){const g=document.createElement('span');g.className='dot gap';w.appendChild(g);}const b=document.createElement('button');b.className='dot';b.setAttribute('aria-label','Go to slide '+(i+1));b.addEventListener('click',()=>goTo(i));w.appendChild(b);last=s.dataset.section;});}
+function goTo(i){i=clamp(i,0,slideEls.length-1);slideEls[cur].classList.remove('active');cur=i;const s=slideEls[cur];s.classList.add('active');document.body.dataset.section=s.dataset.section;const chip=$('#chapterChip'),m=CHAPTERS[s.dataset.section];if(m){chip.style.display='flex';$('#chapterNum').textContent=m.num;$('#chapterLabel').innerHTML=m.label;}else chip.style.display='none';$('#curNum').textContent=cur+1;$('#prevBtn').disabled=cur===0;$('#nextBtn').disabled=cur===slideEls.length-1;$$('.dot:not(.gap)',$('#progress')).forEach((d,idx)=>d.classList.toggle('active',idx===cur));const fn=onEnter[s.id];if(fn)requestAnimationFrame(fn);}
+function next(){if(cur<slideEls.length-1)goTo(cur+1);}
+function prev(){if(cur>0)goTo(cur-1);}
+$('#nextBtn').addEventListener('click',next);$('#prevBtn').addEventListener('click',prev);
+window.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();next();}else if(e.key==='ArrowLeft'){e.preventDefault();prev();}});
+const themeBtn=$('#themeToggle');
+(function(){const t=localStorage.getItem('sv-theme-tl');if(t)document.documentElement.setAttribute('data-theme',t);})();
+themeBtn.addEventListener('click',()=>{const now=document.documentElement.getAttribute('data-theme');const dark=now?now==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;const nt=dark?'light':'dark';document.documentElement.setAttribute('data-theme',nt);localStorage.setItem('sv-theme-tl',nt);});
+
+/* ---- Transfer-learning freeze demo ---- */
+// backbone blocks bottom(generic) -> top(specific), plus a head on top
+const BLOCKS=[
+  {name:'Block 1 · generic edges', p:0.20},
+  {name:'Block 2 · textures',      p:0.35},
+  {name:'Block 3 · patterns',      p:0.55},
+  {name:'Block 4 · parts',         p:0.80},
+  {name:'Block 5 · high-level',    p:1.05},
+];
+const HEAD_P=0.01; // millions
+function renderTL(){
+  const stack=$('#tlStack'); if(!stack) return;
+  const f=parseInt($('#freezeSlider').value,10); // number of bottom blocks frozen
+  stack.innerHTML='';
+  // head on top (always trainable)
+  const head=document.createElement('div');
+  head.className='tl-block head train';
+  head.innerHTML='<span>🧩 Classifier head · Linear(…, 10)</span><span class="pcount">'+HEAD_P.toFixed(2)+' M · train</span>';
+  stack.appendChild(head);
+  // blocks top (index 4) down to bottom (index 0)
+  for(let i=BLOCKS.length-1;i>=0;i--){
+    const frozen = i < f; // bottom f blocks frozen
+    const el=document.createElement('div');
+    el.className='tl-block '+(frozen?'frozen':'train');
+    el.innerHTML='<span>'+(frozen?'❄️ ':'🔥 ')+BLOCKS[i].name+'</span><span class="pcount">'+BLOCKS[i].p.toFixed(2)+' M · '+(frozen?'frozen':'train')+'</span>';
+    stack.appendChild(el);
+  }
+  // stats
+  let trainable=HEAD_P, frozenCount=f;
+  for(let i=0;i<BLOCKS.length;i++) if(i>=f) trainable+=BLOCKS[i].p;
+  $('#tlParams').textContent=trainable.toFixed(2)+' M';
+  $('#tlFrozen').textContent=frozenCount+' block'+(frozenCount===1?'':'s');
+  $('#freezeLabel').textContent = f===0?'none':(f===5?'all 5':f);
+  let mode, note;
+  if(f===5){ mode='Feature extraction'; note='❄️ Everything frozen except the head — fastest, lowest memory. This is <b>transfer learning / feature extraction</b>.'; }
+  else if(f===0){ mode='Full fine-tuning'; note='🔥 Nothing frozen — every layer adapts to your data. Most flexible, but slowest and most prone to overfitting on small data.'; }
+  else { mode='Partial fine-tuning'; note='🔥 Top '+(5-f)+' block'+((5-f)===1?'':'s')+' + head train; bottom '+f+' stay frozen. A middle ground — adapt high-level features, keep generic ones.'; }
+  $('#tlMode').textContent=mode;
+  $('#tlReadout').innerHTML=note;
+}
+$('#freezeSlider').addEventListener('input',renderTL);
+onEnter['sM1']=renderTL;
+
+buildDots();
+$('#totalNum').textContent=slideEls.length;
+const dl=parseInt(new URLSearchParams(location.search).get('slide'),10);
+goTo(Number.isFinite(dl)?dl-1:0);
+</script>
+</body>
+</html>

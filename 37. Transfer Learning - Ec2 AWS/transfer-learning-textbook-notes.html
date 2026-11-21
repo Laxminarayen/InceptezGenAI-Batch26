@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Transfer Learning &amp; Deployment — Reference Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{ --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC; --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63; --line: rgba(32,40,58,.16); --accent:#6B4FA0; --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; }
+  @media (prefers-color-scheme: dark){ :root{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.16); --accent:#B49AE0; } }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap{max-width:860px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:680px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+  h2{font-size:1.4rem; font-weight:900; margin:48px 0 14px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px;}
+  h3{font-size:1.06rem; font-weight:800; margin:24px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:9px 12px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono);}
+  pre{background:#10141c; color:#dfe6f2; border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.86rem; line-height:1.55; font-family:var(--mono);}
+  pre code{background:none; padding:0; font-size:1em; color:inherit;}
+  pre .cmt{color:#7f8aa0;}
+  .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px;}
+  .pill{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:.82rem; font-weight:700; color:var(--ink);}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0;}
+  .fig{margin:20px 0 22px; background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 18px 10px;}
+  .fig svg{display:block; width:100%; height:auto;}
+  .fig figcaption{font-size:.82rem; color:var(--ink-faint); margin-top:12px; text-align:center; line-height:1.5;}
+  .fig text{font-family:var(--font);}
+  .fig .lbl{font-size:13px; font-weight:800; fill:var(--ink);}
+  .fig .lbl-s{font-size:12px; font-weight:600; fill:var(--ink-soft);}
+  .fig .lbl-f{font-size:11px; font-weight:600; fill:var(--ink-faint);}
+  .fig .teal{stroke:#3B6E63;} .fig .amber{stroke:#B0670C;} .fig .blue{stroke:#1E6FA8;} .fig .purple{stroke:#6B4FA0;}
+  .fig .f-teal{fill:#3B6E63;} .fig .f-amber{fill:#B0670C;} .fig .f-blue{fill:#1E6FA8;} .fig .f-purple{fill:#6B4FA0;}
+  @media (prefers-color-scheme: dark){
+    .fig .teal{stroke:#6FB3A3;} .fig .amber{stroke:#E0A24C;} .fig .blue{stroke:#5CA6DE;} .fig .purple{stroke:#B49AE0;}
+    .fig .f-teal{fill:#6FB3A3;} .fig .f-amber{fill:#E0A24C;} .fig .f-blue{fill:#5CA6DE;} .fig .f-purple{fill:#B49AE0;}
+  }
+  .fig .box{fill:var(--paper-3); stroke:var(--line); stroke-width:1.4;}
+  .fig .flow{stroke:var(--ink-soft); stroke-width:1.6; fill:none;}
+  .fig .frozen{fill:color-mix(in srgb,#1E6FA8 20%,var(--paper-3)); stroke:#1E6FA8; stroke-width:1.5;}
+  .fig .trainable{fill:color-mix(in srgb,#1C8C5A 24%,var(--paper-3)); stroke:#1C8C5A; stroke-width:1.5;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Reference Notes · Deep Learning</div>
+  <h1>Transfer Learning &amp; Deployment</h1>
+  <p class="abstract">Reuse a model trained on a giant dataset instead of training from scratch. This chapter defines pre-training, feature extraction, transfer learning and fine-tuning; explains why neural networks overfit and the six remedies; and walks the lightweight MobileNet → ONNX → EC2 deployment path.</p>
+
+  <div class="related-links">
+    <a href="classwork-notes.html">📝 Classwork Notes (Day 37 write-up)</a>
+    <a href="transfer-learning-slides.html">🖥️ Slide Deck (freeze/fine-tune demo)</a>
+    <a href="train-notebook-code-explanation.html">📓 train.ipynb explanation</a>
+    <a href="app-code-explanation.html">🌐 app.py explanation</a>
+    <a href="../36.%20Pooling%20-%20CNN-2/pooling-cnn-textbook-notes.html">📚 Pooling (Class 36)</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">What Is Transfer Learning</a></li>
+      <li><a href="#s2">Pre-trained Models</a></li>
+      <li><a href="#s3">Freeze the Backbone, Train the Head</a></li>
+      <li><a href="#s4">Four Keywords</a></li>
+      <li><a href="#s5">Feature Extraction vs Fine-tuning</a></li>
+      <li><a href="#s6">Overfitting in Neural Networks</a></li>
+      <li><a href="#s7">Six Remedies</a></li>
+      <li><a href="#s8">Early Stopping &amp; L2</a></li>
+      <li><a href="#s9">Deployment: MobileNet → ONNX → EC2</a></li>
+      <li><a href="#s10">Summary</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1"><span class="num">1.</span>What Is Transfer Learning?</h2>
+  <p><b>Transfer learning</b> = reusing the knowledge a model learned on one task to help solve another. The low-level visual features (edges, textures, shapes) are shared across almost all image tasks, so you inherit them instead of re-learning them.</p>
+  <div class="note warn"><b>Interview Q — can the tasks be unrelated domains?</b> Can a model trained on X-ray data be used for natural images? <b>No — the patterns aren't useful across unrelated domains.</b> Transfer works when source and target share visual structure; the closer the domains, the better.</div>
+
+  <h2 id="s2"><span class="num">2.</span>Pre-trained Models</h2>
+  <p>A <b>pre-trained model</b> has its weights &amp; biases <b>already learned</b> from a previous, large training task — classically the <b>ImageNet Challenge</b> (~1000 classes, millions of images). Famous backbones:</p>
+  <table>
+    <thead><tr><th>Model</th><th>Note</th></tr></thead>
+    <tbody>
+      <tr><td><b>AlexNet</b></td><td>The 2012 breakthrough that started the deep-learning vision era.</td></tr>
+      <tr><td><b>ResNet</b></td><td>Very deep via residual (skip) connections.</td></tr>
+      <tr><td><b>MobileNet</b></td><td>Lightweight, designed for phones/edge — our choice for a small EC2 box.</td></tr>
+    </tbody>
+  </table>
+  <p>You <b>load the pre-trained W &amp; B's</b> — the trained filters of the CNN blocks and the dense layers — rather than starting from random weights.</p>
+
+  <h2 id="s3"><span class="num">3.</span>Freeze the Backbone, Train the Head</h2>
+  <p>The standard recipe: keep the pre-trained <b>backbone</b> (feature extractor) as-is, replace the <b>head</b> with a fresh classifier for <i>your</i> number of classes, and train only the head.</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 640 220" role="img" aria-label="An input image flows through a frozen pre-trained backbone into a new trainable classifier head producing your classes.">
+      <text class="lbl" x="60" y="28" text-anchor="middle">input image</text>
+      <rect x="28" y="80" width="64" height="56" class="box"/>
+      <path class="flow" d="M96,108 H126"/><polygon points="126,108 116,103 116,113" fill="var(--ink-soft)"/>
+      <!-- frozen backbone blocks -->
+      <text class="lbl f-blue" x="268" y="28" text-anchor="middle">❄️ frozen pre-trained backbone</text>
+      <g>
+        <rect x="132" y="74" width="62" height="68" class="frozen" rx="6"/>
+        <rect x="200" y="74" width="62" height="68" class="frozen" rx="6"/>
+        <rect x="268" y="74" width="62" height="68" class="frozen" rx="6"/>
+        <rect x="336" y="74" width="62" height="68" class="frozen" rx="6"/>
+      </g>
+      <g class="lbl-s" text-anchor="middle" fill="var(--ink-soft)">
+        <text x="163" y="112">edges</text><text x="231" y="112">textures</text><text x="299" y="112">parts</text><text x="367" y="112">shapes</text>
+      </g>
+      <path class="flow" d="M402,108 H432"/><polygon points="432,108 422,103 422,113" fill="var(--ink-soft)"/>
+      <!-- trainable head -->
+      <text class="lbl f-teal" x="520" y="28" text-anchor="middle">🔥 new trainable head</text>
+      <rect x="438" y="74" width="86" height="68" class="trainable" rx="6"/>
+      <text class="lbl-s" x="481" y="112" text-anchor="middle" fill="var(--ink)">Linear→N</text>
+      <path class="flow" d="M528,108 H556"/><polygon points="556,108 546,103 546,113" fill="var(--ink-soft)"/>
+      <text class="lbl" x="596" y="104" text-anchor="middle">your</text><text class="lbl" x="596" y="120" text-anchor="middle">classes</text>
+      <path class="trainable" fill="none" stroke-dasharray="4 4" d="M481,150 C 481,180 300,180 110,150"/>
+      <text class="f-teal lbl-f" x="300" y="178" text-anchor="middle">backprop updates ONLY the head — the backbone weights stay frozen</text>
+    </svg>
+    <figcaption><b>Fig 1.</b> Transfer learning: a frozen ImageNet backbone extracts generic features; a small new head learns <i>your</i> classes. Only the head's weights update during training.</figcaption>
+  </figure>
+
+  <h2 id="s4"><span class="num">4.</span>Four Keywords (Keep Them Separate)</h2>
+  <table>
+    <thead><tr><th>Keyword</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><b>Pre-training</b></td><td>Learn a reusable knowledge on a big dataset (done once, by whoever trained the ImageNet model).</td></tr>
+      <tr><td><b>Feature extraction</b></td><td><b>Freeze</b> the backbone and pass your data through it to obtain features.</td></tr>
+      <tr><td><b>Transfer learning</b></td><td><b>Freeze</b> the feature extractor + <b>train the task head</b> on your classes.</td></tr>
+      <tr><td><b>Fine-tuning</b></td><td><b>Adapt</b> the pre-trained weights &amp; biases to your data (unfreeze some layers, train more).</td></tr>
+    </tbody>
+  </table>
+
+  <h2 id="s5"><span class="num">5.</span>Feature Extraction vs Fine-tuning</h2>
+  <p>It's a spectrum of how much of the backbone you let change:</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 640 170" role="img" aria-label="A spectrum from feature extraction (all frozen except head) to partial fine-tuning to full fine-tuning (nothing frozen).">
+      <g font-size="11" font-weight="700" text-anchor="middle">
+        <!-- three stacks -->
+        <text class="lbl" x="100" y="24">Feature extraction</text>
+        <rect x="70" y="34" width="60" height="18" class="trainable"/><text x="100" y="47" fill="var(--ink)">head</text>
+        <rect x="70" y="52" width="60" height="18" class="frozen"/><rect x="70" y="70" width="60" height="18" class="frozen"/><rect x="70" y="88" width="60" height="18" class="frozen"/>
+        <text class="lbl-f" x="100" y="124">fastest · least overfit</text>
+
+        <text class="lbl" x="320" y="24">Partial fine-tuning</text>
+        <rect x="290" y="34" width="60" height="18" class="trainable"/><text x="320" y="47" fill="var(--ink)">head</text>
+        <rect x="290" y="52" width="60" height="18" class="trainable"/><rect x="290" y="70" width="60" height="18" class="frozen"/><rect x="290" y="88" width="60" height="18" class="frozen"/>
+        <text class="lbl-f" x="320" y="124">adapt top layers</text>
+
+        <text class="lbl" x="540" y="24">Full fine-tuning</text>
+        <rect x="510" y="34" width="60" height="18" class="trainable"/><text x="540" y="47" fill="var(--ink)">head</text>
+        <rect x="510" y="52" width="60" height="18" class="trainable"/><rect x="510" y="70" width="60" height="18" class="trainable"/><rect x="510" y="88" width="60" height="18" class="trainable"/>
+        <text class="lbl-f" x="540" y="124">most flexible · needs more data</text>
+      </g>
+      <path class="flow" d="M150,97 H270"/><polygon points="270,97 260,92 260,102" fill="var(--ink-soft)"/>
+      <path class="flow" d="M370,97 H490"/><polygon points="490,97 480,92 480,102" fill="var(--ink-soft)"/>
+      <text class="lbl-f" x="320" y="150" text-anchor="middle">more layers unfrozen  →  more capacity to adapt, more compute, more overfitting risk</text>
+    </svg>
+    <figcaption><b>Fig 2.</b> ❄️ blue = frozen, 🔥 green = trainable. Freeze everything but the head for feature extraction; unfreeze from the top down to fine-tune. Starting from pre-trained weights, <b>5–10 epochs</b> replace the old <b>1000 epochs over 3 days</b>.</figcaption>
+  </figure>
+
+  <h2 id="s6"><span class="num">6.</span>Overfitting in Neural Networks</h2>
+  <div class="formula">Overfitting = good training performance + poor unseen performance<span class="sub">The model memorizes the training set instead of learning general patterns.</span></div>
+  <p><b>Why NNs overfit — they are data-hungry:</b> (1) too little training data, (2) training for too many epochs, (3) training data doesn't represent real-life patterns.</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 640 230" role="img" aria-label="Training accuracy keeps rising while validation accuracy plateaus then dips; the gap after the early-stopping point is overfitting.">
+      <!-- axes -->
+      <line x1="60" y1="190" x2="600" y2="190" stroke="var(--line)" stroke-width="1.4"/>
+      <line x1="60" y1="30" x2="60" y2="190" stroke="var(--line)" stroke-width="1.4"/>
+      <text class="lbl-f" x="330" y="216" text-anchor="middle">epochs →</text>
+      <text class="lbl-f" x="22" y="110" text-anchor="middle" transform="rotate(-90 22 110)">accuracy →</text>
+      <!-- train curve: keeps rising -->
+      <path class="teal" fill="none" stroke-width="2.6" d="M60,170 C 180,110 300,70 600,44"/>
+      <text class="f-teal lbl-s" x="560" y="38">train</text>
+      <!-- val curve: rises then dips -->
+      <path class="amber" fill="none" stroke-width="2.6" d="M60,172 C 200,120 320,96 380,96 C 460,96 520,108 600,120"/>
+      <text class="f-amber lbl-s" x="560" y="136">validation</text>
+      <!-- early stop line -->
+      <line x1="380" y1="40" x2="380" y2="190" stroke="var(--accent)" stroke-width="1.6" stroke-dasharray="5 4"/>
+      <text class="lbl" x="380" y="30" text-anchor="middle" fill="var(--accent)">early stop</text>
+      <!-- overfit gap -->
+      <path class="flow" d="M500,56 V112" stroke-dasharray="3 3"/>
+      <text class="lbl-f" x="520" y="86">overfit gap</text>
+    </svg>
+    <figcaption><b>Fig 3.</b> Past the early-stop point, training accuracy keeps climbing while validation stalls then declines — the widening gap is overfitting (memorization). Stop where validation stops improving.</figcaption>
+  </figure>
+
+  <h2 id="s7"><span class="num">7.</span>Six Remedies</h2>
+  <ol>
+    <li><b>Add more data</b> — including <b>image augmentation</b>: horizontal flip, zoom, synthetic oversampling (generate new training images from existing ones).</li>
+    <li><b>Dropout</b> — e.g. <code>Dropout(0.2)</code> disables 20% of neurons each step, reducing reliance on any particular neuron/activation → a more general, robust model (deliberate "under-learning").</li>
+    <li><b>Early stopping</b> — stop when validation performance stops improving.</li>
+    <li><b>Reduce model complexity</b> — don't put a 151-layer net on 500 rows; use a smaller model.</li>
+    <li><b>Transfer learning</b> — general training elsewhere + simple task fitting on your data.</li>
+    <li><b>L2 regularization</b> — penalize large weights in the loss.</li>
+  </ol>
+
+  <h2 id="s8"><span class="num">8.</span>Early Stopping &amp; L2 Regularization</h2>
+  <table>
+    <thead><tr><th>Epoch</th><th>Train acc</th><th>Val acc</th><th>Verdict</th></tr></thead>
+    <tbody>
+      <tr><td>560</td><td>80%</td><td>76%</td><td>good enough</td></tr>
+      <tr><td>565</td><td>80%</td><td>76%</td><td>no change</td></tr>
+      <tr><td>&gt; 565</td><td>↑ 85%</td><td>76% (↓)</td><td>starting to memorize</td></tr>
+    </tbody>
+  </table>
+  <div class="formula">Total loss = (1/n)·Σ(SE) + λ·Σw²<span class="sub">L2 adds a <b>squared penalty</b> on the weights (λ very small). Intuition: don't chase every feature to drive the loss to zero (that fits noise/uncertainty) — favour general patterns.</span></div>
+  <div class="note warn"><b>Interview Q — will there be overfitting in LLMs?</b> <b>Yes</b> — which is exactly why fine-tuning a large model must be done carefully (small learning rates, few epochs, held-out eval).</div>
+
+  <h3>Bonus: translation equivariance</h3>
+  <p><b>If you shift the input, the output shifts by the same amount.</b> This property is why convolution suits images — a feature is detected the same way wherever it appears.</p>
+
+  <h2 id="s9"><span class="num">9.</span>Deployment: MobileNet → ONNX → EC2</h2>
+  <p>Keep the model <b>light</b>: lower parameter count, smaller storage, fewer dependencies (Dockerization also helps ship everything together). We export the trained model to <b>ONNX</b> and serve it with <b>ONNX Runtime</b> on a CPU-only Ubuntu EC2 micro instance — <i>no PyTorch or GPU in production</i>.</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 640 120" role="img" aria-label="Pipeline: train MobileNet in Colab, export to ONNX plus classes.json, copy to EC2, serve with ONNX Runtime and Flask.">
+      <g text-anchor="middle" font-size="11" font-weight="700">
+        <rect x="18" y="40" width="120" height="48" rx="8" class="box" style="stroke:#3B6E63;stroke-width:2;"/><text class="f-teal lbl-s" x="78" y="60">Train (Colab)</text><text class="lbl-f" x="78" y="76">MobileNetV3-Small</text>
+        <rect x="186" y="40" width="130" height="48" rx="8" class="box" style="stroke:#B0670C;stroke-width:2;"/><text class="f-amber lbl-s" x="251" y="60">Export ONNX</text><text class="lbl-f" x="251" y="76">model.onnx + classes.json</text>
+        <rect x="364" y="40" width="120" height="48" rx="8" class="box" style="stroke:#1E6FA8;stroke-width:2;"/><text class="f-blue lbl-s" x="424" y="60">Copy to EC2</text><text class="lbl-f" x="424" y="76">no torch needed</text>
+        <rect x="518" y="40" width="104" height="48" rx="8" class="box" style="stroke:#6B4FA0;stroke-width:2;"/><text class="f-purple lbl-s" x="570" y="60">Serve</text><text class="lbl-f" x="570" y="76">ONNX RT + Flask</text>
+      </g>
+      <g fill="var(--ink-soft)">
+        <path class="flow" d="M138,64 H186"/><polygon points="186,64 176,59 176,69"/>
+        <path class="flow" d="M316,64 H364"/><polygon points="364,64 354,59 354,69"/>
+        <path class="flow" d="M484,64 H518"/><polygon points="518,64 508,59 508,69"/>
+      </g>
+    </svg>
+    <figcaption><b>Fig 4.</b> The lightweight path: train once on a GPU, export to a framework-neutral ONNX file, and serve it with ONNX Runtime on a cheap CPU instance.</figcaption>
+  </figure>
+
+  <pre><code><span class="cmt"># training machine: export to ONNX</span>
+torch.onnx.export(model, example, "artifacts/model.onnx",
+                  input_names=["images"], output_names=["logits"],
+                  opset_version=17)
+
+<span class="cmt"># EC2 (CPU only): onnxruntime, Pillow, Flask — NO torch, NO GPU</span>
+session = ort.InferenceSession("artifacts/model.onnx",
+                               providers=["CPUExecutionProvider"])</code></pre>
+
+  <h2 id="s10"><span class="num">10.</span>Summary</h2>
+  <div class="summary-box">
+    <h3>The whole idea, in one paragraph</h3>
+    <p><b>Transfer learning</b> reuses a model pre-trained on a huge dataset (ImageNet → AlexNet / ResNet / MobileNet) instead of training from scratch — but only across <i>related</i> domains. You load the pre-trained weights, <b>freeze the backbone</b>, and train a <b>new head</b> for your classes (<b>feature extraction</b> / <b>transfer learning</b>); unfreezing some layers to adapt them is <b>fine-tuning</b>, which now takes 5–10 epochs instead of 1000. Because NNs are data-hungry and <b>overfit</b> (great on train, poor on unseen), you reach for the toolbox: more data &amp; augmentation, dropout, early stopping, smaller models, transfer learning, and L2. Finally you ship light: export MobileNet to <b>ONNX</b> and serve it with ONNX Runtime on a CPU-only EC2 micro. Next: NLP → RNNs → Attention &amp; Transformers.</p>
+  </div>
+  <div class="pill-row">
+    <span class="pill">Transfer learning</span>
+    <span class="pill">Pre-trained model</span>
+    <span class="pill">Freeze backbone</span>
+    <span class="pill">Feature extraction</span>
+    <span class="pill">Fine-tuning</span>
+    <span class="pill">Overfitting</span>
+    <span class="pill">Dropout</span>
+    <span class="pill">Early stopping</span>
+    <span class="pill">L2 regularization</span>
+    <span class="pill">MobileNet · ONNX · EC2</span>
+  </div>
+</div>
+</body>
+</html>

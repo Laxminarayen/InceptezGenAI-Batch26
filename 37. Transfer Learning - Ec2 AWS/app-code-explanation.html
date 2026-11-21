@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Flask App Walkthrough · app.py (CIFAR-10 ONNX)</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{ --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC; --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63; --line: rgba(32,40,58,.16); --accent:#6B4FA0; --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; }
+  @media (prefers-color-scheme: dark){ :root{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.16); --accent:#B49AE0; } }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap{max-width:900px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:720px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+  h2{font-size:1.3rem; font-weight:900; margin:44px 0 12px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px; font-size:.9rem;}
+  .cell-tag{display:inline-block; font-size:.68rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); background:color-mix(in srgb, var(--accent) 12%, transparent); border-radius:6px; padding:2px 8px; margin-bottom:6px; font-family:var(--mono);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:7px;}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono); color:var(--ink);}
+  pre{background:#10141c; color:#dfe6f2; border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:10px 0 14px; font-size:.84rem; line-height:1.55; font-family:var(--mono);}
+  pre code{background:none; padding:0; font-size:1em; color:inherit;}
+  pre .cmt{color:#7f8aa0;}
+  pre .kw{color:#c792ea;} pre .fn{color:#82aaff;} pre .str{color:#c3e88d;} pre .num{color:#f78c6c;}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.88rem;}
+  th, td{padding:8px 11px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.74rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0; color:var(--accent);}
+  .tree{background:var(--paper-2); border:1px solid var(--line); border-radius:12px; padding:14px 18px; font-family:var(--mono); font-size:.85rem; color:var(--ink-soft); white-space:pre; overflow-x:auto;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Code Explanation · Deep Learning · Class 37</div>
+  <h1>Flask App Walkthrough — <code>app.py</code></h1>
+  <p class="abstract">A line-by-line explanation of the CPU-only CIFAR-10 image classifier that serves the ONNX model on a small Ubuntu EC2 instance: how it loads artifacts defensively, reads the model's real input shape, preprocesses an upload to match training exactly, runs ONNX Runtime, and exposes HTML + JSON endpoints.</p>
+
+  <div class="related-links">
+    <a href="CIFAR-10-deployment/CIFAR-10-deployment/app.py">🗂️ app.py source</a>
+    <a href="train-notebook-code-explanation.html">📓 train.ipynb explanation</a>
+    <a href="classwork-notes.html">📝 Classwork Notes</a>
+    <a href="EC2_Ubuntu_CIFAR10_Flask_Deployment_Guide_Two_SSH_Options.docx" target="_blank">🚀 EC2 Deployment Guide</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">What this app is</a></li>
+      <li><a href="#s2">Imports &amp; constants</a></li>
+      <li><a href="#s3">Finding the artifacts</a></li>
+      <li><a href="#s4">Reading labels &amp; preprocessing</a></li>
+      <li><a href="#s5">Loading the ONNX session (CPU-safe)</a></li>
+      <li><a href="#s6">Reading the real input shape</a></li>
+      <li><a href="#s7">The HTML page</a></li>
+      <li><a href="#s8">prepare_image()</a></li>
+      <li><a href="#s9">predict()</a></li>
+      <li><a href="#s10">Routes &amp; running</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1"><span class="num">1.</span>What This App Is</h2>
+  <p>A single-file Flask server that loads the exported <code>model.onnx</code> and classifies uploaded images into the 10 CIFAR-10 classes. It is deliberately built for a <b>tiny, CPU-only EC2 box</b> (e.g. t2.micro, 1 GiB RAM): no PyTorch, no GPU, strict memory limits, and heavy input validation. It serves both a human HTML page (<code>/</code>) and a JSON API (<code>/api/predict</code>).</p>
+  <div class="tree">CIFAR-10-deployment/
+├── app.py              # this file
+├── requirements.txt    # Flask, Pillow, numpy, onnxruntime, gunicorn (NO torch)
+└── artifacts/
+    ├── model.onnx      # exported by train.ipynb
+    └── classes.json    # the 10 label names</div>
+
+  <h2 id="s2"><span class="num">2.</span>Imports &amp; Constants</h2>
+  <span class="cell-tag">app.py · top</span>
+  <pre><code><span class="kw">import</span> json, logging
+<span class="kw">from</span> pathlib <span class="kw">import</span> Path
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">import</span> onnxruntime <span class="kw">as</span> ort
+<span class="kw">from</span> flask <span class="kw">import</span> Flask, jsonify, render_template_string, request
+<span class="kw">from</span> PIL <span class="kw">import</span> Image, ImageOps, UnidentifiedImageError
+
+BASE_DIR = Path(__file__).resolve().parent
+MAX_UPLOAD_MB = <span class="num">8</span>
+MAX_IMAGE_PIXELS = <span class="num">12_000_000</span>   <span class="cmt"># guard against decompression bombs on 1 GiB RAM</span>
+DEFAULT_MEAN = [<span class="num">0.485</span>, <span class="num">0.456</span>, <span class="num">0.406</span>]   <span class="cmt"># must match train.ipynb</span>
+DEFAULT_STD  = [<span class="num">0.229</span>, <span class="num">0.224</span>, <span class="num">0.225</span>]
+DEFAULT_SIZE = [<span class="num">128</span>, <span class="num">128</span>]</code></pre>
+  <ul>
+    <li><b><code>onnxruntime</code> not <code>torch</code></b> — inference uses ONNX Runtime, which is small and CPU-friendly. PyTorch is never imported in production.</li>
+    <li><b><code>render_template_string</code></b> — the whole HTML page is a Python string in this file (no <code>templates/</code> folder needed), keeping deployment to a single file + artifacts.</li>
+    <li><b><code>BASE_DIR = Path(__file__).resolve().parent</code></b> — absolute path to the app's folder, so it finds its artifacts regardless of the working directory on EC2.</li>
+    <li><b><code>MAX_UPLOAD_MB</code> / <code>MAX_IMAGE_PIXELS</code></b> — two independent limits: bytes on the wire, and decoded pixels in memory. The pixel cap stops a small file that decompresses into a huge image ("decompression bomb") from exhausting RAM.</li>
+    <li><b><code>DEFAULT_MEAN/STD/SIZE</code></b> — the ImageNet normalization and 128×128 size from training. These are fallbacks; the app prefers values embedded in the artifacts if present.</li>
+  </ul>
+
+  <h2 id="s3"><span class="num">3.</span>Finding the Artifacts</h2>
+  <span class="cell-tag">app.py · find_artifacts()</span>
+  <pre><code><span class="kw">def</span> <span class="fn">find_artifacts</span>():
+    <span class="kw">for</span> folder <span class="kw">in</span> (BASE_DIR / <span class="str">"artifacts"</span>, BASE_DIR):
+        model = folder / <span class="str">"model.onnx"</span>
+        labels = folder / <span class="str">"classes.json"</span>
+        <span class="kw">if</span> model.is_file() <span class="kw">and</span> labels.is_file():
+            <span class="kw">return</span> model, labels
+    <span class="kw">raise</span> FileNotFoundError(...)
+
+MODEL_PATH, CLASSES_PATH = find_artifacts()</code></pre>
+  <p>Looks for <code>model.onnx</code> + <code>classes.json</code> in <b>either</b> <code>artifacts/</code> <b>or</b> next to <code>app.py</code> — supporting two common layouts. If it can't find <b>both together</b>, it raises a clear error at startup rather than failing on the first request. This runs at import time, so a misconfigured server never starts.</p>
+
+  <h2 id="s4"><span class="num">4.</span>Reading Labels &amp; Preprocessing Metadata</h2>
+  <span class="cell-tag">app.py · load classes.json</span>
+  <pre><code><span class="kw">if</span> isinstance(raw_metadata, list):
+    CLASS_NAMES = raw_metadata; metadata = {}
+<span class="kw">elif</span> isinstance(raw_metadata, dict):
+    metadata = raw_metadata
+    CLASS_NAMES = metadata.get(<span class="str">"classes"</span>, metadata.get(<span class="str">"class_names"</span>))
+
+<span class="kw">if</span> (<span class="kw">not</span> isinstance(CLASS_NAMES, list) <span class="kw">or</span> len(CLASS_NAMES) != <span class="num">10</span> ...):
+    <span class="kw">raise</span> ValueError(<span class="str">"classes.json must contain exactly 10 valid CIFAR-10 class labels"</span>)
+
+MEAN = np.asarray(metadata.get(<span class="str">"mean"</span>, DEFAULT_MEAN), dtype=np.float32)
+STD  = np.asarray(metadata.get(<span class="str">"std"</span>,  DEFAULT_STD),  dtype=np.float32)</code></pre>
+  <ul>
+    <li><b>Handles two formats</b> — the current notebook writes a plain JSON <i>list</i> of 10 names; a future version might write a <i>dict</i> with labels + preprocessing. The code accepts either (backward/forward compatible).</li>
+    <li><b>Validates hard</b> — it must be exactly 10 non-empty string labels, or the app refuses to start. Bad labels are caught now, not mid-prediction.</li>
+    <li><b><code>MEAN</code>/<code>STD</code></b> — taken from the metadata if present, else the ImageNet defaults. These <b>must match training</b>, or every prediction is subtly wrong.</li>
+  </ul>
+
+  <h2 id="s5"><span class="num">5.</span>Loading the ONNX Session (CPU-safe)</h2>
+  <span class="cell-tag">app.py · ONNX Runtime session</span>
+  <pre><code>opts = ort.SessionOptions()
+opts.intra_op_num_threads = <span class="num">1</span>
+opts.inter_op_num_threads = <span class="num">1</span>
+opts.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
+SESSION = ort.InferenceSession(
+    str(MODEL_PATH), sess_options=opts, providers=[<span class="str">"CPUExecutionProvider"</span>])</code></pre>
+  <ul>
+    <li><b>Thread counts pinned to 1</b> — a t2.micro has 1 vCPU and little RAM. Letting ONNX Runtime spawn many threads would thrash the box; <code>intra</code>/<code>inter_op_num_threads = 1</code> and sequential execution keep memory and CPU predictable.</li>
+    <li><b><code>providers=["CPUExecutionProvider"]</code></b> — explicitly CPU-only (no CUDA).</li>
+    <li>Loaded <b>once at startup</b> into the global <code>SESSION</code>, reused for every request.</li>
+  </ul>
+
+  <h2 id="s6"><span class="num">6.</span>Reading the Model's <em>Real</em> Input Shape</h2>
+  <span class="cell-tag">app.py · introspect the graph</span>
+  <pre><code>input_info = SESSION.get_inputs()[<span class="num">0</span>]
+INPUT_NAME, INPUT_SHAPE = input_info.name, input_info.shape
+<span class="kw">if</span> len(INPUT_SHAPE) != <span class="num">4</span>: <span class="kw">raise</span> ValueError(...)
+
+<span class="kw">if</span> INPUT_SHAPE[<span class="num">1</span>] == <span class="num">3</span>:
+    LAYOUT = <span class="str">"NCHW"</span>; HEIGHT, WIDTH = INPUT_SHAPE[<span class="num">2</span>], INPUT_SHAPE[<span class="num">3</span>]
+<span class="kw">elif</span> INPUT_SHAPE[<span class="num">3</span>] == <span class="num">3</span>:
+    LAYOUT = <span class="str">"NHWC"</span>; HEIGHT, WIDTH = INPUT_SHAPE[<span class="num">1</span>], INPUT_SHAPE[<span class="num">2</span>]</code></pre>
+  <ul>
+    <li>Instead of hardcoding 128 or 224, the app <b>asks the ONNX model what input it expects</b> (<code>get_inputs()[0].shape</code>) and adapts. This prevents the classic "model wants 128 but code sends 224" shape error.</li>
+    <li><b>NCHW vs NHWC</b> — it detects where the "3" (channels) sits to know the tensor layout: PyTorch exports <b>NCHW</b> (batch, channels, H, W). <code>HEIGHT</code>/<code>WIDTH</code> are read from the model (falling back to 128 if the model declares a dynamic dimension).</li>
+    <li>The <code>INPUT_NAME</code> is reused later when calling <code>SESSION.run</code>.</li>
+  </ul>
+
+  <h2 id="s7"><span class="num">7.</span>The HTML Page</h2>
+  <span class="cell-tag">app.py · PAGE + render_page()</span>
+  <pre><code>PAGE = <span class="str">"""... an upload form + Jinja blocks for error / predictions ..."""</span>
+
+<span class="kw">def</span> <span class="fn">render_page</span>(predictions=<span class="kw">None</span>, error=<span class="kw">None</span>):
+    <span class="kw">return</span> render_template_string(
+        PAGE, predictions=predictions, error=error,
+        classes=CLASS_NAMES, width=WIDTH, height=HEIGHT, max_mb=MAX_UPLOAD_MB)</code></pre>
+  <p>A self-contained HTML string with inline CSS and a file-upload form. Jinja <code>{% if %}</code> blocks show an error, or the top prediction plus a ranked list, depending on what <code>render_page</code> is given. The page honestly notes the limitation: a photo outside the 10 classes still gets assigned one — the score is not a guarantee.</p>
+
+  <h2 id="s8"><span class="num">8.</span><code>prepare_image()</code> — Preprocessing Parity</h2>
+  <span class="cell-tag">app.py · decode → normalize</span>
+  <pre><code><span class="kw">def</span> <span class="fn">prepare_image</span>(file_storage):
+    <span class="kw">if</span> file_storage <span class="kw">is</span> <span class="kw">None</span> <span class="kw">or</span> <span class="kw">not</span> file_storage.filename:
+        <span class="kw">raise</span> ValueError(<span class="str">"Choose an image to upload ..."</span>)
+    <span class="kw">with</span> Image.open(file_storage.stream) <span class="kw">as</span> raw:
+        <span class="kw">if</span> raw.width * raw.height &gt; MAX_IMAGE_PIXELS:
+            <span class="kw">raise</span> ValueError(<span class="str">"Image exceeds the 12-megapixel safety limit."</span>)
+        raw.seek(<span class="num">0</span>)
+        image = ImageOps.exif_transpose(raw)                 <span class="cmt"># honour EXIF rotation</span>
+        <span class="kw">if</span> image.mode <span class="kw">in</span> (<span class="str">"RGBA"</span>, <span class="str">"LA"</span>) <span class="kw">or</span> ...:
+            <span class="cmt"># composite transparency on WHITE, not black</span>
+            rgba = image.convert(<span class="str">"RGBA"</span>)
+            background = Image.new(<span class="str">"RGBA"</span>, rgba.size, (<span class="num">255</span>,<span class="num">255</span>,<span class="num">255</span>,<span class="num">255</span>))
+            image = Image.alpha_composite(background, rgba).convert(<span class="str">"RGB"</span>)
+        <span class="kw">else</span>:
+            image = image.convert(<span class="str">"RGB"</span>)
+        image = image.resize((WIDTH, HEIGHT), resample=Image.Resampling.BILINEAR)
+        pixels = np.asarray(image, dtype=np.float32) / <span class="num">255.0</span>
+
+    pixels = (pixels - MEAN) / STD                           <span class="cmt"># same normalization as training</span>
+    <span class="kw">if</span> LAYOUT == <span class="str">"NCHW"</span>:
+        pixels = np.transpose(pixels, (<span class="num">2</span>,<span class="num">0</span>,<span class="num">1</span>))               <span class="cmt"># HWC → CHW</span>
+    batch = np.ascontiguousarray(pixels[<span class="kw">None</span>, ...], dtype=np.float32)  <span class="cmt"># add batch dim</span>
+    <span class="kw">return</span> batch</code></pre>
+  <p>Every step here exists to make the server's input <b>byte-for-byte equivalent</b> to what the model saw in training:</p>
+  <ul>
+    <li><b>Pixel-count guard</b> — reject anything over 12 MP before decoding fully.</li>
+    <li><b><code>ImageOps.exif_transpose</code></b> — phone photos store rotation in EXIF; this applies it so a sideways photo is classified upright.</li>
+    <li><b>Transparency → white</b> — PNGs with alpha are composited onto white (not the implicit black), which matches how most training photos look.</li>
+    <li><b><code>convert("RGB")</code></b> — force 3 channels (handles greyscale/RGBA).</li>
+    <li><b><code>resize((WIDTH, HEIGHT), BILINEAR)</code></b> — same size and interpolation family as <code>transforms.Resize</code> in training.</li>
+    <li><b><code>/255</code> then <code>(pixels - MEAN) / STD</code></b> — scale to 0–1 and apply the identical ImageNet normalization.</li>
+    <li><b><code>transpose(2,0,1)</code></b> — NumPy images are H×W×C; the model wants C×H×W (NCHW), so reorder the axes.</li>
+    <li><b><code>pixels[None, ...]</code></b> — add the batch dimension → shape <code>[1, 3, H, W]</code>. <code>ascontiguousarray</code> ensures a clean memory layout for ONNX Runtime.</li>
+  </ul>
+
+  <h2 id="s9"><span class="num">9.</span><code>predict()</code> — Inference &amp; Softmax</h2>
+  <span class="cell-tag">app.py · run the model</span>
+  <pre><code><span class="kw">def</span> <span class="fn">predict</span>(file_storage):
+    batch = prepare_image(file_storage)
+    <span class="kw">for</span> got, expected <span class="kw">in</span> zip(batch.shape, INPUT_SHAPE):   <span class="cmt"># shape guard</span>
+        <span class="kw">if</span> isinstance(expected, int) <span class="kw">and</span> got != expected:
+            <span class="kw">raise</span> RuntimeError(f<span class="str">"Preprocessing produced {batch.shape}, ONNX expects {INPUT_SHAPE}"</span>)
+    raw = SESSION.run(<span class="kw">None</span>, {INPUT_NAME: batch})[<span class="num">0</span>]
+    logits = np.asarray(raw, dtype=np.float64).reshape(-<span class="num">1</span>)
+    exps = np.exp(logits - logits.max())          <span class="cmt"># stable softmax</span>
+    scores = exps / exps.sum()
+    top = np.argsort(scores)[::-<span class="num">1</span>][:<span class="num">3</span>]              <span class="cmt"># top-3 classes</span>
+    <span class="kw">return</span> [{<span class="str">"label"</span>: CLASS_NAMES[int(i)],
+             <span class="str">"confidence"</span>: round(float(scores[i]*<span class="num">100</span>), <span class="num">2</span>)} <span class="kw">for</span> i <span class="kw">in</span> top]</code></pre>
+  <ul>
+    <li><b>Shape guard</b> — double-checks the preprocessed batch matches the ONNX input before running, turning a cryptic runtime crash into a clear message.</li>
+    <li><b><code>SESSION.run(None, {INPUT_NAME: batch})</code></b> — the actual inference call; <code>None</code> means "return all outputs". <code>[0]</code> grabs the logits tensor.</li>
+    <li><b><code>np.exp(logits - logits.max())</code></b> — the <b>numerically stable softmax</b>: subtracting the max before exponentiating avoids overflow. (The model outputs raw logits, like in training; softmax here just turns them into readable probabilities.)</li>
+    <li><b><code>np.argsort(...)[::-1][:3]</code></b> — indices of the top-3 scores, highest first, mapped to <code>CLASS_NAMES</code> with a rounded percentage.</li>
+  </ul>
+
+  <h2 id="s10"><span class="num">10.</span>Routes &amp; Running</h2>
+  <span class="cell-tag">app.py · endpoints</span>
+  <pre><code>@app.get(<span class="str">"/"</span>)
+<span class="kw">def</span> <span class="fn">index</span>(): <span class="kw">return</span> render_page()
+
+@app.post(<span class="str">"/"</span>)
+<span class="kw">def</span> <span class="fn">predict_html</span>():
+    <span class="kw">try</span>:    <span class="kw">return</span> render_page(predictions=predict(request.files.get(<span class="str">"image"</span>)))
+    <span class="kw">except</span> ValueError <span class="kw">as</span> exc:   <span class="kw">return</span> render_page(error=str(exc)), <span class="num">400</span>
+    <span class="kw">except</span> Exception:          <span class="kw">return</span> render_page(error=<span class="str">"Inference failed ..."</span>), <span class="num">500</span>
+
+@app.post(<span class="str">"/api/predict"</span>)
+<span class="kw">def</span> <span class="fn">predict_api</span>(): ...        <span class="cmt"># same logic, returns JSON</span>
+
+@app.get(<span class="str">"/health"</span>)
+<span class="kw">def</span> <span class="fn">health</span>(): ...             <span class="cmt"># status + model input shape + classes</span>
+
+@app.errorhandler(<span class="num">413</span>)
+<span class="kw">def</span> <span class="fn">too_large</span>(_exc): ...        <span class="cmt"># friendly "upload too large" message</span>
+
+<span class="kw">if</span> __name__ == <span class="str">"__main__"</span>:
+    app.run(host=<span class="str">"0.0.0.0"</span>, port=<span class="num">8000</span>, debug=<span class="kw">False</span>)</code></pre>
+  <ul>
+    <li><b><code>@app.get("/")</code> vs <code>@app.post("/")</code></b> — GET shows the empty form; POST handles the uploaded image.</li>
+    <li><b>Layered error handling</b> — a <code>ValueError</code> (bad/missing image) returns <b>400</b> with the message; any other exception is logged and returns a generic <b>500</b> (never leak internals to users).</li>
+    <li><b><code>/api/predict</code></b> — the same prediction logic but returns JSON, for programmatic callers.</li>
+    <li><b><code>/health</code></b> — a monitoring endpoint reporting status, the model's input shape, and the class list — handy for load balancers and debugging on EC2.</li>
+    <li><b><code>@app.errorhandler(413)</code></b> — Flask raises 413 when an upload exceeds <code>MAX_CONTENT_LENGTH</code>; this returns a friendly message (JSON for API paths, HTML otherwise).</li>
+    <li><b><code>host="0.0.0.0", port=8000, debug=False</code></b> — bind to all interfaces so the instance's public IP can reach it, on port 8000, with <b>debug off</b> (never run the debugger on a public server). In production you front this with <b>gunicorn</b>; the built-in <code>app.run</code> is for quick testing.</li>
+  </ul>
+
+  <div class="note warn"><b>Why ONNX + these guards matter on EC2.</b> The whole design assumes a cheap, 1 GiB, CPU-only box: ONNX Runtime instead of PyTorch (smaller, no CUDA), single-threaded sessions, pixel/upload caps, and loading everything once at startup. That's what lets a real deep-learning model serve on an instance that costs cents.</div>
+
+  <div class="summary-box">
+    <h3>In one paragraph</h3>
+    <p><code>app.py</code> loads the exported <code>model.onnx</code> + <code>classes.json</code> once at startup (failing fast if missing or invalid), reads the model's <i>actual</i> input shape so preprocessing can't drift, and configures ONNX Runtime for a 1-vCPU box. For each upload it decodes defensively (EXIF rotation, transparency-on-white, size caps), resizes and normalizes <b>identically to training</b>, runs inference, applies a stable softmax, and returns the top-3 classes — over an HTML page, a JSON API, and a health check. It's the production half of the <a href="train-notebook-code-explanation.html">training notebook</a>: PyTorch-free, memory-safe, and ready for <a href="EC2_Ubuntu_CIFAR10_Flask_Deployment_Guide_Two_SSH_Options.docx" target="_blank">EC2</a>.</p>
+  </div>
+</div>
+</body>
+</html>

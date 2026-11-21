@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Notebook Walkthrough · train.ipynb</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{ --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC; --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63; --line: rgba(32,40,58,.16); --accent:#6B4FA0; --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; }
+  @media (prefers-color-scheme: dark){ :root{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.16); --accent:#B49AE0; } }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap{max-width:900px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:720px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+  h2{font-size:1.3rem; font-weight:900; margin:44px 0 12px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px; font-size:.9rem;}
+  .cell-tag{display:inline-block; font-size:.68rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); background:color-mix(in srgb, var(--accent) 12%, transparent); border-radius:6px; padding:2px 8px; margin-bottom:6px;}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:7px;}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono); color:var(--ink);}
+  pre{background:#10141c; color:#dfe6f2; border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:10px 0 14px; font-size:.84rem; line-height:1.55; font-family:var(--mono);}
+  pre code{background:none; padding:0; font-size:1em; color:inherit;}
+  pre .cmt{color:#7f8aa0;}
+  pre .kw{color:#c792ea;} pre .fn{color:#82aaff;} pre .str{color:#c3e88d;} pre .num{color:#f78c6c;}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.88rem;}
+  th, td{padding:8px 11px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.74rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0; color:var(--accent);}
+  .ln{color:var(--accent); font-weight:800;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Code Explanation · Deep Learning · Class 37</div>
+  <h1>Notebook Walkthrough — <code>train.ipynb</code></h1>
+  <p class="abstract">A line-by-line explanation of the CIFAR-10 transfer-learning notebook: downloading the data, building a reproducible stratified split, freezing a pre-trained MobileNetV3-Small and training a new head, evaluating, and exporting to ONNX for a PyTorch-free server.</p>
+
+  <div class="related-links">
+    <a href="train.ipynb">📓 Open the notebook</a>
+    <a href="classwork-notes.html">📝 Classwork Notes</a>
+    <a href="transfer-learning-textbook-notes.html">📚 Transfer Learning Reference</a>
+    <a href="app-code-explanation.html">🌐 app.py explanation</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s0">Why "keep the model light"</a></li>
+      <li><a href="#s1">Setup &amp; hyperparameters</a></li>
+      <li><a href="#s2">Download from Kaggle</a></li>
+      <li><a href="#s3">Transforms &amp; datasets</a></li>
+      <li><a href="#s4">Stratified validation split</a></li>
+      <li><a href="#s5">Load &amp; freeze MobileNetV3</a></li>
+      <li><a href="#s6">The training loop</a></li>
+      <li><a href="#s7">Test evaluation</a></li>
+      <li><a href="#s8">Export to ONNX</a></li>
+      <li><a href="#s9">Verify ONNX = PyTorch</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s0"><span class="num">Cells 0–2.</span>Context: Keep the Model Light</h2>
+  <span class="cell-tag">markdown</span>
+  <p>The notebook opens by framing <b>computer vision</b> (classification, localization, segmentation, generation) and a key deployment constraint: <b>keep the model light</b>. A lightweight model means <b>(1) lower parameter count, (2) smaller storage, (3) fewer environment dependencies</b> — which is exactly why we pick MobileNet and export to ONNX, and why Dockerization is mentioned as a way to ship the whole thing reproducibly.</p>
+
+  <h2 id="s1"><span class="num">Cell 7.</span>Setup &amp; Hyperparameters</h2>
+  <span class="cell-tag">code · imports + config</span>
+  <pre><code><span class="kw">from</span> pathlib <span class="kw">import</span> Path
+<span class="kw">import</span> copy, json, random
+<span class="kw">import</span> numpy <span class="kw">as</span> np
+<span class="kw">import</span> torch
+<span class="kw">from</span> torch <span class="kw">import</span> nn
+<span class="kw">from</span> torch.utils.data <span class="kw">import</span> DataLoader, Subset
+<span class="kw">from</span> torchvision <span class="kw">import</span> datasets, models, transforms
+
+SEED = <span class="num">42</span>
+random.seed(SEED); np.random.seed(SEED); torch.manual_seed(SEED)
+
+DATA_DIR = Path(<span class="str">"data"</span>); EXPORT_DIR = Path(<span class="str">"artifacts"</span>)
+DATA_DIR.mkdir(parents=<span class="kw">True</span>, exist_ok=<span class="kw">True</span>)
+EXPORT_DIR.mkdir(parents=<span class="kw">True</span>, exist_ok=<span class="kw">True</span>)
+
+IMAGE_SIZE   = <span class="num">128</span>
+BATCH_SIZE   = <span class="num">64</span> <span class="kw">if</span> torch.cuda.is_available() <span class="kw">else</span> <span class="num">32</span>
+EPOCHS       = <span class="num">5</span>
+LEARNING_RATE= <span class="num">1e-3</span>
+VAL_FRACTION = <span class="num">0.10</span>
+DEVICE = torch.device(<span class="str">"cuda"</span> <span class="kw">if</span> torch.cuda.is_available() <span class="kw">else</span> <span class="str">"cpu"</span>)</code></pre>
+  <ul>
+    <li><b>Imports</b> — <code>models</code> is the new one: <code>torchvision.models</code> holds the pre-trained networks (MobileNet, ResNet…). <code>Subset</code> lets us pick specific indices for the train/val split.</li>
+    <li><b><code>SEED = 42</code> + the three <code>seed()</code> calls</b> — seed Python's <code>random</code>, NumPy, and PyTorch so shuffles and weight init are <b>reproducible</b>: the same split and results every run.</li>
+    <li><b><code>EXPORT_DIR = "artifacts"</code></b> — where the ONNX model and labels will be written (the Flask app reads from here).</li>
+    <li><b><code>IMAGE_SIZE = 128</code></b> — CIFAR-10 images are natively 32×32; we upscale to 128×128 to suit the pre-trained backbone (and match the Flask app's resize).</li>
+    <li><b><code>BATCH_SIZE</code></b> — 64 on GPU, 32 on CPU (smaller batches fit less memory).</li>
+    <li><b><code>EPOCHS = 5</code></b> — only 5 passes, because transfer learning converges fast (vs the old "1000 epochs for 3 days").</li>
+    <li><b><code>DEVICE</code></b> — use the GPU if present, else CPU.</li>
+  </ul>
+
+  <h2 id="s2"><span class="num">Cell 10.</span>Download CIFAR-10 from Kaggle</h2>
+  <span class="cell-tag">code · data download</span>
+  <pre><code><span class="kw">import</span> kagglehub
+dataset_path = Path(kagglehub.dataset_download(<span class="str">'swaroopkml/cifar10-pngs-in-folders'</span>))
+
+CIFAR_CLASSES = [<span class="str">'airplane'</span>,<span class="str">'automobile'</span>,<span class="str">'bird'</span>,<span class="str">'cat'</span>,<span class="str">'deer'</span>,
+                 <span class="str">'dog'</span>,<span class="str">'frog'</span>,<span class="str">'horse'</span>,<span class="str">'ship'</span>,<span class="str">'truck'</span>]
+
+<span class="kw">def</span> <span class="fn">find_data_folders</span>(root):
+    <span class="kw">for</span> train_dir <span class="kw">in</span> [root / <span class="str">'train'</span>, *root.rglob(<span class="str">'train'</span>)]:
+        test_dir = train_dir.parent / <span class="str">'test'</span>
+        <span class="kw">if</span> <span class="kw">not</span> train_dir.is_dir() <span class="kw">or</span> <span class="kw">not</span> test_dir.is_dir(): <span class="kw">continue</span>
+        ...
+        <span class="kw">if</span> train_classes == CIFAR_CLASSES <span class="kw">and</span> test_classes == CIFAR_CLASSES:
+            <span class="kw">return</span> train_dir, test_dir
+    <span class="kw">raise</span> FileNotFoundError(...)</code></pre>
+  <ul>
+    <li><b><code>kagglehub.dataset_download(...)</code></b> — downloads a <b>labeled PNG version</b> of CIFAR-10 (folders per class) and caches it on disk. This is the dataset mirror, not the Kaggle competition archive (whose test labels are hidden).</li>
+    <li><b><code>CIFAR_CLASSES</code></b> — the 10 class names, in the order that will become labels 0–9.</li>
+    <li><b><code>find_data_folders()</code></b> — robustly locates the <code>train/&lt;class&gt;/</code> and <code>test/&lt;class&gt;/</code> folders even when Kaggle nests them (<code>rglob('train')</code> searches recursively). It only accepts a pair whose sub-folders exactly match the 10 expected classes, otherwise raises a clear error.</li>
+  </ul>
+  <pre><code>mean = (<span class="num">0.485</span>, <span class="num">0.456</span>, <span class="num">0.406</span>)
+std  = (<span class="num">0.229</span>, <span class="num">0.224</span>, <span class="num">0.225</span>)
+
+train_tf = transforms.Compose([
+    transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
+    transforms.RandomHorizontalFlip(),      <span class="cmt"># augmentation (train only)</span>
+    transforms.ToTensor(),
+    transforms.Normalize(mean, std)])
+eval_tf = transforms.Compose([
+    transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean, std)])       <span class="cmt"># no flip for val/test</span>
+
+train_source = datasets.ImageFolder(str(train_dir), transform=train_tf)
+val_source   = datasets.ImageFolder(str(train_dir), transform=eval_tf)
+test_ds      = datasets.ImageFolder(str(test_dir),  transform=eval_tf)</code></pre>
+  <ul>
+    <li><b><code>mean</code> / <code>std</code></b> — the <b>ImageNet normalization constants</b>. Because the backbone was pre-trained on ImageNet, we must feed it images normalized the same way. (The Flask app repeats these exact numbers.)</li>
+    <li><b><code>RandomHorizontalFlip()</code></b> — data augmentation to fight overfitting; applied <b>only to training</b>.</li>
+    <li><b><code>Normalize(mean, std)</code></b> — subtract the mean, divide by std per channel, after <code>ToTensor()</code>.</li>
+    <li><b>Two views of the same train folder</b> — <code>train_source</code> (with flips) and <code>val_source</code> (no flips) point at the <i>same</i> directory but with different transforms; the split below selects disjoint indices from each.</li>
+  </ul>
+
+  <h2 id="s3"><span class="num">Cell 10 (cont).</span>Sanity Checks</h2>
+  <pre><code>class_names = list(train_source.classes)
+<span class="kw">assert</span> class_names == CIFAR_CLASSES == test_ds.classes
+<span class="kw">assert</span> len(train_source) == <span class="num">50_000</span> <span class="kw">and</span> len(test_ds) == <span class="num">10_000</span></code></pre>
+  <p>These <code>assert</code>s fail loudly if the download is wrong — the class order must match and the counts must be 50,000 train / 10,000 test. Catching this here prevents silent label mismatches later.</p>
+
+  <h2 id="s4"><span class="num">Cell 12.</span>Reproducible Stratified Validation Split</h2>
+  <span class="cell-tag">code · train/val split</span>
+  <pre><code>train_indices, val_indices = [], []
+<span class="kw">for</span> class_id <span class="kw">in</span> range(len(class_names)):
+    indices = [i <span class="kw">for</span> i, target <span class="kw">in</span> enumerate(train_source.targets)
+               <span class="kw">if</span> target == class_id]
+    random.Random(SEED + class_id).shuffle(indices)
+    n_val = int(len(indices) * VAL_FRACTION)
+    val_indices.extend(indices[:n_val])
+    train_indices.extend(indices[n_val:])
+
+train_ds = Subset(train_source, train_indices)
+val_ds   = Subset(val_source,   val_indices)
+train_dl = DataLoader(train_ds, batch_size=BATCH_SIZE, shuffle=<span class="kw">True</span>, ...)
+val_dl   = DataLoader(val_ds,   batch_size=BATCH_SIZE, shuffle=<span class="kw">False</span>, ...)
+test_dl  = DataLoader(test_ds,  batch_size=BATCH_SIZE, shuffle=<span class="kw">False</span>, ...)
+
+<span class="kw">assert</span> len(train_ds) == <span class="num">45_000</span> <span class="kw">and</span> len(val_ds) == <span class="num">5_000</span></code></pre>
+  <ul>
+    <li><b>Stratified</b> = the split keeps each class's proportion. We loop <b>per class</b> and take 10% (<code>VAL_FRACTION</code>) of <i>that class's</i> images for validation — so validation has exactly 500 of each of the 10 classes, not a random mix that might under-represent some class.</li>
+    <li><b><code>random.Random(SEED + class_id).shuffle(...)</code></b> — a dedicated, seeded RNG per class → the split is <b>reproducible</b> and independent across classes.</li>
+    <li><b><code>Subset(..., indices)</code></b> — builds the train/val datasets from the chosen indices; <code>val_ds</code> draws from <code>val_source</code> (no flips).</li>
+    <li><b><code>DataLoader</code>s</b> — batch the data; <b>shuffle only the training loader</b>. Result: 45,000 train / 5,000 val / 10,000 test, confirmed by the assert.</li>
+  </ul>
+
+  <h2 id="s5"><span class="num">Cell 14.</span>Load &amp; Freeze MobileNetV3-Small</h2>
+  <span class="cell-tag">code · the transfer-learning core</span>
+  <pre><code>weights = models.MobileNet_V3_Small_Weights.DEFAULT
+model = models.mobilenet_v3_small(weights=weights)
+
+<span class="kw">for</span> p <span class="kw">in</span> model.parameters():
+    p.requires_grad = <span class="kw">False</span>   <span class="cmt"># freeze the whole backbone</span>
+
+n_features = model.classifier[-1].in_features
+model.classifier[-1] = nn.Linear(n_features, len(class_names))  <span class="cmt"># new 10-class head</span>
+model = model.to(DEVICE)
+
+loss_fn = nn.CrossEntropyLoss()
+optimizer = torch.optim.AdamW(model.classifier[-1].parameters(), lr=LEARNING_RATE)</code></pre>
+  <p>This is the heart of the lesson — the four lines that make it transfer learning:</p>
+  <ul>
+    <li><b><code>weights = ...DEFAULT</code> → <code>mobilenet_v3_small(weights=weights)</code></b> — download MobileNetV3-Small <b>with its ImageNet-pretrained weights</b> (not random).</li>
+    <li><b><code>for p in model.parameters(): p.requires_grad = False</code></b> — <b>freeze every parameter</b>. Frozen params get no gradients, so the backbone never changes — this is <i>feature extraction</i>. (The notebook's own comment: "where the finetuning is blocked — No retraining of weights".)</li>
+    <li><b><code>model.classifier[-1].in_features</code></b> — read how many features feed the final layer, then <b>replace that layer</b> with a fresh <code>Linear(n, 10)</code>. A newly created layer has <code>requires_grad=True</code> by default, so <b>only the head is trainable</b>.</li>
+    <li><b><code>AdamW(model.classifier[-1].parameters(), ...)</code></b> — crucially, we hand the optimizer <b>only the head's parameters</b>, so it can't (and won't) touch the frozen backbone. AdamW = Adam with decoupled weight decay (a touch of L2 regularization).</li>
+    <li>The cell prints the <b>trainable parameter count</b> — it will be tiny (just the head) compared to the full network.</li>
+  </ul>
+
+  <h2 id="s6"><span class="num">Cell 15.</span>The Training Loop</h2>
+  <span class="cell-tag">code · train + validate + keep best</span>
+  <pre><code>best_val_acc, best_weights = -<span class="num">1.0</span>, <span class="kw">None</span>
+
+<span class="kw">for</span> epoch <span class="kw">in</span> range(EPOCHS):
+    model.train()
+    model.features.eval()   <span class="cmt"># keep frozen BatchNorm stats fixed</span>
+    <span class="kw">for</span> images, targets <span class="kw">in</span> train_dl:
+        images, targets = images.to(DEVICE), targets.to(DEVICE)
+        optimizer.zero_grad()
+        logits = model(images)
+        loss = loss_fn(logits, targets)
+        loss.backward()
+        optimizer.step()
+        ...
+    model.eval()
+    <span class="kw">with</span> torch.inference_mode():
+        <span class="kw">for</span> images, targets <span class="kw">in</span> val_dl:
+            logits = model(images.to(DEVICE))
+            val_correct += (logits.argmax(1) == targets.to(DEVICE)).sum().item()
+    val_acc = val_correct / val_count
+
+    <span class="kw">if</span> val_acc &gt; best_val_acc:
+        best_val_acc = val_acc
+        best_weights = copy.deepcopy(model.state_dict())
+
+model.load_state_dict(best_weights)   <span class="cmt"># restore the best epoch</span></code></pre>
+  <ul>
+    <li><b><code>model.train()</code> then <code>model.features.eval()</code></b> — a subtle but important pair. We put the model in train mode (so the head trains), but immediately put the <b>frozen feature extractor back in eval mode</b> so its <b>BatchNorm running statistics stay fixed</b>. If we left BatchNorm in train mode it would keep updating its stats from our data even though the weights are frozen — hurting the pre-trained features.</li>
+    <li><b>The 5-step update</b> — <code>zero_grad → forward (logits) → loss → backward → step</code>, the same loop as earlier classes. Only the head's gradients are non-zero.</li>
+    <li><b><code>torch.inference_mode()</code></b> — fast, gradient-free validation.</li>
+    <li><b><code>logits.argmax(1) == targets</code></b> — count correct predictions to compute validation accuracy.</li>
+    <li><b>Best-checkpoint via <code>copy.deepcopy(model.state_dict())</code></b> — whenever validation accuracy improves, snapshot the weights <i>in memory</i>. After all epochs, <code>load_state_dict(best_weights)</code> restores the best one. This is a <b>manual early-stopping / best-model-selection</b> — we keep the generalizing model, not the last (possibly overfit) one.</li>
+  </ul>
+
+  <h2 id="s7"><span class="num">Cell 17.</span>Evaluate on the Held-out Test Folder</h2>
+  <span class="cell-tag">code · final metric</span>
+  <pre><code>model.eval()
+<span class="kw">with</span> torch.inference_mode():
+    <span class="kw">for</span> images, targets <span class="kw">in</span> test_dl:
+        predictions = model(images.to(DEVICE)).argmax(1).cpu()
+        correct += (predictions == targets).sum().item()
+        <span class="cmt"># also accumulate per-class correct/total</span>
+print(f<span class="str">"Held-out test accuracy: {correct/total:.1%}"</span>)</code></pre>
+  <p>Runs once on Kaggle's <b>separate labeled test folder</b> (never seen during training or validation) and prints overall plus <b>per-class accuracy</b>. Per-class numbers reveal which categories the model confuses (e.g. cat vs dog).</p>
+
+  <h2 id="s8"><span class="num">Cell 19.</span>Export to ONNX</h2>
+  <span class="cell-tag">code · the deployment artifact</span>
+  <pre><code>model = model.cpu().eval()
+example = torch.randn(<span class="num">1</span>, <span class="num">3</span>, IMAGE_SIZE, IMAGE_SIZE)   <span class="cmt"># dummy input, right shape</span>
+
+torch.onnx.export(
+    model, example, str(onnx_path),
+    input_names=[<span class="str">"images"</span>], output_names=[<span class="str">"logits"</span>],
+    opset_version=<span class="num">17</span>, dynamo=<span class="kw">False</span>)
+
+<span class="kw">with</span> (EXPORT_DIR / <span class="str">"classes.json"</span>).open(<span class="str">"w"</span>) <span class="kw">as</span> f:
+    json.dump(class_names, f, indent=<span class="num">2</span>)</code></pre>
+  <ul>
+    <li><b><code>model.cpu().eval()</code></b> — export from CPU in eval mode so the traced graph matches inference.</li>
+    <li><b><code>example = torch.randn(1,3,128,128)</code></b> — ONNX export <b>traces</b> the model by running one example through it, so it needs a tensor of the exact input shape (batch 1, 3 channels, 128×128). The values don't matter, only the shape.</li>
+    <li><b><code>torch.onnx.export(...)</code></b> — writes <code>model.onnx</code>, a <b>framework-neutral</b> graph. <code>input_names</code>/<code>output_names</code> label the tensors ("images" → "logits"); <code>opset_version=17</code> fixes the ONNX operator set for compatibility.</li>
+    <li><b><code>classes.json</code></b> — saves the 10 label names <i>in order</i>, so the server can map output index → class name. The model file + this label file are the <b>only two things the EC2 app needs</b> — no PyTorch.</li>
+  </ul>
+
+  <h2 id="s9"><span class="num">Cell 21.</span>Verify ONNX Matches PyTorch</h2>
+  <span class="cell-tag">code · trust but verify</span>
+  <pre><code><span class="kw">import</span> onnx, onnxruntime <span class="kw">as</span> ort
+onnx.checker.check_model(onnx.load(str(onnx_path)))        <span class="cmt"># structural check</span>
+session = ort.InferenceSession(str(onnx_path), providers=[<span class="str">"CPUExecutionProvider"</span>])
+
+torch_logits = model(example).numpy()
+onnx_logits  = session.run(<span class="kw">None</span>, {session.get_inputs()[<span class="num">0</span>].name: example.numpy()})[<span class="num">0</span>]
+np.testing.assert_allclose(onnx_logits, torch_logits, rtol=<span class="num">1e-3</span>, atol=<span class="num">1e-3</span>)</code></pre>
+  <ul>
+    <li><b><code>onnx.checker.check_model</code></b> — validates the exported graph is well-formed.</li>
+    <li><b>Run the same example through both</b> PyTorch and ONNX Runtime, then <b><code>assert_allclose</code></b> that the outputs match within a tiny tolerance. This proves the export didn't change the model's behaviour <i>before</i> you ship it — if this fails, don't deploy.</li>
+  </ul>
+
+  <div class="note warn"><b>Where to run this.</b> Train in Jupyter/Colab (GPU helps), <b>not</b> on the 1 GiB EC2 box. After export, copy only <code>artifacts/model.onnx</code> and <code>artifacts/classes.json</code> next to <code>app.py</code> on EC2.</div>
+
+  <div class="summary-box">
+    <h3>In one paragraph</h3>
+    <p>The notebook downloads labeled CIFAR-10, normalizes images to ImageNet statistics at 128×128, and builds a reproducible stratified 45k/5k/10k split. It loads <b>ImageNet-pretrained MobileNetV3-Small</b>, <b>freezes the entire backbone</b>, replaces the final layer with a fresh 10-class head, and trains <i>only that head</i> with AdamW for 5 epochs — keeping BatchNorm frozen and snapshotting the best-validation weights. After reporting held-out test accuracy, it exports the model to a framework-neutral <b>ONNX</b> file plus a <code>classes.json</code>, and verifies ONNX output matches PyTorch. Those two artifacts are all the <a href="app-code-explanation.html">Flask app</a> needs on EC2.</p>
+  </div>
+</div>
+</body>
+</html>
