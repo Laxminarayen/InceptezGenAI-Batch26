@@ -1,5 +1,41 @@
 [
   {
+    "id": "mwozbax6th9fbd",
+    "author": "Malini-Sekar",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
+    "title": "Pooling & architecture choices",
+    "body": "1. Pooling — Less Data, More Focus!\nPooling is a downsampling technique that reduces the height and width of feature maps while retaining useful information.\n\nImagine a CNN analyzing a cat image. Instead of processing every feature-map value at every stage, pooling summarizes small regions.\n\nThree ways to reduce feature-map size:\nMethod\tWorking principle\tTrade-off\nMax Pooling\tPicks the highest value\tPreserves strongest features but loses weaker information\nAverage Pooling\tCalculates the average\tPreserves overall response but can weaken strong features\nStrided Convolution\tLearns features using filters that move multiple pixels at a time\tMore flexible, but requires learnable parameters and additional computation\n\nQuick example: Consider the feature values [2, 8, 4, 6].\n- Max pooling → 8 (strongest activation)\n- Average pooling → 5 (overall response)\n- Strided convolution → Learned output, depending on filter weights\nCatchy takeaway: Max picks the strongest, Average captures the overall signal, and Strided Convolution learns what matters!\n2. Receptive Field — From Tiny Edges to the Big Picture!\nReceptive field is the area of the original image that can influence one neuron in a CNN layer.\n\nAs we move deeper into a CNN:\n- Receptive field increases: Each neuron gathers information from a larger area of the original image.\n- Spatial resolution usually decreases: Feature maps become smaller through pooling or strided convolution.\nHow does a CNN recognize a cat?\nLayer\tReceptive field\tWhat it learns\nEarly\tSmall\tEdges and lines\nMiddle\tLarger\tCurves, shapes and textures\nDeep\tMuch larger\tObject parts and whole-object patterns\n\nFor example, with successive 3 × 3 convolutions of stride 1, receptive fields can grow from 3 × 3 → 5 × 5 → 7 × 7. Spatial resolution decreases only when downsampling is applied.\n\nWhy does this work? Early neurons learn simple patterns. Deeper neurons combine those patterns over increasingly larger regions, helping the network recognize complete objects.\nFinal takeaway\nPooling decides how to shrink the feature maps. Receptive field determines how much of the original image influences each neuron.",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-11-20T12:52:27.018Z",
+    "likes": [],
+    "comments": []
+  },
+  {
+    "id": "mwmt4t20c071kb",
+    "author": "Malini-Sekar",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
+    "title": "Optimizers in Practice",
+    "body": "1. SGD + Momentum vs Adam — Which one wins?\nThink of two runners trying to reach the lowest loss!\n- 🏃 SGD + Momentum — The steady runner: Builds speed in a consistent direction, reduces zigzagging and can achieve better final generalization in some tasks.\n- ⚡ Adam — The smart runner: Adjusts step sizes automatically for different weights and usually learns faster initially.\nWhen to choose?\n- SGD + Momentum: When final generalization is the priority, especially in CNN/image classification tasks.\n- Adam: When faster convergence, easier tuning or training complex models like transformers is important.\nCatchy takeaway: Adam often learns faster; SGD + Momentum can sometimes finish better! Neither always wins.\n2. Adam's Two Moments + Bias Correction\nThink of Adam as a smart driver with three abilities.\n\nFirst moment — Direction\n\nRemembers the average gradient: Which way should I move?\n\n\n\nSecond moment — Step adjustment\n\nTracks squared gradients: How large should my adaptive step be?\n\n\n\nBias correction — Fair start\n\nCorrects early moving averages that are biased toward zero.\n\n\n\nCatchy takeaway:\n\nAdam = Direction + Adaptive Steps + Fair Start!\nFinal punchline\n\"SGD + Momentum uses past gradients to maintain consistent movement, while Adam combines gradient direction and squared-gradient history to adapt updates. Adam often converges faster initially, but SGD + Momentum may generalize better in some applications.\"",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-11-19T00:23:53.880Z",
+    "likes": [],
+    "comments": []
+  },
+  {
+    "id": "mwm9tchwudfrwl",
+    "author": "Malini-Sekar",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/308294651?v=4",
+    "title": "Why CNNs over dense nets for images",
+    "body": "![image](https://raw.githubusercontent.com/Laxminarayen/InceptezGenAI-Batch26/main/data/uploads/articles/mwm9t6gu6c219h-image.jpg)",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-11-18T15:23:06.500Z",
+    "likes": [],
+    "comments": []
+  },
+  {
     "id": "murt6i28af4xq4",
     "author": "RamyaNarasimhan",
     "authorAvatar": "https://avatars.githubusercontent.com/u/48308439?v=4",
@@ -123,7 +159,8 @@
     "topics": [],
     "createdAt": "2026-09-25T09:36:25.914Z",
     "likes": [
-      "RamyaNaras"
+      "RamyaNaras",
+      "Malini-Sekar"
     ],
     "comments": []
   },

@@ -1,5 +1,85 @@
 [
   {
+    "id": "mwpz1aewdar256",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Deployment-OSCommands",
+    "body": "1. Please look up on DNS.\n2. Take your CIFAR-10 Flask app and deploy it in EC2 - With Gunicorn\nRead about WSGI - Gunicorn as well\n3. Please write an article on this along with OS-Commands (linux - ubuntu)",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-11-21T05:32:25.976Z",
+    "likes": [],
+    "comments": [],
+    "date": "2026-11-21",
+    "editedAt": "2026-11-21T05:35:06.031Z"
+  },
+  {
+    "id": "mwixh3cvw10m15",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Optimizers in practice",
+    "body": "1. When would you reach for SGD+momentum over Adam, and vice versa? What's the common wisdom on final accuracy vs convergence speed?\n2. Explain the intuition behind Adam's two moments and bias correction — without writing the update equations.",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-11-16T07:14:20.863Z",
+    "likes": [
+      "Malini-Sekar",
+      "J-Nirosha"
+    ],
+    "comments": [],
+    "date": "2026-11-18"
+  },
+  {
+    "id": "mwixf4z9ien4yc",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Deployment EC2 application",
+    "body": "1. Look at the CIFAR-10 dataset \n2. Create the best CNN model for classification\n3. Host the model using FLASK, we will use this for deployment next saturday",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-11-16T07:12:49.653Z",
+    "likes": [
+      "jimmigayatri",
+      "priyadj309-kim"
+    ],
+    "comments": [],
+    "date": "2026-11-15"
+  },
+  {
+    "id": "mwixdb16umx7te",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Pooling & architecture choices",
+    "body": "1. What is pooling for, and what are the trade-offs between max pooling, average pooling, and using a strided convolution instead?\n2. How do receptive field and spatial resolution change as you go deeper, and why does that let early layers see edges while deep layers see objects?",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-11-16T07:11:24.186Z",
+    "likes": [
+      "Malini-Sekar",
+      "J-Nirosha"
+    ],
+    "comments": [],
+    "date": "2026-11-17"
+  },
+  {
+    "id": "mwixc3xzjn7e1r",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Why CNNs over dense nets for images",
+    "body": "1. Why do fully-connected networks scale poorly to images, and what two properties of convolution (parameter sharing, local connectivity) fix that?\n2. What does it mean that CNNs are \"translation-equivariant,\" and why is that a useful inductive bias for vision?\n3. A candidate says \"I flattened the image and used an MLP and it worked.\" When is that actually fine, and when does it fall apart?",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-11-16T07:10:28.343Z",
+    "likes": [
+      "Malini-Sekar",
+      "Mukeshkanna90",
+      "priyadj309-kim",
+      "J-Nirosha"
+    ],
+    "comments": [],
+    "date": "2026-11-16"
+  },
+  {
     "id": "mwgkaw6yifsm8p",
     "author": "Laxminarayen",
     "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
@@ -8,7 +88,16 @@
     "classTag": "",
     "topics": [],
     "createdAt": "2026-11-14T15:30:04.282Z",
-    "likes": [],
+    "likes": [
+      "Mukeshkanna90",
+      "mssiva11",
+      "kishorem5",
+      "asennakesavan",
+      "Malini-Sekar",
+      "jimmigayatri",
+      "priyadj309-kim",
+      "J-Nirosha"
+    ],
     "comments": [],
     "date": "2026-11-14"
   },
