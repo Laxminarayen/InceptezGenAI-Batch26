@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Lab Walkthrough · Overfitting &amp; Fixes Notebook</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{ --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC; --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63; --line: rgba(32,40,58,.16); --accent:#6B4FA0; --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; }
+  @media (prefers-color-scheme: dark){ :root{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.16); --accent:#B49AE0; } }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap{max-width:900px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:720px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+  h2{font-size:1.3rem; font-weight:900; margin:44px 0 12px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px; font-size:.9rem;}
+  .cell-tag{display:inline-block; font-size:.68rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); background:color-mix(in srgb, var(--accent) 12%, transparent); border-radius:6px; padding:2px 8px; margin-bottom:6px;}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:7px;}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono); color:var(--ink);}
+  pre{background:#10141c; color:#dfe6f2; border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:10px 0 14px; font-size:.84rem; line-height:1.55; font-family:var(--mono);}
+  pre code{background:none; padding:0; font-size:1em; color:inherit;}
+  pre .cmt{color:#7f8aa0;}
+  pre .kw{color:#c792ea;} pre .fn{color:#82aaff;} pre .str{color:#c3e88d;} pre .num{color:#f78c6c;}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.88rem;}
+  th, td{padding:8px 11px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.74rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0; color:var(--accent);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Code Explanation · Deep Learning · Class 38</div>
+  <h1>Lab Walkthrough — the Overfitting &amp; Fixes Notebook</h1>
+  <p class="abstract">A line-by-line explanation of <code>NN_CNN_Overfitting_All_Fixes_REFERRENCE.ipynb</code>: how it rigs the data to force overfitting, defines the MLP/CNN and one shared training loop, applies each regularization fix, runs a transfer-learning comparison, and performs one honest final test. (<code>Classwork.ipynb</code> is the in-class twin of the same lab.)</p>
+
+  <div class="related-links">
+    <a href="NN_CNN_Overfitting_All_Fixes_REFERRENCE.ipynb">📓 Reference notebook</a>
+    <a href="Classwork.ipynb">📓 Classwork notebook</a>
+    <a href="classwork-notes.html">📝 Classwork Notes</a>
+    <a href="overfitting-regularization-textbook-notes.html">📚 Reference Notes</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">Setup &amp; reproducibility</a></li>
+      <li><a href="#s2">Load data, split, corrupt labels</a></li>
+      <li><a href="#s3">The MLP &amp; CNN models</a></li>
+      <li><a href="#s4">augment_batch()</a></li>
+      <li><a href="#s5">evaluate()</a></li>
+      <li><a href="#s6">fit() — the shared loop</a></li>
+      <li><a href="#s7">Demonstrating overfitting</a></li>
+      <li><a href="#s8">Dropout2d, visualized</a></li>
+      <li><a href="#s9">One fix at a time</a></li>
+      <li><a href="#s10">Transfer learning &amp; final test</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1"><span class="num">Cell 2.</span>Setup &amp; Reproducibility</h2>
+  <span class="cell-tag">imports + seeds</span>
+  <pre><code><span class="kw">import</span> copy, random, time
+<span class="kw">import</span> numpy <span class="kw">as</span> np, pandas <span class="kw">as</span> pd, matplotlib.pyplot <span class="kw">as</span> plt
+<span class="kw">import</span> torch
+<span class="kw">from</span> torch <span class="kw">import</span> nn
+<span class="kw">from</span> torch.nn <span class="kw">import</span> functional <span class="kw">as</span> F
+<span class="kw">from</span> torch.utils.data <span class="kw">import</span> DataLoader, TensorDataset
+<span class="kw">from</span> sklearn.datasets <span class="kw">import</span> load_digits
+<span class="kw">from</span> sklearn.model_selection <span class="kw">import</span> train_test_split
+<span class="kw">from</span> sklearn.metrics <span class="kw">import</span> confusion_matrix, ConfusionMatrixDisplay
+
+SEED = <span class="num">42</span>
+random.seed(SEED); np.random.seed(SEED); torch.manual_seed(SEED)
+torch.set_num_threads(min(<span class="num">2</span>, torch.get_num_threads()))
+DEVICE = torch.device(<span class="str">"cpu"</span>)</code></pre>
+  <ul>
+    <li><b><code>copy</code></b> — used later for <code>deepcopy</code> of the best model weights (early stopping).</li>
+    <li><b><code>F</code> (functional)</b> — gives <code>F.cross_entropy</code> and the <code>affine_grid</code>/<code>grid_sample</code> used for augmentation.</li>
+    <li><b>Three seeds</b> — seed Python, NumPy and PyTorch so the split, label corruption and weight init are <b>reproducible</b>.</li>
+    <li><b><code>DEVICE = "cpu"</code></b> — the dataset is tiny; CPU keeps results easy to reproduce (no GPU nondeterminism).</li>
+  </ul>
+
+  <h2 id="s2"><span class="num">Cell 4.</span>Load Data, Split, Corrupt Labels</h2>
+  <span class="cell-tag">the rigged experiment</span>
+  <pre><code>digits = load_digits()
+images_np = digits.images.astype(<span class="str">"float32"</span>) / <span class="num">16.0</span>   <span class="cmt"># pixels 0..16 → 0..1</span>
+labels_clean = digits.target.astype(<span class="str">"int64"</span>)
+images = torch.tensor(images_np[:, <span class="kw">None</span>, :, :])     <span class="cmt"># shape (N, 1, 8, 8)</span>
+
+all_ids = np.arange(len(labels_clean))
+train_val_ids, test_ids = train_test_split(
+    all_ids, test_size=<span class="num">0.20</span>, stratify=labels_clean, random_state=SEED)
+train_pool_ids, val_ids = train_test_split(
+    train_val_ids, test_size=<span class="num">0.25</span>, stratify=labels_clean[train_val_ids], random_state=SEED)
+
+rng = np.random.default_rng(SEED)
+train_pool_ids = rng.permutation(train_pool_ids)
+small_train_ids = train_pool_ids[:<span class="num">120</span>]
+large_train_ids = train_pool_ids[:<span class="num">800</span>]
+
+labels_noisy = labels_clean.copy()
+corrupted_ids = rng.choice(train_pool_ids, size=len(train_pool_ids)//<span class="num">4</span>, replace=<span class="kw">False</span>)
+labels_noisy[corrupted_ids] = (labels_clean[corrupted_ids] + rng.integers(1, 10, ...)) % <span class="num">10</span></code></pre>
+  <ul>
+    <li><b><code>/ 16.0</code></b> — sklearn digits are 0–16; dividing scales to 0–1 for stable training.</li>
+    <li><b><code>images_np[:, None, :, :]</code></b> — insert a channel axis → <code>(N, 1, 8, 8)</code>, the <code>(batch, channels, H, W)</code> format PyTorch convolutions expect.</li>
+    <li><b>Two stratified splits</b> — first peel off 20% for <b>test</b>; then split the rest into <b>train pool</b> and <b>validation</b> (<code>stratify=</code> keeps class proportions in every split).</li>
+    <li><b><code>small_train_ids</code> / <code>large_train_ids</code></b> — the same shuffled pool sliced to 120 (tiny, overfit-prone) and 800 (the "more data" run).</li>
+    <li><b>Label corruption</b> — copy the clean labels, pick 25% of the <b>training pool</b>, and replace each with a <i>different</i> digit: <code>(true + random 1..9) % 10</code> guarantees the new label is wrong (never equal to the original). Validation/test labels are never touched.</li>
+    <li>The cell's <b>asserts</b> confirm train/val/test don't overlap — a leakage check.</li>
+  </ul>
+
+  <h2 id="s3"><span class="num">Cell 8.</span>The MLP &amp; CNN Models</h2>
+  <span class="cell-tag">two architectures, dropout optional</span>
+  <pre><code><span class="kw">class</span> <span class="fn">MLP</span>(nn.Module):
+  <span class="kw">def</span> <span class="fn">__init__</span>(self, small=<span class="kw">False</span>, dropout=<span class="kw">False</span>, num_classes=<span class="num">10</span>):
+    h1, h2 = (<span class="num">32</span>, <span class="num">16</span>) <span class="kw">if</span> small <span class="kw">else</span> (<span class="num">256</span>, <span class="num">128</span>)
+    self.network = nn.Sequential(
+        nn.Flatten(),
+        nn.Linear(<span class="num">64</span>, h1), nn.ReLU(),
+        nn.Dropout(<span class="num">0.4</span>) <span class="kw">if</span> dropout <span class="kw">else</span> nn.Identity(),   <span class="cmt"># toggle dropout</span>
+        nn.Linear(h1, h2), nn.ReLU(),
+        nn.Dropout(<span class="num">0.4</span>) <span class="kw">if</span> dropout <span class="kw">else</span> nn.Identity(),
+        nn.Linear(h2, num_classes))</code></pre>
+  <pre><code><span class="kw">class</span> <span class="fn">SimpleCNN</span>(nn.Module):
+  <span class="kw">def</span> <span class="fn">__init__</span>(self, small=<span class="kw">False</span>, dropout=<span class="kw">False</span>, num_classes=<span class="num">10</span>):
+    c1, c2 = (<span class="num">8</span>, <span class="num">16</span>) <span class="kw">if</span> small <span class="kw">else</span> (<span class="num">32</span>, <span class="num">64</span>)
+    self.features = nn.Sequential(
+        nn.Conv2d(<span class="num">1</span>, c1, <span class="num">3</span>, padding=<span class="num">1</span>), nn.ReLU(),
+        nn.Conv2d(c1, c2, <span class="num">3</span>, padding=<span class="num">1</span>), nn.ReLU(),
+        nn.Dropout2d(<span class="num">0.2</span>) <span class="kw">if</span> dropout <span class="kw">else</span> nn.Identity(),   <span class="cmt"># spatial dropout</span>
+        nn.MaxPool2d(<span class="num">2</span>),
+        nn.Conv2d(c2, c2, <span class="num">3</span>, padding=<span class="num">1</span>), nn.ReLU(),
+        nn.Dropout2d(<span class="num">0.2</span>) <span class="kw">if</span> dropout <span class="kw">else</span> nn.Identity(),
+        nn.MaxPool2d(<span class="num">2</span>), nn.Flatten(),
+        nn.Linear(c2*<span class="num">2</span>*<span class="num">2</span>, hidden), nn.ReLU(),
+        nn.Dropout(<span class="num">0.4</span>) <span class="kw">if</span> dropout <span class="kw">else</span> nn.Identity())
+    self.classifier = nn.Linear(hidden, num_classes)</code></pre>
+  <ul>
+    <li><b>The <code>if dropout else nn.Identity()</code> trick</b> — <code>nn.Identity()</code> is a pass-through layer, so the <i>same</i> model definition works with and without dropout. One flag flips regularization on/off.</li>
+    <li><b><code>small</code> flag</b> — swaps the hidden sizes (256/128 → 32/16 for the MLP; 32/64 → 8/16 channels for the CNN), giving a low-capacity variant for the "smaller model" fix.</li>
+    <li><b><code>num_classes</code></b> — 10 for digits; set to 2 later for the Even-vs-Odd transfer task.</li>
+    <li><b>CNN structure</b> — two conv+ReLU blocks, spatial dropout, pooling (8×8 → 4×4 → 2×2), then a dense head. <code>c2*2*2</code> is the flattened size after the two <code>MaxPool2d(2)</code> halvings.</li>
+    <li><b><code>count_params()</code></b> — sums <code>p.numel()</code> over trainable parameters (<code>numel</code> = number of elements in a tensor). Prints how much bigger the full model is than the "small" one.</li>
+  </ul>
+
+  <h2 id="s4"><span class="num">Cell 10a.</span><code>augment_batch()</code></h2>
+  <span class="cell-tag">train-only augmentation</span>
+  <pre><code><span class="kw">def</span> <span class="fn">augment_batch</span>(x):
+    n = x.shape[<span class="num">0</span>]
+    angle = (torch.rand(n) - <span class="num">0.5</span>) * <span class="num">0.30</span>   <span class="cmt"># ± ~8.6° rotation</span>
+    tx = (torch.rand(n) - <span class="num">0.5</span>) * <span class="num">0.14</span>      <span class="cmt"># small horizontal shift</span>
+    ty = (torch.rand(n) - <span class="num">0.5</span>) * <span class="num">0.14</span>      <span class="cmt"># small vertical shift</span>
+    theta = torch.zeros(n, <span class="num">2</span>, <span class="num">3</span>)             <span class="cmt"># 2×3 affine matrix per image</span>
+    theta[:,0,0]=torch.cos(angle); theta[:,0,1]=-torch.sin(angle)
+    theta[:,1,0]=torch.sin(angle); theta[:,1,1]= torch.cos(angle)
+    theta[:,0,2]=tx; theta[:,1,2]=ty
+    grid = F.affine_grid(theta, x.shape, align_corners=<span class="kw">False</span>)
+    <span class="kw">return</span> F.grid_sample(x, grid, align_corners=<span class="kw">False</span>, padding_mode=<span class="str">"zeros"</span>)</code></pre>
+  <ul>
+    <li>Builds a small random <b>rotation + translation</b> per image as a 2×3 affine matrix <code>theta</code> (the top-left 2×2 is a rotation; the last column is the shift).</li>
+    <li><b><code>affine_grid</code> + <code>grid_sample</code></b> — the standard PyTorch way to apply a geometric transform differentiably: build a sampling grid from <code>theta</code>, then resample the image through it.</li>
+    <li>These are <b>label-preserving</b> (a slightly rotated 3 is still a 3) and applied <b>only in training</b> — never to validation/test.</li>
+  </ul>
+
+  <h2 id="s5"><span class="num">Cell 10b.</span><code>evaluate()</code></h2>
+  <span class="cell-tag">fair measurement</span>
+  <pre><code><span class="kw">def</span> <span class="fn">evaluate</span>(model, ids, labels):
+    model.eval()                              <span class="cmt"># turn OFF dropout</span>
+    <span class="kw">with</span> torch.inference_mode():
+        y = torch.tensor(labels[ids], dtype=torch.long)
+        logits = model(images[ids])
+        loss = F.cross_entropy(logits, y).item()
+        accuracy = (logits.argmax(<span class="num">1</span>) == y).float().mean().item()
+    <span class="kw">return</span> loss, accuracy</code></pre>
+  <ul>
+    <li><b><code>model.eval()</code></b> — critical: disables dropout (and freezes any BatchNorm stats) so the measurement is deterministic and fair. Pair it with <code>model.train()</code> inside the loop.</li>
+    <li><b><code>torch.inference_mode()</code></b> — no gradient tracking → faster, less memory during scoring.</li>
+    <li>Returns both <b>loss</b> (for model selection) and <b>accuracy</b> (for reporting).</li>
+  </ul>
+
+  <h2 id="s6"><span class="num">Cell 10c.</span><code>fit()</code> — the Shared Training Loop</h2>
+  <span class="cell-tag">one function drives every experiment</span>
+  <pre><code><span class="kw">def</span> <span class="fn">fit</span>(model, train_ids, train_labels, val_labels=labels_clean,
+        epochs=<span class="num">100</span>, lr=<span class="num">0.003</span>, weight_decay=<span class="num">0.0</span>, augment=<span class="kw">False</span>, patience=<span class="kw">None</span>):
+    torch.manual_seed(<span class="num">123</span>)                   <span class="cmt"># same init for a fair comparison</span>
+    ds = TensorDataset(images[train_ids], torch.tensor(train_labels[train_ids]))
+    loader = DataLoader(ds, batch_size=<span class="num">32</span>, shuffle=<span class="kw">True</span>)
+    optimizer = torch.optim.AdamW(
+        (p <span class="kw">for</span> p <span class="kw">in</span> model.parameters() <span class="kw">if</span> p.requires_grad),
+        lr=lr, weight_decay=weight_decay)       <span class="cmt"># weight_decay = L2</span>
+    best_loss, best_state, stale_epochs = float(<span class="str">"inf"</span>), <span class="kw">None</span>, <span class="num">0</span>
+
+    <span class="kw">for</span> epoch <span class="kw">in</span> range(1, epochs+1):
+        model.train()                           <span class="cmt"># turn ON dropout</span>
+        <span class="kw">for</span> x, y <span class="kw">in</span> loader:
+            <span class="kw">if</span> augment: x = augment_batch(x)       <span class="cmt"># train-only</span>
+            optimizer.zero_grad()
+            loss = F.cross_entropy(model(x), y)
+            loss.backward()
+            optimizer.step()
+        train_loss, train_acc = evaluate(model, train_ids, train_labels)
+        val_loss,   val_acc   = evaluate(model, val_ids, val_labels)
+        history.append(dict(epoch=epoch, train_loss=train_loss, val_loss=val_loss, ...))
+        <span class="kw">if</span> val_loss &lt; best_loss - <span class="num">0.001</span>:          <span class="cmt"># improved?</span>
+            best_loss, best_state, stale_epochs = val_loss, copy.deepcopy(model.state_dict()), <span class="num">0</span>
+        <span class="kw">else</span>:
+            stale_epochs += <span class="num">1</span>
+        <span class="kw">if</span> patience <span class="kw">is</span> <span class="kw">not</span> <span class="kw">None</span> <span class="kw">and</span> stale_epochs &gt;= patience:
+            <span class="kw">break</span>                               <span class="cmt"># EARLY STOPPING</span>
+    <span class="kw">if</span> patience <span class="kw">is</span> <span class="kw">not</span> <span class="kw">None</span> <span class="kw">and</span> best_state:
+        model.load_state_dict(best_state)       <span class="cmt"># restore BEST checkpoint</span></code></pre>
+  <p>This one function implements several fixes through its arguments:</p>
+  <table>
+    <thead><tr><th>Argument</th><th>Fix it enables</th></tr></thead>
+    <tbody>
+      <tr><td><code>weight_decay=0.1</code></td><td>L2 regularization (passed straight to AdamW)</td></tr>
+      <tr><td><code>augment=True</code></td><td>Data augmentation in the batch loop</td></tr>
+      <tr><td><code>patience=10</code></td><td>Early stopping + best-checkpoint restore</td></tr>
+      <tr><td>model built with <code>dropout=/small=</code></td><td>Dropout / smaller model</td></tr>
+      <tr><td><code>train_ids</code>, <code>train_labels</code></td><td>More data / clean labels</td></tr>
+    </tbody>
+  </table>
+  <ul>
+    <li><b><code>torch.manual_seed(123)</code> at the top</b> — re-seeds so every experiment starts from the same weight init and shuffling, making the comparisons fair.</li>
+    <li><b>The 4-step batch</b> — <code>zero_grad → forward+loss → backward → step</code>. <code>AdamW</code> applies the <code>weight_decay</code> (L2) as it updates.</li>
+    <li><b>Best-checkpoint tracking</b> — whenever validation loss improves by more than 0.001, snapshot the weights with <code>deepcopy</code> and reset the stale counter; otherwise count a stale epoch.</li>
+    <li><b>Early stopping</b> — only active when <code>patience</code> is set: break after <code>patience</code> stale epochs, then <b>restore the best checkpoint</b> (not the last one). Other experiments keep their final weights.</li>
+  </ul>
+  <div class="note warn"><b>Honest-comparison caveat (from the notebook):</b> early-stopping runs are restored to their best checkpoint, while other rows report their final epoch — done deliberately for teaching, not as a rigorous matched-compute benchmark. The "more data" run also does more optimization steps per epoch.</div>
+
+  <h2 id="s7"><span class="num">Cells 12 &amp; 15.</span>Demonstrating Overfitting</h2>
+  <span class="cell-tag">baselines on noisy data</span>
+  <pre><code>experiments = {}
+experiments[<span class="str">"MLP / Baseline"</span>] = fit(MLP(), small_train_ids, labels_noisy, epochs=<span class="num">90</span>)
+plot_history(experiments[<span class="str">"MLP / Baseline"</span>], <span class="str">"MLP baseline"</span>)
+<span class="cmt"># ... and the same for SimpleCNN()</span></code></pre>
+  <p>Trains the full MLP and CNN on the <b>120-image noisy set</b> and plots train vs validation curves. The expected, teachable result: training loss collapses and training accuracy approaches 100% (fitting the wrong labels too), while validation loss <b>rises</b> — the generalization gap made visible. The takeaway: reaching 100% on intentionally-wrong labels is memorization, and more training won't help.</p>
+
+  <h2 id="s8"><span class="num">Cell 17.</span>Dropout2d, Visualized</h2>
+  <span class="cell-tag">what spatial dropout does</span>
+  <pre><code>torch.manual_seed(<span class="num">7</span>)
+drop = nn.Dropout2d(p=<span class="num">0.5</span>)
+drop.train()                               <span class="cmt"># dropout only acts in train mode</span>
+example_maps = torch.ones(<span class="num">1</span>, <span class="num">8</span>, <span class="num">4</span>, <span class="num">4</span>)      <span class="cmt"># 8 feature maps of 4×4 ones</span>
+masked = drop(example_maps)
+print(masked.mean(dim=(<span class="num">2</span>,<span class="num">3</span>)).numpy().round(<span class="num">1</span>))  <span class="cmt"># per-channel mean</span></code></pre>
+  <ul>
+    <li>Feeds 8 all-ones channels through <code>Dropout2d(0.5)</code>. Printing each channel's mean shows some channels become <b>entirely 0.0</b> (dropped) and others are scaled up — confirming it zeroes <b>whole channels</b>, not scattered pixels.</li>
+    <li><b><code>drop.train()</code></b> — dropout is a no-op in eval mode, so the demo explicitly switches to train mode to see the effect.</li>
+    <li>It does <b>not</b> change filter weights — only masks activations during training.</li>
+  </ul>
+
+  <h2 id="s9"><span class="num">Cells 19–22.</span>One Fix at a Time</h2>
+  <span class="cell-tag">the experiment grid</span>
+  <pre><code>mlp_cases = [
+    (<span class="str">"MLP / Dropout"</span>,       dict(dropout=<span class="kw">True</span>)),
+    (<span class="str">"MLP / Weight decay"</span>,  dict(weight_decay=<span class="num">0.1</span>)),
+    (<span class="str">"MLP / Early stopping"</span>,dict(patience=<span class="num">10</span>)),
+    (<span class="str">"MLP / Smaller model"</span>, dict(small=<span class="kw">True</span>)),
+    (<span class="str">"MLP / Augmentation"</span>,  dict(augment=<span class="kw">True</span>)),
+    (<span class="str">"MLP / More data"</span>,     dict(more_data=<span class="kw">True</span>, epochs=<span class="num">20</span>)),
+    (<span class="str">"MLP / Correct labels"</span>,dict(clean_labels=<span class="kw">True</span>)),
+]
+<span class="kw">for</span> title, cfg <span class="kw">in</span> mlp_cases:
+    model = MLP(small=cfg.pop(<span class="str">"small"</span>, <span class="kw">False</span>), dropout=cfg.pop(<span class="str">"dropout"</span>, <span class="kw">False</span>))
+    train_ids = large_train_ids <span class="kw">if</span> cfg.pop(<span class="str">"more_data"</span>, <span class="kw">False</span>) <span class="kw">else</span> small_train_ids
+    train_targets = labels_clean <span class="kw">if</span> cfg.pop(<span class="str">"clean_labels"</span>, <span class="kw">False</span>) <span class="kw">else</span> labels_noisy
+    experiments[title] = fit(model, train_ids, train_targets, **cfg)</code></pre>
+  <ul>
+    <li>Each case is a <b>name + a small config dict</b>. The loop <b>pops</b> the model-construction and data-selection keys out of the dict and passes whatever remains straight to <code>fit()</code> as keyword arguments — a clean way to run many variants with one code path.</li>
+    <li><b>Change one thing at a time</b> so each effect is attributable. The CNN grid is the same plus a <b>"Combined fixes"</b> row (dropout + weight decay + augment + early stopping).</li>
+    <li><b>The summary table (cell 22)</b> collects every run's epochs, parameter count, train/val accuracy and val loss. For early-stopping / combined runs it re-evaluates the <b>restored best</b> model; others report the final epoch — and the comparison is interpreted via <b>validation loss</b>, not training accuracy.</li>
+  </ul>
+
+  <h2 id="s10"><span class="num">Cells 26–30.</span>Transfer Learning &amp; the Honest Final Test</h2>
+  <span class="cell-tag">reuse features, then test once</span>
+  <pre><code><span class="cmt"># pretrain on all 10 digits, then reuse the frozen features for Even-vs-Odd</span>
+pretrained = fit(SimpleCNN(num_classes=<span class="num">10</span>), source_ids, labels_clean, epochs=<span class="num">25</span>)
+transfer_model = SimpleCNN(num_classes=<span class="num">2</span>)
+transfer_model.features.load_state_dict(pretrained[<span class="str">"model"</span>].features.state_dict())
+<span class="kw">for</span> p <span class="kw">in</span> transfer_model.features.parameters():
+    p.requires_grad = <span class="kw">False</span>               <span class="cmt"># freeze backbone</span>
+scratch_model = SimpleCNN(num_classes=<span class="num">2</span>)   <span class="cmt"># baseline: learn from scratch</span></code></pre>
+  <ul>
+    <li><b>Disjoint IDs</b> — <code>source_ids</code> (800 for pretraining) and <code>target_ids</code> (80 for the new task) don't overlap, checked with an assert.</li>
+    <li><b>Reuse + freeze</b> — copy the pretrained <code>features</code> into a fresh 2-class model and freeze them, so only the new head trains on the 80 Even-vs-Odd examples. Compared head-to-head against a model trained from scratch on the same 80.</li>
+    <li><b>The final test (cell 30)</b> — pick the CNN experiment with the <b>lowest validation loss</b>, then evaluate it <b>once</b> on the untouched test set and draw a confusion matrix. The rule the whole lab enforces: <b>validation chooses, test confirms</b> — never tune on test.</li>
+  </ul>
+
+  <div class="note warn"><b><code>Classwork.ipynb</code> vs the reference.</b> The in-class notebook is the same lab with minor differences: it normalizes with <code>/ np.max(images)</code> instead of <code>/ 16.0</code>, has a <code>latge_train_ids</code> typo (still 800), and runs a subset of the fixes interactively. The reference notebook is the cleaned-up, fully-documented version — use it as the canonical source.</div>
+
+  <div class="summary-box">
+    <h3>In one paragraph</h3>
+    <p>The lab loads sklearn's 8×8 digits, makes stratified train/val/test splits, and <b>deliberately corrupts 25% of a tiny training set's labels</b> to force overfitting. It defines an <b>MLP</b> and a <b>CNN</b> (dropout and size togg=able) and one shared <code>fit()</code> whose arguments switch on each fix — <b>weight decay, augmentation, early stopping with best-checkpoint restore, dropout, smaller model, more/cleaner data</b>. Baselines show training accuracy hitting ~100% while validation loss rises; each fix is run one-at-a-time and compared by <b>validation</b> loss. It finishes with a <b>transfer-learning</b> comparison (frozen pretrained features vs scratch on 80 examples) and <b>one honest test</b>: select on validation, evaluate once on the held-out set. The lesson: a low training loss never guarantees real-world performance.</p>
+  </div>
+</div>
+</body>
+</html>

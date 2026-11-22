@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Classwork Notes · Overfitting, Dropout &amp; Regularization</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{ --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC; --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63; --line: rgba(32,40,58,.16); --accent:#6B4FA0; --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  @media (prefers-color-scheme: dark){ :root{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.16); --accent:#B49AE0; } }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.6; }
+  .wrap{max-width:840px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 80px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.7rem,4vw,2.4rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 6px;}
+  .subtitle{color:var(--ink-soft); font-size:1rem; margin-bottom:8px;}
+  .pdf-link{display:inline-flex; align-items:center; gap:8px; margin:14px 10px 34px 0; font-size:.9rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .pdf-link:hover{border-color:var(--accent); color:var(--accent);}
+  h2{font-size:1.35rem; font-weight:900; margin:44px 0 14px; padding-top:16px; border-top:1px solid var(--line);}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h3{font-size:1.05rem; font-weight:800; margin:22px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:8px 10px; text-align:left; border:1px solid var(--line);}
+  th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  tr.hl td{background:color-mix(in srgb, var(--accent) 10%, transparent); font-weight:800;}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .agenda{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 20px;}
+  .agenda span{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:8px 16px; font-size:.86rem; font-weight:700; color:var(--ink);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.92em; font-family:var(--mono);}
+  pre{background:#10141c; color:#dfe6f2; border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.85rem; line-height:1.55; font-family:var(--mono);}
+  pre code{background:none; padding:0;}
+  pre .cmt{color:#7f8aa0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Day 38 · Classwork Notes</div>
+  <h1>Overfitting, Dropout, Early Stopping &amp; Regularization</h1>
+  <p class="subtitle">A hands-on lab: deliberately force a neural network to overfit (tiny dataset + 25% wrong training labels), watch it memorize in both an MLP and a CNN, then apply the full regularization toolbox one fix at a time — and judge everything by validation, confirming once on a held-out test set.</p>
+  <a class="pdf-link" href="NN_CNN_Overfitting_All_Fixes_REFERRENCE.ipynb" target="_blank">📓 Reference lab notebook</a>
+  <a class="pdf-link" href="Classwork.ipynb" target="_blank">📓 Classwork notebook</a>
+
+  <h2>Agenda</h2>
+  <div class="agenda">
+    <span>Overfitting in an MLP</span>
+    <span>Overfitting in a CNN</span>
+    <span>Dropout &amp; Dropout2d</span>
+    <span>Weight decay, early stopping, smaller model</span>
+    <span>Augmentation &amp; more data</span>
+    <span>Transfer learning</span>
+    <span>Honest final test</span>
+  </div>
+
+  <h2>Part 0: The Experiment — Forcing Overfitting on Purpose</h2>
+  <p>We use <b>sklearn's <code>load_digits()</code></b> — 1,797 small 8×8 handwritten digits, bundled with scikit-learn (no download, no 403). To make overfitting <b>visible and exaggerated</b> on a CPU, we rig the experiment:</p>
+  <ul>
+    <li><b>Tiny training set</b> — only <b>120</b> images (a "more data" run uses 800).</li>
+    <li><b>25% corrupted training labels</b> — a quarter of the <i>training</i> labels are deliberately changed to wrong digits.</li>
+    <li><b>Clean validation &amp; test</b> — those labels stay untouched, so they reveal the truth.</li>
+  </ul>
+  <div class="formula">
+    <b>Train</b> learns weights · <b>Validation</b> chooses settings/checkpoints · <b>Test</b> untouched until the end
+    <span class="sub">Overfitting = low training loss but rising validation loss. If a model hits 100% on intentionally-wrong labels, it is memorizing noise, not learning digits.</span>
+  </div>
+  <pre><code>images_np = digits.images.astype("float32") / 16.0     <span class="cmt"># pixels → 0..1</span>
+images = torch.tensor(images_np[:, None, :, :])        <span class="cmt"># shape (N, 1, 8, 8)</span>
+<span class="cmt"># stratified splits: 60% train pool / 20% val / 20% test</span>
+train_val_ids, test_ids = train_test_split(all_ids, test_size=0.20, stratify=labels_clean)
+train_pool_ids, val_ids = train_test_split(train_val_ids, test_size=0.25, stratify=...)
+small_train_ids = train_pool_ids[:120]                 <span class="cmt"># the tiny set</span>
+<span class="cmt"># corrupt 25% of TRAIN labels only</span>
+labels_noisy = labels_clean.copy()
+corrupted = rng.choice(train_pool_ids, len(train_pool_ids)//4, replace=False)
+labels_noisy[corrupted] = (labels_clean[corrupted] + rng.integers(1,10,...)) % 10</code></pre>
+
+  <h2>Part I: The Two Models — MLP &amp; CNN</h2>
+  <p>Both models can optionally use dropout, and both can be built "small" (fewer params) to show capacity effects.</p>
+  <ul>
+    <li><b>MLP</b> — <code>Flatten</code> the 8×8 to 64 inputs → <code>Linear(64,256)</code> → <code>Linear(256,128)</code> → <code>Linear(128,10)</code>, ReLU between, optional <code>Dropout(0.4)</code>.</li>
+    <li><b>CNN</b> — two <code>Conv2d</code>+ReLU blocks with optional <code>Dropout2d(0.2)</code> and <code>MaxPool2d</code>, then a dense classifier with optional <code>Dropout(0.4)</code>.</li>
+  </ul>
+  <div class="note"><b>Both overfit.</b> The MLP memorizes easily; the CNN's weight-sharing and spatial bias help, <b>but do not prevent</b> memorization on a small, noisy set. Watch training loss fall while validation loss rises.</div>
+
+  <h2>Part II: The Training Function</h2>
+  <p>One transparent <code>fit()</code> drives every experiment. Each batch is the four steps: <b>forward → loss → <code>backward()</code> → <code>optimizer.step()</code></b>. After each epoch it records train/val loss and accuracy.</p>
+  <pre><code>def fit(model, train_ids, train_labels, val_labels=labels_clean,
+        epochs=100, lr=0.003, weight_decay=0.0, augment=False, patience=None):
+    optimizer = torch.optim.AdamW(params, lr=lr, weight_decay=weight_decay)  <span class="cmt"># L2</span>
+    for epoch in range(1, epochs+1):
+        model.train()                         <span class="cmt"># activates dropout</span>
+        for x, y in loader:
+            if augment: x = augment_batch(x)  <span class="cmt"># train-only augmentation</span>
+            optimizer.zero_grad()
+            loss = F.cross_entropy(model(x), y)
+            loss.backward(); optimizer.step()
+        # ... evaluate on train & val; track best val-loss checkpoint ...
+        if patience and stale_epochs >= patience: break   <span class="cmt"># early stopping</span>
+    if patience: model.load_state_dict(best_state)         <span class="cmt"># restore best</span></code></pre>
+  <div class="note"><b><code>model.train()</code> vs <code>model.eval()</code>:</b> <code>train()</code> turns dropout ON during learning; <code>eval()</code> turns it OFF so evaluation is fair and deterministic. Forgetting <code>eval()</code> at evaluation time is a classic bug.</div>
+
+  <h2>Part III: The Fixes — One at a Time</h2>
+  <table>
+    <thead><tr><th>Fix</th><th>What it does</th><th>In code</th></tr></thead>
+    <tbody>
+      <tr><td><b>Dropout</b></td><td>Temporarily hide random activations in training</td><td><code>nn.Dropout(0.4)</code></td></tr>
+      <tr><td><b>Dropout2d</b></td><td>Hide whole CNN feature-map channels (spatial)</td><td><code>nn.Dropout2d(0.2)</code></td></tr>
+      <tr><td><b>Weight decay (L2)</b></td><td>Discourage overly large weights</td><td><code>AdamW(..., weight_decay=0.1)</code></td></tr>
+      <tr><td><b>Early stopping</b></td><td>Stop when val loss stops improving; restore best checkpoint</td><td><code>patience=10</code></td></tr>
+      <tr><td><b>Smaller model</b></td><td>Fewer trainable parameters → less memorization</td><td><code>small=True</code></td></tr>
+      <tr><td><b>Augmentation</b></td><td>Small rotations/shifts of train images only</td><td><code>augment=True</code></td></tr>
+      <tr><td><b>More data / clean labels</b></td><td>More examples, or repair mislabeled ones</td><td><code>large_train_ids</code> / <code>labels_clean</code></td></tr>
+    </tbody>
+  </table>
+  <div class="note"><b>Dropout2d is not deleting filters.</b> It randomly zeroes entire feature-map <i>channels</i> during training — it does not change the filter weights. Useful because neighbouring pixels in a channel are highly correlated, so dropping single activations leaks less information than dropping whole channels.</div>
+  <div class="note"><b>No fix is guaranteed.</b> On tiny 8×8 digits, <b>too much augmentation can erase helpful detail and hurt</b>. Always interpret <i>validation</i> loss, not just training accuracy.</div>
+
+  <h2>Part IV: Transfer Learning as a Fix</h2>
+  <p>When the new task has little labeled data, reuse features from a related task. We pretrain a CNN on all <b>10 digits</b> (800 images), <b>freeze</b> its feature extractor, attach a new <b>Even-vs-Odd</b> 2-class head, and train on just <b>80</b> examples — comparing against training the same model from scratch.</p>
+  <pre><code>transfer_model = SimpleCNN(num_classes=2)
+transfer_model.features.load_state_dict(pretrained.features.state_dict())  <span class="cmt"># reuse</span>
+for p in transfer_model.features.parameters():
+    p.requires_grad = False          <span class="cmt"># freeze backbone; only the new head learns</span></code></pre>
+  <div class="note">Pretraining learns a useful representation; freezing keeps it fixed; the new head adapts. Transfer may or may not beat scratch — but with scarce, related data it often does.</div>
+
+  <h2>Part V: One Honest Final Test</h2>
+  <ol>
+    <li><b>Select</b> the model with the <b>lowest validation loss</b> — never look at test during selection.</li>
+    <li><b>Evaluate once</b> on the untouched test set → the honest accuracy + a confusion matrix.</li>
+  </ol>
+  <div class="formula">Golden rule: validation chooses, test confirms.<span class="sub">Reusing the test set for tuning silently inflates your reported score.</span></div>
+
+  <h2>Industry Checklist</h2>
+  <ul>
+    <li>Split correctly — keep related photos/patients/customers in the <b>same</b> split (avoid leakage).</li>
+    <li>Fit preprocessing statistics on the <b>training split only</b>.</li>
+    <li>Read <b>train and validation curves together</b>.</li>
+    <li>Prefer more representative data and correct bad labels; augment (label-preserving) <b>train only</b>.</li>
+    <li>Test dropout, weight decay, early stopping, and a simpler architecture.</li>
+    <li>Use a pretrained backbone when data is scarce and tasks are related.</li>
+    <li>Select on validation; evaluate once on the untouched test set; monitor after deployment.</li>
+  </ul>
+  <div class="formula"><b>Overfitting = excellent fit to training-specific details, weaker generalization.</b><br/>Solutions = better data + sensible capacity + regularization + correct evaluation.</div>
+
+  <div class="note"><b>Line-by-line walkthrough:</b> see <a href="overfitting-lab-code-explanation.html">the full code explanation of the lab notebook</a>. Want the diagrams and full reference? See <a href="overfitting-regularization-textbook-notes.html">Overfitting &amp; Regularization — Reference Notes</a>.</div>
+  <div class="note"><b>Next:</b> NLP → RNNs → Attention &amp; Transformers. <b>Assignment:</b> tune the CNN to find the best regularization setting.</div>
+</div>
+</body>
+</html>

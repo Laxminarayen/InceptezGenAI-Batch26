@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Overfitting &amp; Regularization</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+    --c-why:#3B6E63; --c-concept:#B0670C; --c-mech:#1E6FA8; --c-eval:#6B4FA0;
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+    --accent: var(--c-why);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.14); --surface-canvas:#10131C; --c-why:#79C0AE; --c-concept:#E3A238; --c-mech:#5FA8E0; --c-eval:#B49AE0; --good:#3FBB7C; --warn:#E3A238; --bad:#E36868; --shadow: 0 10px 30px -12px rgba(0,0,0,.6); }
+  }
+  :root[data-theme="dark"]{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.14); --surface-canvas:#10131C; --c-why:#79C0AE; --c-concept:#E3A238; --c-mech:#5FA8E0; --c-eval:#B49AE0; --good:#3FBB7C; --warn:#E3A238; --bad:#E36868; --shadow: 0 10px 30px -12px rgba(0,0,0,.6); }
+  :root[data-theme="light"]{ --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC; --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63; --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC; --c-why:#3B6E63; --c-concept:#B0670C; --c-mech:#1E6FA8; --c-eval:#6B4FA0; --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B; --shadow: 0 10px 30px -12px rgba(32,40,58,.25); }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); overflow:hidden; -webkit-font-smoothing:antialiased; }
+  body[data-section="why"]{--accent:var(--c-why);}
+  body[data-section="concept"]{--accent:var(--c-concept);}
+  body[data-section="mech"]{--accent:var(--c-mech);}
+  body[data-section="eval"]{--accent:var(--c-eval);}
+  h1,h2,h3,p{margin:0;}
+  h1,h2,h3{text-wrap:balance; letter-spacing:-0.01em;}
+  ::selection{background:var(--accent); color:#fff;}
+  .eyebrow{font-size:.74rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  .slide h1{font-size:clamp(1.7rem,3.2vw,2.9rem); font-weight:800; color:var(--ink);}
+  .body-text{font-size:clamp(1rem,1.25vw,1.2rem); font-weight:500; line-height:1.6; color:var(--ink-soft);}
+  .body-text b{color:var(--ink); font-weight:800;}
+  .tabular{font-variant-numeric:tabular-nums;}
+  .chrome-top{position:fixed; top:0; left:0; right:0; height:52px; z-index:50; display:flex; align-items:center; justify-content:space-between; padding:0 20px; pointer-events:none;}
+  .chrome-top > *{pointer-events:auto;}
+  .hour-badge{font-size:.72rem; font-weight:800; letter-spacing:.12em; color:var(--ink-faint); background:var(--paper-2); border:1px solid var(--line); padding:6px 12px; border-radius:999px;}
+  .chapter-chip{display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:700; color:var(--ink-soft); background:var(--paper-2); border:1px solid var(--line); padding:6px 14px 6px 8px; border-radius:999px;}
+  .chapter-chip .num{display:inline-flex; align-items:center; justify-content:center; width:20px;height:20px; border-radius:50%; background:var(--accent); color:#fff; font-size:.68rem; font-weight:800;}
+  .icon-btn{width:36px;height:36px; border-radius:50%; border:1px solid var(--line); background:var(--paper-2); color:var(--ink); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;}
+  .icon-btn:hover{background:var(--paper-3);}
+  .deck{position:absolute; inset:0; top:52px; bottom:64px;}
+  .slide{position:absolute; inset:0; display:none; flex-direction:column; padding:clamp(18px,3vw,40px) clamp(24px,5vw,80px); overflow:auto;}
+  .slide.active{display:flex;}
+  .slide-inner{display:flex; flex-direction:column; gap:clamp(12px,1.8vh,20px); max-width:1360px; width:100%; margin:0 auto; flex:1; min-height:0;}
+  .chrome-bottom{position:fixed; left:0; right:0; bottom:0; height:64px; z-index:50; display:flex; align-items:center; gap:14px; padding:0 clamp(14px,3vw,32px); background:linear-gradient(0deg, var(--paper) 60%, transparent);}
+  .nav-btn{width:40px;height:40px;border-radius:50%; border:1px solid var(--line); background:var(--paper-2); color:var(--ink); font-size:1.2rem; cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center;}
+  .nav-btn:hover:not(:disabled){background:var(--accent); color:#fff; border-color:transparent;}
+  .nav-btn:disabled{opacity:.35; cursor:default;}
+  .progress{flex:1; display:flex; align-items:center; gap:5px; overflow-x:auto; scrollbar-width:none;}
+  .progress::-webkit-scrollbar{display:none;}
+  .dot{width:9px;height:9px;border-radius:50%; background:var(--paper-3); border:none; cursor:pointer; flex:none; transition:transform .15s ease;}
+  .dot.gap{width:14px; height:2px; border-radius:1px; background:transparent; cursor:default;}
+  .dot.active{transform:scale(1.5);}
+  .slide-counter{font-size:.8rem; font-weight:700; color:var(--ink-faint); flex:none; white-space:nowrap;}
+  .split{display:grid; grid-template-columns:1.05fr 1.35fr; gap:clamp(20px,4vw,52px); align-items:center; flex:1; min-height:0;}
+  @media (max-width:920px){ .split{grid-template-columns:1fr; overflow:auto;} }
+  .stack{display:flex; flex-direction:column; gap:12px; min-height:0;}
+  .center-col{display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:16px; flex:1;}
+  .visual-box{background:var(--surface-canvas); border:1px solid var(--line); border-radius:24px; padding:16px; box-shadow:var(--shadow); min-height:0; display:flex; flex-direction:column; gap:8px;}
+  .vocab-card{border-left:5px solid var(--accent); background:var(--paper-2); border-radius:14px; padding:12px 18px; display:flex; flex-direction:column; gap:4px;}
+  .vocab-term{font-size:1rem; font-weight:900; letter-spacing:.04em; color:var(--accent);}
+  .vocab-def{font-size:1rem; color:var(--ink); font-weight:600; line-height:1.4;}
+  .console{display:flex; flex-wrap:wrap; gap:10px 14px; align-items:center; background:var(--paper-2); border:1px solid var(--line); border-radius:20px; padding:12px 16px;}
+  .field{display:flex; flex-direction:column; gap:6px; width:100%;}
+  .field label{font-size:.76rem; font-weight:800; color:var(--ink-soft);}
+  .seg{display:flex; gap:6px; flex-wrap:wrap;}
+  .seg button{font:inherit; font-size:.78rem; font-weight:700; color:var(--ink); background:var(--paper-3); border:1px solid var(--line); border-radius:999px; padding:6px 12px; cursor:pointer;}
+  .seg button.on{background:var(--accent); color:#fff; border-color:transparent;}
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px;}
+  .stat-tile{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:12px 14px;}
+  .stat-tile .label{font-size:.7rem; font-weight:800; color:var(--ink-faint); letter-spacing:.05em; text-transform:uppercase;}
+  .stat-tile .value{font-size:1.15rem; font-weight:900; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .stat-tile.accent .value{color:var(--accent);}
+  .card{background:var(--paper-2); border:1px solid var(--line); border-radius:18px; padding:16px 18px;}
+  .card-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px;}
+  .card.sm{padding:12px 14px;}
+  .card .ico{font-size:1.6rem;}
+  .card h3{font-size:1rem; margin-top:6px;}
+  .card p{font-size:.9rem; color:var(--ink-soft); margin-top:4px; line-height:1.45;}
+  .card.sm h3{font-size:.9rem;} .card.sm p{font-size:.8rem;}
+  .banner{border-radius:14px; padding:12px 16px; font-weight:800; font-size:.92rem; display:flex; align-items:center; gap:10px;}
+  .banner.warn{background:color-mix(in srgb, var(--warn) 18%, var(--paper-2)); color:var(--warn);}
+  .banner.good{background:color-mix(in srgb, var(--good) 18%, var(--paper-2)); color:var(--good);}
+  .banner.bad{background:color-mix(in srgb, var(--bad) 18%, var(--paper-2)); color:var(--bad);}
+  .banner.info{background:var(--paper-3); color:var(--ink); font-weight:600; align-items:flex-start;}
+  .roadmap{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  .roadmap .stop{background:var(--paper-2); border-radius:18px; padding:16px 10px; text-align:center; border-top:5px solid var(--stop-color, var(--accent));}
+  .roadmap .stop .ico{font-size:2rem;}
+  .roadmap .stop .t{font-size:.8rem; font-weight:800; margin-top:6px;}
+  @media (max-width:920px){ .roadmap{grid-template-columns:repeat(2,1fr);} }
+  .kicker-big{font-size:clamp(2.2rem,5.6vw,3.9rem); font-weight:900; letter-spacing:-0.02em;}
+  .glow{color:var(--accent);}
+  .formula-box{background:var(--paper-2); border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:14px; padding:14px 18px; font-size:clamp(1rem,1.5vw,1.3rem); font-weight:800; color:var(--ink);}
+  .formula-box .sub{display:block; font-size:.86rem; font-weight:500; color:var(--ink-faint); margin-top:6px;}
+  .table-wrap{border:1px solid var(--line); border-radius:14px; overflow:hidden; overflow-x:auto;}
+  .data-table{width:100%; border-collapse:collapse; font-size:.86rem;}
+  .data-table th,.data-table td{padding:8px 10px; text-align:center; font-variant-numeric:tabular-nums;}
+  .data-table thead th{background:var(--paper-3); color:var(--ink-soft); font-weight:800; font-size:.72rem; letter-spacing:.03em; text-transform:uppercase;}
+  .data-table tbody tr{border-top:1px solid var(--line);}
+  .data-table tbody tr.hl-row{background:color-mix(in srgb, var(--accent) 12%, transparent); font-weight:800;}
+  .footnote{font-size:.82rem; color:var(--ink-faint); font-weight:600;}
+  .fit-canvas{width:100%; aspect-ratio:16/9; background:var(--surface-canvas); border-radius:14px;}
+  pre{background:#10141c; color:#dfe6f2; border-radius:12px; padding:14px 16px; overflow-x:auto; font-size:.8rem; line-height:1.5; font-family:ui-monospace,Menlo,monospace; margin:0;}
+  pre .cmt{color:#7f8aa0;}
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+</style>
+</head>
+<body data-section="why">
+  <div class="chrome-top">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="hour-badge">OVERFITTING · DROPOUT · REGULARIZATION</div>
+      <div class="chapter-chip" id="chapterChip" style="display:none;"><span class="num" id="chapterNum">1</span><span id="chapterLabel">—</span></div>
+    </div>
+    <button class="icon-btn" id="themeToggle" title="Toggle light / dark">🌗</button>
+  </div>
+
+  <main class="deck" id="deck">
+
+    <section class="slide" data-section="why" id="s0">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Deep Learning · Class 38</div>
+        <h1 class="kicker-big">When a model<br/><span class="glow">memorizes</span></h1>
+        <p class="body-text" style="max-width:820px;">A network can score 100% on its training data and still fail on anything new — it <b>memorized</b> instead of learning. Today we <i>deliberately</i> force overfitting (tiny dataset + 25% wrong labels), watch it happen in both an MLP and a CNN, then apply the full toolbox — <b>dropout, weight decay, early stopping, smaller models, augmentation, more data</b> — and measure honestly.</p>
+        <div class="roadmap" style="width:100%; margin-top:6px;">
+          <div class="stop" style="--stop-color:var(--c-why);"><div class="ico">🧪</div><div class="t">1 · The experiment</div></div>
+          <div class="stop" style="--stop-color:var(--c-concept);"><div class="ico">📉</div><div class="t">2 · Seeing the gap</div></div>
+          <div class="stop" style="--stop-color:var(--c-mech);"><div class="ico">🛠️</div><div class="t">3 · The fixes</div></div>
+          <div class="stop" style="--stop-color:var(--c-eval);"><div class="ico">⚖️</div><div class="t">4 · Transfer &amp; honest test</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 1 — THE EXPERIMENT -->
+    <section class="slide" data-section="why" id="sW1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Part I · What Is Overfitting?</div>
+          <h1>Great on training, <span class="glow">weak</span> on unseen</h1>
+          <p class="body-text"><b>Overfitting</b> = an excellent fit to training-specific details, but weaker generalization. The model learns the quirks (and even the mistakes) of the training set instead of the real pattern.</p>
+          <div class="formula-box">low training loss ≠ good real-world performance<span class="sub">The validation curve — not the training curve — tells you when generalization starts to deteriorate.</span></div>
+        </div>
+        <div class="stack">
+          <div class="vocab-card"><div class="vocab-term">Train / Validation / Test</div><div class="vocab-def"><b>Train</b> learns the weights. <b>Validation</b> chooses settings &amp; checkpoints (never updates weights). <b>Test</b> stays untouched until the one final evaluation.</div></div>
+          <div class="banner info">We use <b>sklearn's 8×8 digits</b> (1,797 images, no download) — small on purpose, so overfitting is easy to see on a CPU.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="why" id="sW2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">The Setup · Forcing Overfitting on Purpose</div>
+        <h1>A tiny set with <span class="glow">25% wrong labels</span></h1>
+        <div class="card-grid">
+          <div class="card"><div class="ico">🔢</div><h3>Small training set</h3><p>Only <b>120</b> images (vs 800 for the "more data" run). Little data → easy to memorize.</p></div>
+          <div class="card"><div class="ico">🏷️</div><h3>25% corrupted labels</h3><p>A quarter of the <b>training</b> labels are deliberately flipped to wrong digits.</p></div>
+          <div class="card" style="border-top:5px solid var(--accent);"><div class="ico">🧼</div><h3>Clean val &amp; test</h3><p>Validation and test labels stay <b>untouched</b> — so they reveal the truth.</p></div>
+        </div>
+        <div class="banner bad">🚩 If a model reaches 100% accuracy against <b>intentionally wrong</b> training labels, it is memorizing noise — not learning digits. More training won't fix that.</div>
+      </div>
+    </section>
+
+    <!-- SECTION 2 — SEEING THE GAP -->
+    <section class="slide" data-section="concept" id="sC1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Part II · Watch It Happen</div>
+          <h1>Training loss falls, validation loss <span class="glow">rises</span></h1>
+          <p class="body-text">Both an <b>MLP</b> (flatten 8×8 → dense) and a <b>CNN</b> (conv filters + pooling) overfit this noisy set. Convolutional weight-sharing helps, but it does <b>not</b> prevent memorization on small, noisy data.</p>
+          <div class="banner bad">The telltale sign: train accuracy climbs toward 100% while the <b>generalization gap</b> (train − validation) widens.</div>
+        </div>
+        <div class="stack">
+          <div class="vocab-card"><div class="vocab-term">model.train() vs model.eval()</div><div class="vocab-def"><code>train()</code> <b>activates</b> dropout during learning; <code>eval()</code> <b>disables</b> it for a fair, deterministic measurement. Forgetting <code>eval()</code> is a classic bug.</div></div>
+          <div class="banner info">Every batch is the same 4 steps: <b>forward → loss → <code>backward()</code> → <code>optimizer.step()</code></b>.</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3 — THE FIXES (interactive) -->
+    <section class="slide" data-section="mech" id="sM1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Interactive · Pick a fix, watch the curves</div>
+        <h1>Close the <span class="glow">generalization gap</span></h1>
+        <div class="split" style="gap:clamp(16px,3vw,36px);">
+          <div class="visual-box" style="flex:1;">
+            <canvas class="fit-canvas" id="fitCanvas" width="880" height="495"></canvas>
+          </div>
+          <div class="stack" style="justify-content:center;">
+            <div class="console">
+              <div class="field">
+                <label>Regularization fix</label>
+                <div class="seg" id="fixSeg">
+                  <button data-f="baseline" class="on">Baseline</button>
+                  <button data-f="dropout">Dropout</button>
+                  <button data-f="weightdecay">Weight decay</button>
+                  <button data-f="early">Early stopping</button>
+                  <button data-f="smaller">Smaller model</button>
+                  <button data-f="moredata">More data</button>
+                </div>
+              </div>
+            </div>
+            <div class="stat-grid">
+              <div class="stat-tile"><div class="label">Final train acc</div><div class="value" id="fTrain">—</div></div>
+              <div class="stat-tile"><div class="label">Final val acc</div><div class="value" id="fVal">—</div></div>
+              <div class="stat-tile accent"><div class="label">Gen. gap</div><div class="value" id="fGap">—</div></div>
+            </div>
+            <div class="banner info" id="fitReadout">Baseline: train accuracy shoots to ~100% while validation plateaus — a wide gap. That gap is overfitting.</div>
+            <div class="footnote">Schematic curves for intuition — green = train, amber = validation. The smaller the gap, the better the model generalizes.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="mech" id="sM2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">The Toolbox · One Fix at a Time</div>
+        <h1>Seven ways to <span class="glow">regularize</span></h1>
+        <div class="card-grid">
+          <div class="card sm"><div class="ico">🎲</div><h3>Dropout</h3><p>Temporarily hide random activations during training. <b>Dropout2d</b> hides whole CNN channels.</p></div>
+          <div class="card sm"><div class="ico">⚖️</div><h3>Weight decay (L2)</h3><p>Discourage overly large weights — <code>AdamW(..., weight_decay=0.1)</code>.</p></div>
+          <div class="card sm"><div class="ico">⏹️</div><h3>Early stopping</h3><p>Stop when val loss stops improving; <b>restore the best checkpoint</b>.</p></div>
+          <div class="card sm"><div class="ico">🪶</div><h3>Smaller model</h3><p>Fewer trainable parameters → less capacity to memorize.</p></div>
+          <div class="card sm"><div class="ico">🔄</div><h3>Augmentation</h3><p>Small rotations/shifts of training images — label-preserving, <b>train only</b>.</p></div>
+          <div class="card sm"><div class="ico">➕</div><h3>More data / clean labels</h3><p>More distinct examples, or repair the mislabeled ones — often the biggest win.</p></div>
+        </div>
+        <div class="banner warn">⚠️ No fix is guaranteed. On tiny 8×8 digits, <b>too much augmentation</b> can erase helpful detail and <i>hurt</i>.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="mech" id="sM3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Spotlight · Dropout vs Dropout2d</div>
+          <h1>Drop activations, or <span class="glow">whole channels</span></h1>
+          <p class="body-text"><b>Standard <code>Dropout</code></b> randomly zeroes individual activations. <b>Spatial <code>Dropout2d</code></b> zeroes <b>entire feature-map channels</b> in a CNN — better when neighbouring pixels are highly correlated.</p>
+          <div class="banner info">Neither <b>deletes or changes the filter weights</b> — it only hides outputs <i>during training</i>, forcing the network not to rely on any single neuron or channel.</div>
+        </div>
+        <pre><code><span class="cmt"># MLP: hide activations</span>
+nn.Dropout(0.4)
+
+<span class="cmt"># CNN: hide whole channels</span>
+nn.Dropout2d(0.2)
+
+<span class="cmt"># L2 regularization via the optimizer</span>
+torch.optim.AdamW(params,
+    lr=0.003, weight_decay=0.1)</code></pre>
+      </div>
+    </section>
+
+    <!-- SECTION 4 — TRANSFER + HONEST TEST -->
+    <section class="slide" data-section="eval" id="sE1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Part IV · Transfer Learning as a Fix</div>
+          <h1>Reuse features when data is <span class="glow">scarce</span></h1>
+          <p class="body-text">Pretrain a CNN on the full <b>10-digit</b> task, <b>freeze</b> its feature extractor, and attach a new <b>Even-vs-Odd</b> head trained on just <b>80</b> examples. With little data for the new task, reusing learned features can beat training from scratch.</p>
+        </div>
+        <pre><code><span class="cmt"># reuse the pretrained features, new 2-class head</span>
+transfer = SimpleCNN(num_classes=2)
+transfer.features.load_state_dict(
+    pretrained.features.state_dict())
+<span class="cmt"># freeze the backbone</span>
+for p in transfer.features.parameters():
+    p.requires_grad = False
+<span class="cmt"># only the new head learns</span></code></pre>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">One Honest Final Test</div>
+        <h1>Select on validation, test <span class="glow">once</span></h1>
+        <div class="card-grid">
+          <div class="card"><div class="ico">①</div><h3>Select</h3><p>Pick the model with the <b>lowest validation loss</b> — never peek at test during selection.</p></div>
+          <div class="card"><div class="ico">②</div><h3>Evaluate once</h3><p>Run that single model on the <b>untouched test set</b> → the honest number (+ a confusion matrix).</p></div>
+          <div class="card" style="border-top:5px solid var(--accent);"><div class="ico">③</div><h3>Report</h3><p>The test score is your real-world estimate. Reusing test data for tuning quietly inflates it.</p></div>
+        </div>
+        <div class="banner good">✓ Golden rule: <b>validation chooses, test confirms.</b> Keep related images/patients/customers in the <i>same</i> split to avoid leakage.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE3">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Recap · Board Takeaway</div>
+        <h1 class="kicker-big">Better data + sensible capacity + <span class="glow">regularization</span></h1>
+        <p class="body-text" style="max-width:800px;"><b>Overfitting</b> = excellent fit to training-specific details, weaker generalization. We saw it in an MLP and a CNN on noisy digits, then closed the gap with <b>dropout, weight decay, early stopping, smaller models, augmentation, more/cleaner data</b>, and <b>transfer learning</b> — judging everything by <i>validation</i> loss and confirming once on <i>test</i>.</p>
+        <div class="banner info" style="max-width:800px;"><b>A low training loss does not guarantee real-world performance.</b> Next: NLP → RNNs → Attention &amp; Transformers.</div>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="chrome-bottom">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous slide">‹</button>
+    <div class="progress" id="progress"></div>
+    <div class="slide-counter"><span id="curNum" class="tabular">1</span> / <span id="totalNum" class="tabular">—</span></div>
+    <button class="nav-btn" id="nextBtn" aria-label="Next slide">›</button>
+  </nav>
+
+<script>
+"use strict";
+const $=(s,e=document)=>e.querySelector(s);
+const $$=(s,e=document)=>[...e.querySelectorAll(s)];
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+const slideEls=$$('.slide');
+let cur=0;
+const CHAPTERS={why:{num:1,label:'The Experiment'},concept:{num:2,label:'Seeing the Gap'},mech:{num:3,label:'The Fixes'},eval:{num:4,label:'Transfer &amp; Honest Test'}};
+const onEnter={};
+function buildDots(){const w=$('#progress');w.innerHTML='';let last=null;slideEls.forEach((s,i)=>{if(last!==null&&s.dataset.section!==last){const g=document.createElement('span');g.className='dot gap';w.appendChild(g);}const b=document.createElement('button');b.className='dot';b.setAttribute('aria-label','Go to slide '+(i+1));b.addEventListener('click',()=>goTo(i));w.appendChild(b);last=s.dataset.section;});}
+function goTo(i){i=clamp(i,0,slideEls.length-1);slideEls[cur].classList.remove('active');cur=i;const s=slideEls[cur];s.classList.add('active');document.body.dataset.section=s.dataset.section;const chip=$('#chapterChip'),m=CHAPTERS[s.dataset.section];if(m){chip.style.display='flex';$('#chapterNum').textContent=m.num;$('#chapterLabel').innerHTML=m.label;}else chip.style.display='none';$('#curNum').textContent=cur+1;$('#prevBtn').disabled=cur===0;$('#nextBtn').disabled=cur===slideEls.length-1;$$('.dot:not(.gap)',$('#progress')).forEach((d,idx)=>d.classList.toggle('active',idx===cur));const fn=onEnter[s.id];if(fn)requestAnimationFrame(fn);}
+function next(){if(cur<slideEls.length-1)goTo(cur+1);}
+function prev(){if(cur>0)goTo(cur-1);}
+$('#nextBtn').addEventListener('click',next);$('#prevBtn').addEventListener('click',prev);
+window.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();next();}else if(e.key==='ArrowLeft'){e.preventDefault();prev();}});
+const themeBtn=$('#themeToggle');
+(function(){const t=localStorage.getItem('sv-theme-overfit');if(t)document.documentElement.setAttribute('data-theme',t);})();
+themeBtn.addEventListener('click',()=>{const now=document.documentElement.getAttribute('data-theme');const dark=now?now==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;const nt=dark?'light':'dark';document.documentElement.setAttribute('data-theme',nt);localStorage.setItem('sv-theme-overfit',nt);drawFit();});
+
+/* ---- Overfitting curve simulator (schematic) ---- */
+function cssVar(n){return getComputedStyle(document.documentElement).getPropertyValue(n).trim();}
+const EPOCHS=60, PEAK=14;
+const PRESETS={
+  baseline:   {trainMax:100, valMax:74, tau:4, decline:0.42, stop:false, note:'Baseline: train → ~100% while validation plateaus then dips. A wide gap = overfitting.'},
+  dropout:    {trainMax:93,  valMax:82, tau:6, decline:0.12, stop:false, note:'Dropout: hiding activations stops the net memorizing — train sits lower, validation rises, gap shrinks.'},
+  weightdecay:{trainMax:94,  valMax:81, tau:6, decline:0.14, stop:false, note:'Weight decay (L2): penalizing big weights smooths the fit — a smaller, more honest gap.'},
+  early:      {trainMax:100, valMax:74, tau:4, decline:0.42, stop:true,  note:'Early stopping: same curves, but we STOP at best validation and restore that checkpoint (dashed line).'},
+  smaller:    {trainMax:91,  valMax:79, tau:5, decline:0.18, stop:false, note:'Smaller model: fewer parameters = less room to memorize. Train ceiling drops, gap narrows.'},
+  moredata:   {trainMax:98,  valMax:89, tau:5, decline:0.06, stop:false, note:'More data: the biggest win here — validation climbs much higher and tracks train closely.'}
+};
+let fix='baseline';
+function trainAcc(e,p){ return p.trainMax*(1-Math.exp(-e/p.tau)); }
+function valAcc(e,p){ let v=p.valMax*(1-Math.exp(-e/5)); if(e>PEAK) v-=(e-PEAK)*p.decline; return Math.max(0,v); }
+function bestValEpoch(p){ let be=1,bv=-1; for(let e=1;e<=EPOCHS;e++){const v=valAcc(e,p); if(v>bv){bv=v;be=e;}} return be; }
+function drawFit(){
+  const cv=$('#fitCanvas'); if(!cv) return;
+  const ctx=cv.getContext('2d'); const W=cv.width,H=cv.height; ctx.clearRect(0,0,W,H);
+  const p=PRESETS[fix];
+  const ink=cssVar('--ink')||'#222', soft=cssVar('--ink-soft')||'#555', faint=cssVar('--ink-faint')||'#888', line=cssVar('--line')||'#ccc';
+  const good=cssVar('--good')||'#1C8C5A', warn=cssVar('--warn')||'#B0670C', accent=cssVar('--c-mech')||'#1E6FA8';
+  const padL=54,padR=24,padT=28,padB=44;
+  const x0=padL,x1=W-padR,y0=H-padB,y1=padT;
+  const sx=e=>x0+(e/EPOCHS)*(x1-x0);
+  const sy=a=>y0-(a/105)*(y0-y1);
+  // axes + gridlines
+  ctx.strokeStyle=line; ctx.lineWidth=1; ctx.fillStyle=faint; ctx.font='12px -apple-system,Arial'; ctx.textAlign='right'; ctx.textBaseline='middle';
+  for(let a=0;a<=100;a+=25){ const y=sy(a); ctx.beginPath(); ctx.moveTo(x0,y); ctx.lineTo(x1,y); ctx.globalAlpha=.35; ctx.stroke(); ctx.globalAlpha=1; ctx.fillText(a+'%',x0-8,y); }
+  ctx.textAlign='center'; ctx.fillText('epoch →',(x0+x1)/2,H-14);
+  ctx.save(); ctx.translate(16,(y0+y1)/2); ctx.rotate(-Math.PI/2); ctx.fillText('accuracy →',0,0); ctx.restore();
+  const stopE = p.stop? bestValEpoch(p) : EPOCHS;
+  // shade generalization gap
+  ctx.beginPath();
+  for(let e=1;e<=EPOCHS;e++){const X=sx(e),Y=sy(trainAcc(e,p)); e===1?ctx.moveTo(X,Y):ctx.lineTo(X,Y);}
+  for(let e=EPOCHS;e>=1;e--){const X=sx(e),Y=sy(valAcc(e,p)); ctx.lineTo(X,Y);}
+  ctx.closePath(); ctx.fillStyle=warn; ctx.globalAlpha=.10; ctx.fill(); ctx.globalAlpha=1;
+  // train curve
+  ctx.strokeStyle=good; ctx.lineWidth=3; ctx.beginPath();
+  for(let e=1;e<=EPOCHS;e++){const X=sx(e),Y=sy(trainAcc(e,p)); e===1?ctx.moveTo(X,Y):ctx.lineTo(X,Y);} ctx.stroke();
+  // val curve
+  ctx.strokeStyle=warn; ctx.lineWidth=3; ctx.beginPath();
+  for(let e=1;e<=EPOCHS;e++){const X=sx(e),Y=sy(valAcc(e,p)); e===1?ctx.moveTo(X,Y):ctx.lineTo(X,Y);} ctx.stroke();
+  // early-stop marker
+  if(p.stop){ const X=sx(stopE); ctx.strokeStyle=accent; ctx.lineWidth=2; ctx.setLineDash([6,5]); ctx.beginPath(); ctx.moveTo(X,y1); ctx.lineTo(X,y0); ctx.stroke(); ctx.setLineDash([]);
+    ctx.fillStyle=accent; ctx.textAlign='center'; ctx.font='bold 12px -apple-system,Arial'; ctx.fillText('early stop',X,y1-6); }
+  // legend
+  ctx.font='bold 13px -apple-system,Arial'; ctx.textAlign='left';
+  ctx.fillStyle=good; ctx.fillRect(x1-150,y1-2,16,4); ctx.fillText('train',x1-128,y1+2);
+  ctx.fillStyle=warn; ctx.fillRect(x1-70,y1-2,16,4); ctx.fillText('validation',x1-48,y1+2);
+  // stats
+  const tA=trainAcc(stopE,p), vA=valAcc(stopE,p);
+  $('#fTrain').textContent=tA.toFixed(0)+'%';
+  $('#fVal').textContent=vA.toFixed(0)+'%';
+  $('#fGap').textContent=(tA-vA).toFixed(0)+' pts';
+  $('#fitReadout').textContent=p.note;
+}
+$$('#fixSeg button').forEach(b=>b.addEventListener('click',()=>{ $$('#fixSeg button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); fix=b.dataset.f; drawFit(); }));
+onEnter['sM1']=drawFit;
+
+buildDots();
+$('#totalNum').textContent=slideEls.length;
+const dl=parseInt(new URLSearchParams(location.search).get('slide'),10);
+goTo(Number.isFinite(dl)?dl-1:0);
+</script>
+</body>
+</html>

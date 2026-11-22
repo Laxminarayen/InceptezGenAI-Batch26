@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Overfitting &amp; Regularization — Reference Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{ --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC; --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63; --line: rgba(32,40,58,.16); --accent:#6B4FA0; --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; }
+  @media (prefers-color-scheme: dark){ :root{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.16); --accent:#B49AE0; } }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap{max-width:860px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:680px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+  h2{font-size:1.4rem; font-weight:900; margin:48px 0 14px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px;}
+  h3{font-size:1.06rem; font-weight:800; margin:24px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:9px 12px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono);}
+  pre{background:#10141c; color:#dfe6f2; border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.86rem; line-height:1.55; font-family:var(--mono);}
+  pre code{background:none; padding:0; font-size:1em; color:inherit;}
+  pre .cmt{color:#7f8aa0;}
+  .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px;}
+  .pill{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:.82rem; font-weight:700; color:var(--ink);}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0;}
+  .fig{margin:20px 0 22px; background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 18px 10px;}
+  .fig svg{display:block; width:100%; height:auto;}
+  .fig figcaption{font-size:.82rem; color:var(--ink-faint); margin-top:12px; text-align:center; line-height:1.5;}
+  .fig text{font-family:var(--font);}
+  .fig .lbl{font-size:13px; font-weight:800; fill:var(--ink);}
+  .fig .lbl-s{font-size:12px; font-weight:600; fill:var(--ink-soft);}
+  .fig .lbl-f{font-size:11px; font-weight:600; fill:var(--ink-faint);}
+  .fig .teal{stroke:#3B6E63;} .fig .amber{stroke:#B0670C;} .fig .blue{stroke:#1E6FA8;} .fig .purple{stroke:#6B4FA0;}
+  .fig .f-teal{fill:#3B6E63;} .fig .f-amber{fill:#B0670C;} .fig .f-blue{fill:#1E6FA8;} .fig .f-purple{fill:#6B4FA0;}
+  @media (prefers-color-scheme: dark){
+    .fig .teal{stroke:#6FB3A3;} .fig .amber{stroke:#E0A24C;} .fig .blue{stroke:#5CA6DE;} .fig .purple{stroke:#B49AE0;}
+    .fig .f-teal{fill:#6FB3A3;} .fig .f-amber{fill:#E0A24C;} .fig .f-blue{fill:#5CA6DE;} .fig .f-purple{fill:#B49AE0;}
+  }
+  .fig .box{fill:var(--paper-3); stroke:var(--line); stroke-width:1.4;}
+  .fig .flow{stroke:var(--ink-soft); stroke-width:1.6; fill:none;}
+  .fig .on{fill:color-mix(in srgb,#1C8C5A 30%,var(--paper-3)); stroke:#1C8C5A; stroke-width:1.4;}
+  .fig .off{fill:color-mix(in srgb,#C23B3B 22%,var(--paper-3)); stroke:#C23B3B; stroke-width:1.4; stroke-dasharray:3 2;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Reference Notes · Deep Learning</div>
+  <h1>Overfitting, Dropout &amp; Regularization</h1>
+  <p class="abstract">A neural network can memorize its training set — even wrong labels — and still fail on new data. This chapter defines overfitting and the generalization gap, then explains the full toolbox (dropout, Dropout2d, weight decay, early stopping, smaller models, augmentation, more/cleaner data, transfer learning) and how to evaluate honestly.</p>
+
+  <div class="related-links">
+    <a href="classwork-notes.html">📝 Classwork Notes (Day 38 write-up)</a>
+    <a href="overfitting-fixes-slides.html">🖥️ Slide Deck (overfitting-curve demo)</a>
+    <a href="overfitting-lab-code-explanation.html">📓 Code explanation (the lab)</a>
+    <a href="../37.%20Transfer%20Learning%20-%20Ec2%20AWS/transfer-learning-textbook-notes.html">📚 Transfer Learning (Class 37)</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">What Is Overfitting</a></li>
+      <li><a href="#s2">The Experiment Design</a></li>
+      <li><a href="#s3">The Generalization Gap</a></li>
+      <li><a href="#s4">Dropout &amp; Dropout2d</a></li>
+      <li><a href="#s5">Weight Decay (L2)</a></li>
+      <li><a href="#s6">Early Stopping</a></li>
+      <li><a href="#s7">Capacity, Augmentation &amp; Data</a></li>
+      <li><a href="#s8">Transfer Learning as a Fix</a></li>
+      <li><a href="#s9">Honest Evaluation</a></li>
+      <li><a href="#s10">Summary &amp; Checklist</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1"><span class="num">1.</span>What Is Overfitting?</h2>
+  <p><b>Overfitting</b> = an excellent fit to training-specific details, with weaker generalization to unseen data. The model learns the quirks — and even the mistakes — of the training set instead of the real pattern.</p>
+  <div class="formula">low training loss ≠ good real-world performance<span class="sub">The <b>validation</b> curve, not the training curve, reveals when generalization starts to deteriorate.</span></div>
+  <p>The three splits each have a distinct job: <b>training</b> updates the weights, <b>validation</b> chooses settings and checkpoints (without updating weights), and <b>test</b> is kept untouched until a single final evaluation.</p>
+
+  <h2 id="s2"><span class="num">2.</span>The Experiment Design</h2>
+  <p>To make overfitting visible on a CPU, the lab uses sklearn's <code>load_digits()</code> (1,797 images of 8×8 digits — no download) and <i>rigs</i> the data so memorization is obvious:</p>
+  <ul>
+    <li><b>Tiny training set</b> — 120 images (vs 800 for the "more data" run).</li>
+    <li><b>25% corrupted training labels</b> — a quarter of the <i>training</i> labels are flipped to wrong digits.</li>
+    <li><b>Clean validation &amp; test</b> — those labels stay correct, so they tell the truth.</li>
+  </ul>
+  <div class="note warn"><b>The key insight:</b> if a model reaches 100% accuracy against intentionally-wrong training labels, it is <i>memorizing noise</i>, not learning digits. More training cannot fix that — only better data or regularization can.</div>
+
+  <h2 id="s3"><span class="num">3.</span>The Generalization Gap</h2>
+  <p>As training proceeds, training accuracy climbs toward 100% while validation accuracy plateaus and then dips. The growing distance between them is the <b>generalization gap</b> — the visual signature of overfitting.</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 640 250" role="img" aria-label="Training accuracy rises to near 100 percent while validation plateaus then dips; the shaded gap between them is overfitting.">
+      <line x1="56" y1="196" x2="604" y2="196" stroke="var(--line)" stroke-width="1.4"/>
+      <line x1="56" y1="28" x2="56" y2="196" stroke="var(--line)" stroke-width="1.4"/>
+      <text class="lbl-f" x="330" y="222" text-anchor="middle">epochs →</text>
+      <text class="lbl-f" x="20" y="112" text-anchor="middle" transform="rotate(-90 20 112)">accuracy →</text>
+      <!-- gap shading -->
+      <path d="M56,150 C 180,80 320,46 600,40 L600,96 C 420,96 240,112 56,150 Z" fill="#B0670C" opacity="0.12"/>
+      <!-- train -->
+      <path class="teal" fill="none" stroke-width="2.8" d="M56,150 C 180,80 320,46 600,40"/>
+      <text class="f-teal lbl-s" x="556" y="34">train</text>
+      <!-- val -->
+      <path class="amber" fill="none" stroke-width="2.8" d="M56,152 C 200,96 320,88 380,90 C 470,94 540,106 600,116"/>
+      <text class="f-amber lbl-s" x="548" y="130">validation</text>
+      <!-- gap arrow -->
+      <path class="flow" d="M500,52 V104" stroke-dasharray="3 3"/>
+      <text class="lbl f-amber" x="516" y="82">gap</text>
+      <text class="lbl-f" x="516" y="98">(overfit)</text>
+    </svg>
+    <figcaption><b>Fig 1.</b> The generalization gap. Both an MLP and a CNN show this on the noisy set — convolution's weight-sharing helps but does not prevent memorization on small, noisy data.</figcaption>
+  </figure>
+
+  <h2 id="s4"><span class="num">4.</span>Dropout &amp; Dropout2d</h2>
+  <p><b>Dropout</b> randomly zeroes individual activations <i>during training</i> (a probability <code>p</code>, e.g. 0.4), forcing the network not to rely on any single neuron. <b>Spatial dropout (<code>Dropout2d</code>)</b> zeroes <b>entire feature-map channels</b> in a CNN — more effective there because neighbouring pixels in a channel are highly correlated.</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 640 210" role="img" aria-label="Left: standard dropout zeroes scattered neurons. Right: Dropout2d zeroes whole feature-map channels.">
+      <!-- standard dropout -->
+      <text class="lbl" x="160" y="26" text-anchor="middle">Dropout — hide random activations</text>
+      <g>
+        <circle cx="70" cy="70" r="12" class="on"/><circle cx="70" cy="110" r="12" class="off"/><circle cx="70" cy="150" r="12" class="on"/>
+        <circle cx="160" cy="60" r="12" class="off"/><circle cx="160" cy="100" r="12" class="on"/><circle cx="160" cy="140" r="12" class="on"/><circle cx="160" cy="180" r="12" class="off"/>
+        <circle cx="250" cy="80" r="12" class="on"/><circle cx="250" cy="130" r="12" class="off"/>
+        <g stroke="var(--line)" stroke-width="1">
+          <line x1="82" y1="70" x2="148" y2="60"/><line x1="82" y1="70" x2="148" y2="100"/><line x1="82" y1="150" x2="148" y2="140"/>
+          <line x1="172" y1="100" x2="238" y2="80"/><line x1="172" y1="140" x2="238" y2="80"/>
+        </g>
+      </g>
+      <text class="lbl-f" x="160" y="202" text-anchor="middle">✗ = temporarily zeroed neuron</text>
+      <!-- divider -->
+      <line x1="320" y1="40" x2="320" y2="185" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="4 5"/>
+      <!-- dropout2d -->
+      <text class="lbl" x="480" y="26" text-anchor="middle">Dropout2d — hide whole channels</text>
+      <g>
+        <rect x="360" y="52" width="50" height="40" class="on" rx="4"/>
+        <rect x="420" y="52" width="50" height="40" class="off" rx="4"/>
+        <rect x="480" y="52" width="50" height="40" class="on" rx="4"/>
+        <rect x="540" y="52" width="50" height="40" class="on" rx="4"/>
+        <rect x="360" y="110" width="50" height="40" class="off" rx="4"/>
+        <rect x="420" y="110" width="50" height="40" class="on" rx="4"/>
+        <rect x="480" y="110" width="50" height="40" class="on" rx="4"/>
+        <rect x="540" y="110" width="50" height="40" class="off" rx="4"/>
+      </g>
+      <text class="lbl-f" x="480" y="202" text-anchor="middle">each box = one feature-map channel</text>
+    </svg>
+    <figcaption><b>Fig 2.</b> Dropout hides scattered activations; Dropout2d hides entire channels. Neither deletes or changes the filter weights — they only hide outputs during training. Both are OFF at evaluation (<code>model.eval()</code>).</figcaption>
+  </figure>
+
+  <h2 id="s5"><span class="num">5.</span>Weight Decay (L2 Regularization)</h2>
+  <p><b>Weight decay</b> adds a penalty on large weights to the loss, discouraging the network from over-relying on any single feature. In PyTorch it's a single optimizer argument:</p>
+  <pre><code>optimizer = torch.optim.AdamW(params, lr=0.003, weight_decay=0.1)</code></pre>
+  <div class="formula">total loss = data loss + λ · Σ w²<span class="sub">λ (the <code>weight_decay</code>) is small; a larger value pulls weights toward zero harder. AdamW decouples this penalty from the gradient step for cleaner regularization.</span></div>
+
+  <h2 id="s6"><span class="num">6.</span>Early Stopping</h2>
+  <p>Instead of training a fixed number of epochs, <b>early stopping</b> watches validation loss and stops when it has not improved for <code>patience</code> epochs — then <b>restores the best checkpoint</b> (not the last). This keeps the generalizing model and discards the memorizing one.</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 640 220" role="img" aria-label="Validation loss falls to a minimum then rises; early stopping restores the checkpoint at the minimum.">
+      <line x1="56" y1="176" x2="604" y2="176" stroke="var(--line)" stroke-width="1.4"/>
+      <line x1="56" y1="24" x2="56" y2="176" stroke="var(--line)" stroke-width="1.4"/>
+      <text class="lbl-f" x="330" y="200" text-anchor="middle">epochs →</text>
+      <text class="lbl-f" x="20" y="100" text-anchor="middle" transform="rotate(-90 20 100)">val loss →</text>
+      <!-- val loss U curve -->
+      <path class="amber" fill="none" stroke-width="2.8" d="M56,60 C 160,150 240,160 300,158 C 420,154 520,96 600,50"/>
+      <!-- best point -->
+      <circle cx="300" cy="158" r="6" class="f-teal"/>
+      <line x1="300" y1="24" x2="300" y2="176" stroke="var(--accent)" stroke-width="1.6" stroke-dasharray="5 4"/>
+      <text class="lbl" x="300" y="18" text-anchor="middle" fill="var(--accent)">stop &amp; restore here</text>
+      <text class="f-teal lbl-s" x="312" y="176">best checkpoint</text>
+      <text class="lbl-f" x="470" y="70">keeps rising →</text>
+      <text class="lbl-f" x="470" y="86">(overfitting)</text>
+    </svg>
+    <figcaption><b>Fig 3.</b> Early stopping. Validation loss falls to a minimum, then rises as the model overfits. We stop after <code>patience</code> stale epochs and load the weights saved at the minimum.</figcaption>
+  </figure>
+
+  <h2 id="s7"><span class="num">7.</span>Capacity, Augmentation &amp; Data</h2>
+  <ul>
+    <li><b>Smaller model</b> — fewer trainable parameters means less capacity to memorize (<code>small=True</code> shrinks the hidden sizes).</li>
+    <li><b>Data augmentation</b> — small label-preserving transforms (rotations ±8.6°, shifts) applied <b>only to training</b> images, via <code>affine_grid</code> + <code>grid_sample</code>.</li>
+    <li><b>More data / clean labels</b> — more distinct examples, or repairing the mislabeled ones, is often the biggest win.</li>
+  </ul>
+  <div class="note warn"><b>No fix is universal.</b> On tiny 8×8 digits, <b>too much augmentation can erase helpful detail and hurt</b>. Always judge by validation loss in <i>your</i> setting, and change one thing at a time.</div>
+
+  <h2 id="s8"><span class="num">8.</span>Transfer Learning as a Fix</h2>
+  <p>When the new task has little data, reuse features from a related task. The lab pretrains a CNN on all <b>10 digits</b>, <b>freezes</b> its feature extractor, attaches a new <b>Even-vs-Odd</b> 2-class head, and trains on just <b>80</b> examples — compared against training from scratch.</p>
+  <pre><code>transfer = SimpleCNN(num_classes=2)
+transfer.features.load_state_dict(pretrained.features.state_dict())   <span class="cmt"># reuse</span>
+for p in transfer.features.parameters():
+    p.requires_grad = False     <span class="cmt"># freeze; only the 2-class head learns</span></code></pre>
+  <p>Pretraining learns a useful representation; freezing keeps it fixed; the new head adapts. (See <a href="../37.%20Transfer%20Learning%20-%20Ec2%20AWS/transfer-learning-textbook-notes.html">Class 37</a> for the full treatment.)</p>
+
+  <h2 id="s9"><span class="num">9.</span>Honest Evaluation</h2>
+  <ol>
+    <li><b>Select</b> the model with the lowest <b>validation</b> loss — never peek at test during model selection.</li>
+    <li><b>Evaluate once</b> on the untouched <b>test</b> set → the honest accuracy, plus a confusion matrix to see which classes confuse.</li>
+  </ol>
+  <div class="formula">Validation chooses; test confirms.<span class="sub">Reusing the test set for tuning silently inflates your reported score. Keep related items in the same split to avoid leakage.</span></div>
+
+  <h2 id="s10"><span class="num">10.</span>Summary &amp; Checklist</h2>
+  <div class="summary-box">
+    <h3>The whole idea, in one paragraph</h3>
+    <p><b>Overfitting</b> is an excellent fit to training-specific details with weaker generalization — a model can hit 100% on training data (even on deliberately wrong labels) yet fail on new data. You spot it as a widening <b>generalization gap</b> between training and validation curves, and you fight it with a toolbox: <b>dropout / Dropout2d</b> (hide activations or channels in training), <b>weight decay</b> (penalize big weights), <b>early stopping</b> (stop at best validation and restore that checkpoint), <b>smaller models</b>, <b>augmentation</b> and <b>more/cleaner data</b>, and <b>transfer learning</b> when data is scarce. Throughout, you judge by <i>validation</i> loss and confirm once on an untouched <i>test</i> set — because a low training loss never guarantees real-world performance.</p>
+  </div>
+  <div class="pill-row">
+    <span class="pill">Overfitting</span>
+    <span class="pill">Generalization gap</span>
+    <span class="pill">Dropout</span>
+    <span class="pill">Dropout2d</span>
+    <span class="pill">Weight decay (L2)</span>
+    <span class="pill">Early stopping</span>
+    <span class="pill">Smaller model</span>
+    <span class="pill">Augmentation</span>
+    <span class="pill">train() vs eval()</span>
+    <span class="pill">Validation chooses, test confirms</span>
+  </div>
+</div>
+</body>
+</html>
