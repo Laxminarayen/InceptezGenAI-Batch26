@@ -100,6 +100,46 @@
   <div class="formula">low training loss ≠ good real-world performance<span class="sub">The <b>validation</b> curve, not the training curve, reveals when generalization starts to deteriorate.</span></div>
   <p>The three splits each have a distinct job: <b>training</b> updates the weights, <b>validation</b> chooses settings and checkpoints (without updating weights), and <b>test</b> is kept untouched until a single final evaluation.</p>
 
+  <h3>Underfitting, overfitting and the capacity balance</h3>
+  <p>Overfitting is one end of a spectrum; <b>underfitting</b> is the other. A model that is too simple (or too heavily regularized) can't even fit the training data — high error everywhere. A model that is too complex (or trained too long) fits the training data <i>and its noise</i> — low training error, high test error. The goal is the <b>balanced middle</b>: enough capacity to learn the real pattern, not so much that it memorizes.</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 640 210" role="img" aria-label="Three fits to the same points: underfitting (too simple straight line), good fit (smooth curve), overfitting (wiggly line through every point).">
+      <g text-anchor="middle">
+        <!-- panel 1: underfit -->
+        <text class="lbl" x="110" y="24">Underfitting</text>
+        <line x1="40" y1="170" x2="190" y2="170" stroke="var(--line)" stroke-width="1.2"/>
+        <line x1="40" y1="40" x2="40" y2="170" stroke="var(--line)" stroke-width="1.2"/>
+        <g class="f-blue">
+          <circle cx="60" cy="150" r="3.5"/><circle cx="85" cy="120" r="3.5"/><circle cx="110" cy="128" r="3.5"/><circle cx="135" cy="92" r="3.5"/><circle cx="160" cy="70" r="3.5"/><circle cx="178" cy="60" r="3.5"/>
+        </g>
+        <line class="amber" x1="52" y1="150" x2="182" y2="78" stroke-width="2.6"/>
+        <text class="lbl-f" x="110" y="192">too simple · high bias</text>
+        <!-- panel 2: good -->
+        <text class="lbl" x="320" y="24">Good fit</text>
+        <line x1="250" y1="170" x2="400" y2="170" stroke="var(--line)" stroke-width="1.2"/>
+        <line x1="250" y1="40" x2="250" y2="170" stroke="var(--line)" stroke-width="1.2"/>
+        <g class="f-blue">
+          <circle cx="270" cy="150" r="3.5"/><circle cx="295" cy="120" r="3.5"/><circle cx="320" cy="128" r="3.5"/><circle cx="345" cy="92" r="3.5"/><circle cx="370" cy="70" r="3.5"/><circle cx="388" cy="60" r="3.5"/>
+        </g>
+        <path class="teal" fill="none" stroke-width="2.6" d="M264,150 Q 310,112 345,100 T 390,60"/>
+        <text class="lbl-f" x="320" y="192">captures the trend</text>
+        <!-- panel 3: overfit -->
+        <text class="lbl" x="530" y="24">Overfitting</text>
+        <line x1="460" y1="170" x2="610" y2="170" stroke="var(--line)" stroke-width="1.2"/>
+        <line x1="460" y1="40" x2="460" y2="170" stroke="var(--line)" stroke-width="1.2"/>
+        <g class="f-blue">
+          <circle cx="480" cy="150" r="3.5"/><circle cx="505" cy="120" r="3.5"/><circle cx="530" cy="128" r="3.5"/><circle cx="555" cy="92" r="3.5"/><circle cx="580" cy="70" r="3.5"/><circle cx="598" cy="60" r="3.5"/>
+        </g>
+        <path class="amber" fill="none" stroke-width="2.6" d="M480,150 C 492,100 500,135 505,120 C 515,95 525,150 530,128 C 540,70 550,120 555,92 C 568,55 575,95 580,70 C 588,52 594,70 598,60"/>
+        <text class="lbl-f" x="530" y="192">memorizes noise · high variance</text>
+      </g>
+    </svg>
+    <figcaption><b>Fig 1.</b> The same six points, three ways. Underfitting (left) is too rigid to follow the trend; overfitting (right) contorts through every point, including noise; the good fit (middle) generalizes. Regularization pushes a too-complex model back toward the middle — but <i>too much</i> of it tips you into underfitting (e.g. dropout 0.6 instead of 0.2).</figcaption>
+  </figure>
+
+  <div class="note"><b>Capacity knobs cut both ways.</b> Dropout, weight decay and a smaller model all reduce effective capacity. A little fixes overfitting; too much causes underfitting. The discussion exercises at the end of this chapter ask you to feel exactly where that line sits.</div>
+
   <h2 id="s2"><span class="num">2.</span>The Experiment Design</h2>
   <p>To make overfitting visible on a CPU, the lab uses sklearn's <code>load_digits()</code> (1,797 images of 8×8 digits — no download) and <i>rigs</i> the data so memorization is obvious:</p>
   <ul>
@@ -131,7 +171,7 @@
       <text class="lbl f-amber" x="516" y="82">gap</text>
       <text class="lbl-f" x="516" y="98">(overfit)</text>
     </svg>
-    <figcaption><b>Fig 1.</b> The generalization gap. Both an MLP and a CNN show this on the noisy set — convolution's weight-sharing helps but does not prevent memorization on small, noisy data.</figcaption>
+    <figcaption><b>Fig 2.</b> The generalization gap. Both an MLP and a CNN show this on the noisy set — convolution's weight-sharing helps but does not prevent memorization on small, noisy data.</figcaption>
   </figure>
 
   <h2 id="s4"><span class="num">4.</span>Dropout &amp; Dropout2d</h2>
@@ -167,8 +207,19 @@
       </g>
       <text class="lbl-f" x="480" y="202" text-anchor="middle">each box = one feature-map channel</text>
     </svg>
-    <figcaption><b>Fig 2.</b> Dropout hides scattered activations; Dropout2d hides entire channels. Neither deletes or changes the filter weights — they only hide outputs during training. Both are OFF at evaluation (<code>model.eval()</code>).</figcaption>
+    <figcaption><b>Fig 3.</b> Dropout hides scattered activations; Dropout2d hides entire channels. Neither deletes or changes the filter weights — they only hide outputs during training. Both are OFF at evaluation (<code>model.eval()</code>).</figcaption>
   </figure>
+
+  <h3><code>model.train()</code> vs <code>model.eval()</code></h3>
+  <p>Dropout (and BatchNorm) behave <b>differently in training and evaluation</b>, so you must tell the model which mode it is in:</p>
+  <table>
+    <thead><tr><th>Mode</th><th>Call</th><th>Dropout behaviour</th></tr></thead>
+    <tbody>
+      <tr><td>Training</td><td><code>model.train()</code></td><td><b>ON</b> — randomly zeroes activations so the net can't rely on any one neuron.</td></tr>
+      <tr><td>Evaluation</td><td><code>model.eval()</code></td><td><b>OFF</b> — uses the full network for a deterministic, fair measurement.</td></tr>
+    </tbody>
+  </table>
+  <p>In the lab, <code>fit()</code> calls <code>model.train()</code> at the start of each epoch, and <code>evaluate()</code> calls <code>model.eval()</code> before scoring. <b>Forgetting <code>eval()</code> at evaluation time is a classic bug</b>: your validation/test numbers become noisy and pessimistic because dropout is still randomly deleting activations. (Inference also wraps scoring in <code>torch.inference_mode()</code> to skip gradient tracking.)</p>
 
   <h2 id="s5"><span class="num">5.</span>Weight Decay (L2 Regularization)</h2>
   <p><b>Weight decay</b> adds a penalty on large weights to the loss, discouraging the network from over-relying on any single feature. In PyTorch it's a single optimizer argument:</p>
@@ -194,7 +245,7 @@
       <text class="lbl-f" x="470" y="70">keeps rising →</text>
       <text class="lbl-f" x="470" y="86">(overfitting)</text>
     </svg>
-    <figcaption><b>Fig 3.</b> Early stopping. Validation loss falls to a minimum, then rises as the model overfits. We stop after <code>patience</code> stale epochs and load the weights saved at the minimum.</figcaption>
+    <figcaption><b>Fig 4.</b> Early stopping. Validation loss falls to a minimum, then rises as the model overfits. We stop after <code>patience</code> stale epochs and load the weights saved at the minimum.</figcaption>
   </figure>
 
   <h2 id="s7"><span class="num">7.</span>Capacity, Augmentation &amp; Data</h2>
@@ -221,12 +272,26 @@ for p in transfer.features.parameters():
   <div class="formula">Validation chooses; test confirms.<span class="sub">Reusing the test set for tuning silently inflates your reported score. Keep related items in the same split to avoid leakage.</span></div>
 
   <h2 id="s10"><span class="num">10.</span>Summary &amp; Checklist</h2>
+
+  <h3>Discussion exercises (try these in the notebook)</h3>
+  <ol>
+    <li>Change the number of small training examples from <code>120</code> to <code>60</code>. What happens to overfitting?</li>
+    <li>Remove label corruption (use <code>labels_clean</code> as training labels). Do the train/val gaps shrink?</li>
+    <li>Try <code>nn.Dropout(0.2)</code> versus <code>0.6</code> in the MLP. When does strong dropout cause <b>underfitting</b>?</li>
+    <li>Change CNN <code>Dropout2d(0.2)</code> to <code>0.5</code>. Is stronger always better?</li>
+    <li>Try <code>weight_decay=0.01</code> versus <code>0.1</code> and compare validation loss.</li>
+    <li>Make augmentation too strong. Why can it harm 8×8 handwritten digits?</li>
+    <li>Explain in one sentence why <b>feature extraction</b> differs from <b>fine-tuning</b>.</li>
+  </ol>
+
   <div class="summary-box">
     <h3>The whole idea, in one paragraph</h3>
     <p><b>Overfitting</b> is an excellent fit to training-specific details with weaker generalization — a model can hit 100% on training data (even on deliberately wrong labels) yet fail on new data. You spot it as a widening <b>generalization gap</b> between training and validation curves, and you fight it with a toolbox: <b>dropout / Dropout2d</b> (hide activations or channels in training), <b>weight decay</b> (penalize big weights), <b>early stopping</b> (stop at best validation and restore that checkpoint), <b>smaller models</b>, <b>augmentation</b> and <b>more/cleaner data</b>, and <b>transfer learning</b> when data is scarce. Throughout, you judge by <i>validation</i> loss and confirm once on an untouched <i>test</i> set — because a low training loss never guarantees real-world performance.</p>
   </div>
   <div class="pill-row">
+    <span class="pill">Underfitting</span>
     <span class="pill">Overfitting</span>
+    <span class="pill">Bias–variance balance</span>
     <span class="pill">Generalization gap</span>
     <span class="pill">Dropout</span>
     <span class="pill">Dropout2d</span>
