@@ -4,13 +4,14 @@
     "author": "Laxminarayen",
     "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
     "title": "Trade off",
-    "body": "1. If the network is not learing well what are the steps we can do to maximize learinng? \n2. tell me efforts to balance underfitting and overfitting in a neural network",
+    "body": "1. What are the steps to diagnose proper learning?\n2. If the network is not learing well what are the steps we can do to maximize learinng? \n2. tell me efforts to balance underfitting and overfitting in a neural network",
     "classTag": "",
     "topics": [],
     "createdAt": "2026-11-24T05:46:14.554Z",
     "likes": [],
     "comments": [],
-    "date": "2026-11-24"
+    "date": "2026-11-24",
+    "editedAt": "2026-11-24T05:46:42.449Z"
   },
   {
     "id": "mwso6jkjxyeaa5",
