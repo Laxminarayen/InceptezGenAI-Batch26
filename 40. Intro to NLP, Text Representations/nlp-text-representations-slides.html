@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Intro to NLP &amp; Text Representations</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{
+    --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC;
+    --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63;
+    --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC;
+    --c-why:#3B6E63; --c-concept:#B0670C; --c-mech:#1E6FA8; --c-eval:#6B4FA0;
+    --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B;
+    --accent: var(--c-why);
+    --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    --shadow: 0 10px 30px -12px rgba(32,40,58,.25);
+  }
+  @media (prefers-color-scheme: dark){
+    :root{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.14); --surface-canvas:#10131C; --c-why:#79C0AE; --c-concept:#E3A238; --c-mech:#5FA8E0; --c-eval:#B49AE0; --good:#3FBB7C; --warn:#E3A238; --bad:#E36868; --shadow: 0 10px 30px -12px rgba(0,0,0,.6); }
+  }
+  :root[data-theme="dark"]{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.14); --surface-canvas:#10131C; --c-why:#79C0AE; --c-concept:#E3A238; --c-mech:#5FA8E0; --c-eval:#B49AE0; --good:#3FBB7C; --warn:#E3A238; --bad:#E36868; --shadow: 0 10px 30px -12px rgba(0,0,0,.6); }
+  :root[data-theme="light"]{ --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC; --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63; --line: rgba(32,40,58,.14); --surface-canvas:#FBF7EC; --c-why:#3B6E63; --c-concept:#B0670C; --c-mech:#1E6FA8; --c-eval:#6B4FA0; --good:#1C8C5A; --warn:#B0670C; --bad:#C23B3B; --shadow: 0 10px 30px -12px rgba(32,40,58,.25); }
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); overflow:hidden; -webkit-font-smoothing:antialiased; }
+  body[data-section="why"]{--accent:var(--c-why);}
+  body[data-section="concept"]{--accent:var(--c-concept);}
+  body[data-section="mech"]{--accent:var(--c-mech);}
+  body[data-section="eval"]{--accent:var(--c-eval);}
+  h1,h2,h3,p{margin:0;}
+  h1,h2,h3{text-wrap:balance; letter-spacing:-0.01em;}
+  ::selection{background:var(--accent); color:#fff;}
+  .eyebrow{font-size:.74rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  .slide h1{font-size:clamp(1.7rem,3.2vw,2.9rem); font-weight:800; color:var(--ink);}
+  .body-text{font-size:clamp(1rem,1.25vw,1.2rem); font-weight:500; line-height:1.6; color:var(--ink-soft);}
+  .body-text b{color:var(--ink); font-weight:800;}
+  .tabular{font-variant-numeric:tabular-nums;}
+  .chrome-top{position:fixed; top:0; left:0; right:0; height:52px; z-index:50; display:flex; align-items:center; justify-content:space-between; padding:0 20px; pointer-events:none;}
+  .chrome-top > *{pointer-events:auto;}
+  .hour-badge{font-size:.72rem; font-weight:800; letter-spacing:.12em; color:var(--ink-faint); background:var(--paper-2); border:1px solid var(--line); padding:6px 12px; border-radius:999px;}
+  .chapter-chip{display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:700; color:var(--ink-soft); background:var(--paper-2); border:1px solid var(--line); padding:6px 14px 6px 8px; border-radius:999px;}
+  .chapter-chip .num{display:inline-flex; align-items:center; justify-content:center; width:20px;height:20px; border-radius:50%; background:var(--accent); color:#fff; font-size:.68rem; font-weight:800;}
+  .icon-btn{width:36px;height:36px; border-radius:50%; border:1px solid var(--line); background:var(--paper-2); color:var(--ink); font-size:1rem; cursor:pointer; display:flex; align-items:center; justify-content:center;}
+  .icon-btn:hover{background:var(--paper-3);}
+  .deck{position:absolute; inset:0; top:52px; bottom:64px;}
+  .slide{position:absolute; inset:0; display:none; flex-direction:column; padding:clamp(18px,3vw,40px) clamp(24px,5vw,80px); overflow:auto;}
+  .slide.active{display:flex;}
+  .slide-inner{display:flex; flex-direction:column; gap:clamp(12px,1.8vh,20px); max-width:1360px; width:100%; margin:0 auto; flex:1; min-height:0;}
+  .chrome-bottom{position:fixed; left:0; right:0; bottom:0; height:64px; z-index:50; display:flex; align-items:center; gap:14px; padding:0 clamp(14px,3vw,32px); background:linear-gradient(0deg, var(--paper) 60%, transparent);}
+  .nav-btn{width:40px;height:40px;border-radius:50%; border:1px solid var(--line); background:var(--paper-2); color:var(--ink); font-size:1.2rem; cursor:pointer; flex:none; display:flex; align-items:center; justify-content:center;}
+  .nav-btn:hover:not(:disabled){background:var(--accent); color:#fff; border-color:transparent;}
+  .nav-btn:disabled{opacity:.35; cursor:default;}
+  .progress{flex:1; display:flex; align-items:center; gap:5px; overflow-x:auto; scrollbar-width:none;}
+  .progress::-webkit-scrollbar{display:none;}
+  .dot{width:9px;height:9px;border-radius:50%; background:var(--paper-3); border:none; cursor:pointer; flex:none; transition:transform .15s ease;}
+  .dot.gap{width:14px; height:2px; border-radius:1px; background:transparent; cursor:default;}
+  .dot.active{transform:scale(1.5);}
+  .slide-counter{font-size:.8rem; font-weight:700; color:var(--ink-faint); flex:none; white-space:nowrap;}
+  .split{display:grid; grid-template-columns:1.05fr 1.35fr; gap:clamp(20px,4vw,52px); align-items:center; flex:1; min-height:0;}
+  @media (max-width:920px){ .split{grid-template-columns:1fr; overflow:auto;} }
+  .stack{display:flex; flex-direction:column; gap:12px; min-height:0;}
+  .center-col{display:flex; flex-direction:column; align-items:center; text-align:center; justify-content:center; gap:16px; flex:1;}
+  .visual-box{background:var(--surface-canvas); border:1px solid var(--line); border-radius:24px; padding:18px; box-shadow:var(--shadow); min-height:0; display:flex; flex-direction:column; gap:10px;}
+  .vocab-card{border-left:5px solid var(--accent); background:var(--paper-2); border-radius:14px; padding:12px 18px; display:flex; flex-direction:column; gap:4px;}
+  .vocab-term{font-size:1rem; font-weight:900; letter-spacing:.04em; color:var(--accent);}
+  .vocab-def{font-size:1rem; color:var(--ink); font-weight:600; line-height:1.4;}
+  .console{display:flex; flex-wrap:wrap; gap:10px 14px; align-items:center; background:var(--paper-2); border:1px solid var(--line); border-radius:20px; padding:12px 16px;}
+  .field{display:flex; flex-direction:column; gap:6px; width:100%;}
+  .field label{font-size:.76rem; font-weight:800; color:var(--ink-soft);}
+  .seg{display:flex; gap:6px; flex-wrap:wrap;}
+  .seg button{font:inherit; font-size:.8rem; font-weight:700; color:var(--ink); background:var(--paper-3); border:1px solid var(--line); border-radius:999px; padding:6px 14px; cursor:pointer;}
+  .seg button.on{background:var(--accent); color:#fff; border-color:transparent;}
+  .stat-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px;}
+  .stat-tile{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:12px 14px;}
+  .stat-tile .label{font-size:.7rem; font-weight:800; color:var(--ink-faint); letter-spacing:.05em; text-transform:uppercase;}
+  .stat-tile .value{font-size:1.15rem; font-weight:900; color:var(--ink); font-variant-numeric:tabular-nums;}
+  .stat-tile.accent .value{color:var(--accent);}
+  .card{background:var(--paper-2); border:1px solid var(--line); border-radius:18px; padding:16px 18px;}
+  .card-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:14px;}
+  .card.sm{padding:12px 14px;}
+  .card .ico{font-size:1.6rem;}
+  .card h3{font-size:1rem; margin-top:6px;}
+  .card p{font-size:.9rem; color:var(--ink-soft); margin-top:4px; line-height:1.45;}
+  .card.sm h3{font-size:.9rem;} .card.sm p{font-size:.8rem;}
+  .banner{border-radius:14px; padding:12px 16px; font-weight:800; font-size:.92rem; display:flex; align-items:center; gap:10px;}
+  .banner.warn{background:color-mix(in srgb, var(--warn) 18%, var(--paper-2)); color:var(--warn);}
+  .banner.good{background:color-mix(in srgb, var(--good) 18%, var(--paper-2)); color:var(--good);}
+  .banner.bad{background:color-mix(in srgb, var(--bad) 18%, var(--paper-2)); color:var(--bad);}
+  .banner.info{background:var(--paper-3); color:var(--ink); font-weight:600; align-items:flex-start;}
+  .roadmap{display:grid; grid-template-columns:repeat(4,1fr); gap:14px;}
+  .roadmap .stop{background:var(--paper-2); border-radius:18px; padding:16px 10px; text-align:center; border-top:5px solid var(--stop-color, var(--accent));}
+  .roadmap .stop .ico{font-size:2rem;}
+  .roadmap .stop .t{font-size:.8rem; font-weight:800; margin-top:6px;}
+  @media (max-width:920px){ .roadmap{grid-template-columns:repeat(2,1fr);} }
+  .kicker-big{font-size:clamp(2.2rem,5.6vw,3.9rem); font-weight:900; letter-spacing:-0.02em;}
+  .glow{color:var(--accent);}
+  .formula-box{background:var(--paper-2); border:1px solid var(--line); border-left:5px solid var(--accent); border-radius:14px; padding:14px 18px; font-size:clamp(1rem,1.5vw,1.3rem); font-weight:800; color:var(--ink);}
+  .formula-box .sub{display:block; font-size:.86rem; font-weight:500; color:var(--ink-faint); margin-top:6px;}
+  .table-wrap{border:1px solid var(--line); border-radius:14px; overflow:hidden; overflow-x:auto;}
+  .data-table{width:100%; border-collapse:collapse; font-size:.86rem;}
+  .data-table th,.data-table td{padding:8px 10px; text-align:center; font-variant-numeric:tabular-nums;}
+  .data-table thead th{background:var(--paper-3); color:var(--ink-soft); font-weight:800; font-size:.72rem; letter-spacing:.03em; text-transform:uppercase;}
+  .data-table tbody tr{border-top:1px solid var(--line);}
+  .data-table tbody tr.hl-row{background:color-mix(in srgb, var(--accent) 12%, transparent); font-weight:800;}
+  .footnote{font-size:.82rem; color:var(--ink-faint); font-weight:600;}
+  /* vectorizer matrix */
+  .dtm{border-collapse:separate; border-spacing:4px; width:100%; font-variant-numeric:tabular-nums;}
+  .dtm th{font-size:.8rem; font-weight:800; color:var(--ink-soft); padding:4px 6px; text-align:center;}
+  .dtm th.rowlab{text-align:left; color:var(--ink); max-width:230px; white-space:normal; font-weight:700; font-size:.82rem;}
+  .dtm td{text-align:center; border-radius:8px; padding:8px 4px; font-weight:800; font-size:.92rem; color:var(--ink); min-width:48px;}
+  pre{background:#10141c; color:#dfe6f2; border-radius:12px; padding:14px 16px; overflow-x:auto; font-size:.8rem; line-height:1.5; font-family:ui-monospace,Menlo,monospace; margin:0;}
+  pre .cmt{color:#7f8aa0;}
+  @media (prefers-reduced-motion: reduce){ *{transition:none !important; animation:none !important;} }
+</style>
+</head>
+<body data-section="why">
+  <div class="chrome-top">
+    <div style="display:flex; align-items:center; gap:10px;">
+      <div class="hour-badge">INTRO TO NLP · TEXT REPRESENTATIONS</div>
+      <div class="chapter-chip" id="chapterChip" style="display:none;"><span class="num" id="chapterNum">1</span><span id="chapterLabel">—</span></div>
+    </div>
+    <button class="icon-btn" id="themeToggle" title="Toggle light / dark">🌗</button>
+  </div>
+
+  <main class="deck" id="deck">
+
+    <section class="slide" data-section="why" id="s0">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Deep Learning · Class 40 · NLP begins</div>
+        <h1 class="kicker-big">Turning <span class="glow">words</span><br/>into numbers</h1>
+        <p class="body-text" style="max-width:820px;">We can turn an image into numbers (an <b>m × n × 3</b> grid). But how do you turn <i>text</i> into numbers a model can learn from? Today we climb the ladder of text representations — <b>Bag of Words → Count Vectorizer → TF-IDF → Word2Vec embeddings</b> — each one fixing a weakness of the last, ending with vectors that finally capture <b>meaning</b>.</p>
+        <div class="roadmap" style="width:100%; margin-top:6px;">
+          <div class="stop" style="--stop-color:var(--c-why);"><div class="ico">🗣️</div><div class="t">1 · What is NLP</div></div>
+          <div class="stop" style="--stop-color:var(--c-concept);"><div class="ico">🧺</div><div class="t">2 · Bag of Words</div></div>
+          <div class="stop" style="--stop-color:var(--c-mech);"><div class="ico">⚖️</div><div class="t">3 · Count &amp; TF-IDF</div></div>
+          <div class="stop" style="--stop-color:var(--c-eval);"><div class="ico">🧭</div><div class="t">4 · Word2Vec</div></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 1 — WHAT IS NLP -->
+    <section class="slide" data-section="why" id="sW1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Part I · Natural Language Processing</div>
+          <h1>Run a <span class="glow">process</span> over human language</h1>
+          <p class="body-text"><b>NLP = Natural Language + Processing.</b> A <b>natural language</b> (Malayalam, English…) is not a programming language (Python). It is <b>organically developed</b>, <b>evolved for a human community</b>, and <b>passed through generations</b>, changing over time.</p>
+          <div class="banner info"><b>Where we are:</b> AI ⊃ ML ⊃ Deep Learning — and <b>NLP</b> spans across all of them. Today we point deep learning at language.</div>
+        </div>
+        <div class="stack">
+          <div class="vocab-card"><div class="vocab-term">Properties of language</div><div class="vocab-def"><b>Phonology</b> — sounds (phonemes, e.g. the "dh" in <i>father</i>). <b>Syntax</b> — word order &amp; sentence structure (S-V-O). <b>Lexicon</b> — the collection of words.</div></div>
+          <div class="banner bad">🚩 <b>Multiple nested dependencies:</b> "Lammi likes italian food. <u>He</u> is fond of <u>this cuisine</u>." Understanding "he" and "this cuisine" needs context from earlier — language is not independent words.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="why" id="sW2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">The Core Question</div>
+        <h1>We can vectorize images. How about <span class="glow">text</span>?</h1>
+        <div class="card-grid">
+          <div class="card"><div class="ico">🖼️</div><h3>Image → numbers</h3><p>A picture is already an <b>m × n × 3</b> grid of pixel values. Easy to feed a network.</p></div>
+          <div class="card" style="border-top:5px solid var(--accent);"><div class="ico">❓</div><h3>Text → numbers?</h3><p>"The movie is good" has no obvious numeric form. We must <b>design</b> a representation.</p></div>
+          <div class="card"><div class="ico">🎯</div><h3>The goal</h3><p>A representation a classifier (Logistic Reg, KNN, a neural net) can consume — ideally one that keeps <b>meaning</b>.</p></div>
+        </div>
+        <div class="banner info"><b>The plan:</b> start simple (presence of words), then add frequency, then down-weight common words, then — finally — <i>learn</i> vectors that encode meaning.</div>
+      </div>
+    </section>
+
+    <!-- SECTION 2 — BAG OF WORDS -->
+    <section class="slide" data-section="concept" id="sC1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Part II · Bag of Words (One-Hot)</div>
+          <h1>Is each word <span class="glow">present</span>, yes or no?</h1>
+          <p class="body-text">Collect the <b>unique words</b> across all reviews (lowercased, with <b>stop words</b> removed), make one <b>column per word</b> and one <b>row per sentence</b>. Each cell is <b>1 if the word appears, else 0</b>.</p>
+          <div class="formula-box">text → document-term matrix (0/1)<span class="sub">Now classical models (Linear/Logistic Regression, KNN, K-Means, NN) can consume the table.</span></div>
+        </div>
+        <div class="stack">
+          <div class="vocab-card"><div class="vocab-term">Stop words</div><div class="vocab-def">Highly frequent words that carry little standalone meaning — <i>the, is, a, of</i>. We drop them so the vocabulary focuses on content.</div></div>
+          <div class="banner good">✓ Simple, fast, and it turns messy text into a fixed-width numeric table.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="concept" id="sC2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Three Problems With Bag of Words</div>
+        <h1>What the <span class="glow">bag</span> throws away</h1>
+        <div class="card-grid">
+          <div class="card" style="border-top:5px solid var(--bad);"><div class="ico">🔀</div><h3>1 · Word order lost</h3><p>"a bad experience, the whole thing" vs a good review can look similar — <b>sequence &amp; meaning are gone</b>.</p></div>
+          <div class="card" style="border-top:5px solid var(--warn);"><div class="ico">🔢</div><h3>2 · Frequency ignored</h3><p>A word repeated many times in a review matters — but 0/1 can't tell <b>once</b> from <b>ten times</b>.</p></div>
+          <div class="card" style="border-top:5px solid var(--c-eval);"><div class="ico">🧠</div><h3>3 · No semantics</h3><p><b>KING − MAN + WOMAN = QUEEN</b> is invisible. "royalty", "rich" relationships aren't captured at all.</p></div>
+        </div>
+        <div class="banner info">The next representations fix these one by one: <b>Count Vectorizer</b> → problem 2, <b>TF-IDF</b> → problem 2 better, <b>Word2Vec</b> → problem 3.</div>
+      </div>
+    </section>
+
+    <!-- SECTION 3 — COUNT + TFIDF (interactive) -->
+    <section class="slide" data-section="mech" id="sM1">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Interactive · Same reviews, three representations</div>
+        <h1>From <span class="glow">presence</span> → count → <span class="glow">TF-IDF</span></h1>
+        <div class="split" style="gap:clamp(16px,3vw,36px); align-items:stretch;">
+          <div class="visual-box" style="flex:1; justify-content:center;">
+            <div style="overflow-x:auto;"><table class="dtm" id="dtm"></table></div>
+            <div class="footnote" id="dtmNote" style="text-align:center;">Columns = vocabulary words · rows = reviews. Darker = larger value.</div>
+          </div>
+          <div class="stack" style="justify-content:center;">
+            <div class="console">
+              <div class="field">
+                <label>Representation</label>
+                <div class="seg" id="repSeg">
+                  <button data-r="binary" class="on">Binary (BoW)</button>
+                  <button data-r="count">Count</button>
+                  <button data-r="tfidf">TF-IDF</button>
+                </div>
+              </div>
+            </div>
+            <div class="banner info" id="repReadout">Binary Bag of Words: just <b>1 if the word appears</b>, else 0 — presence only.</div>
+            <div class="footnote">Reviews: <i>"the movie is good"</i> · <i>"the movie is a waste a waste of time"</i> · <i>"loved loved the movie"</i> (stop words removed).</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="mech" id="sM2">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Count Vectorizer &amp; TF-IDF</div>
+          <h1>Weight words by <span class="glow">how telling</span> they are</h1>
+          <p class="body-text"><b>Count Vectorizer</b> = term frequency — each cell becomes a <b>count</b>, fixing "once vs many". But a word common across <i>every</i> review (like "movie") isn't informative.</p>
+          <div class="formula-box">TF-IDF = TF × IDF<span class="sub">TF = count ÷ words in the sentence. &nbsp; IDF = log(total documents ÷ documents containing the word).</span></div>
+        </div>
+        <div class="stack">
+          <div class="vocab-card"><div class="vocab-term">The IDF trick</div><div class="vocab-def">A word in <b>every</b> document gets IDF = log(1) = <b>0</b>, so its weight vanishes — it acts like an automatic stop word. Rare, distinctive words get a <b>high</b> weight.</div></div>
+          <div class="banner good">✓ TF-IDF gives each word a <b>dynamic weight</b>: important where it's distinctive, discounted where it's everywhere.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="mech" id="sM3">
+      <div class="slide-inner stack">
+        <div class="eyebrow">n-grams &amp; the Remaining Gap</div>
+        <h1>Even TF-IDF is still <span class="glow">missing meaning</span></h1>
+        <div class="split" style="gap:clamp(20px,4vw,48px);">
+          <div class="stack">
+            <p class="body-text"><b>n-grams</b> add some word pairing: instead of single words (<code>n=1</code>: movie, time, good), use adjacent pairs (<code>n=2</code>: "movie good", "time wasted"). It captures a little local order…</p>
+            <div class="banner bad">🚩 …but <b>no paired association of meaning</b>: one-hot, count, and TF-IDF all still have <b>no semantic meaning</b>, and they lean on manual <b>feature engineering</b>.</div>
+          </div>
+          <div class="stack">
+            <div class="banner info"><b>The big question:</b> is there a method that understands <i>deeper feature relations</i> — without feature engineering?</div>
+            <div class="banner good">✓ Yes — use a <b>neural network</b> to <i>learn</i> the representation. That gives us <b>word embeddings</b>.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4 — WORD2VEC -->
+    <section class="slide" data-section="eval" id="sE1">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">Part IV · Word2Vec — Representation Learning</div>
+          <h1>Don't assign vectors — <span class="glow">learn</span> them</h1>
+          <p class="body-text">Instead of hand-coding numbers, give a model <b>sentences</b> and a <b>prediction task</b> involving nearby words. Solving "which word fits here?" forces it to learn useful <b>word vectors</b> as a side effect.</p>
+          <div class="formula-box">Learn word <i>predictions</i> ⟹ learn word <i>vectors</i><span class="sub">A word's ID (cat = 1) is arbitrary — but the learned vector encodes its meaning.</span></div>
+        </div>
+        <div class="stack">
+          <div class="vocab-card"><div class="vocab-term">Context window</div><div class="vocab-def">The neighbouring words around a target. In "The cat <b>[drinks]</b> fresh milk", the target is <i>drinks</i> and the context is <i>the, cat, fresh, milk</i>.</div></div>
+          <div class="banner info"><b>Word ID ≠ word meaning.</b> IDs just index the vocabulary; the vector learned for each ID is what carries meaning.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE2">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Two Architectures</div>
+        <h1>CBOW vs <span class="glow">Skip-gram</span></h1>
+        <div class="split" style="gap:clamp(20px,4vw,48px);">
+          <div class="card" style="border-top:5px solid var(--c-mech);">
+            <div class="ico">🎯</div><h3>CBOW (Continuous Bag of Words)</h3>
+            <p>Use the <b>surrounding words to predict the centre word</b>.</p>
+            <pre style="margin-top:10px;">X = [the, cat, fresh, milk]
+        ↓ (neural net)
+Y = "drinks"   <span class="cmt"># context → target</span></pre>
+          </div>
+          <div class="card" style="border-top:5px solid var(--c-eval);">
+            <div class="ico">🔁</div><h3>Skip-gram</h3>
+            <p>Reverse it: use the <b>centre word to predict the surrounding words</b>.</p>
+            <pre style="margin-top:10px;">X = "drinks"
+        ↓ (neural net)
+Y = [the, cat, fresh, milk]  <span class="cmt"># target → context</span></pre>
+          </div>
+        </div>
+        <div class="banner info"><b>Word2Vec = a shallow neural network + word IDs.</b> Both setups train the same kind of small network to predict words from neighbours.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE3">
+      <div class="slide-inner split">
+        <div class="stack">
+          <div class="eyebrow">The Trick · Where the Vector Comes From</div>
+          <h1>Train to classify, then <span class="glow">remove the head</span></h1>
+          <p class="body-text">The network predicts a word out of the whole vocabulary (its output layer has ~70,000 neurons = vocab size). But we don't want the prediction — we want the <b>hidden layer</b>. After training, <b>remove the classification head</b>; the learned hidden weights for each word <i>are</i> its embedding.</p>
+          <div class="formula-box">cat → a 128-dim vector (not 70,000-dim)<span class="sub">A dense, low-dimensional vector that captures the word's learned meaning.</span></div>
+        </div>
+        <div class="stack">
+          <div class="banner good">✅ Dense &amp; small: every word becomes ~128 numbers instead of a giant sparse one-hot.</div>
+          <div class="banner info"><b>It learns a numerical representation of words using the prediction pattern</b> — exactly the "deeper feature relations without feature engineering" we wanted.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE4">
+      <div class="slide-inner stack">
+        <div class="eyebrow">Why It's Magic · Semantic Geometry</div>
+        <h1>Similar words <span class="glow">cluster</span>; meaning becomes arithmetic</h1>
+        <div class="card-grid">
+          <div class="card sm"><div class="ico">🐱</div><h3>Clusters form</h3><p><b>cat</b> and <b>dog</b> land near each other; <b>car</b> and <b>bus</b> form their own neighbourhood.</p></div>
+          <div class="card sm"><div class="ico">➕</div><h3>Vector arithmetic</h3><p><b>KING − MAN + WOMAN ≈ QUEEN</b> — relationships become directions in the space.</p></div>
+          <div class="card sm"><div class="ico">🥤</div><h3>Context captured</h3><p>"consume" pulls <b>drank</b> near <b>cat</b>+beverage contexts — usage shapes position.</p></div>
+        </div>
+        <div class="banner good">✓ Finally, a representation with <b>semantic meaning</b> — the thing BoW and TF-IDF could never give us.</div>
+      </div>
+    </section>
+
+    <section class="slide" data-section="eval" id="sE5">
+      <div class="slide-inner center-col">
+        <div class="eyebrow">Recap &amp; What's Next</div>
+        <h1 class="kicker-big">Words are now <span class="glow">vectors</span></h1>
+        <p class="body-text" style="max-width:800px;">We climbed from <b>Bag of Words</b> (presence) → <b>Count Vectorizer</b> (frequency) → <b>TF-IDF</b> (dynamic weight) → <b>Word2Vec</b> (learned embeddings with CBOW / Skip-gram). Each fixed a flaw of the last; embeddings finally capture meaning as geometry.</p>
+        <div class="banner info" style="max-width:800px;"><b>Open question:</b> embeddings give each word a vector, but how do we represent a word <i>in a sequence</i>, where order matters? <b>Next: RNNs &amp; LSTMs.</b></div>
+      </div>
+    </section>
+
+  </main>
+
+  <nav class="chrome-bottom">
+    <button class="nav-btn" id="prevBtn" aria-label="Previous slide">‹</button>
+    <div class="progress" id="progress"></div>
+    <div class="slide-counter"><span id="curNum" class="tabular">1</span> / <span id="totalNum" class="tabular">—</span></div>
+    <button class="nav-btn" id="nextBtn" aria-label="Next slide">›</button>
+  </nav>
+
+<script>
+"use strict";
+const $=(s,e=document)=>e.querySelector(s);
+const $$=(s,e=document)=>[...e.querySelectorAll(s)];
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+const slideEls=$$('.slide');
+let cur=0;
+const CHAPTERS={why:{num:1,label:'What is NLP'},concept:{num:2,label:'Bag of Words'},mech:{num:3,label:'Count &amp; TF-IDF'},eval:{num:4,label:'Word2Vec'}};
+const onEnter={};
+function buildDots(){const w=$('#progress');w.innerHTML='';let last=null;slideEls.forEach((s,i)=>{if(last!==null&&s.dataset.section!==last){const g=document.createElement('span');g.className='dot gap';w.appendChild(g);}const b=document.createElement('button');b.className='dot';b.setAttribute('aria-label','Go to slide '+(i+1));b.addEventListener('click',()=>goTo(i));w.appendChild(b);last=s.dataset.section;});}
+function goTo(i){i=clamp(i,0,slideEls.length-1);slideEls[cur].classList.remove('active');cur=i;const s=slideEls[cur];s.classList.add('active');document.body.dataset.section=s.dataset.section;const chip=$('#chapterChip'),m=CHAPTERS[s.dataset.section];if(m){chip.style.display='flex';$('#chapterNum').textContent=m.num;$('#chapterLabel').innerHTML=m.label;}else chip.style.display='none';$('#curNum').textContent=cur+1;$('#prevBtn').disabled=cur===0;$('#nextBtn').disabled=cur===slideEls.length-1;$$('.dot:not(.gap)',$('#progress')).forEach((d,idx)=>d.classList.toggle('active',idx===cur));const fn=onEnter[s.id];if(fn)requestAnimationFrame(fn);}
+function next(){if(cur<slideEls.length-1)goTo(cur+1);}
+function prev(){if(cur>0)goTo(cur-1);}
+$('#nextBtn').addEventListener('click',next);$('#prevBtn').addEventListener('click',prev);
+window.addEventListener('keydown',e=>{if(e.key==='ArrowRight'||e.key===' '){e.preventDefault();next();}else if(e.key==='ArrowLeft'){e.preventDefault();prev();}});
+const themeBtn=$('#themeToggle');
+(function(){const t=localStorage.getItem('sv-theme-nlp');if(t)document.documentElement.setAttribute('data-theme',t);})();
+themeBtn.addEventListener('click',()=>{const now=document.documentElement.getAttribute('data-theme');const dark=now?now==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;const nt=dark?'light':'dark';document.documentElement.setAttribute('data-theme',nt);localStorage.setItem('sv-theme-nlp',nt);renderDTM();});
+
+/* ---- Text vectorizer matrix (Binary / Count / TF-IDF) ---- */
+const STOP = new Set(["the","is","a","of","to"]);
+const DOCS = [
+  "the movie is good",
+  "the movie is a waste a waste of time",
+  "loved loved the movie"
+];
+function tokens(d){ return d.toLowerCase().split(/\s+/).filter(w=>w && !STOP.has(w)); }
+const TOK = DOCS.map(tokens);
+const VOCAB = [...new Set(TOK.flat())].sort();
+const N = DOCS.length;
+function count(doc, w){ return doc.filter(t=>t===w).length; }
+const DF = {}; VOCAB.forEach(w=>{ DF[w]=TOK.filter(doc=>doc.includes(w)).length; });
+let rep='binary';
+function cellValue(di, w){
+  const doc=TOK[di];
+  if(rep==='binary') return doc.includes(w)?1:0;
+  if(rep==='count')  return count(doc,w);
+  // tfidf
+  const tf = count(doc,w)/doc.length;
+  const idf = Math.log(N/DF[w]);
+  return tf*idf;
+}
+function renderDTM(){
+  const t=$('#dtm'); if(!t) return;
+  // find max for colour scale
+  let mx=0; for(let i=0;i<N;i++) for(const w of VOCAB){ const v=cellValue(i,w); if(v>mx) mx=v; }
+  if(mx===0) mx=1;
+  const accent = getComputedStyle(document.documentElement).getPropertyValue('--c-mech').trim()||'#1E6FA8';
+  let html='<thead><tr><th class="rowlab">review</th>';
+  VOCAB.forEach(w=> html+='<th>'+w+'</th>'); html+='</tr></thead><tbody>';
+  DOCS.forEach((d,i)=>{
+    html+='<tr><th class="rowlab">“'+d+'”</th>';
+    VOCAB.forEach(w=>{
+      const v=cellValue(i,w);
+      const disp = rep==='tfidf' ? (v===0?'0':v.toFixed(2)) : String(v);
+      const a = v<=0?0:(0.12+0.6*(v/mx));
+      html+='<td style="background:color-mix(in srgb,'+accent+' '+Math.round(a*100)+'%, var(--paper-3));">'+disp+'</td>';
+    });
+    html+='</tr>';
+  });
+  html+='</tbody>';
+  t.innerHTML=html;
+  const notes={
+    binary:'Binary Bag of Words: just <b>1 if the word appears</b>, else 0 — presence only.',
+    count:'Count Vectorizer: each cell is the <b>word’s frequency</b> in that review — note “waste” = 2 in review 2.',
+    tfidf:'TF-IDF: “movie” appears in <b>every</b> review → IDF = 0 → weight <b>0</b>. Distinctive words (waste, loved, good) score high.'
+  };
+  $('#repReadout').innerHTML=notes[rep];
+}
+$$('#repSeg button').forEach(b=>b.addEventListener('click',()=>{ $$('#repSeg button').forEach(x=>x.classList.remove('on')); b.classList.add('on'); rep=b.dataset.r; renderDTM(); }));
+onEnter['sM1']=renderDTM;
+
+buildDots();
+$('#totalNum').textContent=slideEls.length;
+const dl=parseInt(new URLSearchParams(location.search).get('slide'),10);
+goTo(Number.isFinite(dl)?dl-1:0);
+</script>
+</body>
+</html>

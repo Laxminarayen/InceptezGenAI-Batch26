@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Classwork Notes · Intro to NLP &amp; Text Representations</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{ --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC; --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63; --line: rgba(32,40,58,.16); --accent:#6B4FA0; --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }
+  @media (prefers-color-scheme: dark){ :root{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.16); --accent:#B49AE0; } }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.6; }
+  .wrap{max-width:840px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 80px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.7rem,4vw,2.4rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 6px;}
+  .subtitle{color:var(--ink-soft); font-size:1rem; margin-bottom:8px;}
+  .pdf-link{display:inline-flex; align-items:center; gap:8px; margin:14px 10px 34px 0; font-size:.9rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .pdf-link:hover{border-color:var(--accent); color:var(--accent);}
+  h2{font-size:1.35rem; font-weight:900; margin:44px 0 14px; padding-top:16px; border-top:1px solid var(--line);}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h3{font-size:1.05rem; font-weight:800; margin:22px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:8px 10px; text-align:center; border:1px solid var(--line);}
+  th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  td.l, th.l{text-align:left;}
+  tr.hl td{background:color-mix(in srgb, var(--accent) 10%, transparent); font-weight:800;}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .agenda{display:flex; flex-wrap:wrap; gap:10px; margin:14px 0 20px;}
+  .agenda span{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:8px 16px; font-size:.86rem; font-weight:700; color:var(--ink);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.92em; font-family:var(--mono);}
+  pre{background:#10141c; color:#dfe6f2; border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.85rem; line-height:1.55; font-family:var(--mono);}
+  pre code{background:none; padding:0;}
+  pre .cmt{color:#7f8aa0;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Day 40 · Classwork Notes</div>
+  <h1>Intro to NLP &amp; Text Representations</h1>
+  <p class="subtitle">We know how to turn an image into numbers — but how do you turn text into numbers a model can learn from? This session climbs the ladder of text representations: Bag of Words → Count Vectorizer → TF-IDF → n-grams → Word2Vec embeddings, each fixing a weakness of the last, ending with vectors that finally capture meaning.</p>
+  <a class="pdf-link" href="Classwork.pdf" target="_blank">📄 Handwritten notes (PDF)</a>
+  <a class="pdf-link" href="BOW_TFIDF.pdf" target="_blank">📄 Reference: BoW &amp; TF-IDF</a>
+  <a class="pdf-link" href="Word2vecpaper.pdf" target="_blank">📄 Paper: Word2Vec (Mikolov et al.)</a>
+
+  <h2>Agenda</h2>
+  <div class="agenda">
+    <span>What is NLP</span>
+    <span>Properties of language</span>
+    <span>Bag of Words / one-hot</span>
+    <span>Count Vectorizer</span>
+    <span>TF-IDF &amp; n-grams</span>
+    <span>Word2Vec (CBOW &amp; Skip-gram)</span>
+    <span>Next: RNNs / LSTMs</span>
+  </div>
+
+  <h2>Part I: What Is NLP?</h2>
+  <p><b>NLP = Natural Language + Processing</b> — run some kind of process over natural language. A <b>natural language</b> (Malayalam, English) is not a <b>programming language</b> (Python). Natural languages are:</p>
+  <ol>
+    <li><b>Organically developed</b>,</li>
+    <li><b>Evolved for a human community</b>,</li>
+    <li><b>Passed through generations</b>, undergoing changes over time.</li>
+  </ol>
+
+  <h3>Properties of natural language</h3>
+  <ol>
+    <li><b>Phonology</b> → phonemes (sound units), e.g. the "dh" sound in <i>father</i>.</li>
+    <li><b>Syntax</b> → word order &amp; sentence structure — the sequentially ordered placement of words (S-V-O, S-V-P).</li>
+    <li><b>Lexicon</b> → the linguistic collection of words.</li>
+  </ol>
+  <div class="note"><b>Multiple nested dependencies.</b> "Lammi likes to eat Italian food. <b>He</b> is very fond of <b>this cuisine</b>." Resolving "He" → Lammi and "this cuisine" → Italian food requires remembering earlier context. Language is <i>not</i> a bag of independent words — this is the core NLP challenge.</div>
+
+  <h2>Part II: Revision — Where We Are</h2>
+  <p>AI ⊃ ML ⊃ {Traditional ML, Deep Learning}; <b>NLP spans across</b> all of it (🟡 "you are here" in DL). In deep learning the <b>feature representations are learned automatically via deep weighted affines</b>:</p>
+  <ul>
+    <li><b>Simple NN</b> — a <b>global</b> representation: input layer → hidden (ReLU) → output ŷ; loss by task (MSE for regression, sigmoid+BCE for binary, categorical cross-entropy for multiclass).</li>
+    <li><b>CNN</b> — a <b>local / spatial</b> representation based on sliding filters (3×3, stride).</li>
+    <li><b>Training loop</b> — (1) loss calculation: predict on train(x), loss = lossfn(predict); (2) optimizer (SGD / Mini-batch / Full-batch / RMSProp / Adam): <code>zero_grad()</code> resets residuals, <code>loss.backward()</code> computes gradients; (3) <code>optimizer.step()</code> updates the weights.</li>
+  </ul>
+  <div class="note"><b>Today's bridge:</b> we now know how to represent an <b>image</b> as numbers (m × n × 3). <b>How do we represent text as numbers?</b></div>
+
+  <h2>Part III: Text Representations</h2>
+
+  <h3>(a) Bag of Words / One-Hot</h3>
+  <p>Take the reviews, lowercase them, and remove <b>stop words</b> — highly frequent words that carry little standalone meaning (<i>the, is, a, of</i>). Collect the <b>unique content words</b> as columns, one row per sentence; each cell is <b>1 if the word appears, else 0</b>.</p>
+  <table>
+    <thead><tr><th class="l">Review</th><th>movie</th><th>good</th><th>waste</th><th>time</th><th>loved</th></tr></thead>
+    <tbody>
+      <tr><td class="l">"the movie is good"</td><td>1</td><td>1</td><td>0</td><td>0</td><td>0</td></tr>
+      <tr><td class="l">"…a waste of time"</td><td>1</td><td>0</td><td>1</td><td>1</td><td>0</td></tr>
+      <tr><td class="l">"loved the movie"</td><td>1</td><td>0</td><td>0</td><td>0</td><td>1</td></tr>
+    </tbody>
+  </table>
+  <p>This <b>converts text into a table</b> that classical methods can consume: Linear/Logistic Regression, KNN, K-Means, a neural net.</p>
+  <h3>Three disadvantages of Bag of Words</h3>
+  <ol>
+    <li><b>Word order / meaning lost</b> — "the movie was bad, the whole experience is a bad experience" — BoW does not take order into account.</li>
+    <li><b>Frequency ignored</b> — if a word is repeated many times it matters, but 0/1 can't tell once from many. (Needs <b>dynamic weightage</b>.)</li>
+    <li><b>No contextual / semantic meaning</b> — <b>KING − MAN + WOMAN = QUEEN</b>; relationships like royalty/rich aren't captured.</li>
+  </ol>
+
+  <h3>(b) Count Vectorizer (Term Frequency)</h3>
+  <p>Addresses disadvantage #2. Each cell becomes the <b>count</b> of the word in the sentence, not just 0/1 — so repetition is captured.</p>
+  <div class="formula">Count Vectorizer = term frequency<span class="sub">If a word is repeated in a sentence, it makes sense to weigh it more. But a word present a lot across the <i>whole document set</i> should be taken care of — that's the next step.</span></div>
+
+  <h3>(c) TF-IDF (Term Frequency × Inverse Document Frequency)</h3>
+  <p>TF matters when the <i>whole document</i> is not about that word. IDF gives a <b>negative weightage</b> to words frequent across the whole collection.</p>
+  <div class="formula">
+    TF = (word count) ÷ (number of words in the sentence)<br/>
+    IDF = log( total documents ÷ documents in which the word occurs )<br/>
+    <b>weight = TF × IDF</b>
+    <span class="sub">A word appearing in every document → IDF = log(1) = 0 → its weight vanishes (acts like an automatic stop word). Rare, distinctive words get a high weight.</span>
+  </div>
+  <p><b>Worked example</b> (reviews: "the movie is good" · "…a waste a waste of time" · "loved loved the movie"; 3 docs). "movie" is in all 3 → IDF = log(3/3) = 0, so its TF-IDF is <b>0</b> everywhere. Distinctive words score high: <i>loved</i> ≈ 0.73, <i>waste</i> ≈ 0.55, <i>good</i> ≈ 0.55.</p>
+  <table>
+    <thead><tr><th class="l">Review</th><th>good</th><th>loved</th><th>movie</th><th>time</th><th>waste</th></tr></thead>
+    <tbody>
+      <tr><td class="l">"…good"</td><td>0.55</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+      <tr><td class="l">"…waste…time"</td><td>0</td><td>0</td><td>0</td><td>0.27</td><td>0.55</td></tr>
+      <tr><td class="l">"loved…"</td><td>0</td><td>0.73</td><td>0</td><td>0</td><td>0</td></tr>
+    </tbody>
+  </table>
+
+  <h3>n-grams</h3>
+  <p>Add some word pairing: <code>n=1</code> → single words {movie, time, loved, good, wasted}; <code>n=2</code> → adjacent pairs {"movie good", "time wasted", …}. Captures a little local order.</p>
+  <div class="note"><b>Still missing semantics.</b> One-hot, Count Vector, and TF-IDF all share one flaw: <b>no paired association of meaning</b> — no semantic meaning — and they rely on manual <b>feature engineering</b>.</div>
+
+  <h2>Part IV: Word2Vec — Learning the Representation</h2>
+  <p><b>Is there a method that understands deeper feature relations without feature engineering?</b> Yes — use a <b>neural network for representation learning</b>. Instead of assigning vector values by hand, give the model <b>sentences</b> and a <b>prediction task involving nearby words</b>. The result is <b>word embeddings</b>.</p>
+  <div class="formula">Learn word <b>predictions</b> ⟹ learn word <b>vectors</b><span class="sub">A word's numerical <b>ID</b> is arbitrary (cat = 1, dog = 2…); <b>Word ID ≠ word meaning</b>. The learned vector is what carries meaning.</span></div>
+
+  <h3>Context window</h3>
+  <p>The neighbouring words considered around a particular word. In "The cat <b>[drinks]</b> fresh milk" with IDs [the=5, cat=1, drinks=4, fresh=6, milk=7]:</p>
+  <ul>
+    <li><b>Target word to predict:</b> drinks (4)</li>
+    <li><b>Context words:</b> the, cat, fresh, milk (5, 1, 6, 7)</li>
+  </ul>
+
+  <h3>Two architectures</h3>
+  <table>
+    <thead><tr><th class="l">Architecture</th><th class="l">Idea</th><th class="l">In / Out</th></tr></thead>
+    <tbody>
+      <tr><td class="l"><b>CBOW</b><br/>(Continuous Bag of Words)</td><td class="l">Use the <b>surrounding words to predict the centre word</b>.</td><td class="l">X = [5,1,6,7] (context) → Y = 4 (target)</td></tr>
+      <tr><td class="l"><b>Skip-gram</b></td><td class="l">Reverse it: use the <b>centre word to predict the surrounding words</b>.</td><td class="l">X = [4] (centre) → Y = [5,1,6,7] (context)</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Where the vector comes from</h3>
+  <p><b>Word2Vec = a shallow neural network + word IDs.</b> The network's output (classification) layer has <b>one neuron per vocabulary word</b> (~70,000). But we don't want the prediction — we want the hidden layer. After training, <b>remove the classification head</b>; the learned hidden weights for each word <i>are</i> its embedding.</p>
+  <div class="formula">cat → a <b>128-dim</b> vector (not a 70,000-dim one-hot)<span class="sub">A dense, low-dimensional vector that captures the word's learned meaning — "it learns a numerical representation of words using the prediction pattern."</span></div>
+  <div class="note"><b>Semantic geometry (the payoff):</b> similar words <b>cluster</b> — cat &amp; dog near each other, car &amp; bus in their own group; usage like "consume" pulls <i>drank</i> toward beverage contexts; and relationships become arithmetic (KING − MAN + WOMAN ≈ QUEEN). This is the semantic meaning BoW/TF-IDF never had.</div>
+
+  <h2>Next</h2>
+  <div class="note"><b>Open question:</b> embeddings give each word a vector, but how do we represent a word <b>in a sequence</b>, where order matters? → <b>RNNs and LSTMs</b> (next class).</div>
+  <div class="note">Want diagrams and the full reference (document-term matrix, TF-IDF intuition, CBOW vs Skip-gram, embedding extraction, vector arithmetic)? See <a href="nlp-text-representations-textbook-notes.html">Intro to NLP &amp; Text Representations — Reference Notes</a>.</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>Intro to NLP &amp; Text Representations — Reference Notes</title>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<style>
+  :root{ --paper:#F6F0E1; --paper-2:#EDE3CC; --paper-3:#E4D8BC; --ink:#20283A; --ink-soft:#4E5670; --ink-faint:#7C7A63; --line: rgba(32,40,58,.16); --accent:#6B4FA0; --font: -apple-system, BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Arial, sans-serif; --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace; }
+  @media (prefers-color-scheme: dark){ :root{ --paper:#161A24; --paper-2:#1E2432; --paper-3:#272E40; --ink:#EFE9DA; --ink-soft:#B9BECC; --ink-faint:#8C8F7E; --line: rgba(239,233,218,.16); --accent:#B49AE0; } }
+  *{box-sizing:border-box;}
+  body{ margin:0; font-family:var(--font); background:var(--paper); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.65; }
+  .wrap{max-width:860px; margin:0 auto; padding:clamp(24px,5vw,56px) clamp(18px,4vw,32px) 90px;}
+  .kicker{font-size:.76rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; color:var(--accent);}
+  h1{font-size:clamp(1.8rem,4vw,2.5rem); font-weight:900; letter-spacing:-0.01em; margin:8px 0 10px;}
+  .abstract{color:var(--ink-soft); font-size:1.02rem; margin-bottom:10px; max-width:680px;}
+  .related-links{display:flex; flex-wrap:wrap; gap:10px; margin:16px 0 36px;}
+  .related-links a{display:inline-flex; align-items:center; gap:8px; font-size:.88rem; font-weight:700; color:var(--ink); background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:9px 18px; text-decoration:none;}
+  .related-links a:hover{border-color:var(--accent); color:var(--accent);}
+  .toc{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin-bottom:36px;}
+  .toc-title{font-size:.78rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-faint); margin-bottom:10px;}
+  .toc ol{margin:0; padding-left:20px; columns:2; column-gap:28px;}
+  .toc li{margin-bottom:6px; break-inside:avoid;}
+  .toc a{color:var(--ink-soft); text-decoration:none; font-size:.92rem;}
+  .toc a:hover{color:var(--accent);}
+  @media (max-width:640px){ .toc ol{columns:1;} }
+  h2{font-size:1.4rem; font-weight:900; margin:48px 0 14px; padding-top:18px; border-top:1px solid var(--line); scroll-margin-top:20px;}
+  h2:first-of-type{border-top:none; padding-top:0; margin-top:0;}
+  h2 .num{color:var(--accent); font-variant-numeric:tabular-nums; margin-right:8px;}
+  h3{font-size:1.06rem; font-weight:800; margin:24px 0 8px; color:var(--accent);}
+  p{margin:0 0 12px; color:var(--ink-soft);}
+  p b, li b{color:var(--ink);}
+  ul, ol{margin:0 0 14px; padding-left:22px; color:var(--ink-soft);}
+  li{margin-bottom:6px;}
+  .formula{background:var(--paper-2); border:1px solid var(--line); border-left:4px solid var(--accent); border-radius:10px; padding:14px 18px; margin:14px 0; font-weight:700; color:var(--ink); font-size:1.02rem;}
+  .formula .sub{display:block; font-weight:500; font-size:.86rem; color:var(--ink-faint); margin-top:4px;}
+  table{width:100%; border-collapse:collapse; margin:14px 0 18px; font-size:.9rem;}
+  th, td{padding:9px 12px; text-align:left; border:1px solid var(--line); vertical-align:top;}
+  thead th{background:var(--paper-2); font-weight:800; font-size:.76rem; text-transform:uppercase; letter-spacing:.03em; color:var(--ink-soft);}
+  .note{background:var(--paper-2); border:1px solid var(--line); border-radius:10px; padding:12px 16px; font-size:.9rem; color:var(--ink-soft); margin:14px 0;}
+  .note b{color:var(--ink);}
+  .note.warn{border-left:4px solid var(--accent);}
+  code{background:var(--paper-2); border-radius:5px; padding:1px 6px; font-size:.9em; font-family:var(--mono);}
+  pre{background:#10141c; color:#dfe6f2; border:1px solid var(--line); border-radius:12px; padding:16px 18px; overflow-x:auto; margin:14px 0 18px; font-size:.86rem; line-height:1.55; font-family:var(--mono);}
+  pre code{background:none; padding:0; font-size:1em; color:inherit;}
+  pre .cmt{color:#7f8aa0;}
+  .pill-row{display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 20px;}
+  .pill{background:var(--paper-2); border:1px solid var(--line); border-radius:999px; padding:6px 14px; font-size:.82rem; font-weight:700; color:var(--ink);}
+  .summary-box{background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 22px; margin:16px 0;}
+  .summary-box h3{margin-top:0;}
+  .fig{margin:20px 0 22px; background:var(--paper-2); border:1px solid var(--line); border-radius:14px; padding:18px 18px 10px;}
+  .fig svg{display:block; width:100%; height:auto;}
+  .fig figcaption{font-size:.82rem; color:var(--ink-faint); margin-top:12px; text-align:center; line-height:1.5;}
+  .fig text{font-family:var(--font);}
+  .fig .lbl{font-size:13px; font-weight:800; fill:var(--ink);}
+  .fig .lbl-s{font-size:12px; font-weight:600; fill:var(--ink-soft);}
+  .fig .lbl-f{font-size:11px; font-weight:600; fill:var(--ink-faint);}
+  .fig .teal{stroke:#3B6E63;} .fig .amber{stroke:#B0670C;} .fig .blue{stroke:#1E6FA8;} .fig .purple{stroke:#6B4FA0;}
+  .fig .f-teal{fill:#3B6E63;} .fig .f-amber{fill:#B0670C;} .fig .f-blue{fill:#1E6FA8;} .fig .f-purple{fill:#6B4FA0;}
+  @media (prefers-color-scheme: dark){
+    .fig .teal{stroke:#6FB3A3;} .fig .amber{stroke:#E0A24C;} .fig .blue{stroke:#5CA6DE;} .fig .purple{stroke:#B49AE0;}
+    .fig .f-teal{fill:#6FB3A3;} .fig .f-amber{fill:#E0A24C;} .fig .f-blue{fill:#5CA6DE;} .fig .f-purple{fill:#B49AE0;}
+  }
+  .fig .box{fill:var(--paper-3); stroke:var(--line); stroke-width:1.4;}
+  .fig .flow{stroke:var(--ink-soft); stroke-width:1.6; fill:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="kicker">Reference Notes · Deep Learning · NLP</div>
+  <h1>Intro to NLP &amp; Text Representations</h1>
+  <p class="abstract">How do you turn text into numbers a model can learn from? This chapter walks the ladder of text representations — Bag of Words, Count Vectorizer, TF-IDF, n-grams — and why each falls short, then introduces Word2Vec: learned word embeddings (CBOW &amp; Skip-gram) that finally capture meaning as geometry.</p>
+
+  <div class="related-links">
+    <a href="classwork-notes.html">📝 Classwork Notes (Day 40 write-up)</a>
+    <a href="nlp-text-representations-slides.html">🖥️ Slide Deck (live vectorizer demo)</a>
+    <a href="BOW_TFIDF.pdf">📄 Reference: BoW &amp; TF-IDF</a>
+    <a href="Word2vecpaper.pdf">📄 Paper: Word2Vec (Mikolov et al.)</a>
+    <a href="../38.%20Dropout%2C%20EarlyStopping%20and%20Regularizaion/overfitting-regularization-textbook-notes.html">📚 Overfitting (Class 38)</a>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ol>
+      <li><a href="#s1">What Is NLP</a></li>
+      <li><a href="#s2">Properties of Language</a></li>
+      <li><a href="#s3">The Core Problem</a></li>
+      <li><a href="#s4">Bag of Words</a></li>
+      <li><a href="#s5">Count Vectorizer</a></li>
+      <li><a href="#s6">TF-IDF</a></li>
+      <li><a href="#s7">n-grams &amp; the Gap</a></li>
+      <li><a href="#s8">Word2Vec: Learned Embeddings</a></li>
+      <li><a href="#s9">CBOW, Skip-gram &amp; the Trick</a></li>
+      <li><a href="#s10">Summary</a></li>
+    </ol>
+  </div>
+
+  <h2 id="s1"><span class="num">1.</span>What Is NLP?</h2>
+  <p><b>NLP = Natural Language + Processing</b> — running some kind of process over human language. A <b>natural language</b> (Malayalam, English) differs from a <b>programming language</b> (Python): it is <b>organically developed</b>, <b>evolved for a human community</b>, and <b>passed through generations</b>, changing over time. In the big picture, AI ⊃ ML ⊃ Deep Learning, and <b>NLP spans across</b> all of them; today we point deep learning at language.</p>
+
+  <h2 id="s2"><span class="num">2.</span>Properties of Language</h2>
+  <table>
+    <thead><tr><th>Property</th><th>Meaning</th></tr></thead>
+    <tbody>
+      <tr><td><b>Phonology</b></td><td>Sound units (phonemes) — e.g. the "dh" sound in <i>father</i>.</td></tr>
+      <tr><td><b>Syntax</b></td><td>Word order &amp; sentence structure — the sequentially ordered placement of words (S-V-O, S-V-P).</td></tr>
+      <tr><td><b>Lexicon</b></td><td>The linguistic collection of words.</td></tr>
+    </tbody>
+  </table>
+  <div class="note warn"><b>Multiple nested dependencies — the core challenge.</b> "Lammi likes to eat Italian food. <b>He</b> is very fond of <b>this cuisine</b>." To understand "He" (→ Lammi) and "this cuisine" (→ Italian food) you must carry context across sentences. Language is not a set of independent words — meaning depends on what came before.</div>
+
+  <h2 id="s3"><span class="num">3.</span>The Core Problem: Text → Numbers</h2>
+  <p>An image is already numeric — an <b>m × n × 3</b> grid of pixel values — so a network can read it directly. Text has no such form. "The movie is good" must be <b>turned into numbers</b> before any model (Logistic Regression, KNN, a neural net) can use it. The rest of this chapter is a sequence of representations, each fixing a flaw of the previous one.</p>
+
+  <h2 id="s4"><span class="num">4.</span>Bag of Words (One-Hot)</h2>
+  <p>Lowercase the text and remove <b>stop words</b> (highly frequent words with little standalone meaning: <i>the, is, a, of</i>). Take the <b>unique content words</b> as columns and each sentence as a row; put <b>1 if the word appears, else 0</b>. This is the <b>document-term matrix</b>.</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 640 210" role="img" aria-label="Three sentences become a document-term matrix of ones and zeros, one column per vocabulary word.">
+      <text class="lbl" x="150" y="24" text-anchor="middle">reviews (text)</text>
+      <g class="lbl-s" fill="var(--ink-soft)">
+        <rect x="24" y="36" width="252" height="26" class="box" rx="5"/><text x="34" y="53">“the movie is good”</text>
+        <rect x="24" y="70" width="252" height="26" class="box" rx="5"/><text x="34" y="87">“the movie is a waste of time”</text>
+        <rect x="24" y="104" width="252" height="26" class="box" rx="5"/><text x="34" y="121">“loved the movie”</text>
+      </g>
+      <path class="flow" d="M286,96 H322"/><polygon points="322,96 312,91 312,101" fill="var(--ink-soft)"/>
+      <text class="lbl-f" x="304" y="86" text-anchor="middle">vectorize</text>
+      <!-- matrix -->
+      <g font-size="12" font-weight="800" text-anchor="middle">
+        <g class="lbl-s" fill="var(--ink-soft)">
+          <text x="372" y="44">movie</text><text x="430" y="44">good</text><text x="486" y="44">waste</text><text x="540" y="44">time</text><text x="596" y="44">loved</text>
+        </g>
+        <g fill="var(--ink)">
+          <g><rect x="352" y="52" width="40" height="22" class="box"/><text x="372" y="67">1</text><rect x="410" y="52" width="40" height="22" class="box" style="fill:color-mix(in srgb,#1E6FA8 30%,var(--paper-3));"/><text x="430" y="67">1</text><rect x="466" y="52" width="40" height="22" class="box"/><text x="486" y="67">0</text><rect x="520" y="52" width="40" height="22" class="box"/><text x="540" y="67">0</text><rect x="576" y="52" width="40" height="22" class="box"/><text x="596" y="67">0</text></g>
+          <g><rect x="352" y="76" width="40" height="22" class="box"/><text x="372" y="91">1</text><rect x="410" y="76" width="40" height="22" class="box"/><text x="430" y="91">0</text><rect x="466" y="76" width="40" height="22" class="box" style="fill:color-mix(in srgb,#1E6FA8 30%,var(--paper-3));"/><text x="486" y="91">1</text><rect x="520" y="76" width="40" height="22" class="box" style="fill:color-mix(in srgb,#1E6FA8 30%,var(--paper-3));"/><text x="540" y="91">1</text><rect x="576" y="76" width="40" height="22" class="box"/><text x="596" y="91">0</text></g>
+          <g><rect x="352" y="100" width="40" height="22" class="box"/><text x="372" y="115">1</text><rect x="410" y="100" width="40" height="22" class="box"/><text x="430" y="115">0</text><rect x="466" y="100" width="40" height="22" class="box"/><text x="486" y="115">0</text><rect x="520" y="100" width="40" height="22" class="box"/><text x="540" y="115">0</text><rect x="576" y="100" width="40" height="22" class="box" style="fill:color-mix(in srgb,#1E6FA8 30%,var(--paper-3));"/><text x="596" y="115">1</text></g>
+        </g>
+      </g>
+      <text class="lbl-f" x="484" y="150" text-anchor="middle">1 = word present, 0 = absent</text>
+    </svg>
+    <figcaption><b>Fig 1.</b> Bag of Words: each review becomes a row of 0/1 over the shared vocabulary. The text is now a fixed-width numeric table any classifier can consume.</figcaption>
+  </figure>
+
+  <h3>Three disadvantages</h3>
+  <ol>
+    <li><b>Word order / meaning lost</b> — "the whole experience is a bad experience" has the same bag whatever the order; sequence is gone.</li>
+    <li><b>Frequency ignored</b> — 0/1 cannot distinguish a word used once from ten times. Needs <b>dynamic weightage</b>.</li>
+    <li><b>No semantic meaning</b> — relationships like <b>KING − MAN + WOMAN = QUEEN</b> (royalty, rich…) are invisible.</li>
+  </ol>
+
+  <h2 id="s5"><span class="num">5.</span>Count Vectorizer (Term Frequency)</h2>
+  <p>Fixes disadvantage #2: each cell becomes the <b>count</b> of the word in the sentence rather than 0/1. Now "waste waste" scores 2, capturing emphasis. But a word that appears a lot <i>across the whole document set</i> (like "movie" in a set of movie reviews) is still treated as important when it isn't distinctive — the next step handles that.</p>
+
+  <h2 id="s6"><span class="num">6.</span>TF-IDF</h2>
+  <p><b>Term Frequency × Inverse Document Frequency</b> gives each word a <b>dynamic weight</b>: high where the word is distinctive, low where it is everywhere.</p>
+  <div class="formula">
+    TF = (word count) ÷ (words in the sentence)<br/>
+    IDF = log( total documents ÷ documents containing the word )<br/>
+    <b>TF-IDF = TF × IDF</b>
+    <span class="sub">A word in <i>every</i> document → IDF = log(1) = 0 → weight vanishes, like an automatic stop word.</span>
+  </div>
+
+  <figure class="fig">
+    <svg viewBox="0 0 640 170" role="img" aria-label="TF-IDF weights: movie appears in all documents so its weight is zero, while distinctive words score high.">
+      <line x1="56" y1="130" x2="600" y2="130" stroke="var(--line)" stroke-width="1.4"/>
+      <text class="lbl-f" x="20" y="80" text-anchor="middle" transform="rotate(-90 20 80)">TF-IDF weight</text>
+      <g text-anchor="middle">
+        <rect x="90" y="128" width="54" height="2" class="box" style="fill:#C23B3B;"/>
+        <text class="lbl-s" x="117" y="148" fill="var(--ink-soft)">movie</text><text class="lbl-f" x="117" y="122">0</text>
+        <rect x="200" y="58" width="54" height="72" style="fill:color-mix(in srgb,#1E6FA8 55%,var(--paper-3));"/>
+        <text class="lbl-s" x="227" y="148" fill="var(--ink-soft)">loved</text><text class="lbl-f" x="227" y="50">0.73</text>
+        <rect x="310" y="76" width="54" height="54" style="fill:color-mix(in srgb,#1E6FA8 45%,var(--paper-3));"/>
+        <text class="lbl-s" x="337" y="148" fill="var(--ink-soft)">waste</text><text class="lbl-f" x="337" y="68">0.55</text>
+        <rect x="420" y="76" width="54" height="54" style="fill:color-mix(in srgb,#1E6FA8 45%,var(--paper-3));"/>
+        <text class="lbl-s" x="447" y="148" fill="var(--ink-soft)">good</text><text class="lbl-f" x="447" y="68">0.55</text>
+        <rect x="530" y="103" width="54" height="27" style="fill:color-mix(in srgb,#1E6FA8 30%,var(--paper-3));"/>
+        <text class="lbl-s" x="557" y="148" fill="var(--ink-soft)">time</text><text class="lbl-f" x="557" y="95">0.27</text>
+      </g>
+    </svg>
+    <figcaption><b>Fig 2.</b> TF-IDF over three movie reviews. "movie" is in all three documents → IDF = log(3/3) = 0 → weight 0, discounted automatically. Rare, telling words (loved, waste, good) rise to the top.</figcaption>
+  </figure>
+
+  <h2 id="s7"><span class="num">7.</span>n-grams &amp; the Remaining Gap</h2>
+  <p><b>n-grams</b> capture a little local order: <code>n=1</code> uses single words (movie, time, good); <code>n=2</code> uses adjacent pairs ("movie good", "time wasted"). Useful, but it does not solve the deeper problem.</p>
+  <div class="note warn"><b>The shared flaw.</b> One-hot, Count Vector and TF-IDF all have <b>no paired association of meaning</b> — no semantics — and they depend on manual <b>feature engineering</b>. "good" and "great" are as unrelated as "good" and "aardvark". We need a representation that <i>learns</i> meaning.</div>
+
+  <h2 id="s8"><span class="num">8.</span>Word2Vec: Learned Embeddings</h2>
+  <p>Instead of assigning numbers by hand, give a neural network <b>sentences</b> and a <b>prediction task involving nearby words</b>. Solving "which word belongs here?" forces the network to learn useful <b>word vectors</b> as a by-product — <b>representation learning</b>.</p>
+  <div class="formula">Learn word <b>predictions</b> ⟹ learn word <b>vectors</b><span class="sub">A word's <b>ID</b> is arbitrary (cat = 1, dog = 2). <b>Word ID ≠ word meaning</b> — the learned vector carries the meaning.</span></div>
+  <p><b>Context window</b> — the neighbouring words around a target. In "The cat <b>[drinks]</b> fresh milk" the target is <i>drinks</i> and the context is <i>the, cat, fresh, milk</i>.</p>
+
+  <h2 id="s9"><span class="num">9.</span>CBOW, Skip-gram &amp; the Trick</h2>
+  <figure class="fig">
+    <svg viewBox="0 0 640 190" role="img" aria-label="CBOW predicts the centre word from context words; Skip-gram predicts the context words from the centre word.">
+      <!-- CBOW -->
+      <text class="lbl f-blue" x="160" y="24" text-anchor="middle">CBOW: context → centre</text>
+      <g class="lbl-s" text-anchor="middle" fill="var(--ink)">
+        <rect x="40" y="40" width="54" height="22" class="box"/><text x="67" y="55">the</text>
+        <rect x="40" y="66" width="54" height="22" class="box"/><text x="67" y="81">cat</text>
+        <rect x="40" y="92" width="54" height="22" class="box"/><text x="67" y="107">fresh</text>
+        <rect x="40" y="118" width="54" height="22" class="box"/><text x="67" y="133">milk</text>
+        <rect x="150" y="70" width="60" height="40" class="box" style="stroke:#1E6FA8;stroke-width:2;"/><text x="180" y="94" class="f-blue">NN</text>
+        <rect x="250" y="78" width="66" height="26" class="box" style="fill:color-mix(in srgb,#1C8C5A 26%,var(--paper-3));stroke:#1C8C5A;"/><text x="283" y="96">drinks</text>
+      </g>
+      <g stroke="var(--line)"><line x1="94" y1="51" x2="150" y2="84"/><line x1="94" y1="77" x2="150" y2="88"/><line x1="94" y1="103" x2="150" y2="92"/><line x1="94" y1="129" x2="150" y2="96"/></g>
+      <path class="flow" d="M210,90 H250"/><polygon points="250,90 240,85 240,95" fill="var(--ink-soft)"/>
+      <!-- divider -->
+      <line x1="340" y1="34" x2="340" y2="150" stroke="var(--line)" stroke-width="1.2" stroke-dasharray="4 5"/>
+      <!-- Skip-gram -->
+      <text class="lbl f-purple" x="490" y="24" text-anchor="middle">Skip-gram: centre → context</text>
+      <g class="lbl-s" text-anchor="middle" fill="var(--ink)">
+        <rect x="360" y="78" width="66" height="26" class="box" style="fill:color-mix(in srgb,#6B4FA0 24%,var(--paper-3));stroke:#6B4FA0;"/><text x="393" y="96">drinks</text>
+        <rect x="452" y="70" width="60" height="40" class="box" style="stroke:#6B4FA0;stroke-width:2;"/><text x="482" y="94" class="f-purple">NN</text>
+        <rect x="548" y="40" width="54" height="22" class="box"/><text x="575" y="55">the</text>
+        <rect x="548" y="66" width="54" height="22" class="box"/><text x="575" y="81">cat</text>
+        <rect x="548" y="92" width="54" height="22" class="box"/><text x="575" y="107">fresh</text>
+        <rect x="548" y="118" width="54" height="22" class="box"/><text x="575" y="133">milk</text>
+      </g>
+      <path class="flow" d="M426,91 H452"/><polygon points="452,91 442,86 442,96" fill="var(--ink-soft)"/>
+      <g stroke="var(--line)"><line x1="512" y1="88" x2="548" y2="51"/><line x1="512" y1="90" x2="548" y2="77"/><line x1="512" y1="92" x2="548" y2="103"/><line x1="512" y1="94" x2="548" y2="129"/></g>
+    </svg>
+    <figcaption><b>Fig 3.</b> The two Word2Vec architectures. <b>CBOW</b> predicts the centre word from the surrounding context; <b>Skip-gram</b> reverses it, predicting the context from the centre word.</figcaption>
+  </figure>
+
+  <p><b>Where the vector comes from.</b> Word2Vec is a <b>shallow neural network</b>. Its output (classification) layer has one neuron per vocabulary word (~70,000 = vocab size). After training we don't want the prediction — we <b>remove the classification head</b> and keep the <b>hidden layer</b>: the learned hidden weights for each word <i>are</i> its embedding.</p>
+
+  <figure class="fig">
+    <svg viewBox="0 0 640 160" role="img" aria-label="A one-hot word input maps through a hidden layer to a vocabulary-sized output; removing the output head leaves a 128-dimensional embedding.">
+      <g text-anchor="middle" font-size="11" font-weight="700">
+        <rect x="28" y="54" width="90" height="48" class="box"/><text class="lbl-s" x="73" y="74" fill="var(--ink-soft)">one-hot</text><text class="lbl-f" x="73" y="90">70,000-dim</text>
+        <rect x="170" y="48" width="96" height="60" class="box" style="stroke:#1C8C5A;stroke-width:2;"/><text class="f-teal" x="218" y="72">hidden</text><text class="lbl-f" x="218" y="90">128 units</text>
+        <rect x="318" y="48" width="110" height="60" class="box" style="stroke:#C23B3B;stroke-width:2;stroke-dasharray:4 3;"/><text x="373" y="72" style="fill:#C23B3B;font-weight:800;">output head</text><text class="lbl-f" x="373" y="90">70,000 (vocab)</text>
+        <text x="373" y="124" style="fill:#C23B3B;font-weight:800;font-size:11px;">✗ removed after training</text>
+      </g>
+      <g fill="var(--ink-soft)">
+        <path class="flow" d="M118,78 H170"/><polygon points="170,78 160,73 160,83"/>
+        <path class="flow" d="M266,78 H318"/><polygon points="318,78 308,73 308,83"/>
+      </g>
+      <path class="flow" d="M218,108 V134 H470" stroke="#1C8C5A"/><polygon points="470,134 460,129 460,139" fill="#1C8C5A"/>
+      <text class="f-teal lbl-s" x="540" y="138" text-anchor="middle">cat = 128-dim vector</text>
+    </svg>
+    <figcaption><b>Fig 4.</b> The embedding trick. The network trains to classify a word out of the whole vocabulary, but we keep only the hidden layer — so "cat" becomes a dense <b>128-dimensional</b> vector instead of a 70,000-dim one-hot.</figcaption>
+  </figure>
+
+  <h3>Semantic geometry — the payoff</h3>
+  <p>Because similar words appear in similar contexts, their learned vectors land near each other. Meaning becomes <b>geometry</b>:</p>
+  <ul>
+    <li><b>Clusters</b> — <i>cat</i> and <i>dog</i> sit together; <i>car</i> and <i>bus</i> form their own neighbourhood.</li>
+    <li><b>Vector arithmetic</b> — <b>KING − MAN + WOMAN ≈ QUEEN</b>; relationships are directions in the space.</li>
+    <li><b>Usage shapes position</b> — a verb like "consume" pulls <i>drank</i> toward beverage contexts.</li>
+  </ul>
+  <div class="note"><b>This is the semantic meaning BoW and TF-IDF never had</b> — learned automatically from text, with no hand-built features.</div>
+
+  <h2 id="s10"><span class="num">10.</span>Summary</h2>
+  <div class="summary-box">
+    <h3>The whole idea, in one paragraph</h3>
+    <p>NLP turns <b>text into numbers</b>. The simplest way, <b>Bag of Words</b>, marks whether each vocabulary word is present (0/1) after removing stop words — but it loses order, ignores frequency and has no semantics. <b>Count Vectorizer</b> adds frequency; <b>TF-IDF</b> weights each word by how distinctive it is (a word in every document gets weight 0); <b>n-grams</b> add a little local order. Yet all three still lack <b>meaning</b> and lean on feature engineering. <b>Word2Vec</b> fixes this by <i>learning</i> the representation: a shallow network predicts a word from its neighbours (<b>CBOW</b>) or the neighbours from a word (<b>Skip-gram</b>); after training, its hidden layer gives each word a dense <b>~128-dim embedding</b> where similar words cluster and relationships become arithmetic. Next: how to handle words <b>in sequence</b> — RNNs and LSTMs.</p>
+  </div>
+  <div class="pill-row">
+    <span class="pill">NLP</span>
+    <span class="pill">Stop words</span>
+    <span class="pill">Bag of Words</span>
+    <span class="pill">Count Vectorizer</span>
+    <span class="pill">TF-IDF</span>
+    <span class="pill">n-grams</span>
+    <span class="pill">Word2Vec</span>
+    <span class="pill">CBOW</span>
+    <span class="pill">Skip-gram</span>
+    <span class="pill">Word embeddings</span>
+  </div>
+</div>
+</body>
+</html>
