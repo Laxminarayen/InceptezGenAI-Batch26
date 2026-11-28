@@ -1,5 +1,53 @@
 [
   {
+    "id": "mwwdeldf3fcrny",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Pooling and regularization",
+    "body": "What is the difference between pooling and regularisation? are both of these same?",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-11-25T17:01:18.387Z",
+    "likes": [
+      "J-Nirosha"
+    ],
+    "comments": [],
+    "date": "2026-11-25"
+  },
+  {
+    "id": "mwu9ulqyehqdii",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Trade off",
+    "body": "1. What are the steps to diagnose proper learning?\n2. If the network is not learing well what are the steps we can do to maximize learinng? \n2. tell me efforts to balance underfitting and overfitting in a neural network",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-11-24T05:46:14.554Z",
+    "likes": [
+      "Mukeshkanna90",
+      "J-Nirosha"
+    ],
+    "comments": [],
+    "date": "2026-11-24",
+    "editedAt": "2026-11-24T05:46:42.449Z"
+  },
+  {
+    "id": "mwso6jkjxyeaa5",
+    "author": "Laxminarayen",
+    "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
+    "title": "Dropout",
+    "body": "1. Why do we also call Dropout a regularisation?\n2. What are other regularisation techniques in Neural Networks?",
+    "classTag": "",
+    "topics": [],
+    "createdAt": "2026-11-23T02:51:53.875Z",
+    "likes": [
+      "Mukeshkanna90",
+      "J-Nirosha"
+    ],
+    "comments": [],
+    "date": "2026-11-23"
+  },
+  {
     "id": "mwre2urao77xfn",
     "author": "Laxminarayen",
     "authorAvatar": "https://avatars.githubusercontent.com/u/42375609?v=4",
@@ -37,7 +85,8 @@
     "createdAt": "2026-11-16T07:14:20.863Z",
     "likes": [
       "Malini-Sekar",
-      "J-Nirosha"
+      "J-Nirosha",
+      "priyadj309-kim"
     ],
     "comments": [],
     "date": "2026-11-18"
@@ -53,7 +102,9 @@
     "createdAt": "2026-11-16T07:12:49.653Z",
     "likes": [
       "jimmigayatri",
-      "priyadj309-kim"
+      "priyadj309-kim",
+      "Malini-Sekar",
+      "J-Nirosha"
     ],
     "comments": [],
     "date": "2026-11-15"
@@ -70,7 +121,8 @@
     "likes": [
       "Malini-Sekar",
       "J-Nirosha",
-      "Mukeshkanna90"
+      "Mukeshkanna90",
+      "priyadj309-kim"
     ],
     "comments": [],
     "date": "2026-11-17"
